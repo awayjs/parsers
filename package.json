@@ -4,10 +4,10 @@
   "description": "Parsers for AwayJS",
   "url": "http://www.away3d.com",
   "dependencies": {
-    "awayjs-core": "^0.2.0",
-    "awayjs-display": "^0.2.0",
+    "awayjs-core": "^0.2.2",
+    "awayjs-display": "^0.3.0",
     "awayjs-stagegl": "^0.5.1",
-    "awayjs-renderergl": "^0.4.0",
+    "awayjs-renderergl": "^0.6.0",
     "awayjs-methodmaterials": "^0.1.0"
   },
   "devDependencies": {
