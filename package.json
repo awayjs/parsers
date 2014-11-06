@@ -6,11 +6,11 @@
   "dependencies": {
     "awayjs-core": "^0.2.3",
     "awayjs-display": "^0.3.1",
-    "awayjs-stagegl": "^0.5.2",
     "awayjs-renderergl": "^0.6.2",
     "awayjs-methodmaterials": "^0.1.1"
   },
   "devDependencies": {
+    "awayjs-stagegl": "^0.5.2",
     "browserify": "^5.12.0",
     "exorcist": "^0.1.6",
     "glob": "^4.0.6",
