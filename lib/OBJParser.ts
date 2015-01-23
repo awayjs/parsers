@@ -18,8 +18,8 @@ import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
 
 import DefaultMaterialManager			= require("awayjs-renderergl/lib/managers/DefaultMaterialManager");
 
-import TriangleMethodMaterial			= require("awayjs-methodmaterials/lib/TriangleMethodMaterial");
-import TriangleMaterialMode				= require("awayjs-methodmaterials/lib/TriangleMaterialMode");
+import MethodMaterial					= require("awayjs-methodmaterials/lib/MethodMaterial");
+import MethodMaterialMode				= require("awayjs-methodmaterials/lib/MethodMaterialMode");
 import SpecularBasicMethod				= require("awayjs-methodmaterials/lib/methods/SpecularBasicMethod");
 
 /**
@@ -315,7 +315,7 @@ class OBJParser extends ParserBase
 
 			var m:number;
 			var sm:number;
-			var bmMaterial:TriangleMethodMaterial;
+			var bmMaterial:MethodMaterial;
 
 			for (var g:number = 0; g < numGroups; ++g) {
 				geometry = new Geometry();
@@ -331,11 +331,11 @@ class OBJParser extends ParserBase
 				// Finalize and force type-based name
 				this._pFinalizeAsset(<IAsset> geometry);//, "");
 
-				bmMaterial = new TriangleMethodMaterial(DefaultMaterialManager.getDefaultTexture());
+				bmMaterial = new MethodMaterial(DefaultMaterialManager.getDefaultTexture());
 
 				//check for multipass
 				if (this.materialMode >= 2)
-					bmMaterial.materialMode = TriangleMaterialMode.MULTI_PASS;
+					bmMaterial.mode = MethodMaterialMode.MULTI_PASS;
 
 				mesh = new Mesh(geometry, bmMaterial);
 
@@ -755,12 +755,12 @@ class OBJParser extends ParserBase
 				if (alpha == 0)
 					console.log("Warning: an alpha value of 0 was found in mtl color tag (Tr or d) ref:" + this._lastMtlID + ", mesh(es) using it will be invisible!");
 
-				var cm:TriangleMethodMaterial;
+				var cm:MethodMaterial;
 
 				if (this.materialMode < 2) {
-					cm = new TriangleMethodMaterial(color);
+					cm = new MethodMaterial(color);
 
-					var colorMat:TriangleMethodMaterial = <TriangleMethodMaterial> cm;
+					var colorMat:MethodMaterial = <MethodMaterial> cm;
 
 					colorMat.alpha = alpha;
 					colorMat.diffuseColor = diffuseColor;
@@ -772,10 +772,10 @@ class OBJParser extends ParserBase
 					}
 
 				} else {
-					cm = new TriangleMethodMaterial(color);
-					cm.materialMode = TriangleMaterialMode.MULTI_PASS;
+					cm = new MethodMaterial(color);
+					cm.mode = MethodMaterialMode.MULTI_PASS;
 
-					var colorMultiMat:TriangleMethodMaterial = <TriangleMethodMaterial> cm;
+					var colorMultiMat:MethodMaterial = <MethodMaterial> cm;
 
 
 					colorMultiMat.diffuseColor = diffuseColor;
@@ -856,7 +856,7 @@ class OBJParser extends ParserBase
 	{
 		var decomposeID;
 		var mesh:Mesh;
-		var tm:TriangleMethodMaterial;
+		var tm:MethodMaterial;
 		var j:number;
 		var specularData:SpecularData;
 
@@ -873,7 +873,7 @@ class OBJParser extends ParserBase
 
 				} else if (lm.texture) {
 					if (this.materialMode < 2) { // if materialMode is 0 or 1, we create a SinglePass
-						tm = <TriangleMethodMaterial > mesh.material;
+						tm = <MethodMaterial > mesh.material;
 
 						tm.texture = lm.texture;
 						tm.color = lm.color;
@@ -904,8 +904,8 @@ class OBJParser extends ParserBase
 							}
 						}
 					} else { //if materialMode==2 this is a MultiPassTexture
-						tm = <TriangleMethodMaterial> mesh.material;
-						tm.materialMode = TriangleMaterialMode.MULTI_PASS;
+						tm = <MethodMaterial> mesh.material;
+						tm.mode = MethodMaterialMode.MULTI_PASS;
 
 						tm.texture = lm.texture;
 						tm.color = lm.color;

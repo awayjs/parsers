@@ -61,10 +61,9 @@ import SkeletonJoint					= require("awayjs-renderergl/lib/animators/data/Skeleto
 import SkeletonClipNode					= require("awayjs-renderergl/lib/animators/nodes/SkeletonClipNode");
 import VertexClipNode					= require("awayjs-renderergl/lib/animators/nodes/VertexClipNode");
 import DefaultMaterialManager			= require("awayjs-renderergl/lib/managers/DefaultMaterialManager");
-import SkyboxMaterial					= require("awayjs-renderergl/lib/materials/SkyboxMaterial");
 
-import TriangleMaterialMode				= require("awayjs-methodmaterials/lib/TriangleMaterialMode");
-import TriangleMethodMaterial			= require("awayjs-methodmaterials/lib/TriangleMethodMaterial");
+import MethodMaterialMode				= require("awayjs-methodmaterials/lib/MethodMaterialMode");
+import MethodMaterial					= require("awayjs-methodmaterials/lib/MethodMaterial");
 import AmbientEnvMapMethod				= require("awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod");
 import DiffuseDepthMethod				= require("awayjs-methodmaterials/lib/methods/DiffuseDepthMethod");
 import DiffuseCelMethod					= require("awayjs-methodmaterials/lib/methods/DiffuseCelMethod");
@@ -125,7 +124,7 @@ class AWDParser extends ParserBase
 	private _body:ByteArray;
 	private _defaultTexture:BitmapTexture;     // HTML IMAGE TEXTURE >? !
 	private _cubeTextures:Array<any>;
-	private _defaultBitmapMaterial:TriangleMethodMaterial;
+	private _defaultBitmapMaterial:MethodMaterial;
 	private _defaultCubeTexture:BitmapCubeTexture;
 
 	public static COMPRESSIONMODE_LZMA:string = "lzma";
@@ -236,7 +235,7 @@ class AWDParser extends ParserBase
 			{
 				asset = <Texture2DBase> resourceDependency.assets[0];
 				if (asset) {
-					var mat:TriangleMethodMaterial;
+					var mat:MethodMaterial;
 					var users:Array<string>;
 
 					block = this._blocks[ resourceDependency.id ];
@@ -918,8 +917,8 @@ class AWDParser extends ParserBase
 
 			case 0:
 				//console.log("Parsed a Solid FILL: Name = " + name);
-				var material:TriangleMethodMaterial=new TriangleMethodMaterial(fill_props.get(1, 0xcccccc));
-				material.bothSides=true;
+				var material:MethodMaterial = new MethodMaterial(fill_props.get(1, 0xcccccc));
+				material.bothSides = true;
 				this._pFinalizeAsset(<IAsset> material, name);
 				this._blocks[blockID].data = material;
 				//prefab = new away.prefabs.PrimitivePlanePrefab(props.get(101, 100), props.get(102, 100), props.get(301, 1), props.get(302, 1), props.get(701, true), props.get(702, false));
@@ -1550,7 +1549,7 @@ class AWDParser extends ParserBase
 		var returnedArrayCubeTex:Array<any> = this.getAssetByID(cubeTexAddr, [AssetType.TEXTURE], "CubeTexture");
 		if ((!returnedArrayCubeTex[0]) && (cubeTexAddr != 0))
 			this._blocks[blockID].addError("Could not find the Cubetexture (ID = " + cubeTexAddr + " ) for this Skybox");
-		var asset:Skybox = new Skybox(new SkyboxMaterial(<ImageCubeTexture> returnedArrayCubeTex[1]));
+		var asset:Skybox = new Skybox(<ImageCubeTexture> returnedArrayCubeTex[1]);
 
 		this.parseProperties(null)
 		asset.extra = this.parseUserAttributes();
@@ -1774,7 +1773,7 @@ class AWDParser extends ParserBase
 		var name:string;
 		var type:number;
 		var props:AWDProperties;
-		var mat:TriangleMethodMaterial;
+		var mat:MethodMaterial;
 		var attributes:Object;
 		var finalize:boolean;
 		var num_methods:number;
@@ -1805,10 +1804,10 @@ class AWDParser extends ParserBase
 			var color:number;
 			color = props.get(1, 0xffffff);
 			if (this.materialMode < 2) {
-				mat = new TriangleMethodMaterial(color, props.get(10, 1.0));
+				mat = new MethodMaterial(color, props.get(10, 1.0));
 			} else {
-				mat = new TriangleMethodMaterial(color);
-				mat.materialMode = TriangleMaterialMode.MULTI_PASS;
+				mat = new MethodMaterial(color);
+				mat.mode = MethodMaterialMode.MULTI_PASS;
 			}
 		} else if (type === 2) {
 			var tex_addr:number = props.get(2, 0);
@@ -1818,15 +1817,15 @@ class AWDParser extends ParserBase
 			if ((!returnedArray[0]) && (tex_addr > 0))
 				this._blocks[blockID].addError("Could not find the DiffsueTexture (ID = " + tex_addr + " ) for this Material");
 
-			mat = new TriangleMethodMaterial(<Texture2DBase> returnedArray[1]);
+			mat = new MethodMaterial(<Texture2DBase> returnedArray[1]);
 
 			if (this.materialMode < 2) {
 				mat.alphaBlending = props.get(11, false);
 				mat.alpha = props.get(10, 1.0);
-				debugString += "Parsed a TriangleMethodMaterial(SinglePass): Name = '" + name + "' | Texture-Name = " + mat.name;
+				debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + name + "' | Texture-Name = " + mat.name;
 			} else {
-				mat.materialMode = TriangleMaterialMode.MULTI_PASS;
-				debugString += "Parsed a TriangleMethodMaterial(MultiPass): Name = '" + name + "' | Texture-Name = " + mat.name;
+				mat.mode = MethodMaterialMode.MULTI_PASS;
+				debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "' | Texture-Name = " + mat.name;
 			}
 		}
 
@@ -1845,7 +1844,7 @@ class AWDParser extends ParserBase
 	// Block ID = 81 AWD2.1
 	private parseMaterial_v1(blockID:number):void
 	{
-		var mat:TriangleMethodMaterial;
+		var mat:MethodMaterial;
 		var normalTexture:Texture2DBase;
 		var specTexture:Texture2DBase;
 		var returnedArray:Array<any>;
@@ -1873,12 +1872,12 @@ class AWDParser extends ParserBase
 				var color:number = props.get(1, 0xcccccc);//TODO temporarily swapped so that diffuse color goes to ambient
 
 				if (spezialType == 1) {//	MultiPassMaterial
-					mat = new TriangleMethodMaterial(color);
-					mat.materialMode = TriangleMaterialMode.MULTI_PASS;
+					mat = new MethodMaterial(color);
+					mat.mode = MethodMaterialMode.MULTI_PASS;
 					debugString += "Parsed a ColorMaterial(MultiPass): Name = '" + name + "' | ";
 
 				} else { //	SinglePassMaterial
-					mat = new TriangleMethodMaterial(color, props.get(10, 1.0));
+					mat = new MethodMaterial(color, props.get(10, 1.0));
 					mat.alphaBlending = props.get(11, false);
 					debugString += "Parsed a ColorMaterial(SinglePass): Name = '" + name + "' | ";
 				}
@@ -1888,21 +1887,21 @@ class AWDParser extends ParserBase
 				returnedArray = this.getAssetByID(tex_addr, [AssetType.TEXTURE]);
 
 				if ((!returnedArray[0]) && (tex_addr > 0))
-					this._blocks[blockID].addError("Could not find the AmbientTexture (ID = " + tex_addr + " ) for this TriangleMethodMaterial");
+					this._blocks[blockID].addError("Could not find the AmbientTexture (ID = " + tex_addr + " ) for this MethodMaterial");
 
 				var texture:Texture2DBase = returnedArray[1];
 
-				mat = new TriangleMethodMaterial(texture);
+				mat = new MethodMaterial(texture);
 
 				if (spezialType == 1) {// MultiPassMaterial
-					mat.materialMode = TriangleMaterialMode.MULTI_PASS;
+					mat.mode = MethodMaterialMode.MULTI_PASS;
 
-					debugString += "Parsed a TriangleMethodMaterial(MultiPass): Name = '" + name + "' | Texture-Name = " + texture.name;
+					debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "' | Texture-Name = " + texture.name;
 				} else {//	SinglePassMaterial
 					mat.alpha = props.get(10, 1.0);
 					mat.alphaBlending = props.get(11, false);
 
-					debugString += "Parsed a TriangleMethodMaterial(SinglePass): Name = '" + name + "' | Texture-Name = " + texture.name;
+					debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + name + "' | Texture-Name = " + texture.name;
 				}
 			}
 
@@ -1912,7 +1911,7 @@ class AWDParser extends ParserBase
 			returnedArray = this.getAssetByID(diffuseTex_addr, [AssetType.TEXTURE]);
 
 			if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
-				this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this TriangleMethodMaterial");
+				this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
 			}
 
 			if (returnedArray[0])
@@ -1928,7 +1927,7 @@ class AWDParser extends ParserBase
 			returnedArray = this.getAssetByID(normalTex_addr, [AssetType.TEXTURE]);
 
 			if ((!returnedArray[0]) && (normalTex_addr != 0)) {
-				this._blocks[blockID].addError("Could not find the NormalTexture (ID = " + normalTex_addr + " ) for this TriangleMethodMaterial");
+				this._blocks[blockID].addError("Could not find the NormalTexture (ID = " + normalTex_addr + " ) for this MethodMaterial");
 			}
 
 			if (returnedArray[0]) {
@@ -1940,7 +1939,7 @@ class AWDParser extends ParserBase
 			returnedArray = this.getAssetByID(specTex_addr, [AssetType.TEXTURE]);
 
 			if ((!returnedArray[0]) && (specTex_addr != 0)) {
-				this._blocks[blockID].addError("Could not find the SpecularTexture (ID = " + specTex_addr + " ) for this TriangleMethodMaterial");
+				this._blocks[blockID].addError("Could not find the SpecularTexture (ID = " + specTex_addr + " ) for this MethodMaterial");
 			}
 			if (returnedArray[0]) {
 				specTexture = returnedArray[1];
@@ -1951,7 +1950,7 @@ class AWDParser extends ParserBase
 			returnedArray = this.getAssetByID(lightPickerAddr, [AssetType.LIGHT_PICKER])
 
 			if ((!returnedArray[0]) && (lightPickerAddr)) {
-				this._blocks[blockID].addError("Could not find the LightPicker (ID = " + lightPickerAddr + " ) for this TriangleMethodMaterial");
+				this._blocks[blockID].addError("Could not find the LightPicker (ID = " + lightPickerAddr + " ) for this MethodMaterial");
 			} else {
 				mat.lightPicker = <LightPickerBase> returnedArray[1];
 				//debugString+=" | Lightpicker-Name = "+LightPickerBase(returnedArray[1]).name;
@@ -3196,7 +3195,7 @@ class AWDParser extends ParserBase
 	private getDefaultMaterial():IAsset
 	{
 		if (!this._defaultBitmapMaterial)
-			this._defaultBitmapMaterial = <TriangleMethodMaterial> DefaultMaterialManager.getDefaultMaterial();
+			this._defaultBitmapMaterial = <MethodMaterial> DefaultMaterialManager.getDefaultMaterial();
 
 		return  <IAsset>  this._defaultBitmapMaterial;
 	}

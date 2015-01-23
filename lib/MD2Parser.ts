@@ -19,8 +19,8 @@ import VertexClipNode					= require("awayjs-renderergl/lib/animators/nodes/Verte
 import VertexAnimationSet				= require("awayjs-renderergl/lib/animators/VertexAnimationSet");
 import DefaultMaterialManager			= require("awayjs-renderergl/lib/managers/DefaultMaterialManager");
 
-import TriangleMethodMaterial			= require("awayjs-methodmaterials/lib/TriangleMethodMaterial");
-import TriangleMaterialMode				= require("awayjs-methodmaterials/lib/TriangleMaterialMode");
+import MethodMaterial					= require("awayjs-methodmaterials/lib/MethodMaterial");
+import MethodMaterialMode				= require("awayjs-methodmaterials/lib/MethodMaterialMode");
 
 /**
  * MD2Parser provides a parser for the MD2 data type.
@@ -110,7 +110,7 @@ class MD2Parser extends ParserBase
 	/**
 	 * @inheritDoc
 	 */
-	public _iResolveDependency(resourceDependency:ResourceDependency):void
+	public _iResolveDependency(resourceDependency:ResourceDependency)
 	{
 		if (resourceDependency.assets.length != 1)
 			return;
@@ -118,10 +118,10 @@ class MD2Parser extends ParserBase
 		var asset:Texture2DBase = <Texture2DBase> resourceDependency.assets[0];
 
 		if (asset) {
-			var material:TriangleMethodMaterial = new TriangleMethodMaterial(asset);
+			var material:MethodMaterial = new MethodMaterial(asset);
 
 			if (this.materialMode >= 2)
-				material.materialMode = TriangleMaterialMode.MULTI_PASS;
+				material.mode = MethodMaterialMode.MULTI_PASS;
 
 			//add to the content property
 			(<DisplayObjectContainer> this._pContent).addChild(this._mesh);
@@ -138,14 +138,14 @@ class MD2Parser extends ParserBase
 	/**
 	 * @inheritDoc
 	 */
-	public _iResolveDependencyFailure(resourceDependency:ResourceDependency):void
+	public _iResolveDependencyFailure(resourceDependency:ResourceDependency)
 	{
 		// apply system default
 		if (this.materialMode < 2) {
 			this._mesh.material = DefaultMaterialManager.getDefaultMaterial();
 		} else {
-			this._mesh.material = new TriangleMethodMaterial(DefaultMaterialManager.getDefaultTexture());
-			(<TriangleMethodMaterial> this._mesh.material).materialMode = TriangleMaterialMode.MULTI_PASS;
+			this._mesh.material = new MethodMaterial(DefaultMaterialManager.getDefaultTexture());
+			(<MethodMaterial> this._mesh.material).mode = MethodMaterialMode.MULTI_PASS;
 		}
 
 		//add to the content property
@@ -185,8 +185,8 @@ class MD2Parser extends ParserBase
 				if (this.materialMode < 2) {
 					this._mesh.material = DefaultMaterialManager.getDefaultMaterial();
 				} else {
-					this._mesh.material = new TriangleMethodMaterial(DefaultMaterialManager.getDefaultTexture());
-					(<TriangleMethodMaterial> this._mesh.material).materialMode = TriangleMaterialMode.MULTI_PASS;
+					this._mesh.material = new MethodMaterial(DefaultMaterialManager.getDefaultTexture());
+					(<MethodMaterial> this._mesh.material).mode = MethodMaterialMode.MULTI_PASS;
 				}
 
 				//_geometry.animation = new VertexAnimation(2, VertexAnimationMode.ABSOLUTE);
@@ -236,7 +236,7 @@ class MD2Parser extends ParserBase
 	 * Reads in all that MD2 Header data that is declared as private variables.
 	 * I know its a lot, and it looks ugly, but only way to do it in Flash
 	 */
-	private parseHeader():void
+	private parseHeader()
 	{
 		this._ident = this._byteData.readInt();
 		this._version = this._byteData.readInt();
@@ -265,7 +265,7 @@ class MD2Parser extends ParserBase
 	/**
 	 * Parses the file names for the materials.
 	 */
-	private parseMaterialNames():void
+	private parseMaterialNames()
 	{
 		var url:string;
 		var name:string;
@@ -303,7 +303,7 @@ class MD2Parser extends ParserBase
 	/**
 	 * Parses the uv data for the mesh.
 	 */
-	private parseUV():void
+	private parseUV()
 	{
 		var j:number /*uint*/ = 0;
 
@@ -320,7 +320,7 @@ class MD2Parser extends ParserBase
 	/**
 	 * Parses unique indices for the faces.
 	 */
-	private parseFaces():void
+	private parseFaces()
 	{
 		var a:number /*uint*/, b:number /*uint*/, c:number /*uint*/, ta:number /*uint*/, tb:number /*uint*/, tc:number /*uint*/;
 		var i:number /*uint*/;
@@ -364,7 +364,7 @@ class MD2Parser extends ParserBase
 	 * @param vertexIndex The original index in the vertex list.
 	 * @param uvIndex The original index in the uv list.
 	 */
-	private addIndex(vertexIndex:number /*uint*/, uvIndex:number /*uint*/):void
+	private addIndex(vertexIndex:number /*uint*/, uvIndex:number /*uint*/)
 	{
 		var index:number /*int*/ = this.findIndex(vertexIndex, uvIndex);
 
@@ -397,7 +397,7 @@ class MD2Parser extends ParserBase
 	/**
 	 * Parses all the frame geometries.
 	 */
-	private parseFrames():void
+	private parseFrames()
 	{
 		var sx:number, sy:number, sz:number;
 		var tx:number, ty:number, tz:number;

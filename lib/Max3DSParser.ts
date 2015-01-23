@@ -19,8 +19,8 @@ import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
 
 import DefaultMaterialManager			= require("awayjs-renderergl/lib/managers/DefaultMaterialManager");
 
-import TriangleMethodMaterial			= require("awayjs-methodmaterials/lib/TriangleMethodMaterial");
-import TriangleMaterialMode				= require("awayjs-methodmaterials/lib/TriangleMaterialMode");
+import MethodMaterial					= require("awayjs-methodmaterials/lib/MethodMaterial");
+import MethodMaterialMode				= require("awayjs-methodmaterials/lib/MethodMaterialMode");
 
 /**
  * Max3DSParser provides a parser for the 3ds data type.
@@ -725,18 +725,18 @@ class Max3DSParser extends ParserBase
 
 	private finalizeCurrentMaterial():void
 	{
-		var mat:TriangleMethodMaterial;
+		var mat:MethodMaterial;
 
 		if (this._cur_mat.colorMap)
-			mat = new TriangleMethodMaterial(this._cur_mat.colorMap.texture || DefaultMaterialManager.getDefaultTexture());
+			mat = new MethodMaterial(this._cur_mat.colorMap.texture || DefaultMaterialManager.getDefaultTexture());
 		else
-			mat = new TriangleMethodMaterial(this._cur_mat.ambientColor);
+			mat = new MethodMaterial(this._cur_mat.ambientColor);
 
 		mat.diffuseColor = this._cur_mat.diffuseColor;
 		mat.specularColor = this._cur_mat.specularColor;
 
 		if (this.materialMode >= 2)
-			mat.materialMode = TriangleMaterialMode.MULTI_PASS
+			mat.mode = MethodMaterialMode.MULTI_PASS
 
 		mat.bothSides = this._cur_mat.twoSided;
 
