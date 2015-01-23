@@ -17,7 +17,8 @@ import StaticLightPicker			= require("awayjs-display/lib/materials/lightpickers/
 
 import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
 
-import TriangleMethodMaterial		= require("awayjs-methodmaterials/lib/TriangleMethodMaterial");
+import MethodMaterial				= require("awayjs-methodmaterials/lib/MethodMaterial");
+import MethodRendererPool			= require("awayjs-methodmaterials/lib/pool/MethodRendererPool");
 
 import AWDParser					= require("awayjs-parsers/lib/AWDParser");
 
@@ -43,7 +44,7 @@ class AWDSuzanne
 		this._token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, (event:LoaderEvent) => this.onResourceComplete(event));
 		this._token.addEventListener(AssetEvent.ASSET_COMPLETE, (event:AssetEvent) => this.onAssetComplete(event));
 
-		this._view = new View(new DefaultRenderer());
+		this._view = new View(new DefaultRenderer(MethodRendererPool));
 		this._view.camera.projection.far  = 6000;
 		this._timer = new RequestAnimationFrame(this.render, this);
 
@@ -111,7 +112,7 @@ class AWDSuzanne
 
 					this._suzanne = <Mesh> asset;
 
-					(<TriangleMethodMaterial> this._suzanne.material).lightPicker = this._lightPicker;
+					(<MethodMaterial> this._suzanne.material).lightPicker = this._lightPicker;
 					this._suzanne.y = -100;
 
 

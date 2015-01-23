@@ -25,7 +25,8 @@ import PrimitiveCapsulePrefab		= require("awayjs-display/lib/prefabs/PrimitiveCa
 
 import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
 
-import TriangleMethodMaterial		= require("awayjs-methodmaterials/lib/TriangleMethodMaterial");
+import MethodMaterial				= require("awayjs-methodmaterials/lib/MethodMaterial");
+import MethodRendererPool			= require("awayjs-methodmaterials/lib/pool/MethodRendererPool");
 
 import OBJParser					= require("awayjs-parsers/lib/OBJParser");
 
@@ -38,7 +39,7 @@ class MaterialAlphaTest
 	private view:View;
 	private raf:RequestAnimationFrame;
 	private meshes  : Array<Mesh> = new Array<Mesh>();
-	private loadedMeshMaterial:TriangleMethodMaterial;
+	private loadedMeshMaterial:MethodMaterial;
 	private light:DirectionalLight;
 	private lightB:DirectionalLight;
 	private loadedMesh:Mesh;
@@ -46,9 +47,9 @@ class MaterialAlphaTest
 	private aValues:Array<number> = Array<number>(0, .1, .5, .8, .9, .99, 1);
 	private aValuesP:number = 0;
 
-	private torusTextureMaterial:TriangleMethodMaterial;
-	private cubeColorMaterial:TriangleMethodMaterial;
-	private capsuleColorMaterial:TriangleMethodMaterial;
+	private torusTextureMaterial:MethodMaterial;
+	private cubeColorMaterial:MethodMaterial;
+	private capsuleColorMaterial:MethodMaterial;
 	private staticLightPicker:StaticLightPicker;
 
 	constructor()
@@ -56,7 +57,7 @@ class MaterialAlphaTest
 		Debug.LOG_PI_ERRORS = false;
 		Debug.THROW_ERRORS = false;
 
-		this.view = new View(new DefaultRenderer());
+		this.view = new View(new DefaultRenderer(MethodRendererPool));
 		this.raf = new RequestAnimationFrame(this.render, this);
 		this.onResize();
 
@@ -155,7 +156,7 @@ class MaterialAlphaTest
 					this.staticLightPicker = new StaticLightPicker( [this.light , this.lightB ] );
 
 					// Material for loaded mesh
-					this.loadedMeshMaterial = new TriangleMethodMaterial( tx, true, true, false );
+					this.loadedMeshMaterial = new MethodMaterial( tx, true, true, false );
 					this.loadedMeshMaterial.lightPicker = this.staticLightPicker;
 					this.loadedMeshMaterial.alpha = 1;
 					this.loadedMeshMaterial.bothSides = true;
@@ -167,7 +168,7 @@ class MaterialAlphaTest
 					var torus:PrimitiveTorusPrefab = new PrimitiveTorusPrefab(150 , 50 , 64 , 64);
 
 					// Torus Texture Material
-					this.torusTextureMaterial = new TriangleMethodMaterial(tx, true, true, false);
+					this.torusTextureMaterial = new MethodMaterial(tx, true, true, false);
 					this.torusTextureMaterial.lightPicker = this.staticLightPicker ;
 					this.torusTextureMaterial.bothSides = true;
 					this.torusTextureMaterial.alpha = .8;
@@ -184,7 +185,7 @@ class MaterialAlphaTest
 					var cube:PrimitiveCubePrefab = new PrimitiveCubePrefab(300, 300, 300, 20, 20, 20);
 
 					// Torus Color Material
-					this.cubeColorMaterial = new TriangleMethodMaterial(0x0090ff);
+					this.cubeColorMaterial = new MethodMaterial(0x0090ff);
 					this.cubeColorMaterial.lightPicker = this.staticLightPicker ;
 					this.cubeColorMaterial.alpha = .8;
 					this.cubeColorMaterial.bothSides = true;
@@ -198,7 +199,7 @@ class MaterialAlphaTest
 					this.meshes.push(cubeMesh);
 					this.view.scene.addChild(cubeMesh);
 
-					this.capsuleColorMaterial = new TriangleMethodMaterial(0x00ffff);
+					this.capsuleColorMaterial = new MethodMaterial(0x00ffff);
 					this.capsuleColorMaterial.lightPicker = this.staticLightPicker;
 
 					var capsule:PrimitiveCapsulePrefab = new PrimitiveCapsulePrefab(100, 200);

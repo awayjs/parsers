@@ -17,6 +17,8 @@ import Mesh							= require("awayjs-display/lib/entities/Mesh");
 
 import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
 
+import MethodRendererPool			= require("awayjs-methodmaterials/lib/pool/MethodRendererPool");
+
 import AWDParser					= require("awayjs-parsers/lib/AWDParser");
 
 class LightsShadowTest
@@ -46,7 +48,7 @@ class LightsShadowTest
 		this._token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, (event:LoaderEvent) => this.onResourceComplete(event));
 		this._token.addEventListener(AssetEvent.ASSET_COMPLETE, (event:AssetEvent) => this.onAssetComplete(event));
 
-		this._view = new View(new DefaultRenderer());
+		this._view = new View(new DefaultRenderer(MethodRendererPool));
 		this._view.camera.projection.far = 5000;
 		this._view.camera.y = 100;
 

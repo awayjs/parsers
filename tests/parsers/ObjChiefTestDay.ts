@@ -18,7 +18,8 @@ import StaticLightPicker			= require("awayjs-display/lib/materials/lightpickers/
 
 import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
 
-import TriangleMethodMaterial		= require("awayjs-methodmaterials/lib/TriangleMethodMaterial");
+import MethodMaterial				= require("awayjs-methodmaterials/lib/MethodMaterial");
+import MethodRendererPool			= require("awayjs-methodmaterials/lib/pool/MethodRendererPool");
 
 import OBJParser					= require("awayjs-parsers/lib/OBJParser");
 
@@ -31,9 +32,9 @@ class ObjChiefTestDay
 	private view:View;
 	private raf:RequestAnimationFrame;
 	private meshes:Array<Mesh> = new Array<Mesh>();
-	private mat:TriangleMethodMaterial;
+	private mat:MethodMaterial;
 
-	private terrainMaterial:TriangleMethodMaterial;
+	private terrainMaterial:MethodMaterial;
 
 	private light:DirectionalLight;
 
@@ -48,7 +49,7 @@ class ObjChiefTestDay
 		Debug.LOG_PI_ERRORS = false;
 		Debug.THROW_ERRORS = false;
 
-		this.view = new View(new DefaultRenderer());
+		this.view = new View(new DefaultRenderer(MethodRendererPool));
 		this.view.camera.z = -50;
 		this.view.camera.y = 20;
 		this.view.camera.projection.near = 0.1;
@@ -133,10 +134,10 @@ class ObjChiefTestDay
 					break;
 				case AssetType.TEXTURE :
 					if (event.url == 'assets/masterchief_base.png' ) {
-						this.mat = new TriangleMethodMaterial( <ImageTexture> d, true, true, false );
+						this.mat = new MethodMaterial( <ImageTexture> d, true, true, false );
 						this.mat.lightPicker = new StaticLightPicker([this.light]);
 					} else if (event.url == 'assets/stone_tx.jpg') {
-						this.terrainMaterial = new TriangleMethodMaterial(<ImageTexture> d, true, true, false);
+						this.terrainMaterial = new MethodMaterial(<ImageTexture> d, true, true, false);
 						this.terrainMaterial.lightPicker = new StaticLightPicker([this.light]);
 					}
 
