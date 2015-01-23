@@ -51,9 +51,8 @@ var SkeletonJoint = require("awayjs-renderergl/lib/animators/data/SkeletonJoint"
 var SkeletonClipNode = require("awayjs-renderergl/lib/animators/nodes/SkeletonClipNode");
 var VertexClipNode = require("awayjs-renderergl/lib/animators/nodes/VertexClipNode");
 var DefaultMaterialManager = require("awayjs-renderergl/lib/managers/DefaultMaterialManager");
-var SkyboxMaterial = require("awayjs-renderergl/lib/materials/SkyboxMaterial");
-var TriangleMaterialMode = require("awayjs-methodmaterials/lib/TriangleMaterialMode");
-var TriangleMethodMaterial = require("awayjs-methodmaterials/lib/TriangleMethodMaterial");
+var MethodMaterialMode = require("awayjs-methodmaterials/lib/MethodMaterialMode");
+var MethodMaterial = require("awayjs-methodmaterials/lib/MethodMaterial");
 var AmbientEnvMapMethod = require("awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod");
 var DiffuseDepthMethod = require("awayjs-methodmaterials/lib/methods/DiffuseDepthMethod");
 var DiffuseCelMethod = require("awayjs-methodmaterials/lib/methods/DiffuseCelMethod");
@@ -672,7 +671,7 @@ var AWDParser = (function (_super) {
         switch (fill_type) {
             case 0:
                 //console.log("Parsed a Solid FILL: Name = " + name);
-                var material = new TriangleMethodMaterial(fill_props.get(1, 0xcccccc));
+                var material = new MethodMaterial(fill_props.get(1, 0xcccccc));
                 material.bothSides = true;
                 this._pFinalizeAsset(material, name);
                 this._blocks[blockID].data = material;
@@ -1190,7 +1189,7 @@ var AWDParser = (function (_super) {
         var returnedArrayCubeTex = this.getAssetByID(cubeTexAddr, [AssetType.TEXTURE], "CubeTexture");
         if ((!returnedArrayCubeTex[0]) && (cubeTexAddr != 0))
             this._blocks[blockID].addError("Could not find the Cubetexture (ID = " + cubeTexAddr + " ) for this Skybox");
-        var asset = new Skybox(new SkyboxMaterial(returnedArrayCubeTex[1]));
+        var asset = new Skybox(returnedArrayCubeTex[1]);
         this.parseProperties(null);
         asset.extra = this.parseUserAttributes();
         this._pFinalizeAsset(asset, name);
@@ -1388,11 +1387,11 @@ var AWDParser = (function (_super) {
             var color;
             color = props.get(1, 0xffffff);
             if (this.materialMode < 2) {
-                mat = new TriangleMethodMaterial(color, props.get(10, 1.0));
+                mat = new MethodMaterial(color, props.get(10, 1.0));
             }
             else {
-                mat = new TriangleMethodMaterial(color);
-                mat.materialMode = TriangleMaterialMode.MULTI_PASS;
+                mat = new MethodMaterial(color);
+                mat.mode = MethodMaterialMode.MULTI_PASS;
             }
         }
         else if (type === 2) {
@@ -1400,15 +1399,15 @@ var AWDParser = (function (_super) {
             returnedArray = this.getAssetByID(tex_addr, [AssetType.TEXTURE]);
             if ((!returnedArray[0]) && (tex_addr > 0))
                 this._blocks[blockID].addError("Could not find the DiffsueTexture (ID = " + tex_addr + " ) for this Material");
-            mat = new TriangleMethodMaterial(returnedArray[1]);
+            mat = new MethodMaterial(returnedArray[1]);
             if (this.materialMode < 2) {
                 mat.alphaBlending = props.get(11, false);
                 mat.alpha = props.get(10, 1.0);
-                debugString += "Parsed a TriangleMethodMaterial(SinglePass): Name = '" + name + "' | Texture-Name = " + mat.name;
+                debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + name + "' | Texture-Name = " + mat.name;
             }
             else {
-                mat.materialMode = TriangleMaterialMode.MULTI_PASS;
-                debugString += "Parsed a TriangleMethodMaterial(MultiPass): Name = '" + name + "' | Texture-Name = " + mat.name;
+                mat.mode = MethodMaterialMode.MULTI_PASS;
+                debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "' | Texture-Name = " + mat.name;
             }
         }
         mat.extra = attributes;
@@ -1444,12 +1443,12 @@ var AWDParser = (function (_super) {
             if (type == 1) {
                 var color = props.get(1, 0xcccccc); //TODO temporarily swapped so that diffuse color goes to ambient
                 if (spezialType == 1) {
-                    mat = new TriangleMethodMaterial(color);
-                    mat.materialMode = TriangleMaterialMode.MULTI_PASS;
+                    mat = new MethodMaterial(color);
+                    mat.mode = MethodMaterialMode.MULTI_PASS;
                     debugString += "Parsed a ColorMaterial(MultiPass): Name = '" + name + "' | ";
                 }
                 else {
-                    mat = new TriangleMethodMaterial(color, props.get(10, 1.0));
+                    mat = new MethodMaterial(color, props.get(10, 1.0));
                     mat.alphaBlending = props.get(11, false);
                     debugString += "Parsed a ColorMaterial(SinglePass): Name = '" + name + "' | ";
                 }
@@ -1458,24 +1457,24 @@ var AWDParser = (function (_super) {
                 var tex_addr = props.get(2, 0); //TODO temporarily swapped so that diffuse texture goes to ambient
                 returnedArray = this.getAssetByID(tex_addr, [AssetType.TEXTURE]);
                 if ((!returnedArray[0]) && (tex_addr > 0))
-                    this._blocks[blockID].addError("Could not find the AmbientTexture (ID = " + tex_addr + " ) for this TriangleMethodMaterial");
+                    this._blocks[blockID].addError("Could not find the AmbientTexture (ID = " + tex_addr + " ) for this MethodMaterial");
                 var texture = returnedArray[1];
-                mat = new TriangleMethodMaterial(texture);
+                mat = new MethodMaterial(texture);
                 if (spezialType == 1) {
-                    mat.materialMode = TriangleMaterialMode.MULTI_PASS;
-                    debugString += "Parsed a TriangleMethodMaterial(MultiPass): Name = '" + name + "' | Texture-Name = " + texture.name;
+                    mat.mode = MethodMaterialMode.MULTI_PASS;
+                    debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "' | Texture-Name = " + texture.name;
                 }
                 else {
                     mat.alpha = props.get(10, 1.0);
                     mat.alphaBlending = props.get(11, false);
-                    debugString += "Parsed a TriangleMethodMaterial(SinglePass): Name = '" + name + "' | Texture-Name = " + texture.name;
+                    debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + name + "' | Texture-Name = " + texture.name;
                 }
             }
             var diffuseTexture;
             var diffuseTex_addr = props.get(17, 0);
             returnedArray = this.getAssetByID(diffuseTex_addr, [AssetType.TEXTURE]);
             if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
-                this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this TriangleMethodMaterial");
+                this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
             }
             if (returnedArray[0])
                 diffuseTexture = returnedArray[1];
@@ -1486,7 +1485,7 @@ var AWDParser = (function (_super) {
             var normalTex_addr = props.get(3, 0);
             returnedArray = this.getAssetByID(normalTex_addr, [AssetType.TEXTURE]);
             if ((!returnedArray[0]) && (normalTex_addr != 0)) {
-                this._blocks[blockID].addError("Could not find the NormalTexture (ID = " + normalTex_addr + " ) for this TriangleMethodMaterial");
+                this._blocks[blockID].addError("Could not find the NormalTexture (ID = " + normalTex_addr + " ) for this MethodMaterial");
             }
             if (returnedArray[0]) {
                 normalTexture = returnedArray[1];
@@ -1495,7 +1494,7 @@ var AWDParser = (function (_super) {
             var specTex_addr = props.get(21, 0);
             returnedArray = this.getAssetByID(specTex_addr, [AssetType.TEXTURE]);
             if ((!returnedArray[0]) && (specTex_addr != 0)) {
-                this._blocks[blockID].addError("Could not find the SpecularTexture (ID = " + specTex_addr + " ) for this TriangleMethodMaterial");
+                this._blocks[blockID].addError("Could not find the SpecularTexture (ID = " + specTex_addr + " ) for this MethodMaterial");
             }
             if (returnedArray[0]) {
                 specTexture = returnedArray[1];
@@ -1504,7 +1503,7 @@ var AWDParser = (function (_super) {
             var lightPickerAddr = props.get(22, 0);
             returnedArray = this.getAssetByID(lightPickerAddr, [AssetType.LIGHT_PICKER]);
             if ((!returnedArray[0]) && (lightPickerAddr)) {
-                this._blocks[blockID].addError("Could not find the LightPicker (ID = " + lightPickerAddr + " ) for this TriangleMethodMaterial");
+                this._blocks[blockID].addError("Could not find the LightPicker (ID = " + lightPickerAddr + " ) for this MethodMaterial");
             }
             else {
                 mat.lightPicker = returnedArray[1];
@@ -2658,7 +2657,7 @@ var BitFlags = (function () {
 module.exports = AWDParser;
 
 
-},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/textures/BitmapCubeTexture":undefined,"awayjs-core/lib/textures/ImageCubeTexture":undefined,"awayjs-core/lib/textures/ImageTexture":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/BlendMode":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/entities/TimeLine":undefined,"awayjs-display/lib/entities/timelinedata/CommandPropsDisplayObject":undefined,"awayjs-display/lib/entities/timelinedata/FrameCommand":undefined,"awayjs-display/lib/entities/timelinedata/TimeLineFrame":undefined,"awayjs-display/lib/entities/timelinedata/TimeLineObject":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-methodmaterials/lib/TriangleMaterialMode":undefined,"awayjs-methodmaterials/lib/TriangleMethodMaterial":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined,"awayjs-renderergl/lib/materials/SkyboxMaterial":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
+},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/textures/BitmapCubeTexture":undefined,"awayjs-core/lib/textures/ImageCubeTexture":undefined,"awayjs-core/lib/textures/ImageTexture":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/BlendMode":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/entities/TimeLine":undefined,"awayjs-display/lib/entities/timelinedata/CommandPropsDisplayObject":undefined,"awayjs-display/lib/entities/timelinedata/FrameCommand":undefined,"awayjs-display/lib/entities/timelinedata/TimeLineFrame":undefined,"awayjs-display/lib/entities/timelinedata/TimeLineObject":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -2676,8 +2675,8 @@ var Mesh = require("awayjs-display/lib/entities/Mesh");
 var VertexClipNode = require("awayjs-renderergl/lib/animators/nodes/VertexClipNode");
 var VertexAnimationSet = require("awayjs-renderergl/lib/animators/VertexAnimationSet");
 var DefaultMaterialManager = require("awayjs-renderergl/lib/managers/DefaultMaterialManager");
-var TriangleMethodMaterial = require("awayjs-methodmaterials/lib/TriangleMethodMaterial");
-var TriangleMaterialMode = require("awayjs-methodmaterials/lib/TriangleMaterialMode");
+var MethodMaterial = require("awayjs-methodmaterials/lib/MethodMaterial");
+var MethodMaterialMode = require("awayjs-methodmaterials/lib/MethodMaterialMode");
 /**
  * MD2Parser provides a parser for the MD2 data type.
  */
@@ -2725,9 +2724,9 @@ var MD2Parser = (function (_super) {
             return;
         var asset = resourceDependency.assets[0];
         if (asset) {
-            var material = new TriangleMethodMaterial(asset);
+            var material = new MethodMaterial(asset);
             if (this.materialMode >= 2)
-                material.materialMode = TriangleMaterialMode.MULTI_PASS;
+                material.mode = MethodMaterialMode.MULTI_PASS;
             //add to the content property
             this._pContent.addChild(this._mesh);
             material.name = this._mesh.material.name;
@@ -2747,8 +2746,8 @@ var MD2Parser = (function (_super) {
             this._mesh.material = DefaultMaterialManager.getDefaultMaterial();
         }
         else {
-            this._mesh.material = new TriangleMethodMaterial(DefaultMaterialManager.getDefaultTexture());
-            this._mesh.material.materialMode = TriangleMaterialMode.MULTI_PASS;
+            this._mesh.material = new MethodMaterial(DefaultMaterialManager.getDefaultTexture());
+            this._mesh.material.mode = MethodMaterialMode.MULTI_PASS;
         }
         //add to the content property
         this._pContent.addChild(this._mesh);
@@ -2781,8 +2780,8 @@ var MD2Parser = (function (_super) {
                     this._mesh.material = DefaultMaterialManager.getDefaultMaterial();
                 }
                 else {
-                    this._mesh.material = new TriangleMethodMaterial(DefaultMaterialManager.getDefaultTexture());
-                    this._mesh.material.materialMode = TriangleMaterialMode.MULTI_PASS;
+                    this._mesh.material = new MethodMaterial(DefaultMaterialManager.getDefaultTexture());
+                    this._mesh.material.mode = MethodMaterialMode.MULTI_PASS;
                 }
                 //_geometry.animation = new VertexAnimation(2, VertexAnimationMode.ABSOLUTE);
                 //_animator = new VertexAnimator(VertexAnimationState(_mesh.animationState));
@@ -3049,7 +3048,7 @@ var MD2Parser = (function (_super) {
 module.exports = MD2Parser;
 
 
-},{"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-methodmaterials/lib/TriangleMaterialMode":undefined,"awayjs-methodmaterials/lib/TriangleMethodMaterial":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers/lib/MD5AnimParser":[function(require,module,exports){
+},{"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers/lib/MD5AnimParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -4139,8 +4138,8 @@ var Geometry = require("awayjs-display/lib/base/Geometry");
 var TriangleSubGeometry = require("awayjs-display/lib/base/TriangleSubGeometry");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
 var DefaultMaterialManager = require("awayjs-renderergl/lib/managers/DefaultMaterialManager");
-var TriangleMethodMaterial = require("awayjs-methodmaterials/lib/TriangleMethodMaterial");
-var TriangleMaterialMode = require("awayjs-methodmaterials/lib/TriangleMaterialMode");
+var MethodMaterial = require("awayjs-methodmaterials/lib/MethodMaterial");
+var MethodMaterialMode = require("awayjs-methodmaterials/lib/MethodMaterialMode");
 /**
  * Max3DSParser provides a parser for the 3ds data type.
  */
@@ -4694,13 +4693,13 @@ var Max3DSParser = (function (_super) {
     Max3DSParser.prototype.finalizeCurrentMaterial = function () {
         var mat;
         if (this._cur_mat.colorMap)
-            mat = new TriangleMethodMaterial(this._cur_mat.colorMap.texture || DefaultMaterialManager.getDefaultTexture());
+            mat = new MethodMaterial(this._cur_mat.colorMap.texture || DefaultMaterialManager.getDefaultTexture());
         else
-            mat = new TriangleMethodMaterial(this._cur_mat.ambientColor);
+            mat = new MethodMaterial(this._cur_mat.ambientColor);
         mat.diffuseColor = this._cur_mat.diffuseColor;
         mat.specularColor = this._cur_mat.specularColor;
         if (this.materialMode >= 2)
-            mat.materialMode = TriangleMaterialMode.MULTI_PASS;
+            mat.mode = MethodMaterialMode.MULTI_PASS;
         mat.bothSides = this._cur_mat.twoSided;
         this._pFinalizeAsset(mat, this._cur_mat.name);
         this._materials[this._cur_mat.name] = this._cur_mat;
@@ -4807,7 +4806,7 @@ var VertexVO = (function () {
 module.exports = Max3DSParser;
 
 
-},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-methodmaterials/lib/TriangleMaterialMode":undefined,"awayjs-methodmaterials/lib/TriangleMethodMaterial":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers/lib/OBJParser":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers/lib/OBJParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -4824,8 +4823,8 @@ var TriangleSubGeometry = require("awayjs-display/lib/base/TriangleSubGeometry")
 var Geometry = require("awayjs-display/lib/base/Geometry");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
 var DefaultMaterialManager = require("awayjs-renderergl/lib/managers/DefaultMaterialManager");
-var TriangleMethodMaterial = require("awayjs-methodmaterials/lib/TriangleMethodMaterial");
-var TriangleMaterialMode = require("awayjs-methodmaterials/lib/TriangleMaterialMode");
+var MethodMaterial = require("awayjs-methodmaterials/lib/MethodMaterial");
+var MethodMaterialMode = require("awayjs-methodmaterials/lib/MethodMaterialMode");
 var SpecularBasicMethod = require("awayjs-methodmaterials/lib/methods/SpecularBasicMethod");
 /**
  * OBJParser provides a parser for the OBJ data type.
@@ -5044,10 +5043,10 @@ var OBJParser = (function (_super) {
                     continue;
                 // Finalize and force type-based name
                 this._pFinalizeAsset(geometry); //, "");
-                bmMaterial = new TriangleMethodMaterial(DefaultMaterialManager.getDefaultTexture());
+                bmMaterial = new MethodMaterial(DefaultMaterialManager.getDefaultTexture());
                 //check for multipass
                 if (this.materialMode >= 2)
-                    bmMaterial.materialMode = TriangleMaterialMode.MULTI_PASS;
+                    bmMaterial.mode = MethodMaterialMode.MULTI_PASS;
                 mesh = new Mesh(geometry, bmMaterial);
                 if (this._objects[objIndex].name) {
                     // this is a full independent object ('o' tag in OBJ file)
@@ -5379,7 +5378,7 @@ var OBJParser = (function (_super) {
                     console.log("Warning: an alpha value of 0 was found in mtl color tag (Tr or d) ref:" + this._lastMtlID + ", mesh(es) using it will be invisible!");
                 var cm;
                 if (this.materialMode < 2) {
-                    cm = new TriangleMethodMaterial(color);
+                    cm = new MethodMaterial(color);
                     var colorMat = cm;
                     colorMat.alpha = alpha;
                     colorMat.diffuseColor = diffuseColor;
@@ -5390,8 +5389,8 @@ var OBJParser = (function (_super) {
                     }
                 }
                 else {
-                    cm = new TriangleMethodMaterial(color);
-                    cm.materialMode = TriangleMaterialMode.MULTI_PASS;
+                    cm = new MethodMaterial(color);
+                    cm.mode = MethodMaterialMode.MULTI_PASS;
                     var colorMultiMat = cm;
                     colorMultiMat.diffuseColor = diffuseColor;
                     colorMultiMat.repeat = true;
@@ -5495,7 +5494,7 @@ var OBJParser = (function (_super) {
                     }
                     else {
                         tm = mesh.material;
-                        tm.materialMode = TriangleMaterialMode.MULTI_PASS;
+                        tm.mode = MethodMaterialMode.MULTI_PASS;
                         tm.texture = lm.texture;
                         tm.color = lm.color;
                         tm.repeat = true;
@@ -5719,7 +5718,7 @@ var Vertex = (function () {
 module.exports = OBJParser;
 
 
-},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-methodmaterials/lib/TriangleMaterialMode":undefined,"awayjs-methodmaterials/lib/TriangleMethodMaterial":undefined,"awayjs-methodmaterials/lib/methods/SpecularBasicMethod":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers/lib/Parsers":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/SpecularBasicMethod":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers/lib/Parsers":[function(require,module,exports){
 var AssetLoader = require("awayjs-core/lib/library/AssetLoader");
 var AWDParser = require("awayjs-parsers/lib/AWDParser");
 var Max3DSParser = require("awayjs-parsers/lib/Max3DSParser");
