@@ -91,11 +91,13 @@ import SpecularPhongMethod				= require("awayjs-methodmaterials/lib/methods/Spec
 import ShadowNearMethod					= require("awayjs-methodmaterials/lib/methods/ShadowNearMethod");
 import ShadowSoftMethod					= require("awayjs-methodmaterials/lib/methods/ShadowSoftMethod");
 
-import TimeLine = require("awayjs-display/lib/entities/TimeLine");
-import TimeLineFrame = require("awayjs-display/lib/entities/timelinedata/TimeLineFrame");
-import TimeLineObject = require("awayjs-display/lib/entities/timelinedata/TimeLineObject");
-import FrameCommand = require("awayjs-display/lib/entities/timelinedata/FrameCommand");
-import CommandPropsDisplayObject = require("awayjs-display/lib/entities/timelinedata/CommandPropsDisplayObject");
+import TimelineSceneGraphFactory = require("awayjs-player/lib/fl/factories/TimelineSceneGraphFactory");
+import AS2SceneGraphFactory = require("awayjs-player/lib/fl/factories/AS2SceneGraphFactory");
+import MovieClip = require("awayjs-player/lib/fl/display/MovieClip");
+import TimelineFrame = require("awayjs-player/lib/fl/timeline/TimelineFrame");
+import TimelineObject = require("awayjs-player/lib/fl/timeline/TimelineObject");
+import FrameCommand = require("awayjs-player/lib/fl/timeline/FrameCommand");
+import CommandPropsDisplayObject = require("awayjs-player/lib/fl/timeline/CommandPropsDisplayObject");
 
 /**
  * AWDParser provides a parser for the AWD data type.
@@ -554,6 +556,9 @@ class AWDParser extends ParserBase
 		this._blocks[this._cur_block_id] = block;
 
 		if ((this._version[0] == 3) && (this._version[1] == 0)) {
+            // probably should contain some info about the type of animation
+            var factory = new AS2SceneGraphFactory();
+
 			switch (type) {
 				case 2:// just because i used blockID 2 in first exporter earlier
 				case 131:
@@ -567,7 +572,7 @@ class AWDParser extends ParserBase
 					break;
 				case 4:// just because i used blockID 4 in first exporter earlier
 				case 133:
-					this.parseTimeLine(this._cur_block_id);
+					this.parseTimeLine(this._cur_block_id, factory);
 					isParsed = true;
 					break;
 			}
@@ -941,13 +946,12 @@ class AWDParser extends ParserBase
 	}
 
 	//Block ID = 4
-	private parseTimeLine(blockID:number):void {
+	private parseTimeLine(blockID:number, factory:TimelineSceneGraphFactory):void {
 
 		var i:number;
 		var j:number;
 		var k:number;
-
-		var timeLineContainer = new TimeLine();
+		var timeLineContainer = factory.createMovieClip();
 		var name = this.parseVarStr();
 		var isScene = !!this._newBlockBytes.readUnsignedByte();
 		var sceneID = this._newBlockBytes.readUnsignedByte();
@@ -961,7 +965,7 @@ class AWDParser extends ParserBase
 
 		var totalDuration = 0;
 		for (i = 0; i < numFrames; i++) {
-			var frame = new TimeLineFrame();
+			var frame = new TimelineFrame();
 			var traceString = "frame = " + i;
 
 			var frameDuration = this._newBlockBytes.readUnsignedInt();
@@ -1095,8 +1099,8 @@ class AWDParser extends ParserBase
 										}
 									}
 								}
-								var newTimeLineMesh = new TimeLineObject(<IAsset>newMesh, objectID, new CommandPropsDisplayObject());
-								timeLineContainer.addTimeLineObject(newTimeLineMesh);
+								var newTimeLineMesh = new TimelineObject(<IAsset>newMesh, objectID, new CommandPropsDisplayObject());
+								timeLineContainer.addTimelineObject(newTimeLineMesh);
 								var newCommandaddMesh = new FrameCommand(newTimeLineMesh);
 								newCommandaddMesh.commandProps = newObjectProps;
 								frame.addCommand(newCommandaddMesh);
@@ -1105,8 +1109,8 @@ class AWDParser extends ParserBase
 								var returnedArray:any[] = this.getAssetByID(resourceID, [ AssetType.TIMELINE ]);
 								if (returnedArray[0]) {
 									// timeline found. create command and add it to the frame
-									var newTimeLineTimeLine = new TimeLineObject(<TimeLine>returnedArray[1], objectID, new CommandPropsDisplayObject());
-									timeLineContainer.addTimeLineObject(newTimeLineTimeLine);
+									var newTimeLineTimeLine = new TimelineObject(<MovieClip>returnedArray[1], objectID, new CommandPropsDisplayObject());
+									timeLineContainer.addTimelineObject(newTimeLineTimeLine);
 									var newCommandAddTimeLine = new FrameCommand(newTimeLineTimeLine);
 									newCommandAddTimeLine.commandProps = newObjectProps;
 									frame.addCommand(newCommandAddTimeLine);
@@ -1114,7 +1118,7 @@ class AWDParser extends ParserBase
 							}
 						} else{
 							// get the existing TimeLineobject fronm the timeline
-							var newTimeLineUpdate = timeLineContainer.getTimeLineObjectByID(objectID);
+							var newTimeLineUpdate = timeLineContainer.getTimelineObjectByID(objectID);
 							var newCommandupdate = new FrameCommand(newTimeLineUpdate);
 							//newCommandupdate.commandProps=newObjectProps;
 							// TODO:
@@ -1126,7 +1130,7 @@ class AWDParser extends ParserBase
 
 						// Remove Object Command
 						objectID = this._newBlockBytes.readUnsignedInt();
-						var newTimeLineUpdate = timeLineContainer.getTimeLineObjectByID(objectID);
+						var newTimeLineUpdate = timeLineContainer.getTimelineObjectByID(objectID);
 						var newCommandupdate = new FrameCommand(newTimeLineUpdate);
 						newCommandupdate.activateObj = false;
 						frame.addCommand(newCommandupdate);
