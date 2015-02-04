@@ -5,7 +5,7 @@
   "url": "http://www.away3d.com",
   "dependencies": {
     "awayjs-core": "^0.2.4",
-    "awayjs-display": "^0.4.2",
+    "awayjs-display": "^0.5.0",
     "awayjs-renderergl": "^0.7.3",
     "awayjs-player": "^0.0.1",
     "awayjs-methodmaterials": "^0.2.3"
