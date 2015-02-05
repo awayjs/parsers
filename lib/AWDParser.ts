@@ -1,4 +1,5 @@
 import BitmapData						= require("awayjs-core/lib/base/BitmapData");
+import BlendMode						= require("awayjs-core/lib/base/BlendMode");
 import ColorTransform					= require("awayjs-core/lib/geom/ColorTransform");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
@@ -23,7 +24,6 @@ import TextureProxyBase					= require("awayjs-core/lib/textures/TextureProxyBase
 import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
 
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
-import BlendMode						= require("awayjs-display/lib/base/BlendMode");
 import DisplayObject					= require("awayjs-display/lib/base/DisplayObject");
 import Geometry							= require("awayjs-display/lib/base/Geometry");
 import LightBase						= require("awayjs-display/lib/base/LightBase");
