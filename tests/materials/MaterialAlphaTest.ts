@@ -1,3 +1,4 @@
+import BlendMode					= require("awayjs-core/lib/base/BlendMode");
 import LoaderEvent					= require("awayjs-core/lib/events/LoaderEvent");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import AssetLibrary					= require("awayjs-core/lib/library/AssetLibrary");
@@ -15,7 +16,6 @@ import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationF
 
 import Scene						= require("awayjs-display/lib/containers/Scene");
 import View							= require("awayjs-display/lib/containers/View");
-import BlendMode					= require("awayjs-display/lib/base/BlendMode");
 import DirectionalLight				= require("awayjs-display/lib/entities/DirectionalLight");
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
 import StaticLightPicker			= require("awayjs-display/lib/materials/lightpickers/StaticLightPicker");
