@@ -11,7 +11,7 @@
     "awayjs-methodmaterials": "^0.2.6"
   },
   "devDependencies": {
-    "awayjs-stagegl": "^0.7.0",
+    "awayjs-stagegl": "^0.7.1",
     "browserify": "^5.12.0",
     "exorcist": "^0.1.6",
     "glob": "^4.0.6",
