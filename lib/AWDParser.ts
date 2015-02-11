@@ -96,8 +96,8 @@ import AS2SceneGraphFactory = require("awayjs-player/lib/fl/factories/AS2SceneGr
 import MovieClip = require("awayjs-player/lib/fl/display/MovieClip");
 import TimelineKeyFrame = require("awayjs-player/lib/fl/timeline/TimelineKeyFrame");
 import AddChildCommand = require("awayjs-player/lib/fl/timeline/commands/AddChildCommand");
+import UpdatePropertyCommand = require("awayjs-player/lib/fl/timeline/commands/UpdatePropertyCommand");
 import RemoveChildCommand = require("awayjs-player/lib/fl/timeline/commands/RemoveChildCommand");
-import CommandPropsDisplayObject = require("awayjs-player/lib/fl/timeline/CommandPropsDisplayObject");
 
 /**
  * AWDParser provides a parser for the AWD data type.
@@ -964,20 +964,11 @@ class AWDParser extends ParserBase
 		if (this._debug)
 			console.log("Parsed a TIMELINE: Name = " + name + "| isScene = " + isScene + "| sceneID = " + sceneID + "| numFrames = " + numFrames);
 
-        console.log("****************");
-        console.log("* NEW TIMELINE *");
-        console.log("****************");
-        console.log("");
-
 		var totalDuration = 0;
 		for (i = 0; i < numFrames; i++) {
-            console.log("--------");
 
 			var frame = new TimelineKeyFrame();
 			var traceString = "frame = " + i;
-
-            console.log(traceString);
-            console.log("--------");
 
 			var frameDuration = this._newBlockBytes.readUnsignedInt();
 			frame.setFrameTime(totalDuration, frameDuration);
@@ -1010,7 +1001,7 @@ class AWDParser extends ParserBase
 					case 2:
 
 						// Place Object Command
-						var newObjectProps = new CommandPropsDisplayObject();
+                        var properties: { [key: string]: any; } = {};
 						var hasResource = !!this._newBlockBytes.readByte();
 						var hasDisplayMatrix = !!this._newBlockBytes.readByte();
 						var hasColorMatrix = !!this._newBlockBytes.readByte();
@@ -1043,7 +1034,7 @@ class AWDParser extends ParserBase
 								// TODO: set rotation and scale
 								thisMatrix.position = new Vector3D(transformArray[4], transformArray[5], 0);
 							}
-							newObjectProps.setDisplaymatrix(thisMatrix);
+							properties["_iMatrix3D"] = thisMatrix;
 							commandString += "\n                transformArray = " + transformArray;
 						}
 
@@ -1093,7 +1084,7 @@ class AWDParser extends ParserBase
 
 						var instanceName = this.parseVarStr();
 						if (instanceName.length) {
-							newObjectProps.setInstancename(instanceName);
+                            properties["name"] = instanceName;
 							commandString += "\n                instanceName = " + instanceName;
 						}
 
@@ -1114,30 +1105,28 @@ class AWDParser extends ParserBase
 											newMesh.subMeshes[k].material = returnedArray2[1];
 										}
 									}
-								}
+                                }
                                 objectIDMap[objectID] = newMesh;
-                                console.log("AddChildCommand shape " + objectID);
-								frame.addConstructCommand(new AddChildCommand(newMesh, objectID));
+                                frame.addConstructCommand(new AddChildCommand(newMesh));
 							} else {
 								// no geometry found, so we check for TIMELINE.
 								var returnedArray:any[] = this.getAssetByID(resourceID, [ AssetType.TIMELINE ]);
 								if (returnedArray[0]) {
                                     var newObj = <MovieClip>returnedArray[1];
                                     objectIDMap[objectID] = newObj;
-                                    console.log("AddChildCommand timeline " + objectID);
-                                    frame.addConstructCommand(new AddChildCommand(newObj, objectID));
+                                    frame.addConstructCommand(new AddChildCommand(newObj));
 								}
 							}
 						}
 
-                        //var object = this._objectIDMap[objectID];
-                        // TODO: Implement the actual property updates
-                        /*
-                        var newTimeLineUpdate = timeLineContainer.getTimelineObjectByID(objectID);
-                        var newCommandupdate = new FrameCommand(newTimeLineUpdate);
-                        //newCommandupdate.commandProps=newObjectProps;
-                        // TODO:
-                        frame.addCommand(newCommandupdate);*/
+                        var target = objectIDMap[objectID];
+
+                        for (var key in properties) {
+                            if (properties.hasOwnProperty(key)) {
+                                frame.addConstructCommand(new UpdatePropertyCommand(<DisplayObject>target, key, properties[key]));
+                            }
+                        }
+
                         break;
 
 					case 3:
@@ -1145,8 +1134,7 @@ class AWDParser extends ParserBase
 						// Remove Object Command
 						objectID = this._newBlockBytes.readUnsignedInt();
                         var object = objectIDMap[objectID];
-                        console.log("RemoveChildCommand " + objectID);
-						frame.addConstructCommand(new RemoveChildCommand(object, objectID));
+						frame.addConstructCommand(new RemoveChildCommand(object));
 						//newCommandupdate.commandProps=newObjectProps;
 						commandString += "\n       - Remove object with ID: " + objectID;
 						break;
