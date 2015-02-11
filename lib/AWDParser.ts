@@ -94,9 +94,9 @@ import ShadowSoftMethod					= require("awayjs-methodmaterials/lib/methods/Shadow
 import TimelineSceneGraphFactory = require("awayjs-player/lib/fl/factories/TimelineSceneGraphFactory");
 import AS2SceneGraphFactory = require("awayjs-player/lib/fl/factories/AS2SceneGraphFactory");
 import MovieClip = require("awayjs-player/lib/fl/display/MovieClip");
-import TimelineFrame = require("awayjs-player/lib/fl/timeline/TimelineFrame");
-import TimelineObject = require("awayjs-player/lib/fl/timeline/TimelineObject");
-import FrameCommand = require("awayjs-player/lib/fl/timeline/FrameCommand");
+import TimelineKeyFrame = require("awayjs-player/lib/fl/timeline/TimelineKeyFrame");
+import AddChildCommand = require("awayjs-player/lib/fl/timeline/commands/AddChildCommand");
+import RemoveChildCommand = require("awayjs-player/lib/fl/timeline/commands/RemoveChildCommand");
 import CommandPropsDisplayObject = require("awayjs-player/lib/fl/timeline/CommandPropsDisplayObject");
 
 /**
@@ -170,7 +170,7 @@ class AWDParser extends ParserBase
 		this._blocks[0] = new AWDBlock();
 		this._blocks[0].data = null; // Zero address means null in AWD
 
-		this.blendModeDic = new Array<string>(); // used to translate ints to blendMode-strings
+        this.blendModeDic = new Array<string>(); // used to translate ints to blendMode-strings
 		this.blendModeDic.push(BlendMode.NORMAL);
 		this.blendModeDic.push(BlendMode.ADD);
 		this.blendModeDic.push(BlendMode.ALPHA);
@@ -956,6 +956,7 @@ class AWDParser extends ParserBase
 		var isScene = !!this._newBlockBytes.readUnsignedByte();
 		var sceneID = this._newBlockBytes.readUnsignedByte();
 		var numFrames = this._newBlockBytes.readUnsignedShort();
+        var objectIDMap : Object = {};
 
 		// var previousTimeLine:TimeLineFrame;
 		// var fill_props:AWDProperties = this.parseProperties({1:AWDParser.UINT32});// { 1:UINT32, 6:AWDSTRING }  ); //; , 2:UINT32, 3:UINT32, 5:BOOL } );
@@ -963,10 +964,20 @@ class AWDParser extends ParserBase
 		if (this._debug)
 			console.log("Parsed a TIMELINE: Name = " + name + "| isScene = " + isScene + "| sceneID = " + sceneID + "| numFrames = " + numFrames);
 
+        console.log("****************");
+        console.log("* NEW TIMELINE *");
+        console.log("****************");
+        console.log("");
+
 		var totalDuration = 0;
 		for (i = 0; i < numFrames; i++) {
-			var frame = new TimelineFrame();
+            console.log("--------");
+
+			var frame = new TimelineKeyFrame();
 			var traceString = "frame = " + i;
+
+            console.log(traceString);
+            console.log("--------");
 
 			var frameDuration = this._newBlockBytes.readUnsignedInt();
 			frame.setFrameTime(totalDuration, frameDuration);
@@ -977,7 +988,8 @@ class AWDParser extends ParserBase
 			for (j = 0; j < numLabels; j++) {
 				var labelType = this._newBlockBytes.readUnsignedByte();
 				var label = this.parseVarStr();
-				frame.addLabel(label, labelType);
+                // TODO: Handle labels differently
+                //timeLineContainer.addFrameLabel(new FrameLabel(label, labelType, frame));
 				traceString += "\n     label = " + label + " - labelType = " + labelType;
 			}
 
@@ -987,6 +999,10 @@ class AWDParser extends ParserBase
 				var objectID:number;
 				var resourceID:number;
 				var commandType = this._newBlockBytes.readUnsignedShort();
+
+                // 1 = UpdateObject (also used to input new object)
+                // 3 = remove object
+                // 4 = add / update sound
 
 				switch (commandType) {
 
@@ -1099,41 +1115,38 @@ class AWDParser extends ParserBase
 										}
 									}
 								}
-								var newTimeLineMesh = new TimelineObject(<IAsset>newMesh, objectID, new CommandPropsDisplayObject());
-								timeLineContainer.addTimelineObject(newTimeLineMesh);
-								var newCommandaddMesh = new FrameCommand(newTimeLineMesh);
-								newCommandaddMesh.commandProps = newObjectProps;
-								frame.addCommand(newCommandaddMesh);
+                                objectIDMap[objectID] = newMesh;
+                                console.log("AddChildCommand shape " + objectID);
+								frame.addConstructCommand(new AddChildCommand(newMesh, objectID));
 							} else {
 								// no geometry found, so we check for TIMELINE.
 								var returnedArray:any[] = this.getAssetByID(resourceID, [ AssetType.TIMELINE ]);
 								if (returnedArray[0]) {
-									// timeline found. create command and add it to the frame
-									var newTimeLineTimeLine = new TimelineObject(<MovieClip>returnedArray[1], objectID, new CommandPropsDisplayObject());
-									timeLineContainer.addTimelineObject(newTimeLineTimeLine);
-									var newCommandAddTimeLine = new FrameCommand(newTimeLineTimeLine);
-									newCommandAddTimeLine.commandProps = newObjectProps;
-									frame.addCommand(newCommandAddTimeLine);
+                                    var newObj = <MovieClip>returnedArray[1];
+                                    objectIDMap[objectID] = newObj;
+                                    console.log("AddChildCommand timeline " + objectID);
+                                    frame.addConstructCommand(new AddChildCommand(newObj, objectID));
 								}
 							}
-						} else{
-							// get the existing TimeLineobject fronm the timeline
-							var newTimeLineUpdate = timeLineContainer.getTimelineObjectByID(objectID);
-							var newCommandupdate = new FrameCommand(newTimeLineUpdate);
-							//newCommandupdate.commandProps=newObjectProps;
-							// TODO:
-							frame.addCommand(newCommandupdate);
 						}
-						break;
+
+                        //var object = this._objectIDMap[objectID];
+                        // TODO: Implement the actual property updates
+                        /*
+                        var newTimeLineUpdate = timeLineContainer.getTimelineObjectByID(objectID);
+                        var newCommandupdate = new FrameCommand(newTimeLineUpdate);
+                        //newCommandupdate.commandProps=newObjectProps;
+                        // TODO:
+                        frame.addCommand(newCommandupdate);*/
+                        break;
 
 					case 3:
 
 						// Remove Object Command
 						objectID = this._newBlockBytes.readUnsignedInt();
-						var newTimeLineUpdate = timeLineContainer.getTimelineObjectByID(objectID);
-						var newCommandupdate = new FrameCommand(newTimeLineUpdate);
-						newCommandupdate.activateObj = false;
-						frame.addCommand(newCommandupdate);
+                        var object = objectIDMap[objectID];
+                        console.log("RemoveChildCommand " + objectID);
+						frame.addConstructCommand(new RemoveChildCommand(object, objectID));
 						//newCommandupdate.commandProps=newObjectProps;
 						commandString += "\n       - Remove object with ID: " + objectID;
 						break;
@@ -1158,8 +1171,9 @@ class AWDParser extends ParserBase
 
 			var length_code = this._newBlockBytes.readUnsignedInt();
 			if (length_code > 0) {
+                // TODO: Script should probably not be attached to keyframes?
 				var frame_code = this._newBlockBytes.readUTFBytes(length_code);
-				frame.addToScript(frame_code);
+				//frame.addToScript(frame_code);
 				traceString += "\nframe-code = " + frame_code;
 			}
 			traceString += commandString;

@@ -1,211 +1,4 @@
-require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-/**
- * TimelineFrame holds 3 list of FrameCommands
- *  - list1 _frameCommands should be  executed when playing the timeline (previous Frame was played)
- *  - list2 _frameCommandsReverse should be executed when playing the timeline reversed (previous Frame was played)
- *  - list3 _frameCommandsInit should be executed when jumping to a frame, so we need to fully init the frame
- *
- *  Addionial TimelineFrame properties are:
- *  - script - can be executed, after the frameCommands have been executed
- *  - list of FrameLabels, and list of corresponding labelTypes
- *  - duration-value (1 frame is not necessary 1 frame long)
- *  - startTime and endTime are needed internally when deciding what frame to display
- */
-var TimelineFrame = (function () {
-    function TimelineFrame() {
-        this._isDirty = true;
-        this._script = "";
-        this._duration = 1; //use millisecs for duration ? or frames ?
-        this._frameCommands = new Array();
-        this._frameCommandsReverse = new Array();
-        this._frameCommandsInit = new Array();
-        this._framelabels = new Array();
-        this._labelTypes = new Array();
-    }
-    TimelineFrame.prototype.addCommand = function (newCommand) {
-        // make the timeline available for the commands
-        this._frameCommands.push(newCommand);
-    };
-    TimelineFrame.prototype.addCommandReverse = function (newCommand) {
-        // make the timeline available for the commands
-        this._frameCommandsReverse.push(newCommand);
-    };
-    TimelineFrame.prototype.addCommandInit = function (newCommand) {
-        // make the timeline available for the commands
-        this._frameCommandsInit.push(newCommand);
-    };
-    TimelineFrame.prototype.addLabel = function (label, type) {
-        this._framelabels.push(label);
-        this._labelTypes.push(type);
-    };
-    Object.defineProperty(TimelineFrame.prototype, "framelabels", {
-        get: function () {
-            return this._framelabels;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TimelineFrame.prototype, "labelTypes", {
-        get: function () {
-            return this._labelTypes;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TimelineFrame.prototype, "script", {
-        get: function () {
-            return this._script;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    TimelineFrame.prototype.addToScript = function (newscript) {
-        this._script += newscript;
-    };
-    Object.defineProperty(TimelineFrame.prototype, "isDirty", {
-        get: function () {
-            return this._isDirty;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    TimelineFrame.prototype.makeDirty = function () {
-        this._isDirty = true;
-    };
-    Object.defineProperty(TimelineFrame.prototype, "startTime", {
-        get: function () {
-            return this._startTime;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TimelineFrame.prototype, "duration", {
-        get: function () {
-            return this._duration;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TimelineFrame.prototype, "endTime", {
-        get: function () {
-            return this._endTime;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    TimelineFrame.prototype.setFrameTime = function (startTime, duration) {
-        this._startTime = startTime;
-        this._duration = duration;
-        this._endTime = startTime + duration;
-    };
-    /**
-     * executes the set of Commands for this Frame.
-     * Each Frame has 3 sets of commands:
-     *  0 = init frame commands = the frame must be init as if previous frame was not played
-     *  1 = play frame commands = the previous frame was played
-     *  2 = playReverse Commands = the next frame was played
-     */
-    TimelineFrame.prototype.executeCommands = function (commandSet, time, speed) {
-        // execute all the  frame commands for this frame
-        if (commandSet == 0) {
-            for (var i = 0; i < this._frameCommandsInit.length; i++) {
-                this._frameCommandsInit[i].execute(time, speed);
-            }
-        }
-        else if (commandSet == 1) {
-            for (var i = 0; i < this._frameCommands.length; i++) {
-                this._frameCommands[i].execute(time, speed);
-            }
-        }
-        else if (commandSet == 2) {
-            for (var i = 0; i < this._frameCommandsReverse.length; i++) {
-                this._frameCommandsReverse[i].execute(time, speed);
-            }
-        }
-        // mark this frame as not dirty, so it will not get executed again, unless Timeline makes it dirty again.
-        // whenever a Frame is entered, the Timeline should mark the previous frame as dirty.
-        this._isDirty = false;
-    };
-    return TimelineFrame;
-})();
-module.exports = TimelineFrame;
-
-
-},{}],2:[function(require,module,exports){
-/**
- * TimeLineObject represents a unique object that is (or will be) used by a TimeLine.
- *  A TimeLineObject basically consists of an objID, and an IAsset.
- *  The FrameCommands hold references to these TimeLineObjects, so they can access and modify the IAssets
-
- */
-var TimelineObject = (function () {
-    function TimelineObject(asset, objID, deactiveCommandProps) {
-        this._asset = asset;
-        this._objID = objID;
-        this._is2D = true;
-        this._isActive = false;
-        this._deactivateCommandProps = deactiveCommandProps;
-        this._deactivateCommandProps.deactivate(this._asset);
-    }
-    Object.defineProperty(TimelineObject.prototype, "deactivateCommandProps", {
-        set: function (newCommandprops) {
-            this._deactivateCommandProps = newCommandprops;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    TimelineObject.prototype.deactivate = function () {
-        //if(this._deactivateCommandProps==undefined)
-        //    return;
-        this._deactivateCommandProps.deactivate(this._asset);
-        this._isActive = false;
-    };
-    Object.defineProperty(TimelineObject.prototype, "asset", {
-        get: function () {
-            return this._asset;
-        },
-        set: function (newAsset) {
-            this._asset = newAsset;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TimelineObject.prototype, "objID", {
-        get: function () {
-            return this._objID;
-        },
-        set: function (newobjID) {
-            this._objID = newobjID;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TimelineObject.prototype, "is2D", {
-        get: function () {
-            return this._is2D;
-        },
-        set: function (newis2D) {
-            this._is2D = newis2D;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TimelineObject.prototype, "isActive", {
-        get: function () {
-            return this._isActive;
-        },
-        set: function (newisActive) {
-            this._isActive = newisActive;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return TimelineObject;
-})();
-module.exports = TimelineObject;
-
-
-},{}],"awayjs-parsers/lib/AWDParser":[function(require,module,exports){
+require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"awayjs-parsers\\lib\\AWDParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -285,9 +78,9 @@ var SpecularPhongMethod = require("awayjs-methodmaterials/lib/methods/SpecularPh
 var ShadowNearMethod = require("awayjs-methodmaterials/lib/methods/ShadowNearMethod");
 var ShadowSoftMethod = require("awayjs-methodmaterials/lib/methods/ShadowSoftMethod");
 var AS2SceneGraphFactory = require("awayjs-player/lib/fl/factories/AS2SceneGraphFactory");
-var TimelineFrame = require("awayjs-player/lib/fl/timeline/TimelineFrame");
-var TimelineObject = require("awayjs-player/lib/fl/timeline/TimelineObject");
-var FrameCommand = require("awayjs-player/lib/fl/timeline/FrameCommand");
+var TimelineKeyFrame = require("awayjs-player/lib/fl/timeline/TimelineKeyFrame");
+var AddChildCommand = require("awayjs-player/lib/fl/timeline/commands/AddChildCommand");
+var RemoveChildCommand = require("awayjs-player/lib/fl/timeline/commands/RemoveChildCommand");
 var CommandPropsDisplayObject = require("awayjs-player/lib/fl/timeline/CommandPropsDisplayObject");
 /**
  * AWDParser provides a parser for the AWD data type.
@@ -910,14 +703,22 @@ var AWDParser = (function (_super) {
         var isScene = !!this._newBlockBytes.readUnsignedByte();
         var sceneID = this._newBlockBytes.readUnsignedByte();
         var numFrames = this._newBlockBytes.readUnsignedShort();
+        var objectIDMap = {};
         // var previousTimeLine:TimeLineFrame;
         // var fill_props:AWDProperties = this.parseProperties({1:AWDParser.UINT32});// { 1:UINT32, 6:AWDSTRING }  ); //; , 2:UINT32, 3:UINT32, 5:BOOL } );
         if (this._debug)
             console.log("Parsed a TIMELINE: Name = " + name + "| isScene = " + isScene + "| sceneID = " + sceneID + "| numFrames = " + numFrames);
+        console.log("****************");
+        console.log("* NEW TIMELINE *");
+        console.log("****************");
+        console.log("");
         var totalDuration = 0;
         for (i = 0; i < numFrames; i++) {
-            var frame = new TimelineFrame();
+            console.log("--------");
+            var frame = new TimelineKeyFrame();
             var traceString = "frame = " + i;
+            console.log(traceString);
+            console.log("--------");
             var frameDuration = this._newBlockBytes.readUnsignedInt();
             frame.setFrameTime(totalDuration, frameDuration);
             totalDuration += frameDuration;
@@ -926,7 +727,8 @@ var AWDParser = (function (_super) {
             for (j = 0; j < numLabels; j++) {
                 var labelType = this._newBlockBytes.readUnsignedByte();
                 var label = this.parseVarStr();
-                frame.addLabel(label, labelType);
+                // TODO: Handle labels differently
+                //timeLineContainer.addFrameLabel(new FrameLabel(label, labelType, frame));
                 traceString += "\n     label = " + label + " - labelType = " + labelType;
             }
             var numCommands = this._newBlockBytes.readUnsignedShort();
@@ -1029,41 +831,28 @@ var AWDParser = (function (_super) {
                                         }
                                     }
                                 }
-                                var newTimeLineMesh = new TimelineObject(newMesh, objectID, new CommandPropsDisplayObject());
-                                timeLineContainer.addTimelineObject(newTimeLineMesh);
-                                var newCommandaddMesh = new FrameCommand(newTimeLineMesh);
-                                newCommandaddMesh.commandProps = newObjectProps;
-                                frame.addCommand(newCommandaddMesh);
+                                objectIDMap[objectID] = newMesh;
+                                console.log("AddChildCommand shape " + objectID);
+                                frame.addConstructCommand(new AddChildCommand(newMesh, objectID));
                             }
                             else {
                                 // no geometry found, so we check for TIMELINE.
                                 var returnedArray = this.getAssetByID(resourceID, [AssetType.TIMELINE]);
                                 if (returnedArray[0]) {
-                                    // timeline found. create command and add it to the frame
-                                    var newTimeLineTimeLine = new TimelineObject(returnedArray[1], objectID, new CommandPropsDisplayObject());
-                                    timeLineContainer.addTimelineObject(newTimeLineTimeLine);
-                                    var newCommandAddTimeLine = new FrameCommand(newTimeLineTimeLine);
-                                    newCommandAddTimeLine.commandProps = newObjectProps;
-                                    frame.addCommand(newCommandAddTimeLine);
+                                    var newObj = returnedArray[1];
+                                    objectIDMap[objectID] = newObj;
+                                    console.log("AddChildCommand timeline " + objectID);
+                                    frame.addConstructCommand(new AddChildCommand(newObj, objectID));
                                 }
                             }
-                        }
-                        else {
-                            // get the existing TimeLineobject fronm the timeline
-                            var newTimeLineUpdate = timeLineContainer.getTimelineObjectByID(objectID);
-                            var newCommandupdate = new FrameCommand(newTimeLineUpdate);
-                            //newCommandupdate.commandProps=newObjectProps;
-                            // TODO:
-                            frame.addCommand(newCommandupdate);
                         }
                         break;
                     case 3:
                         // Remove Object Command
                         objectID = this._newBlockBytes.readUnsignedInt();
-                        var newTimeLineUpdate = timeLineContainer.getTimelineObjectByID(objectID);
-                        var newCommandupdate = new FrameCommand(newTimeLineUpdate);
-                        newCommandupdate.activateObj = false;
-                        frame.addCommand(newCommandupdate);
+                        var object = objectIDMap[objectID];
+                        console.log("RemoveChildCommand " + objectID);
+                        frame.addConstructCommand(new RemoveChildCommand(object, objectID));
                         //newCommandupdate.commandProps=newObjectProps;
                         commandString += "\n       - Remove object with ID: " + objectID;
                         break;
@@ -1082,8 +871,9 @@ var AWDParser = (function (_super) {
             }
             var length_code = this._newBlockBytes.readUnsignedInt();
             if (length_code > 0) {
+                // TODO: Script should probably not be attached to keyframes?
                 var frame_code = this._newBlockBytes.readUTFBytes(length_code);
-                frame.addToScript(frame_code);
+                //frame.addToScript(frame_code);
                 traceString += "\nframe-code = " + frame_code;
             }
             traceString += commandString;
@@ -2866,7 +2656,7 @@ var BitFlags = (function () {
 module.exports = AWDParser;
 
 
-},{"awayjs-core/lib/base/BlendMode":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/textures/BitmapCubeTexture":undefined,"awayjs-core/lib/textures/ImageCubeTexture":undefined,"awayjs-core/lib/textures/ImageTexture":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-player/lib/fl/factories/AS2SceneGraphFactory":undefined,"awayjs-player/lib/fl/timeline/CommandPropsDisplayObject":undefined,"awayjs-player/lib/fl/timeline/FrameCommand":undefined,"awayjs-player/lib/fl/timeline/TimelineFrame":1,"awayjs-player/lib/fl/timeline/TimelineObject":2,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
+},{"awayjs-core/lib/base/BlendMode":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/textures/BitmapCubeTexture":undefined,"awayjs-core/lib/textures/ImageCubeTexture":undefined,"awayjs-core/lib/textures/ImageTexture":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-player/lib/fl/factories/AS2SceneGraphFactory":undefined,"awayjs-player/lib/fl/timeline/CommandPropsDisplayObject":undefined,"awayjs-player/lib/fl/timeline/TimelineKeyFrame":undefined,"awayjs-player/lib/fl/timeline/commands/AddChildCommand":undefined,"awayjs-player/lib/fl/timeline/commands/RemoveChildCommand":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers\\lib\\MD2Parser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -3257,7 +3047,7 @@ var MD2Parser = (function (_super) {
 module.exports = MD2Parser;
 
 
-},{"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers/lib/MD5AnimParser":[function(require,module,exports){
+},{"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers\\lib\\MD5AnimParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -3778,7 +3568,7 @@ var HierarchyData = (function () {
 module.exports = MD5AnimParser;
 
 
-},{"awayjs-core/lib/geom/Quaternion":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined}],"awayjs-parsers/lib/MD5MeshParser":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Quaternion":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined}],"awayjs-parsers\\lib\\MD5MeshParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -4328,7 +4118,7 @@ var MeshData = (function () {
 module.exports = MD5MeshParser;
 
 
-},{"awayjs-core/lib/geom/Quaternion":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined}],"awayjs-parsers/lib/Max3DSParser":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Quaternion":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined}],"awayjs-parsers\\lib\\Max3DSParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -5015,7 +4805,7 @@ var VertexVO = (function () {
 module.exports = Max3DSParser;
 
 
-},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers/lib/OBJParser":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers\\lib\\OBJParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -5927,7 +5717,7 @@ var Vertex = (function () {
 module.exports = OBJParser;
 
 
-},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/SpecularBasicMethod":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers/lib/Parsers":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/SpecularBasicMethod":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers\\lib\\Parsers":[function(require,module,exports){
 var AssetLoader = require("awayjs-core/lib/library/AssetLoader");
 var AWDParser = require("awayjs-parsers/lib/AWDParser");
 var Max3DSParser = require("awayjs-parsers/lib/Max3DSParser");
