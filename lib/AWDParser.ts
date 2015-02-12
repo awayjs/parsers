@@ -1071,7 +1071,7 @@ class AWDParser extends ParserBase
 						if (hasVisibilityChange) {
 							var newVisibility = Boolean(this._newBlockBytes.readByte());
 							commandString += "\n                Visibitily = " + newVisibility;
-							// TODO: set visibilityChange on objectProps
+                            properties["visible"] = newVisibility;
 						}
 
 						var numFills = this._newBlockBytes.readUnsignedShort();
@@ -1123,7 +1123,7 @@ class AWDParser extends ParserBase
 
                         for (var key in properties) {
                             if (properties.hasOwnProperty(key)) {
-                                frame.addConstructCommand(new UpdatePropertyCommand(<DisplayObject>target, key, properties[key]));
+                                frame.addConstructCommand(new UpdatePropertyCommand(target, key, properties[key]));
                             }
                         }
 
