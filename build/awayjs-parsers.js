@@ -382,7 +382,7 @@ var AWDParser = (function (_super) {
                     break;
             }
         }
-        else if ((this._version[0] == 2) && (this._version[1] == 1)) {
+        if ((this._version[0] > 2) || ((this._version[0] >= 2) && (this._version[1] >= 1))) {
             switch (type) {
                 case 11:
                     this.parsePrimitves(this._cur_block_id);
@@ -893,17 +893,19 @@ var AWDParser = (function (_super) {
         // Loop through sub meshes
         var subs_parsed = 0;
         while (subs_parsed < num_subs) {
+            var is_2d_geom = false;
             var i;
             var sm_len, sm_end;
-            var sub_geom;
             var w_indices;
             var weights;
             sm_len = this._newBlockBytes.readUnsignedInt();
             sm_end = this._newBlockBytes.position + sm_len;
-            // Ignore for now
             var subProps = this.parseProperties({ 1: this._geoNrType, 2: this._geoNrType });
             while (this._newBlockBytes.position < sm_end) {
                 var idx = 0;
+                var uv_idx = 0;
+                var n_idx = 0;
+                var t_idx = 0;
                 var str_ftype, str_type, str_len, str_end;
                 // Type, field type, length
                 str_type = this._newBlockBytes.readUnsignedByte();
@@ -914,7 +916,6 @@ var AWDParser = (function (_super) {
                 if (str_type == 1) {
                     var verts = new Array();
                     while (this._newBlockBytes.position < str_end) {
-                        // TODO: Respect stream field type
                         x = this.readNumber(this._accuracyGeo);
                         y = this.readNumber(this._accuracyGeo);
                         z = this.readNumber(this._accuracyGeo);
@@ -926,7 +927,6 @@ var AWDParser = (function (_super) {
                 else if (str_type == 2) {
                     var indices = new Array();
                     while (this._newBlockBytes.position < str_end) {
-                        // TODO: Respect stream field type
                         indices[idx++] = this._newBlockBytes.readUnsignedShort();
                     }
                 }
@@ -945,7 +945,7 @@ var AWDParser = (function (_super) {
                 else if (str_type == 6) {
                     w_indices = Array();
                     while (this._newBlockBytes.position < str_end) {
-                        w_indices[idx++] = this._newBlockBytes.readUnsignedShort() * 3; // TODO: Respect stream field type
+                        w_indices[idx++] = this._newBlockBytes.readUnsignedShort() * 3;
                     }
                 }
                 else if (str_type == 7) {
@@ -954,11 +954,86 @@ var AWDParser = (function (_super) {
                         weights[idx++] = this.readNumber(this._accuracyGeo);
                     }
                 }
+                else if (str_type == 8) {
+                    this._newBlockBytes.position = str_end;
+                }
+                else if (str_type == 9) {
+                    this._newBlockBytes.position = str_end;
+                }
+                else if (str_type == 10) {
+                    var x, y, z;
+                    var type;
+                    var r, g, b, a;
+                    var u, v;
+                    var verts = new Array();
+                    var uvs = new Array();
+                    var normals = new Array();
+                    var tangents = new Array();
+                    while (this._newBlockBytes.position < str_end) {
+                        x = this.readNumber(this._accuracyGeo);
+                        y = this.readNumber(this._accuracyGeo);
+                        z = -0.1 * subs_parsed;
+                        //z = subs_parsed;
+                        //z = (blockID*0.001) + subs_parsed
+                        type = this.readNumber(this._accuracyGeo);
+                        u = this.readNumber(this._accuracyGeo);
+                        v = this.readNumber(this._accuracyGeo);
+                        /* r = this.readNumber(this._accuracyGeo);
+                         g = this.readNumber(this._accuracyGeo);
+                         b = this.readNumber(this._accuracyGeo);
+                         a = this.readNumber(this._accuracyGeo);*/
+                        // while this is true, be parse the vertex-data, so it can be rendered as "normal" 3d-geometry
+                        if (true) {
+                            uvs[idx] = 0.0;
+                            normals[idx] = 0.0;
+                            verts[idx++] = x;
+                            uvs[idx] = 0.0;
+                            normals[idx] = 0.0;
+                            verts[idx++] = y;
+                            normals[idx] = 1.0;
+                            verts[idx++] = z;
+                        }
+                        else {
+                            // parse and set-data, so the 3d-geometry contains all data (but is no longer valid for normal 3d-render)
+                            // away3d-vertexdata    |   awayJS-shape-data
+                            // -----------------------------------------------------------------------
+                            // pos.x                |   pos.x
+                            // pos.y                |   pos.y
+                            // pos.z                |   pos.z (for now we just use this as depth (set each subgeo to its own depth))
+                            // normal.x             |   curve-type (0:notCurved, 1: convex, 2:concave)
+                            // normal.y             |   alpha
+                            // normal.z             |   not used
+                            // uv.u                 |   curve.u
+                            // uv.v                 |   curve.v
+                            // tangent.x            |   red
+                            // tangent.y            |   green
+                            // tangent.z            |   blue
+                            verts[idx++] = x;
+                            //uv2[idx] = x;
+                            verts[idx++] = y;
+                            //uv2[idx] = y;
+                            verts[idx++] = z;
+                            uvs[uv_idx++] = u;
+                            uvs[uv_idx++] = v;
+                            normals[n_idx++] = type;
+                            normals[n_idx++] = a;
+                            normals[n_idx++] = 0;
+                            // trace("r=" + r + " g=" + g + " b=" + b + " a=" + a);
+                            tangents[t_idx++] = r;
+                            tangents[t_idx++] = g;
+                            tangents[t_idx++] = b;
+                        }
+                    }
+                }
+                else if (str_type == 11) {
+                    this._newBlockBytes.position = str_end;
+                }
                 else {
                     this._newBlockBytes.position = str_end;
                 }
             }
             this.parseUserAttributes(); // Ignore sub-mesh attributes for now
+            var sub_geom;
             sub_geom = new TriangleSubGeometry(true);
             if (weights)
                 sub_geom.jointsPerVertex = weights.length / (verts.length / 3);
@@ -966,6 +1041,11 @@ var AWDParser = (function (_super) {
                 sub_geom.autoDeriveNormals = false;
             if (uvs)
                 sub_geom.autoDeriveUVs = false;
+            sub_geom.autoDeriveNormals = false;
+            // when rendering as "normal" 3d-geometry, we need to autoDerive tangents
+            if (true) {
+                sub_geom.autoDeriveTangents = true;
+            }
             sub_geom.updateIndices(indices);
             sub_geom.updatePositions(verts);
             sub_geom.updateVertexNormals(normals);
