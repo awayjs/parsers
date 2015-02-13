@@ -33,7 +33,7 @@ class AWDParserTest
 		Debug.LOG_PI_ERRORS = true;
 		Debug.THROW_ERRORS = false;
 
-		AssetLibrary.enableParser(AWDParser) ;
+		AssetLibrary.enableParser(AWDParser);
 
 		this._token = AssetLibrary.load(new URLRequest('assets/suzanne.awd'));
 		this._token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, (event:LoaderEvent) => this.onResourceComplete(event));

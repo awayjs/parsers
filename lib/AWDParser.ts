@@ -956,7 +956,7 @@ class AWDParser extends ParserBase
 		var isScene = !!this._newBlockBytes.readUnsignedByte();
 		var sceneID = this._newBlockBytes.readUnsignedByte();
 		var numFrames = this._newBlockBytes.readUnsignedShort();
-        var objectIDMap : Object = {};
+        var objectIDMap : { [id:string]:number; } = {};
 
 		// var previousTimeLine:TimeLineFrame;
 		// var fill_props:AWDProperties = this.parseProperties({1:AWDParser.UINT32});// { 1:UINT32, 6:AWDSTRING }  ); //; , 2:UINT32, 3:UINT32, 5:BOOL } );
@@ -1091,39 +1091,37 @@ class AWDParser extends ParserBase
 						// if this is a "ADD NEW OBJECT"-command,
 						// we need to lookup the new object by AWD ID.
 						if (hasResource) {
+                            var newChild;
 							// sound is added to timeline with dedicated Command, as it is no display-object (has no matrix etc)
 							// check if a Geometry can be found at the resourceID (AWD-ID)
 							var returnedArray:any[] = this.getAssetByID(resourceID, [ AssetType.GEOMETRY ]);
 							if (returnedArray[0]) {
 								var geom = <Geometry>returnedArray[1];
-								var newMesh = new Mesh(geom);
+                                newChild = new Mesh(geom);
 								// geometry found. create new Command, add the props and the materials to it
 								for (k = 0; k < numFills; k++) {
 									var returnedArray2:any[] = this.getAssetByID(fillsIDs[k], [ AssetType.MATERIAL ]);
-									if (returnedArray2[0]) {
-										if (newMesh.subMeshes.length > k) {
-											newMesh.subMeshes[k].material = returnedArray2[1];
-										}
-									}
+									if (returnedArray2[0] && newChild.subMeshes.length > k)
+                                        newChild.subMeshes[k].material = returnedArray2[1];
                                 }
-                                objectIDMap[objectID] = newMesh;
-                                frame.addConstructCommand(new AddChildCommand(newMesh));
+
 							} else {
 								// no geometry found, so we check for TIMELINE.
 								var returnedArray:any[] = this.getAssetByID(resourceID, [ AssetType.TIMELINE ]);
-								if (returnedArray[0]) {
-                                    var newObj = <MovieClip>returnedArray[1];
-                                    objectIDMap[objectID] = newObj;
-                                    frame.addConstructCommand(new AddChildCommand(newObj));
-								}
+								if (returnedArray[0])
+                                    newChild = <MovieClip>returnedArray[1];
 							}
+
+                            var instanceID = timeLineContainer.registerPotentialChild(newChild);
+                            objectIDMap[objectID] = instanceID;
+                            frame.addConstructCommand(new AddChildCommand(instanceID));
 						}
 
-                        var target = objectIDMap[objectID];
+                        var instanceID = objectIDMap[objectID];
 
                         for (var key in properties) {
                             if (properties.hasOwnProperty(key)) {
-                                frame.addConstructCommand(new UpdatePropertyCommand(target, key, properties[key]));
+                                frame.addConstructCommand(new UpdatePropertyCommand(instanceID, key, properties[key]));
                             }
                         }
 
@@ -1133,9 +1131,8 @@ class AWDParser extends ParserBase
 
 						// Remove Object Command
 						objectID = this._newBlockBytes.readUnsignedInt();
-                        var object = objectIDMap[objectID];
-						frame.addConstructCommand(new RemoveChildCommand(object));
-						//newCommandupdate.commandProps=newObjectProps;
+                        var instanceID = objectIDMap[objectID];
+						frame.addConstructCommand(new RemoveChildCommand(instanceID));
 						commandString += "\n       - Remove object with ID: " + objectID;
 						break;
 

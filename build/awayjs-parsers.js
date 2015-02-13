@@ -794,6 +794,7 @@ var AWDParser = (function (_super) {
                         if (hasVisibilityChange) {
                             var newVisibility = Boolean(this._newBlockBytes.readByte());
                             commandString += "\n                Visibitily = " + newVisibility;
+                            properties["visible"] = newVisibility;
                         }
                         var numFills = this._newBlockBytes.readUnsignedShort();
                         commandString += "\n                number of fills = " + numFills;
@@ -810,46 +811,41 @@ var AWDParser = (function (_super) {
                         // if this is a "ADD NEW OBJECT"-command,
                         // we need to lookup the new object by AWD ID.
                         if (hasResource) {
+                            var newChild;
                             // sound is added to timeline with dedicated Command, as it is no display-object (has no matrix etc)
                             // check if a Geometry can be found at the resourceID (AWD-ID)
                             var returnedArray = this.getAssetByID(resourceID, [AssetType.GEOMETRY]);
                             if (returnedArray[0]) {
                                 var geom = returnedArray[1];
-                                var newMesh = new Mesh(geom);
+                                newChild = new Mesh(geom);
                                 for (k = 0; k < numFills; k++) {
                                     var returnedArray2 = this.getAssetByID(fillsIDs[k], [AssetType.MATERIAL]);
-                                    if (returnedArray2[0]) {
-                                        if (newMesh.subMeshes.length > k) {
-                                            newMesh.subMeshes[k].material = returnedArray2[1];
-                                        }
-                                    }
+                                    if (returnedArray2[0] && newChild.subMeshes.length > k)
+                                        newChild.subMeshes[k].material = returnedArray2[1];
                                 }
-                                objectIDMap[objectID] = newMesh;
-                                frame.addConstructCommand(new AddChildCommand(newMesh));
                             }
                             else {
                                 // no geometry found, so we check for TIMELINE.
                                 var returnedArray = this.getAssetByID(resourceID, [AssetType.TIMELINE]);
-                                if (returnedArray[0]) {
-                                    var newObj = returnedArray[1];
-                                    objectIDMap[objectID] = newObj;
-                                    frame.addConstructCommand(new AddChildCommand(newObj));
-                                }
+                                if (returnedArray[0])
+                                    newChild = returnedArray[1];
                             }
+                            var instanceID = timeLineContainer.registerPotentialChild(newChild);
+                            objectIDMap[objectID] = instanceID;
+                            frame.addConstructCommand(new AddChildCommand(instanceID));
                         }
-                        var target = objectIDMap[objectID];
+                        var instanceID = objectIDMap[objectID];
                         for (var key in properties) {
                             if (properties.hasOwnProperty(key)) {
-                                frame.addConstructCommand(new UpdatePropertyCommand(target, key, properties[key]));
+                                frame.addConstructCommand(new UpdatePropertyCommand(instanceID, key, properties[key]));
                             }
                         }
                         break;
                     case 3:
                         // Remove Object Command
                         objectID = this._newBlockBytes.readUnsignedInt();
-                        var object = objectIDMap[objectID];
-                        frame.addConstructCommand(new RemoveChildCommand(object));
-                        //newCommandupdate.commandProps=newObjectProps;
+                        var instanceID = objectIDMap[objectID];
+                        frame.addConstructCommand(new RemoveChildCommand(instanceID));
                         commandString += "\n       - Remove object with ID: " + objectID;
                         break;
                     case 4:
