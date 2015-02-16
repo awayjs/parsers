@@ -365,14 +365,8 @@ var AWDParser = (function (_super) {
             // probably should contain some info about the type of animation
             var factory = new AS2SceneGraphFactory();
             switch (type) {
-                case 2:
-                case 131:
-                    this.parseShape2D(this._cur_block_id);
-                    isParsed = true;
-                    break;
-                case 3:
-                case 132:
-                    this.parseShape2DFill(this._cur_block_id);
+                case 44:
+                    this.parseAduioBlock(this._cur_block_id, factory);
                     isParsed = true;
                     break;
                 case 4:
@@ -514,184 +508,37 @@ var AWDParser = (function (_super) {
         this._newBlockBytes = null;
     };
     //--Parser Blocks---------------------------------------------------------------------------
-    //Block ID = 2
-    AWDParser.prototype.parseShape2D = function (blockID) {
-        var geom = new Geometry();
-        // Read name and sub count
-        var name = this.parseVarStr();
-        var num_subs = this._newBlockBytes.readUnsignedShort();
-        // Read optional properties
-        var props = this.parseProperties({ 1: this._geoNrType, 2: this._geoNrType });
-        // Loop through sub meshes
-        var subs_parsed = 0;
-        while (subs_parsed < num_subs) {
-            var i;
-            var sm_len, sm_end;
-            var sub_geom;
-            var w_indices;
-            var weights;
-            sm_len = this._newBlockBytes.readUnsignedInt();
-            sm_end = this._newBlockBytes.position + sm_len;
-            //console.log("        (!) PARSE SUBMESH");
-            // Ignore for now (read uv for subshapes later)"
-            var subProps = this.parseProperties({ 1: this._geoNrType, 2: this._geoNrType });
-            // Loop through data streams
-            var indices = new Array();
-            var i_idx = 0;
-            while (this._newBlockBytes.position < sm_end) {
-                var idx = 0;
-                var uv_idx = 0;
-                var n_idx = 0;
-                var t_idx = 0;
-                var str_ftype, str_type, str_len, str_end;
-                // Type, field type, length
-                str_type = this._newBlockBytes.readUnsignedByte();
-                str_ftype = this._newBlockBytes.readUnsignedByte();
-                str_len = this._newBlockBytes.readUnsignedInt();
-                str_end = this._newBlockBytes.position + str_len;
-                var x, y, z;
-                var type;
-                var r, g, b, a;
-                var u, v;
-                if (str_type == 1) {
-                    var verts = new Array();
-                    var uvs = new Array();
-                    var normals = new Array();
-                    var tangents = new Array();
-                    while (this._newBlockBytes.position < str_end) {
-                        x = this.readNumber(this._accuracyGeo);
-                        y = this.readNumber(this._accuracyGeo);
-                        z = -0.1 * subs_parsed;
-                        //z = subs_parsed;
-                        //z = (blockID*0.001) + subs_parsed
-                        type = this.readNumber(this._accuracyGeo);
-                        u = this.readNumber(this._accuracyGeo);
-                        v = this.readNumber(this._accuracyGeo);
-                        r = this.readNumber(this._accuracyGeo);
-                        g = this.readNumber(this._accuracyGeo);
-                        b = this.readNumber(this._accuracyGeo);
-                        a = this.readNumber(this._accuracyGeo);
-                        // while this is true, be parse the vertex-data, so it can be rendered as "normal" 3d-geometry
-                        if (true) {
-                            uvs[idx] = 0.0;
-                            normals[idx] = 0.0;
-                            verts[idx++] = x;
-                            uvs[idx] = 0.0;
-                            normals[idx] = 0.0;
-                            verts[idx++] = y;
-                            normals[idx] = 1.0;
-                            verts[idx++] = z;
-                        }
-                        else {
-                            // parse and set-data, so the 3d-geometry contains all data (but is no longer valid for normal 3d-render)
-                            // away3d-vertexdata    |   awayJS-shape-data
-                            // -----------------------------------------------------------------------
-                            // pos.x                |   pos.x
-                            // pos.y                |   pos.y
-                            // pos.z                |   not used
-                            // normal.x             |   curve-type (0:notCurved, 1: convex, 2:concave)
-                            // normal.y             |   alpha
-                            // normal.z             |   not used
-                            // uv.u                 |   curve.u
-                            // uv.v                 |   curve.v
-                            // tangent.x            |   red
-                            // tangent.y            |   green
-                            // tangent.z            |   blue
-                            verts[idx++] = x;
-                            //uv2[idx] = x;
-                            verts[idx++] = y;
-                            //uv2[idx] = y;
-                            verts[idx++] = z;
-                            uvs[uv_idx++] = u;
-                            uvs[uv_idx++] = v;
-                            normals[n_idx++] = type;
-                            normals[n_idx++] = a;
-                            normals[n_idx++] = 0;
-                            // trace("r=" + r + " g=" + g + " b=" + b + " a=" + a);
-                            tangents[t_idx++] = r;
-                            tangents[t_idx++] = g;
-                            tangents[t_idx++] = b;
-                        }
-                    }
-                }
-                else if (str_type == 2) {
-                    while (this._newBlockBytes.position < str_end) {
-                        var thisVal = this._newBlockBytes.readUnsignedShort();
-                        indices[i_idx++] = thisVal;
-                    }
-                }
-                else if (str_type == 3) {
-                    while (this._newBlockBytes.position < str_end) {
-                        var thisVal = this._newBlockBytes.readUnsignedShort();
-                        indices[i_idx++] = thisVal;
-                    }
-                }
-                else if (str_type == 4) {
-                    while (this._newBlockBytes.position < str_end) {
-                        var thisVal = this._newBlockBytes.readUnsignedShort();
-                        indices[i_idx++] = thisVal;
-                    }
-                }
-                else if (str_type == 5) {
-                    while (this._newBlockBytes.position < str_end) {
-                        var thisVal = this._newBlockBytes.readUnsignedShort();
-                        indices[i_idx++] = thisVal;
-                    }
-                }
-                else {
-                    this._newBlockBytes.position = str_end;
-                }
-            }
-            this.parseUserAttributes(); // Ignore sub-mesh attributes for now
-            sub_geom = new TriangleSubGeometry(true);
-            sub_geom.autoDeriveNormals = false;
-            // when rendering as "normal" 3d-geometry, we need to autoDerive tangents
-            if (true) {
-                sub_geom.autoDeriveTangents = true;
-            }
-            else {
-                sub_geom.updateVertexTangents(tangents);
-            }
-            sub_geom.updateIndices(indices);
-            sub_geom.updatePositions(verts);
-            sub_geom.updateUVs(uvs);
-            sub_geom.updateVertexNormals(normals);
-            geom.addSubGeometry(sub_geom);
-            subs_parsed++;
+    AWDParser.prototype.parseAduioBlock = function (blockID, factory) {
+        //var asset:Audio;todo create asset for audio
+        this._blocks[blockID].name = this.parseVarStr();
+        var type = this._newBlockBytes.readUnsignedByte();
+        var data_len;
+        //this._texture_users[this._cur_block_id.toString()] = [];
+        // External
+        if (type == 0) {
+            data_len = this._newBlockBytes.readUnsignedInt();
+            var url;
+            url = this._newBlockBytes.readUTFBytes(data_len);
+            // todo parser needs to be able to handle mp3 and wav files if we trigger the loading of external ressource
+            //this._pAddDependency(this._cur_block_id.toString(), new URLRequest(url), false, null, true);
+            console.log("Audio url = " + url);
         }
-        this.parseUserAttributes();
-        this._pFinalizeAsset(geom, name);
-        this._blocks[blockID].data = geom;
-        if (this._debug)
-            console.log("Parsed a TriangleGeometry: Name = " + name + "| Id = " + sub_geom.id);
-    };
-    //Block ID = 3
-    AWDParser.prototype.parseShape2DFill = function (blockID) {
-        var name = this.parseVarStr();
-        var fill_type = this._newBlockBytes.readUnsignedByte();
-        var fill_props = this.parseProperties({ 1: AWDParser.UINT32 }); // { 1:UINT32, 6:AWDSTRING }  ); //; , 2:UINT32, 3:UINT32, 5:BOOL } );
-        switch (fill_type) {
-            case 0:
-                //console.log("Parsed a Solid FILL: Name = " + name);
-                var material = new MethodMaterial(fill_props.get(1, 0xcccccc));
-                material.bothSides = true;
-                this._pFinalizeAsset(material, name);
-                this._blocks[blockID].data = material;
-                break;
-            case 1:
-                console.log("Parsed a bitmap FILL: Name = " + name);
-                break;
-            case 2:
-                console.log("Parsed a linear gradient FILL: Name = " + name);
-                break;
-            case 3:
-                console.log("Parsed a radial gradient FILL: Name = " + name);
-                break;
-            default:
-                console.log("Parsed a unknown fillstyle: Name = " + name);
-                break;
+        else {
+            // todo: exporter does not export embed sounds yet
+            data_len = this._newBlockBytes.readUnsignedInt();
+            var data;
+            data = new ByteArray();
+            this._newBlockBytes.readBytes(data, 0, data_len);
         }
-        this.parseUserAttributes();
+        // Ignore for now
+        this.parseProperties(null);
+        this._blocks[blockID].extras = this.parseUserAttributes();
+        this._pPauseAndRetrieveDependencies();
+        //this._blocks[blockID].data = asset;todo
+        if (this._debug) {
+            var textureStylesNames = ["external", "embed"];
+            console.log("Start parsing a " + textureStylesNames[type] + " Audio file");
+        }
     };
     //Block ID = 4
     AWDParser.prototype.parseTimeLine = function (blockID, factory) {
@@ -702,6 +549,8 @@ var AWDParser = (function (_super) {
         var name = this.parseVarStr();
         var isScene = !!this._newBlockBytes.readUnsignedByte();
         var sceneID = this._newBlockBytes.readUnsignedByte();
+        var fps = this._newBlockBytes.readFloat();
+        var ms_per_frame = 1000 / fps;
         var numFrames = this._newBlockBytes.readUnsignedShort();
         var objectIDMap = {};
         // var previousTimeLine:TimeLineFrame;
@@ -712,7 +561,8 @@ var AWDParser = (function (_super) {
         for (i = 0; i < numFrames; i++) {
             var frame = new TimelineKeyFrame();
             var traceString = "frame = " + i;
-            var frameDuration = this._newBlockBytes.readUnsignedInt();
+            // TODO: remove the ms_per_frame to set the duration in frames
+            var frameDuration = this._newBlockBytes.readUnsignedInt() * ms_per_frame;
             frame.setFrameTime(totalDuration, frameDuration);
             totalDuration += frameDuration;
             //console.log("duration = " + frameDuration);
@@ -733,85 +583,15 @@ var AWDParser = (function (_super) {
                 switch (commandType) {
                     case 1:
                     case 2:
-                        // Place Object Command
-                        var properties = {};
-                        var hasResource = !!this._newBlockBytes.readByte();
-                        var hasDisplayMatrix = !!this._newBlockBytes.readByte();
-                        var hasColorMatrix = !!this._newBlockBytes.readByte();
-                        var hasDepthChange = !!this._newBlockBytes.readByte();
-                        var hasFilterChange = !!this._newBlockBytes.readByte();
-                        var hasBlendModeChange = !!this._newBlockBytes.readByte();
-                        var hasDepthClipChange = !!this._newBlockBytes.readByte();
-                        var hasVisibilityChange = !!this._newBlockBytes.readByte();
+                    case 3:
                         objectID = this._newBlockBytes.readUnsignedInt();
-                        if (hasResource) {
+                        var instanceID = 0; // must be set in folling conditions:
+                        if (commandType == 1) {
+                            // this commands looks for a object by awd-id and puts it into the timeline
                             resourceID = this._newBlockBytes.readUnsignedInt();
-                            commandString += "\n      - Add new Resource = " + resourceID + " as object_id = " + objectID;
-                        }
-                        else {
-                            commandString += "\n      - Update object_id = " + objectID;
-                        }
-                        if (hasDisplayMatrix) {
-                            var transformArray = [];
-                            var thisMatrix = new Matrix3D();
-                            // TODO: implement this in exporter (make transform optional 3d):
-                            var is3d = false; // !!this._newBlockBytes.readByte();
-                            if (is3d) {
-                                thisMatrix = this.parseMatrix3D();
-                            }
-                            else {
-                                for (k = 0; k < 6; k++) {
-                                    transformArray.push(this._newBlockBytes.readFloat());
-                                }
-                                // TODO: set rotation and scale
-                                thisMatrix.position = new Vector3D(transformArray[4], transformArray[5], 0);
-                            }
-                            properties["_iMatrix3D"] = thisMatrix;
-                            commandString += "\n                transformArray = " + transformArray;
-                        }
-                        if (hasColorMatrix) {
-                            var colorMatrix = [];
-                            for (k = 0; k < 20; k++) {
-                                colorMatrix.push(this._newBlockBytes.readFloat());
-                            }
-                            // TODO: set ColorTransform on objectProps
-                            commandString += "\n                colorMatrix = " + colorMatrix;
-                        }
-                        if (hasDepthChange) {
-                            var newDepth = this._newBlockBytes.readUnsignedInt();
-                            commandString += "\n                Depth = " + newDepth;
-                        }
-                        if (hasFilterChange) {
-                        }
-                        if (hasBlendModeChange) {
-                            var newBlendMode = this._newBlockBytes.readUnsignedByte();
-                            commandString += "\n                BlendMode = " + newBlendMode;
-                        }
-                        if (hasDepthClipChange) {
-                            var newClipDepth = this._newBlockBytes.readUnsignedInt();
-                            commandString += "\n                ClipDepth = " + newClipDepth;
-                        }
-                        if (hasVisibilityChange) {
-                            var newVisibility = Boolean(this._newBlockBytes.readByte());
-                            commandString += "\n                Visibitily = " + newVisibility;
-                            properties["visible"] = newVisibility;
-                        }
-                        var numFills = this._newBlockBytes.readUnsignedShort();
-                        commandString += "\n                number of fills = " + numFills;
-                        var fillsIDs = [];
-                        for (k = 0; k < numFills; k++) {
-                            fillsIDs.push(this._newBlockBytes.readUnsignedInt());
-                            commandString += "\n                    id of fill = " + fillsIDs[k];
-                        }
-                        var instanceName = this.parseVarStr();
-                        if (instanceName.length) {
-                            properties["name"] = instanceName;
-                            commandString += "\n                instanceName = " + instanceName;
-                        }
-                        // if this is a "ADD NEW OBJECT"-command,
-                        // we need to lookup the new object by AWD ID.
-                        if (hasResource) {
                             var newChild;
+                            var numFills = this._newBlockBytes.readUnsignedShort();
+                            commandString += "\n                number of fills = " + numFills;
                             // sound is added to timeline with dedicated Command, as it is no display-object (has no matrix etc)
                             // check if a Geometry can be found at the resourceID (AWD-ID)
                             var returnedArray = this.getAssetByID(resourceID, [AssetType.GEOMETRY]);
@@ -819,36 +599,99 @@ var AWDParser = (function (_super) {
                                 var geom = returnedArray[1];
                                 newChild = new Mesh(geom);
                                 for (k = 0; k < numFills; k++) {
-                                    var returnedArray2 = this.getAssetByID(fillsIDs[k], [AssetType.MATERIAL]);
+                                    var returnedArray2 = this.getAssetByID(this._newBlockBytes.readUnsignedInt(), [AssetType.MATERIAL]);
                                     if (returnedArray2[0] && newChild.subMeshes.length > k)
                                         newChild.subMeshes[k].material = returnedArray2[1];
                                 }
                             }
                             else {
-                                // no geometry found, so we check for TIMELINE.
+                                for (k = 0; k < numFills; k++)
+                                    this._newBlockBytes.readUnsignedInt();
                                 var returnedArray = this.getAssetByID(resourceID, [AssetType.TIMELINE]);
                                 if (returnedArray[0])
                                     newChild = returnedArray[1];
                             }
-                            var instanceID = timeLineContainer.registerPotentialChild(newChild);
+                            instanceID = timeLineContainer.registerPotentialChild(newChild);
                             objectIDMap[objectID] = instanceID;
                             frame.addConstructCommand(new AddChildCommand(instanceID));
-                        }
-                        var instanceID = objectIDMap[objectID];
-                        for (var key in properties) {
-                            if (properties.hasOwnProperty(key)) {
-                                frame.addConstructCommand(new UpdatePropertyCommand(instanceID, key, properties[key]));
+                            var instanceName = this.parseVarStr();
+                            if (instanceName.length) {
+                                frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "name", instanceName));
+                                commandString += "\n                instanceName = " + instanceName;
                             }
+                            commandString += "\n      - Add new Resource = " + resourceID + " as object_id = " + objectID;
+                        }
+                        else if (commandType == 2) {
+                            // this commands looks for a object by global string identifier and puts it into the timeline
+                            // this is not used yet, but might be useful to do things like text-localization
+                            var global_ressource_id = this.parseVarStr();
+                        }
+                        else {
+                            instanceID = objectIDMap[objectID];
+                            commandString += "\n      - Update object_id = " + objectID;
+                        }
+                        // read the command properties
+                        // 1: matrix2d (6 x number with storage precision matrix)
+                        // 2: matrix2d (12 x number with storage precision matrix) not used yet
+                        // 3: colortransform (20 x number with storage precision properties)
+                        // 4: blendmode (uint8)
+                        // 5: visibilty (uint8)
+                        // 6: depth (uint32)
+                        // 7: mask (uint32)
+                        var props = this.parseProperties({ 1: this._matrixNrType, 2: this._matrixNrType, 3: this._propsNrType, 4: AWDParser.UINT8, 5: AWDParser.UINT8, 6: AWDParser.UINT32, 7: AWDParser.UINT32 });
+                        var matrix_2d = props.get(1, []);
+                        //var matrix_3d:Float32Array = props.get(2, []);
+                        var colortransform = props.get(3, []);
+                        var blendmode = props.get(4, -1);
+                        var visibilty = props.get(5, -1);
+                        var depth = props.get(6, -1);
+                        var mask = props.get(7, -1);
+                        // todo: handle filters
+                        //matrix2d must provide 6 values to be valid
+                        commandString += "\n                transformArray = " + matrix_2d.length;
+                        if (matrix_2d.length == 6) {
+                            var thisMatrix = new Matrix3D();
+                            // todo set rotation + scale from matrix 2x3 to matrix3d
+                            thisMatrix.position = new Vector3D(matrix_2d[4], matrix_2d[5], 0);
+                            frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "_iMatrix3D", thisMatrix));
+                            commandString += "\n                transformArray = " + matrix_2d;
+                        }
+                        //matrix2d must provide 20 values to be valid
+                        if (colortransform.length == 20) {
+                            // TODO: set ColorTransform on objectProps
+                            commandString += "\n                colorMatrix = " + colortransform;
+                        }
+                        // blendmode must be positive to be valid
+                        if (blendmode >= 0) {
+                            var blendmode_string = this.blendModeDic[blendmode];
+                            // TODO: set Blendmode on objectProps
+                            commandString += "\n                BlendMode = " + blendmode_string;
+                        }
+                        // visibilty must be positive to be valid
+                        if (visibilty >= 0) {
+                            if (visibilty == 0)
+                                frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "visible", false));
+                            else
+                                frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "visible", true));
+                        }
+                        // depth must be positive to be valid
+                        if (depth >= 0) {
+                            commandString += "\n                Depth = " + depth;
+                        }
+                        // mask must be positive to be valid. i think only add-commands will have this value.
+                        // e.g. it should never be updated on already existing objects. (because depth of objects can change, i am not sure)
+                        if (mask >= 0) {
+                            commandString += "\n                Mask-up to obj-id: " + mask;
                         }
                         break;
-                    case 3:
+                    case 4:
                         // Remove Object Command
                         objectID = this._newBlockBytes.readUnsignedInt();
                         var instanceID = objectIDMap[objectID];
                         frame.addConstructCommand(new RemoveChildCommand(instanceID));
                         commandString += "\n       - Remove object with ID: " + objectID;
                         break;
-                    case 4:
+                    case 5:
                         // Add Sound Command
                         // TODO: create CommandPropsSound and check which asset to use
                         objectID = this._newBlockBytes.readUnsignedInt();
@@ -871,7 +714,6 @@ var AWDParser = (function (_super) {
             traceString += commandString;
             //trace("length_code = "+length_code+" frame_code = "+frame_code);
             this._newBlockBytes.readUnsignedInt(); // user attributes - skip for now
-            //this.parseUserAttributes(); // Ignore sub-mesh attributes for now
             //console.log(traceString);
             timeLineContainer.addFrame(frame);
         }
@@ -1501,204 +1343,231 @@ var AWDParser = (function (_super) {
         var num_methods = this._newBlockBytes.readUnsignedByte();
         var props = this.parseProperties({ 1: AWDParser.UINT32, 2: AWDParser.BADDR, 3: AWDParser.BADDR, 4: AWDParser.UINT8, 5: AWDParser.BOOL, 6: AWDParser.BOOL, 7: AWDParser.BOOL, 8: AWDParser.BOOL, 9: AWDParser.UINT8, 10: this._propsNrType, 11: AWDParser.BOOL, 12: this._propsNrType, 13: AWDParser.BOOL, 15: this._propsNrType, 16: AWDParser.UINT32, 17: AWDParser.BADDR, 18: this._propsNrType, 19: this._propsNrType, 20: AWDParser.UINT32, 21: AWDParser.BADDR, 22: AWDParser.BADDR });
         var spezialType = props.get(4, 0);
-        var debugString = "";
+        var debugString = "Parsed Material ";
         if (spezialType >= 2) {
             this._blocks[blockID].addError("Material-spezialType '" + spezialType + "' is not supported, can only be 0:singlePass, 1:MultiPass !");
             return;
         }
-        if (this.materialMode == 1)
-            spezialType = 0;
-        else if (this.materialMode == 2)
-            spezialType = 1;
-        if (spezialType < 2) {
-            if (type == 1) {
-                var color = props.get(1, 0xcccccc); //TODO temporarily swapped so that diffuse color goes to ambient
-                if (spezialType == 1) {
-                    mat = new MethodMaterial(color);
-                    mat.mode = MethodMaterialMode.MULTI_PASS;
-                    debugString += "Parsed a ColorMaterial(MultiPass): Name = '" + name + "' | ";
+        if (type <= 2) {
+            if (this.materialMode == 1)
+                spezialType = 0;
+            else if (this.materialMode == 2)
+                spezialType = 1;
+            if (spezialType < 2) {
+                if (type == 1) {
+                    var color = props.get(1, 0xcccccc); //TODO temporarily swapped so that diffuse color goes to ambient
+                    if (spezialType == 1) {
+                        mat = new MethodMaterial(color);
+                        mat.mode = MethodMaterialMode.MULTI_PASS;
+                        debugString += "Parsed a ColorMaterial(MultiPass): Name = '" + name + "' | ";
+                    }
+                    else {
+                        mat = new MethodMaterial(color, props.get(10, 1.0));
+                        mat.alphaBlending = props.get(11, false);
+                        debugString += "Parsed a ColorMaterial(SinglePass): Name = '" + name + "' | ";
+                    }
+                }
+                else if (type == 2) {
+                    var tex_addr = props.get(2, 0); //TODO temporarily swapped so that diffuse texture goes to ambient
+                    returnedArray = this.getAssetByID(tex_addr, [AssetType.TEXTURE]);
+                    if ((!returnedArray[0]) && (tex_addr > 0))
+                        this._blocks[blockID].addError("Could not find the AmbientTexture (ID = " + tex_addr + " ) for this MethodMaterial");
+                    var texture = returnedArray[1];
+                    mat = new MethodMaterial(texture);
+                    if (spezialType == 1) {
+                        mat.mode = MethodMaterialMode.MULTI_PASS;
+                        debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "' | Texture-Name = " + texture.name;
+                    }
+                    else {
+                        mat.alpha = props.get(10, 1.0);
+                        mat.alphaBlending = props.get(11, false);
+                        debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + name + "' | Texture-Name = " + texture.name;
+                    }
+                }
+                var diffuseTexture;
+                var diffuseTex_addr = props.get(17, 0);
+                returnedArray = this.getAssetByID(diffuseTex_addr, [AssetType.TEXTURE]);
+                if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
+                    this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
+                }
+                if (returnedArray[0])
+                    diffuseTexture = returnedArray[1];
+                if (diffuseTexture) {
+                    mat.diffuseTexture = diffuseTexture;
+                    debugString += " | DiffuseTexture-Name = " + diffuseTexture.name;
+                }
+                var normalTex_addr = props.get(3, 0);
+                returnedArray = this.getAssetByID(normalTex_addr, [AssetType.TEXTURE]);
+                if ((!returnedArray[0]) && (normalTex_addr != 0)) {
+                    this._blocks[blockID].addError("Could not find the NormalTexture (ID = " + normalTex_addr + " ) for this MethodMaterial");
+                }
+                if (returnedArray[0]) {
+                    normalTexture = returnedArray[1];
+                    debugString += " | NormalTexture-Name = " + normalTexture.name;
+                }
+                var specTex_addr = props.get(21, 0);
+                returnedArray = this.getAssetByID(specTex_addr, [AssetType.TEXTURE]);
+                if ((!returnedArray[0]) && (specTex_addr != 0)) {
+                    this._blocks[blockID].addError("Could not find the SpecularTexture (ID = " + specTex_addr + " ) for this MethodMaterial");
+                }
+                if (returnedArray[0]) {
+                    specTexture = returnedArray[1];
+                    debugString += " | SpecularTexture-Name = " + specTexture.name;
+                }
+                var lightPickerAddr = props.get(22, 0);
+                returnedArray = this.getAssetByID(lightPickerAddr, [AssetType.LIGHT_PICKER]);
+                if ((!returnedArray[0]) && (lightPickerAddr)) {
+                    this._blocks[blockID].addError("Could not find the LightPicker (ID = " + lightPickerAddr + " ) for this MethodMaterial");
                 }
                 else {
-                    mat = new MethodMaterial(color, props.get(10, 1.0));
-                    mat.alphaBlending = props.get(11, false);
-                    debugString += "Parsed a ColorMaterial(SinglePass): Name = '" + name + "' | ";
+                    mat.lightPicker = returnedArray[1];
+                }
+                mat.smooth = props.get(5, true);
+                mat.mipmap = props.get(6, true);
+                mat.bothSides = props.get(7, false);
+                mat.alphaPremultiplied = props.get(8, false);
+                mat.blendMode = this.blendModeDic[props.get(9, 0)];
+                mat.repeat = props.get(13, false);
+                if (normalTexture)
+                    mat.normalMap = normalTexture;
+                if (specTexture)
+                    mat.specularMap = specTexture;
+                mat.alphaThreshold = props.get(12, 0.0);
+                mat.ambient = props.get(15, 1.0);
+                mat.diffuseColor = props.get(16, 0xffffff);
+                mat.specular = props.get(18, 1.0);
+                mat.gloss = props.get(19, 50);
+                mat.specularColor = props.get(20, 0xffffff);
+                var methods_parsed = 0;
+                var targetID;
+                while (methods_parsed < num_methods) {
+                    var method_type;
+                    method_type = this._newBlockBytes.readUnsignedShort();
+                    props = this.parseProperties({
+                        1: AWDParser.BADDR,
+                        2: AWDParser.BADDR,
+                        3: AWDParser.BADDR,
+                        101: this._propsNrType,
+                        102: this._propsNrType,
+                        103: this._propsNrType,
+                        201: AWDParser.UINT32,
+                        202: AWDParser.UINT32,
+                        301: AWDParser.UINT16,
+                        302: AWDParser.UINT16,
+                        401: AWDParser.UINT8,
+                        402: AWDParser.UINT8,
+                        601: AWDParser.COLOR,
+                        602: AWDParser.COLOR,
+                        701: AWDParser.BOOL,
+                        702: AWDParser.BOOL,
+                        801: AWDParser.MTX4x4
+                    });
+                    switch (method_type) {
+                        case 999:
+                            targetID = props.get(1, 0);
+                            returnedArray = this.getAssetByID(targetID, [AssetType.EFFECTS_METHOD]);
+                            if (!returnedArray[0]) {
+                                this._blocks[blockID].addError("Could not find the EffectMethod (ID = " + targetID + " ) for this Material");
+                            }
+                            else {
+                                mat.addEffectMethod(returnedArray[1]);
+                                debugString += " | EffectMethod-Name = " + returnedArray[1].name;
+                            }
+                            break;
+                        case 998:
+                            targetID = props.get(1, 0);
+                            returnedArray = this.getAssetByID(targetID, [AssetType.SHADOW_MAP_METHOD]);
+                            if (!returnedArray[0]) {
+                                this._blocks[blockID].addError("Could not find the ShadowMethod (ID = " + targetID + " ) for this Material");
+                            }
+                            else {
+                                mat.shadowMethod = returnedArray[1];
+                                debugString += " | ShadowMethod-Name = " + returnedArray[1].name;
+                            }
+                            break;
+                        case 1:
+                            targetID = props.get(1, 0);
+                            returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE], "CubeTexture");
+                            if (!returnedArray[0])
+                                this._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this EnvMapAmbientMethodMaterial");
+                            mat.ambientMethod = new AmbientEnvMapMethod(returnedArray[1]);
+                            debugString += " | AmbientEnvMapMethod | EnvMap-Name =" + returnedArray[1].name;
+                            break;
+                        case 51:
+                            mat.diffuseMethod = new DiffuseDepthMethod();
+                            debugString += " | DiffuseDepthMethod";
+                            break;
+                        case 52:
+                            targetID = props.get(1, 0);
+                            returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE]);
+                            if (!returnedArray[0])
+                                this._blocks[blockID].addError("Could not find the GradientDiffuseTexture (ID = " + targetID + " ) for this GradientDiffuseMethod");
+                            mat.diffuseMethod = new DiffuseGradientMethod(returnedArray[1]);
+                            debugString += " | DiffuseGradientMethod | GradientDiffuseTexture-Name =" + returnedArray[1].name;
+                            break;
+                        case 53:
+                            mat.diffuseMethod = new DiffuseWrapMethod(props.get(101, 5));
+                            debugString += " | DiffuseWrapMethod";
+                            break;
+                        case 54:
+                            targetID = props.get(1, 0);
+                            returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE]);
+                            if (!returnedArray[0])
+                                this._blocks[blockID].addError("Could not find the LightMap (ID = " + targetID + " ) for this LightMapDiffuseMethod");
+                            mat.diffuseMethod = new DiffuseLightMapMethod(returnedArray[1], this.blendModeDic[props.get(401, 10)], false, mat.diffuseMethod);
+                            debugString += " | DiffuseLightMapMethod | LightMapTexture-Name =" + returnedArray[1].name;
+                            break;
+                        case 55:
+                            mat.diffuseMethod = new DiffuseCelMethod(props.get(401, 3), mat.diffuseMethod);
+                            mat.diffuseMethod.smoothness = props.get(101, 0.1);
+                            debugString += " | DiffuseCelMethod";
+                            break;
+                        case 56:
+                            break;
+                        case 101:
+                            mat.specularMethod = new SpecularAnisotropicMethod();
+                            debugString += " | SpecularAnisotropicMethod";
+                            break;
+                        case 102:
+                            mat.specularMethod = new SpecularPhongMethod();
+                            debugString += " | SpecularPhongMethod";
+                            break;
+                        case 103:
+                            mat.specularMethod = new SpecularCelMethod(props.get(101, 0.5), mat.specularMethod);
+                            mat.specularMethod.smoothness = props.get(102, 0.1);
+                            debugString += " | SpecularCelMethod";
+                            break;
+                        case 104:
+                            mat.specularMethod = new SpecularFresnelMethod(props.get(701, true), mat.specularMethod);
+                            mat.specularMethod.fresnelPower = props.get(101, 5);
+                            mat.specularMethod.normalReflectance = props.get(102, 0.1);
+                            debugString += " | SpecularFresnelMethod";
+                            break;
+                        case 151:
+                            break;
+                        case 152:
+                            targetID = props.get(1, 0);
+                            returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE]);
+                            if (!returnedArray[0])
+                                this._blocks[blockID].addError("Could not find the SecoundNormalMap (ID = " + targetID + " ) for this SimpleWaterNormalMethod");
+                            if (!mat.normalMap)
+                                this._blocks[blockID].addError("Could not find a normal Map on this Material to use with this SimpleWaterNormalMethod");
+                            mat.normalMap = returnedArray[1];
+                            mat.normalMethod = new NormalSimpleWaterMethod(mat.normalMap, returnedArray[1]);
+                            debugString += " | NormalSimpleWaterMethod | Second-NormalTexture-Name = " + returnedArray[1].name;
+                            break;
+                    }
+                    this.parseUserAttributes();
+                    methods_parsed += 1;
                 }
             }
-            else if (type == 2) {
-                var tex_addr = props.get(2, 0); //TODO temporarily swapped so that diffuse texture goes to ambient
-                returnedArray = this.getAssetByID(tex_addr, [AssetType.TEXTURE]);
-                if ((!returnedArray[0]) && (tex_addr > 0))
-                    this._blocks[blockID].addError("Could not find the AmbientTexture (ID = " + tex_addr + " ) for this MethodMaterial");
-                var texture = returnedArray[1];
-                mat = new MethodMaterial(texture);
-                if (spezialType == 1) {
-                    mat.mode = MethodMaterialMode.MULTI_PASS;
-                    debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "' | Texture-Name = " + texture.name;
-                }
-                else {
-                    mat.alpha = props.get(10, 1.0);
-                    mat.alphaBlending = props.get(11, false);
-                    debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + name + "' | Texture-Name = " + texture.name;
-                }
-            }
-            var diffuseTexture;
-            var diffuseTex_addr = props.get(17, 0);
-            returnedArray = this.getAssetByID(diffuseTex_addr, [AssetType.TEXTURE]);
-            if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
-                this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
-            }
-            if (returnedArray[0])
-                diffuseTexture = returnedArray[1];
-            if (diffuseTexture) {
-                mat.diffuseTexture = diffuseTexture;
-                debugString += " | DiffuseTexture-Name = " + diffuseTexture.name;
-            }
-            var normalTex_addr = props.get(3, 0);
-            returnedArray = this.getAssetByID(normalTex_addr, [AssetType.TEXTURE]);
-            if ((!returnedArray[0]) && (normalTex_addr != 0)) {
-                this._blocks[blockID].addError("Could not find the NormalTexture (ID = " + normalTex_addr + " ) for this MethodMaterial");
-            }
-            if (returnedArray[0]) {
-                normalTexture = returnedArray[1];
-                debugString += " | NormalTexture-Name = " + normalTexture.name;
-            }
-            var specTex_addr = props.get(21, 0);
-            returnedArray = this.getAssetByID(specTex_addr, [AssetType.TEXTURE]);
-            if ((!returnedArray[0]) && (specTex_addr != 0)) {
-                this._blocks[blockID].addError("Could not find the SpecularTexture (ID = " + specTex_addr + " ) for this MethodMaterial");
-            }
-            if (returnedArray[0]) {
-                specTexture = returnedArray[1];
-                debugString += " | SpecularTexture-Name = " + specTexture.name;
-            }
-            var lightPickerAddr = props.get(22, 0);
-            returnedArray = this.getAssetByID(lightPickerAddr, [AssetType.LIGHT_PICKER]);
-            if ((!returnedArray[0]) && (lightPickerAddr)) {
-                this._blocks[blockID].addError("Could not find the LightPicker (ID = " + lightPickerAddr + " ) for this MethodMaterial");
-            }
-            else {
-                mat.lightPicker = returnedArray[1];
-            }
-            mat.smooth = props.get(5, true);
-            mat.mipmap = props.get(6, true);
-            mat.bothSides = props.get(7, false);
-            mat.alphaPremultiplied = props.get(8, false);
-            mat.blendMode = this.blendModeDic[props.get(9, 0)];
-            mat.repeat = props.get(13, false);
-            if (normalTexture)
-                mat.normalMap = normalTexture;
-            if (specTexture)
-                mat.specularMap = specTexture;
-            mat.alphaThreshold = props.get(12, 0.0);
-            mat.ambient = props.get(15, 1.0);
-            mat.diffuseColor = props.get(16, 0xffffff);
-            mat.specular = props.get(18, 1.0);
-            mat.gloss = props.get(19, 50);
-            mat.specularColor = props.get(20, 0xffffff);
-            var methods_parsed = 0;
-            var targetID;
-            while (methods_parsed < num_methods) {
-                var method_type;
-                method_type = this._newBlockBytes.readUnsignedShort();
-                props = this.parseProperties({ 1: AWDParser.BADDR, 2: AWDParser.BADDR, 3: AWDParser.BADDR, 101: this._propsNrType, 102: this._propsNrType, 103: this._propsNrType, 201: AWDParser.UINT32, 202: AWDParser.UINT32, 301: AWDParser.UINT16, 302: AWDParser.UINT16, 401: AWDParser.UINT8, 402: AWDParser.UINT8, 601: AWDParser.COLOR, 602: AWDParser.COLOR, 701: AWDParser.BOOL, 702: AWDParser.BOOL, 801: AWDParser.MTX4x4 });
-                switch (method_type) {
-                    case 999:
-                        targetID = props.get(1, 0);
-                        returnedArray = this.getAssetByID(targetID, [AssetType.EFFECTS_METHOD]);
-                        if (!returnedArray[0]) {
-                            this._blocks[blockID].addError("Could not find the EffectMethod (ID = " + targetID + " ) for this Material");
-                        }
-                        else {
-                            mat.addEffectMethod(returnedArray[1]);
-                            debugString += " | EffectMethod-Name = " + returnedArray[1].name;
-                        }
-                        break;
-                    case 998:
-                        targetID = props.get(1, 0);
-                        returnedArray = this.getAssetByID(targetID, [AssetType.SHADOW_MAP_METHOD]);
-                        if (!returnedArray[0]) {
-                            this._blocks[blockID].addError("Could not find the ShadowMethod (ID = " + targetID + " ) for this Material");
-                        }
-                        else {
-                            mat.shadowMethod = returnedArray[1];
-                            debugString += " | ShadowMethod-Name = " + returnedArray[1].name;
-                        }
-                        break;
-                    case 1:
-                        targetID = props.get(1, 0);
-                        returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE], "CubeTexture");
-                        if (!returnedArray[0])
-                            this._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this EnvMapAmbientMethodMaterial");
-                        mat.ambientMethod = new AmbientEnvMapMethod(returnedArray[1]);
-                        debugString += " | AmbientEnvMapMethod | EnvMap-Name =" + returnedArray[1].name;
-                        break;
-                    case 51:
-                        mat.diffuseMethod = new DiffuseDepthMethod();
-                        debugString += " | DiffuseDepthMethod";
-                        break;
-                    case 52:
-                        targetID = props.get(1, 0);
-                        returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE]);
-                        if (!returnedArray[0])
-                            this._blocks[blockID].addError("Could not find the GradientDiffuseTexture (ID = " + targetID + " ) for this GradientDiffuseMethod");
-                        mat.diffuseMethod = new DiffuseGradientMethod(returnedArray[1]);
-                        debugString += " | DiffuseGradientMethod | GradientDiffuseTexture-Name =" + returnedArray[1].name;
-                        break;
-                    case 53:
-                        mat.diffuseMethod = new DiffuseWrapMethod(props.get(101, 5));
-                        debugString += " | DiffuseWrapMethod";
-                        break;
-                    case 54:
-                        targetID = props.get(1, 0);
-                        returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE]);
-                        if (!returnedArray[0])
-                            this._blocks[blockID].addError("Could not find the LightMap (ID = " + targetID + " ) for this LightMapDiffuseMethod");
-                        mat.diffuseMethod = new DiffuseLightMapMethod(returnedArray[1], this.blendModeDic[props.get(401, 10)], false, mat.diffuseMethod);
-                        debugString += " | DiffuseLightMapMethod | LightMapTexture-Name =" + returnedArray[1].name;
-                        break;
-                    case 55:
-                        mat.diffuseMethod = new DiffuseCelMethod(props.get(401, 3), mat.diffuseMethod);
-                        mat.diffuseMethod.smoothness = props.get(101, 0.1);
-                        debugString += " | DiffuseCelMethod";
-                        break;
-                    case 56:
-                        break;
-                    case 101:
-                        mat.specularMethod = new SpecularAnisotropicMethod();
-                        debugString += " | SpecularAnisotropicMethod";
-                        break;
-                    case 102:
-                        mat.specularMethod = new SpecularPhongMethod();
-                        debugString += " | SpecularPhongMethod";
-                        break;
-                    case 103:
-                        mat.specularMethod = new SpecularCelMethod(props.get(101, 0.5), mat.specularMethod);
-                        mat.specularMethod.smoothness = props.get(102, 0.1);
-                        debugString += " | SpecularCelMethod";
-                        break;
-                    case 104:
-                        mat.specularMethod = new SpecularFresnelMethod(props.get(701, true), mat.specularMethod);
-                        mat.specularMethod.fresnelPower = props.get(101, 5);
-                        mat.specularMethod.normalReflectance = props.get(102, 0.1);
-                        debugString += " | SpecularFresnelMethod";
-                        break;
-                    case 151:
-                        break;
-                    case 152:
-                        targetID = props.get(1, 0);
-                        returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE]);
-                        if (!returnedArray[0])
-                            this._blocks[blockID].addError("Could not find the SecoundNormalMap (ID = " + targetID + " ) for this SimpleWaterNormalMethod");
-                        if (!mat.normalMap)
-                            this._blocks[blockID].addError("Could not find a normal Map on this Material to use with this SimpleWaterNormalMethod");
-                        mat.normalMap = returnedArray[1];
-                        mat.normalMethod = new NormalSimpleWaterMethod(mat.normalMap, returnedArray[1]);
-                        debugString += " | NormalSimpleWaterMethod | Second-NormalTexture-Name = " + returnedArray[1].name;
-                        break;
-                }
-                this.parseUserAttributes();
-                methods_parsed += 1;
-            }
+        }
+        else if (type == 3) {
+            var color = props.get(1, 0xcccccc); //TODO temporarily swapped so that diffuse color goes to ambient
+            debugString += color;
+            mat = new MethodMaterial(color, props.get(10, 1.0));
+            debugString += "alpha = " + props.get(10, 1.0) + " ";
+            mat.bothSides = true;
         }
         mat.extra = this.parseUserAttributes();
         this._pFinalizeAsset(mat, name);
@@ -1924,7 +1793,7 @@ var AWDParser = (function (_super) {
         var name = this.parseVarStr();
         var num_joints = this._newBlockBytes.readUnsignedShort();
         var skeleton = new Skeleton();
-        this.parseProperties(null); // Discard properties for now		
+        this.parseProperties(null); // Discard properties for now
         var joints_parsed = 0;
         while (joints_parsed < num_joints) {
             var joint;
