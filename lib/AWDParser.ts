@@ -98,6 +98,7 @@ import TimelineKeyFrame = require("awayjs-player/lib/fl/timeline/TimelineKeyFram
 import AddChildCommand = require("awayjs-player/lib/fl/timeline/commands/AddChildCommand");
 import UpdatePropertyCommand = require("awayjs-player/lib/fl/timeline/commands/UpdatePropertyCommand");
 import RemoveChildCommand = require("awayjs-player/lib/fl/timeline/commands/RemoveChildCommand");
+import ApplyAS2DepthsCommand = require("awayjs-player/lib/fl/timeline/commands/ApplyAS2DepthsCommand");
 
 /**
  * AWDParser provides a parser for the AWD data type.
@@ -810,6 +811,7 @@ class AWDParser extends ParserBase
 
             var numCommands = this._newBlockBytes.readUnsignedShort();
             var commandString = "\n      Commands " + numCommands;
+            var hasDepthChanges = false;
             for (j = 0; j < numCommands; j++) {
                 var objectID:number;
                 var resourceID:number;
@@ -937,7 +939,8 @@ class AWDParser extends ParserBase
                         // depth must be positive to be valid
                         if (depth>=0) {
                             commandString += "\n                Depth = " + depth;
-                            // TODO: set depthClipChange on objectProps
+                            frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "__AS2Depth", depth));
+                            hasDepthChanges = true;
                         }
                         // mask must be positive to be valid. i think only add-commands will have this value.
                         // e.g. it should never be updated on already existing objects. (because depth of objects can change, i am not sure)
@@ -973,6 +976,12 @@ class AWDParser extends ParserBase
                         break;
 
                 }
+            }
+
+            if (hasDepthChanges) {
+                // only want to do this once after all children's depth values are updated
+                frame.addConstructCommand(new ApplyAS2DepthsCommand());
+                hasDepthChanges = false;
             }
 
             var length_code = this._newBlockBytes.readUnsignedInt();
