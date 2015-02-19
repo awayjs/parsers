@@ -367,7 +367,7 @@ var AWDParser = (function (_super) {
             var factory = new AS2SceneGraphFactory();
             switch (type) {
                 case 44:
-                    this.parseAduioBlock(this._cur_block_id, factory);
+                    this.parseAudioBlock(this._cur_block_id, factory);
                     isParsed = true;
                     break;
                 case 4:
@@ -509,7 +509,7 @@ var AWDParser = (function (_super) {
         this._newBlockBytes = null;
     };
     //--Parser Blocks---------------------------------------------------------------------------
-    AWDParser.prototype.parseAduioBlock = function (blockID, factory) {
+    AWDParser.prototype.parseAudioBlock = function (blockID, factory) {
         //var asset:Audio;todo create asset for audio
         this._blocks[blockID].name = this.parseVarStr();
         var type = this._newBlockBytes.readUnsignedByte();
