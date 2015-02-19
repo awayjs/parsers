@@ -129,8 +129,6 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private parseVarStr();
 	    private getAssetByID(assetID, assetTypesToGet, extraTypeInfo?);
 	    private getDefaultAsset(assetType, extraTypeInfo);
-	    private getDefaultMaterial();
-	    private getDefaultTexture();
 	    private getDefaultCubeTexture();
 	    private readNumber(precision?);
 	    private parseMatrix3D();

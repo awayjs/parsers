@@ -562,7 +562,7 @@ class AWDParser extends ParserBase
 
 			switch (type) {
 				case 44:
-					this.parseAduioBlock(this._cur_block_id, factory);
+					this.parseAudioBlock(this._cur_block_id, factory);
 					isParsed = true;
 					break;
 				case 4:// just because i used blockID 4 in first exporter earlier
@@ -722,7 +722,7 @@ class AWDParser extends ParserBase
 
 	//--Parser Blocks---------------------------------------------------------------------------
 
-	private parseAduioBlock(blockID:number, factory:TimelineSceneGraphFactory):void {
+	private parseAudioBlock(blockID:number, factory:TimelineSceneGraphFactory):void {
 
 		//var asset:Audio;todo create asset for audio
 

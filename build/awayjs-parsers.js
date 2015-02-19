@@ -2438,25 +2438,15 @@ var AWDParser = (function (_super) {
                 if (extraTypeInfo == "CubeTexture")
                     return this.getDefaultCubeTexture();
                 if (extraTypeInfo == "SingleTexture")
-                    return this.getDefaultTexture();
+                    return DefaultMaterialManager.getDefaultTexture();
                 break;
             case (assetType == AssetType.MATERIAL):
-                return this.getDefaultMaterial();
+                return DefaultMaterialManager.getDefaultMaterial();
                 break;
             default:
                 break;
         }
         return null;
-    };
-    AWDParser.prototype.getDefaultMaterial = function () {
-        if (!this._defaultBitmapMaterial)
-            this._defaultBitmapMaterial = DefaultMaterialManager.getDefaultMaterial();
-        return this._defaultBitmapMaterial;
-    };
-    AWDParser.prototype.getDefaultTexture = function () {
-        if (!this._defaultTexture)
-            this._defaultTexture = DefaultMaterialManager.getDefaultTexture();
-        return this._defaultTexture;
     };
     AWDParser.prototype.getDefaultCubeTexture = function () {
         if (!this._defaultCubeTexture) {
