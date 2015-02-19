@@ -3122,33 +3122,16 @@ class AWDParser extends ParserBase
 				if (extraTypeInfo == "CubeTexture")
 					return this.getDefaultCubeTexture();
 				if (extraTypeInfo == "SingleTexture")
-					return this.getDefaultTexture();
+					return DefaultMaterialManager.getDefaultTexture();
 				break;
 			case (assetType == AssetType.MATERIAL):
-				return this.getDefaultMaterial()
+				return DefaultMaterialManager.getDefaultMaterial();
 				break;
 			default:
 				break;
 		}
 
 		return null;
-	}
-
-	private getDefaultMaterial():IAsset
-	{
-		if (!this._defaultBitmapMaterial)
-			this._defaultBitmapMaterial = <MethodMaterial> DefaultMaterialManager.getDefaultMaterial();
-
-		return  <IAsset>  this._defaultBitmapMaterial;
-	}
-
-	private getDefaultTexture():IAsset
-	{
-		if (!this._defaultTexture)
-			this._defaultTexture = DefaultMaterialManager.getDefaultTexture();
-
-		return <IAsset> this._defaultTexture;
-
 	}
 
 	private getDefaultCubeTexture():IAsset
