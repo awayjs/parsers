@@ -91,6 +91,12 @@ import SpecularPhongMethod				= require("awayjs-methodmaterials/lib/methods/Spec
 import ShadowNearMethod					= require("awayjs-methodmaterials/lib/methods/ShadowNearMethod");
 import ShadowSoftMethod					= require("awayjs-methodmaterials/lib/methods/ShadowSoftMethod");
 
+import SubGeometryBase					= require("awayjs-display/lib/base/SubGeometryBase");
+import CurveSubGeometry					= require("awayjs-display/lib/base/CurveSubGeometry");
+import CurveMaterial					= require("awayjs-display/lib/materials/CurveMaterial")
+import BasicMaterial					= require("awayjs-display/lib/materials/BasicMaterial");
+
+
 import TimelineSceneGraphFactory = require("awayjs-player/lib/fl/factories/TimelineSceneGraphFactory");
 import AS2SceneGraphFactory = require("awayjs-player/lib/fl/factories/AS2SceneGraphFactory");
 import MovieClip = require("awayjs-player/lib/fl/display/MovieClip");
@@ -106,7 +112,7 @@ import ApplyAS2DepthsCommand = require("awayjs-player/lib/fl/timeline/commands/A
 class AWDParser extends ParserBase
 {
 	//set to "true" to have some console.logs in the Console
-	private _debug:boolean = false;
+	private _debug:boolean = true;
 	private _byteData:ByteArray;
 	private _startedParsing:boolean = false;
 	private _cur_block_id:number;
@@ -913,6 +919,10 @@ class AWDParser extends ParserBase
 							var thisMatrix = new Matrix3D();
 							// todo set rotation + scale from matrix 2x3 to matrix3d
 							thisMatrix.position = new Vector3D(matrix_2d[4], matrix_2d[5], 0);
+							thisMatrix.rawData[0]=matrix_2d[0];
+							thisMatrix.rawData[1]=matrix_2d[1];
+							thisMatrix.rawData[4]=matrix_2d[2];
+							thisMatrix.rawData[5]=matrix_2d[3];
 							frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "_iMatrix3D", thisMatrix));
 
 							commandString += "\n                transformArray = " + matrix_2d;
@@ -1023,7 +1033,7 @@ class AWDParser extends ParserBase
 		// Loop through sub meshes
 		var subs_parsed:number = 0;
 		while (subs_parsed < num_subs) {
-			var is_2d_geom:boolean=false;
+			var is_curve_geom:boolean=false;
 			var i:number;
 			var sm_len:number, sm_end:number;
 			var w_indices:Array<number>;
@@ -1036,9 +1046,6 @@ class AWDParser extends ParserBase
 			// Loop through data streams
 			while (this._newBlockBytes.position < sm_end) {
 				var idx:number = 0;
-				var uv_idx:number = 0;
-				var n_idx:number = 0;
-				var t_idx:number = 0;
 				var str_ftype:number, str_type:number, str_len:number, str_end:number;
 
 				// Type, field type, length
@@ -1101,119 +1108,83 @@ class AWDParser extends ParserBase
 					this._newBlockBytes.position = str_end;
 				} else if (str_type == 9) {// combined vertex3D stream 13 x float32
 					this._newBlockBytes.position = str_end;
-				} else if (str_type == 10) {// combined vertex2D stream 9 x float32
+				} else if (str_type == 10) {// combined vertex2D stream 5 x float32
+					is_curve_geom=true;
+					var idx_pos:number = 0;
+					var idx_curves:number = 0;
+					var idx_uvs:number = 0;
 
-					var x:number, y:number, z:number;
-					var type:number;
-					var r:number, g:number, b:number,a:number;
-					var u:number, v:number;
-
-					var verts:Array<number> = new Array<number>();
+					var positions:Array<number> = new Array<number>();
+					var curveData:Array<number> = new Array<number>();
 					var uvs:Array<number> = new Array<number>();
-					var normals:Array<number> = new Array<number>();
-					var tangents:Array<number> = new Array<number>();
 
 					while (this._newBlockBytes.position < str_end) {
 
-						x = this.readNumber(this._accuracyGeo);
-						y = this.readNumber(this._accuracyGeo);
-						z = -0.1 * subs_parsed;
-						//z = subs_parsed;
-						//z = (blockID*0.001) + subs_parsed
-						type = this.readNumber(this._accuracyGeo);
-						u = this.readNumber(this._accuracyGeo);
-						v = this.readNumber(this._accuracyGeo);
-						/* r = this.readNumber(this._accuracyGeo);
-						 g = this.readNumber(this._accuracyGeo);
-						 b = this.readNumber(this._accuracyGeo);
-						 a = this.readNumber(this._accuracyGeo);*/
+						positions[idx_pos++] = this.readNumber(this._accuracyGeo);// x
+						positions[idx_pos++] = this.readNumber(this._accuracyGeo);// y
+						positions[idx_pos++] =  this.readNumber(this._accuracyGeo);// type
 
-						// while this is true, be parse the vertex-data, so it can be rendered as "normal" 3d-geometry
-						if (true) {
-							uvs[idx] = 0.0;
-							normals[idx] = 0.0;
-							verts[idx++] = x;
-							uvs[idx] = 0.0;
-							normals[idx] = 0.0;
-							verts[idx++] = y;
-							normals[idx] = 1.0;
-							verts[idx++] = z;
-						}
-						else{
-							// parse and set-data, so the 3d-geometry contains all data (but is no longer valid for normal 3d-render)
-							// away3d-vertexdata    |   awayJS-shape-data
-							// -----------------------------------------------------------------------
-							// pos.x                |   pos.x
-							// pos.y                |   pos.y
-							// pos.z                |   pos.z (for now we just use this as depth (set each subgeo to its own depth))
-							// normal.x             |   curve-type (0:notCurved, 1: convex, 2:concave)
-							// normal.y             |   alpha
-							// normal.z             |   not used
-							// uv.u                 |   curve.u
-							// uv.v                 |   curve.v
-							// tangent.x            |   red
-							// tangent.y            |   green
-							// tangent.z            |   blue
-							verts[idx++] = x;
-							//uv2[idx] = x;
-							verts[idx++] = y;
-							//uv2[idx] = y;
-							verts[idx++] = z;
-							uvs[uv_idx++] = u;
-							uvs[uv_idx++] = v;
-							normals[n_idx++] = type;
-							normals[n_idx++] = a;
-							normals[n_idx++] = 0;
-							// trace("r=" + r + " g=" + g + " b=" + b + " a=" + a);
-							tangents[t_idx++] = r;
-							tangents[t_idx++] = g;
-							tangents[t_idx++] = b;
-						}
+						curveData[idx_curves++] = this.readNumber(this._accuracyGeo);// curve value 1
+						curveData[idx_curves++] = this.readNumber(this._accuracyGeo);// curve value 2
+
+						uvs[idx_uvs++] = this.readNumber(this._accuracyGeo);// curve value 1
+						uvs[idx_uvs++] = this.readNumber(this._accuracyGeo);// curve value 1
 					}
-				} else if (str_type == 11) {// combined vertex2D stream 5 x float32
-					this._newBlockBytes.position = str_end;
-				}else {
+				}
+				else {
 					this._newBlockBytes.position = str_end;
 				}
 
 			}
 
 			this.parseUserAttributes(); // Ignore sub-mesh attributes for now
-			var sub_geom:TriangleSubGeometry;
-			sub_geom = new TriangleSubGeometry(true);
-			if (weights)
-				sub_geom.jointsPerVertex = weights.length/(verts.length/3);
-			if (normals)
-				sub_geom.autoDeriveNormals = false;
-			if (uvs)
-				sub_geom.autoDeriveUVs = false;
-			sub_geom.autoDeriveNormals = false;
-			// when rendering as "normal" 3d-geometry, we need to autoDerive tangents
-			if(true){
-				sub_geom.autoDeriveTangents = true;
+			if(is_curve_geom){
+				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(true);
+				curve_sub_geom.updateIndices(indices);
+				curve_sub_geom.updatePositions(positions);
+				curve_sub_geom.updateCurves(curveData);
+				curve_sub_geom.updateUVs(uvs);
+				geom.addSubGeometry(curve_sub_geom);
+				if (this._debug)
+					console.log("Parsed a CurveSubGeometry");
 			}
-			sub_geom.updateIndices(indices);
-			sub_geom.updatePositions(verts);
-			sub_geom.updateVertexNormals(normals);
-			sub_geom.updateUVs(uvs);
-			sub_geom.updateVertexTangents(null);
-			sub_geom.updateJointWeights(weights);
-			sub_geom.updateJointIndices(w_indices);
+			else {
+				var triangle_sub_geom = new TriangleSubGeometry(true);
+				if (weights)
+					triangle_sub_geom.jointsPerVertex = weights.length / (verts.length / 3);
+				if (normals)
+					triangle_sub_geom.autoDeriveNormals = false;
+				if (uvs)
+					triangle_sub_geom.autoDeriveUVs = false;
+				triangle_sub_geom.autoDeriveNormals = false;
+				if (true) {
+					triangle_sub_geom.autoDeriveTangents = true;
+				}
+				triangle_sub_geom.updateIndices(indices);
+				triangle_sub_geom.updatePositions(verts);
+				triangle_sub_geom.updateVertexNormals(normals);
+				triangle_sub_geom.updateUVs(uvs);
+				triangle_sub_geom.updateVertexTangents(null);
+				triangle_sub_geom.updateJointWeights(weights);
+				triangle_sub_geom.updateJointIndices(w_indices);
 
-			var scaleU:number = subProps.get(1, 1);
-			var scaleV:number = subProps.get(2, 1);
-			var setSubUVs:boolean = false; //this should remain false atm, because in AwayBuilder the uv is only scaled by the geometry
+				var scaleU:number = subProps.get(1, 1);
+				var scaleV:number = subProps.get(2, 1);
+				var setSubUVs:boolean = false; //this should remain false atm, because in AwayBuilder the uv is only scaled by the geometry
 
-			if ((geoScaleU != scaleU) || (geoScaleV != scaleV)) {
-				setSubUVs = true;
-				scaleU = geoScaleU/scaleU;
-				scaleV = geoScaleV/scaleV;
+				if ((geoScaleU != scaleU) || (geoScaleV != scaleV)) {
+					setSubUVs = true;
+					scaleU = geoScaleU / scaleU;
+					scaleV = geoScaleV / scaleV;
+				}
+
+				if (setSubUVs)
+					triangle_sub_geom.scaleUV(scaleU, scaleV);
+				geom.addSubGeometry(triangle_sub_geom);
+				if (this._debug)
+					console.log("Parsed a TriangleSubGeometry");
 			}
 
-			if (setSubUVs)
-				sub_geom.scaleUV(scaleU, scaleV);
-
-			geom.addSubGeometry(sub_geom);
 
 			// TODO: Somehow map in-sub to out-sub indices to enable look-up
 			// when creating meshes (and their material assignments.)
@@ -1227,7 +1198,7 @@ class AWDParser extends ParserBase
 		this._blocks[blockID].data = geom;
 
 		if (this._debug) {
-			console.log("Parsed a TriangleGeometry: Name = " + name + "| Id = " + sub_geom.id);
+			console.log("Parsed a TriangleGeometry: Name = " + name);
 		}
 
 	}
@@ -2033,12 +2004,36 @@ class AWDParser extends ParserBase
 				}
 			}
 		}
-		else if (type==3){
-			var color:number = props.get(1, 0xcccccc);//TODO temporarily swapped so that diffuse color goes to ambient
+		// todo: we should not need this anymore (if using texture-atlas)
+		else if ((type>=3)&&(type<=7)){
+			// if this is a curve material, we create it, finalize it, assign it to block-cache and return and return.
+			var color:number = props.get(1, 0xcccccc);
 			debugString+=color;
-			mat = new MethodMaterial(color, props.get(10, 1.0));
-			debugString+= "alpha = "+props.get(10, 1.0)+" ";
-			mat.bothSides = true;
+
+			var diffuseTexture:Texture2DBase;
+			var diffuseTex_addr:number = props.get(2, 0);
+
+			returnedArray = this.getAssetByID(diffuseTex_addr, [AssetType.TEXTURE]);
+
+			if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
+				this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
+				diffuseTexture = DefaultMaterialManager.getDefaultTexture();
+			}
+
+			if (returnedArray[0])
+				diffuseTexture = returnedArray[1];
+			var curve_mat:CurveMaterial = new CurveMaterial(diffuseTexture);
+			//debugString+= " alpha = "+props.get(10, 1.0)+" ";
+			debugString+= " texture = "+diffuseTex_addr+" ";
+			curve_mat.bothSides = true;
+			curve_mat.preserveAlpha = true;
+			curve_mat.alphaBlending = true;
+			curve_mat.extra = this.parseUserAttributes();
+			this._pFinalizeAsset(<IAsset> curve_mat, name);
+			this._blocks[blockID].data = curve_mat;
+			if (this._debug)
+				console.log(debugString);
+			return;
 
 		}
 		mat.extra = this.parseUserAttributes();
@@ -3114,7 +3109,6 @@ class AWDParser extends ParserBase
 		returnArray.push(this.getDefaultAsset(assetTypesToGet[0], extraTypeInfo));
 		return returnArray;
 	}
-
 	private getDefaultAsset(assetType:string, extraTypeInfo:string):IAsset
 	{
 		switch (true) {
