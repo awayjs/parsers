@@ -29,6 +29,7 @@ var PointLight = require("awayjs-display/lib/entities/PointLight");
 var Camera = require("awayjs-display/lib/entities/Camera");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
 var Skybox = require("awayjs-display/lib/entities/Skybox");
+var Billboard = require("awayjs-display/lib/entities/Billboard");
 var StaticLightPicker = require("awayjs-display/lib/materials/lightpickers/StaticLightPicker");
 var CubeMapShadowMapper = require("awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper");
 var DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
@@ -79,6 +80,7 @@ var ShadowNearMethod = require("awayjs-methodmaterials/lib/methods/ShadowNearMet
 var ShadowSoftMethod = require("awayjs-methodmaterials/lib/methods/ShadowSoftMethod");
 var CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
 var CurveMaterial = require("awayjs-display/lib/materials/CurveMaterial");
+var TesselatedFont = require("awayjs-display/lib/text/TesselatedFont");
 var AS2SceneGraphFactory = require("awayjs-player/lib/fl/factories/AS2SceneGraphFactory");
 var TimelineKeyFrame = require("awayjs-player/lib/fl/timeline/TimelineKeyFrame");
 var AddChildCommand = require("awayjs-player/lib/fl/timeline/commands/AddChildCommand");
@@ -368,13 +370,27 @@ var AWDParser = (function (_super) {
             // probably should contain some info about the type of animation
             var factory = new AS2SceneGraphFactory();
             switch (type) {
+                case 23:
+                    this.parseMeshLibraryBlock(this._cur_block_id);
+                    break;
                 case 44:
                     this.parseAudioBlock(this._cur_block_id, factory);
                     isParsed = true;
                     break;
-                case 4:
                 case 133:
                     this.parseTimeLine(this._cur_block_id, factory);
+                    isParsed = true;
+                    break;
+                case 134:
+                    this.paresTextField(this._cur_block_id);
+                    isParsed = true;
+                    break;
+                case 135:
+                    this.parseTesselatedFont(this._cur_block_id);
+                    isParsed = true;
+                    break;
+                case 136:
+                    this.parseTextFormat(this._cur_block_id);
                     isParsed = true;
                     break;
             }
@@ -511,6 +527,80 @@ var AWDParser = (function (_super) {
         this._newBlockBytes = null;
     };
     //--Parser Blocks---------------------------------------------------------------------------
+    AWDParser.prototype.parseTesselatedFont = function (blockID) {
+        this._blocks[blockID].name = this.parseVarStr();
+        //console.log("Font name = "+this._blocks[blockID].name);
+        var font_style_cnt = this._newBlockBytes.readUnsignedInt();
+        //console.log("Font font_style_cnt = "+font_style_cnt);
+        var new_font = new TesselatedFont();
+        for (var i = 0; i < font_style_cnt; ++i) {
+            var font_style_name = this.parseVarStr();
+            //console.log("Font font_style_name = "+font_style_name);
+            var new_font_style = new_font.get_font_style(font_style_name);
+            new_font_style.set_font_em_size(this._newBlockBytes.readUnsignedInt());
+            //console.log("Font new_font_style.font_em_size = "+new_font_style.get_font_em_size);
+            var font_style_char_cnt = this._newBlockBytes.readUnsignedInt();
+            for (var i = 0; i < font_style_char_cnt; ++i) {
+                var font_style_char = this._newBlockBytes.readUnsignedInt();
+                //console.log("Font font_style_char = "+font_style_char);
+                // todo: this is basically a simplified version of the subgeom-parsing done in parseTriangleGeometry. Make a parseSubGeom() instead (?)
+                var sm_len = this._newBlockBytes.readUnsignedInt();
+                var sm_end = this._newBlockBytes.position + sm_len;
+                while (this._newBlockBytes.position < sm_end) {
+                    var idx = 0;
+                    var str_ftype, str_type, str_len, str_end;
+                    // Type, field type, length
+                    str_type = this._newBlockBytes.readUnsignedByte();
+                    str_ftype = this._newBlockBytes.readUnsignedByte();
+                    str_len = this._newBlockBytes.readUnsignedInt();
+                    str_end = this._newBlockBytes.position + str_len;
+                    if (str_type == 2) {
+                        var indices = new Array();
+                        while (this._newBlockBytes.position < str_end) {
+                            indices[idx++] = this._newBlockBytes.readUnsignedShort();
+                        }
+                    }
+                    else if (str_type == 10) {
+                        var idx_pos = 0;
+                        var idx_curves = 0;
+                        var idx_uvs = 0;
+                        var positions = new Array();
+                        var curveData = new Array();
+                        var uvs = new Array();
+                        while (this._newBlockBytes.position < str_end) {
+                            positions[idx_pos++] = this.readNumber(this._accuracyGeo); // x
+                            positions[idx_pos++] = this.readNumber(this._accuracyGeo); // y
+                            positions[idx_pos++] = this.readNumber(this._accuracyGeo); // type
+                            curveData[idx_curves++] = this.readNumber(this._accuracyGeo); // curve value 1
+                            curveData[idx_curves++] = this.readNumber(this._accuracyGeo); // curve value 2
+                            uvs[idx_uvs++] = this.readNumber(this._accuracyGeo); // curve value 1
+                            uvs[idx_uvs++] = this.readNumber(this._accuracyGeo); // curve value 1
+                        }
+                    }
+                    else {
+                        this._newBlockBytes.position = str_end;
+                    }
+                }
+                //this.parseProperties(null);// no attributes for font-table subgeos
+                var curve_sub_geom = new CurveSubGeometry(true);
+                curve_sub_geom.updateIndices(indices);
+                curve_sub_geom.updatePositions(positions);
+                curve_sub_geom.updateCurves(curveData);
+                curve_sub_geom.updateUVs(uvs);
+                new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
+            }
+        }
+        this.parseProperties(null);
+        this.parseUserAttributes();
+        this._pFinalizeAsset(new_font, name);
+        this._blocks[blockID].data = new_font;
+    };
+    AWDParser.prototype.parseTextFormat = function (blockID) {
+        this._blocks[blockID].name = this.parseVarStr();
+    };
+    AWDParser.prototype.paresTextField = function (blockID) {
+        this._blocks[blockID].name = this.parseVarStr();
+    };
     AWDParser.prototype.parseAudioBlock = function (blockID, factory) {
         //var asset:Audio;todo create asset for audio
         this._blocks[blockID].name = this.parseVarStr();
@@ -598,22 +688,29 @@ var AWDParser = (function (_super) {
                             commandString += "\n                number of fills = " + numFills;
                             // sound is added to timeline with dedicated Command, as it is no display-object (has no matrix etc)
                             // check if a Geometry can be found at the resourceID (AWD-ID)
-                            var returnedArray = this.getAssetByID(resourceID, [AssetType.GEOMETRY]);
-                            if (returnedArray[0]) {
-                                var geom = returnedArray[1];
-                                newChild = new Mesh(geom);
-                                for (k = 0; k < numFills; k++) {
-                                    var returnedArray2 = this.getAssetByID(this._newBlockBytes.readUnsignedInt(), [AssetType.MATERIAL]);
-                                    if (returnedArray2[0] && newChild.subMeshes.length > k)
-                                        newChild.subMeshes[k].material = returnedArray2[1];
+                            var cmd_asset = this._blocks[resourceID].data;
+                            if (cmd_asset != null) {
+                                if (cmd_asset.assetType == AssetType.GEOMETRY) {
+                                    var geom = cmd_asset;
+                                    newChild = new Mesh(geom);
+                                    for (k = 0; k < numFills; k++) {
+                                        var returnedArray2 = this.getAssetByID(this._newBlockBytes.readUnsignedInt(), [AssetType.MATERIAL]);
+                                        if (returnedArray2[0] && newChild.subMeshes.length > k)
+                                            newChild.subMeshes[k].material = returnedArray2[1];
+                                    }
                                 }
-                            }
-                            else {
-                                for (k = 0; k < numFills; k++)
-                                    this._newBlockBytes.readUnsignedInt();
-                                var returnedArray = this.getAssetByID(resourceID, [AssetType.TIMELINE]);
-                                if (returnedArray[0])
-                                    newChild = returnedArray[1];
+                                else if (cmd_asset.assetType == AssetType.MATERIAL) {
+                                    // there should be no fills in this case, but geometry check might have failed, and fill-ids still need to be parsed
+                                    newChild = new Billboard(cmd_asset);
+                                    for (k = 0; k < numFills; k++)
+                                        this._newBlockBytes.readUnsignedInt();
+                                }
+                                else {
+                                    for (k = 0; k < numFills; k++)
+                                        this._newBlockBytes.readUnsignedInt();
+                                    // for now assume everything that is not texture or geometry is movieclip
+                                    newChild = cmd_asset;
+                                }
                             }
                             instanceID = timeLineContainer.registerPotentialChild(newChild);
                             objectIDMap[objectID] = instanceID;
@@ -991,6 +1088,64 @@ var AWDParser = (function (_super) {
         this._blocks[blockID].data = ctr;
         if (this._debug) {
             console.log("Parsed a Container: Name = '" + name + "' | Parent-Name = " + parentName);
+        }
+    };
+    // Block ID = 23
+    AWDParser.prototype.parseMeshLibraryBlock = function (blockID) {
+        var num_materials;
+        var materials_parsed;
+        var name = this.parseVarStr();
+        var data_id = this._newBlockBytes.readUnsignedInt();
+        var geom;
+        var returnedArrayGeometry = this.getAssetByID(data_id, [AssetType.GEOMETRY]);
+        if (returnedArrayGeometry[0]) {
+            geom = returnedArrayGeometry[1];
+        }
+        else {
+            this._blocks[blockID].addError("Could not find a Geometry for this Mesh. A empty Geometry is created!");
+            geom = new Geometry();
+        }
+        this._blocks[blockID].geoID = data_id;
+        var materials = new Array();
+        num_materials = this._newBlockBytes.readUnsignedShort();
+        var materialNames = new Array();
+        materials_parsed = 0;
+        var returnedArrayMaterial;
+        while (materials_parsed < num_materials) {
+            var mat_id;
+            mat_id = this._newBlockBytes.readUnsignedInt();
+            returnedArrayMaterial = this.getAssetByID(mat_id, [AssetType.MATERIAL]);
+            if ((!returnedArrayMaterial[0]) && (mat_id > 0)) {
+                this._blocks[blockID].addError("Could not find Material Nr " + materials_parsed + " (ID = " + mat_id + " ) for this Mesh");
+            }
+            var m = returnedArrayMaterial[1];
+            materials.push(m);
+            materialNames.push(m.name);
+            materials_parsed++;
+        }
+        var mesh = new Mesh(geom, null);
+        if (materials.length >= 1 && mesh.subMeshes.length == 1) {
+            mesh.material = materials[0];
+        }
+        else if (materials.length > 1) {
+            var i;
+            for (i = 0; i < mesh.subMeshes.length; i++) {
+                mesh.subMeshes[i].material = materials[Math.min(materials.length - 1, i)];
+            }
+        }
+        if ((this._version[0] == 2) && (this._version[1] == 1)) {
+            var props = this.parseProperties({ 1: this._matrixNrType, 2: this._matrixNrType, 3: this._matrixNrType, 4: AWDParser.UINT8, 5: AWDParser.BOOL });
+            mesh.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
+            mesh.castsShadows = props.get(5, true);
+        }
+        else {
+            this.parseProperties(null);
+        }
+        mesh.extra = this.parseUserAttributes();
+        this._pFinalizeAsset(mesh, name);
+        this._blocks[blockID].data = mesh;
+        if (this._debug) {
+            console.log("Parsed a Library-Mesh: Name = '" + name + "| Geometry-Name = " + geom.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames.toString());
         }
     };
     // Block ID = 23
@@ -2580,7 +2735,7 @@ var BitFlags = (function () {
 module.exports = AWDParser;
 
 
-},{"awayjs-core/lib/base/BlendMode":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/textures/BitmapCubeTexture":undefined,"awayjs-core/lib/textures/ImageCubeTexture":undefined,"awayjs-core/lib/textures/ImageTexture":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/CurveSubGeometry":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/materials/CurveMaterial":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-player/lib/fl/factories/AS2SceneGraphFactory":undefined,"awayjs-player/lib/fl/timeline/TimelineKeyFrame":undefined,"awayjs-player/lib/fl/timeline/commands/AddChildCommand":undefined,"awayjs-player/lib/fl/timeline/commands/ApplyAS2DepthsCommand":undefined,"awayjs-player/lib/fl/timeline/commands/RemoveChildCommand":undefined,"awayjs-player/lib/fl/timeline/commands/UpdatePropertyCommand":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
+},{"awayjs-core/lib/base/BlendMode":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/textures/BitmapCubeTexture":undefined,"awayjs-core/lib/textures/ImageCubeTexture":undefined,"awayjs-core/lib/textures/ImageTexture":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/CurveSubGeometry":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Billboard":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/materials/CurveMaterial":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-display/lib/text/TesselatedFont":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-player/lib/fl/factories/AS2SceneGraphFactory":undefined,"awayjs-player/lib/fl/timeline/TimelineKeyFrame":undefined,"awayjs-player/lib/fl/timeline/commands/AddChildCommand":undefined,"awayjs-player/lib/fl/timeline/commands/ApplyAS2DepthsCommand":undefined,"awayjs-player/lib/fl/timeline/commands/RemoveChildCommand":undefined,"awayjs-player/lib/fl/timeline/commands/UpdatePropertyCommand":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }

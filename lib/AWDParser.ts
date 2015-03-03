@@ -97,15 +97,17 @@ import CurveMaterial					= require("awayjs-display/lib/materials/CurveMaterial")
 import BasicMaterial					= require("awayjs-display/lib/materials/BasicMaterial");
 
 
-import TimelineSceneGraphFactory = require("awayjs-player/lib/fl/factories/TimelineSceneGraphFactory");
-import AS2SceneGraphFactory = require("awayjs-player/lib/fl/factories/AS2SceneGraphFactory");
-import MovieClip = require("awayjs-player/lib/fl/display/MovieClip");
-import TimelineKeyFrame = require("awayjs-player/lib/fl/timeline/TimelineKeyFrame");
-import AddChildCommand = require("awayjs-player/lib/fl/timeline/commands/AddChildCommand");
-import UpdatePropertyCommand = require("awayjs-player/lib/fl/timeline/commands/UpdatePropertyCommand");
-import RemoveChildCommand = require("awayjs-player/lib/fl/timeline/commands/RemoveChildCommand");
-import ApplyAS2DepthsCommand = require("awayjs-player/lib/fl/timeline/commands/ApplyAS2DepthsCommand");
+import TimelineSceneGraphFactory 	= require("awayjs-player/lib/fl/factories/TimelineSceneGraphFactory");
+import AS2SceneGraphFactory 		= require("awayjs-player/lib/fl/factories/AS2SceneGraphFactory");
+import MovieClip 					= require("awayjs-player/lib/fl/display/MovieClip");
+import TimelineKeyFrame 			= require("awayjs-player/lib/fl/timeline/TimelineKeyFrame");
+import AddChildCommand 				= require("awayjs-player/lib/fl/timeline/commands/AddChildCommand");
+import UpdatePropertyCommand 		= require("awayjs-player/lib/fl/timeline/commands/UpdatePropertyCommand");
+import RemoveChildCommand 			= require("awayjs-player/lib/fl/timeline/commands/RemoveChildCommand");
+import ApplyAS2DepthsCommand		= require("awayjs-player/lib/fl/timeline/commands/ApplyAS2DepthsCommand");
 
+import Font							= require("awayjs-display/lib/text/Font");
+import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTable");
 /**
  * AWDParser provides a parser for the AWD data type.
  */
@@ -571,9 +573,12 @@ class AWDParser extends ParserBase
 					this.parseAudioBlock(this._cur_block_id, factory);
 					isParsed = true;
 					break;
-				case 4:// just because i used blockID 4 in first exporter earlier
 				case 133:
 					this.parseTimeLine(this._cur_block_id, factory);
+					isParsed = true;
+					break;
+				case 135:
+					this.parseTesselatedFont(this._cur_block_id);
 					isParsed = true;
 					break;
 			}
@@ -727,6 +732,90 @@ class AWDParser extends ParserBase
 
 
 	//--Parser Blocks---------------------------------------------------------------------------
+
+
+	private parseTesselatedFont(blockID:number):void {
+		this._blocks[blockID].name = this.parseVarStr();
+		//console.log("Font name = "+this._blocks[blockID].name);
+		var font_style_cnt:number = this._newBlockBytes.readUnsignedInt();
+		//console.log("Font font_style_cnt = "+font_style_cnt);
+		var new_font:Font=new Font();
+		for (var i:number = 0; i < font_style_cnt; ++i) {
+			var font_style_name:string = this.parseVarStr();
+			//console.log("Font font_style_name = "+font_style_name);
+			var new_font_style:TesselatedFontTable=new_font.get_font_table(font_style_name);
+			new_font_style.set_font_em_size(this._newBlockBytes.readUnsignedInt());
+			//console.log("Font new_font_style.font_em_size = "+new_font_style.get_font_em_size);
+			var font_style_char_cnt:number = this._newBlockBytes.readUnsignedInt();
+			//console.log("Font font_style_char_cnt = "+font_style_char_cnt);
+			for (var i:number = 0; i < font_style_char_cnt; ++i) {
+
+				var font_style_char:number = this._newBlockBytes.readUnsignedInt();
+				//console.log("Font font_style_char = "+font_style_char);
+				// todo: this is basically a simplified version of the subgeom-parsing done in parseTriangleGeometry. Make a parseSubGeom() instead (?)
+				var sm_len:number = this._newBlockBytes.readUnsignedInt();
+				var sm_end:number = this._newBlockBytes.position + sm_len;
+				//console.log("Font sm_len = "+sm_len);
+
+				//this.parseProperties(null); // no properties for font-table subgeos
+				// Loop through data streams
+				while (this._newBlockBytes.position < sm_end) {
+					var idx:number = 0;
+					var str_ftype:number, str_type:number, str_len:number, str_end:number;
+
+					// Type, field type, length
+					str_type = this._newBlockBytes.readUnsignedByte();
+					str_ftype = this._newBlockBytes.readUnsignedByte();
+					str_len = this._newBlockBytes.readUnsignedInt();
+					str_end = this._newBlockBytes.position + str_len;
+
+					if (str_type == 2) {//face indicies positions
+						var indices:Array<number> = new Array<number>();
+
+						while (this._newBlockBytes.position < str_end) {
+							indices[idx++] = this._newBlockBytes.readUnsignedShort();
+						}
+					} else if (str_type == 10) {// combined vertex2D stream 5 x float32
+						var idx_pos:number = 0;
+						var idx_curves:number = 0;
+						var idx_uvs:number = 0;
+
+						var positions:Array<number> = new Array<number>();
+						var curveData:Array<number> = new Array<number>();
+						var uvs:Array<number> = new Array<number>();
+
+						while (this._newBlockBytes.position < str_end) {
+
+							positions[idx_pos++] = this.readNumber(this._accuracyGeo);// x
+							positions[idx_pos++] = this.readNumber(this._accuracyGeo);// y
+							positions[idx_pos++] = this.readNumber(this._accuracyGeo);// type
+
+							curveData[idx_curves++] = this.readNumber(this._accuracyGeo);// curve value 1
+							curveData[idx_curves++] = this.readNumber(this._accuracyGeo);// curve value 2
+
+							uvs[idx_uvs++] = this.readNumber(this._accuracyGeo);// curve value 1
+							uvs[idx_uvs++] = this.readNumber(this._accuracyGeo);// curve value 1
+						}
+					}
+					else {
+						this._newBlockBytes.position = str_end;
+					}
+				}
+				//this.parseProperties(null);// no attributes for font-table subgeos
+				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(true);
+				curve_sub_geom.updateIndices(indices);
+				curve_sub_geom.updatePositions(positions);
+				curve_sub_geom.updateCurves(curveData);
+				curve_sub_geom.updateUVs(uvs);
+				new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
+			}
+
+		}
+		this.parseProperties(null);
+		this.parseUserAttributes();
+		this._pFinalizeAsset(<IAsset>new_font, name);
+		this._blocks[blockID].data = new_font;
+	}
 
 	private parseAudioBlock(blockID:number, factory:TimelineSceneGraphFactory):void {
 

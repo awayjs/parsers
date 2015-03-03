@@ -94,11 +94,16 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    _pStartParsing(frameLimit: number): void;
 	    private dispose();
 	    private parseNextBlock();
+	    private parseTesselatedFont(blockID);
+	    private parseTextFormat(blockID);
+	    private paresTextField(blockID);
 	    private parseAudioBlock(blockID, factory);
 	    private parseTimeLine(blockID, factory);
 	    private parseTriangleGeometrieBlock(blockID);
 	    private parsePrimitves(blockID);
 	    private parseContainer(blockID);
+	    private parseBillBoardLibraryBlock(blockID);
+	    private parseMeshLibraryBlock(blockID);
 	    private parseMeshInstance(blockID);
 	    private parseSkyboxInstance(blockID);
 	    private parseLight(blockID);
