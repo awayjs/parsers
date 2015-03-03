@@ -577,8 +577,16 @@ class AWDParser extends ParserBase
 					this.parseTimeLine(this._cur_block_id, factory);
 					isParsed = true;
 					break;
+				case 134:
+					this.paresTextField(this._cur_block_id);
+					isParsed = true;
+					break;
 				case 135:
 					this.parseTesselatedFont(this._cur_block_id);
+					isParsed = true;
+					break;
+				case 136:
+					this.parseTextFormat(this._cur_block_id);
 					isParsed = true;
 					break;
 			}
@@ -817,6 +825,12 @@ class AWDParser extends ParserBase
 		this._blocks[blockID].data = new_font;
 	}
 
+	private parseTextFormat(blockID:number):void {
+		this._blocks[blockID].name = this.parseVarStr();
+	}
+	private paresTextField(blockID:number):void {
+		this._blocks[blockID].name = this.parseVarStr();
+	}
 	private parseAudioBlock(blockID:number, factory:TimelineSceneGraphFactory):void {
 
 		//var asset:Audio;todo create asset for audio
