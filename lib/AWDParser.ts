@@ -1014,6 +1014,7 @@ class AWDParser extends ParserBase
 			frame.setFrameTime(totalDuration, frameDuration);
 			totalDuration += frameDuration;
 			//console.log("duration = " + frameDuration);
+			traceString += "duration = " + frameDuration;
 
 			var numLabels = this._newBlockBytes.readUnsignedShort();
 			for (j = 0; j < numLabels; j++) {
@@ -1025,8 +1026,9 @@ class AWDParser extends ParserBase
 			}
 
 			var numCommands = this._newBlockBytes.readUnsignedShort();
-			var commandString = "\n      Commands " + numCommands;
+			traceString += "\n      Commands " + numCommands;
 			var hasDepthChanges = false;
+			var commandString = "";
 			for (j = 0; j < numCommands; j++) {
 				var objectID:number;
 				var resourceID:number;
@@ -1041,64 +1043,36 @@ class AWDParser extends ParserBase
 				switch (commandType) {
 
 					case 1:
-					case 2:
 					case 3:
-
+						var valid_command:boolean = false;
 						objectID = this._newBlockBytes.readUnsignedInt();
-						var instanceID=0; // must be set in folling conditions:
-						if (commandType==1) {
+						var instanceID = 0; // must be set in folling conditions:
+						if (commandType == 1) {
 							// this commands looks for a object by awd-id and puts it into the timeline
 							resourceID = this._newBlockBytes.readUnsignedInt();
-
-							var newChild;
-
-							var numFills = this._newBlockBytes.readUnsignedShort();
-							commandString += "\n                number of fills = " + numFills;
-
+							var instanceName = this.parseVarStr();
 							// sound is added to timeline with dedicated Command, as it is no display-object (has no matrix etc)
 							// check if a Geometry can be found at the resourceID (AWD-ID)
-							var returnedArray:any[] = this.getAssetByID(resourceID, [ AssetType.GEOMETRY ]);
-							if (returnedArray[0]) {
-								var geom = <Geometry>returnedArray[1];
-								newChild = new Mesh(geom);
-								// geometry found. create new Command, add the props and the materials to it
-								for (k = 0; k < numFills; k++) {
-									var returnedArray2:any[] = this.getAssetByID(this._newBlockBytes.readUnsignedInt(), [ AssetType.MATERIAL ]);
-									if (returnedArray2[0] && newChild.subMeshes.length > k)
-										newChild.subMeshes[k].material = returnedArray2[1];
-								}
+							var cmd_asset:DisplayObject = <DisplayObject>this._blocks[resourceID].data;
+							if (cmd_asset != null) {
+								instanceID = timeLineContainer.registerPotentialChild(cmd_asset);
+								objectIDMap[objectID] = instanceID;
+								frame.addConstructCommand(new AddChildCommand(instanceID));
 
+								if (instanceName.length) {
+									frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "name", instanceName));
+									commandString += "\n                instanceName = " + instanceName;
+								}
+								valid_command = true;
+								commandString += "\n      - Add new Resource = " + resourceID + " as object_id = " + objectID;
 							}
 							else {
-								// no geometry found, so we check for TIMELINE.
-								// there should be no fills in this case, but geometry check might have failed, and fill-ids still need to be parsed
-								for (k = 0; k < numFills; k++)
-									this._newBlockBytes.readUnsignedInt();
-
-								var returnedArray:any[] = this.getAssetByID(resourceID, [ AssetType.TIMELINE ]);
-								if (returnedArray[0])
-									newChild = <MovieClip>returnedArray[1];
+								commandString += "\n      - ERROR - object_id = " + objectID + " - NO DISPLAY_OBJECT AT ID = " + resourceID;
 							}
-
-							instanceID = timeLineContainer.registerPotentialChild(newChild);
-							objectIDMap[objectID] = instanceID;
-							frame.addConstructCommand(new AddChildCommand(instanceID));
-
-							var instanceName = this.parseVarStr();
-							if (instanceName.length) {
-								frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "name", instanceName));
-								commandString += "\n                instanceName = " + instanceName;
-							}
-							commandString += "\n      - Add new Resource = " + resourceID + " as object_id = " + objectID;
 						}
-						else if (commandType==2) {
-							// this commands looks for a object by global string identifier and puts it into the timeline
-							// this is not used yet, but might be useful to do things like text-localization
-							var global_ressource_id = this.parseVarStr();
-							// todo (if needed)
-						}
-						else {
+						else if (commandType == 3) {
 							instanceID = objectIDMap[objectID];
+							valid_command = true;
 							commandString += "\n      - Update object_id = " + objectID;
 						}
 						// read the command properties
@@ -1109,65 +1083,74 @@ class AWDParser extends ParserBase
 						// 5: visibilty (uint8)
 						// 6: depth (uint32)
 						// 7: mask (uint32)
+						var props:AWDProperties = this.parseProperties({
+							1: this._matrixNrType,
+							2: this._matrixNrType,
+							3: this._propsNrType,
+							4: AWDParser.UINT8,
+							5: AWDParser.UINT8,
+							6: AWDParser.UINT32,
+							7: AWDParser.UINT32
+						});
+						if (valid_command) {
 
-						var props:AWDProperties = this.parseProperties({1:this._matrixNrType, 2:this._matrixNrType, 3:this._propsNrType, 4:AWDParser.UINT8, 5:AWDParser.UINT8, 6:AWDParser.UINT32, 7:AWDParser.UINT32});
+							var matrix_2d:Float32Array = props.get(1, []);
+							//var matrix_3d:Float32Array = props.get(2, []);
+							var colortransform:Float32Array = props.get(3, []);
+							var blendmode:number = props.get(4, -1);
+							var visibilty:number = props.get(5, -1);
+							var depth:number = props.get(6, -1);
+							var mask:number = props.get(7, -1);
+							// todo: handle filters
 
-						var matrix_2d:Float32Array = props.get(1, []);
-						//var matrix_3d:Float32Array = props.get(2, []);
-						var colortransform:Float32Array = props.get(3, []);
-						var blendmode:number = props.get(4, -1);
-						var visibilty:number = props.get(5, -1);
-						var depth:number = props.get(6, -1);
-						var mask:number = props.get(7, -1);
-						// todo: handle filters
+							//matrix2d must provide 6 values to be valid
 
-						//matrix2d must provide 6 values to be valid
+							commandString += "\n                transformArray = " + matrix_2d.length;
+							if (matrix_2d.length == 6) {
+								var thisMatrix = new Matrix3D();
+								thisMatrix.position = new Vector3D(matrix_2d[4], matrix_2d[5], 0);
+								// todo is this correct for 2d -> 3d scale and rotation. (i doubt it)
+								thisMatrix.rawData[0] = matrix_2d[0];
+								thisMatrix.rawData[1] = matrix_2d[1];
+								thisMatrix.rawData[4] = matrix_2d[2];
+								thisMatrix.rawData[5] = matrix_2d[3];
+								frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "_iMatrix3D", thisMatrix));
 
-						commandString += "\n                transformArray = " + matrix_2d.length;
-						if (matrix_2d.length==6) {
-							var thisMatrix = new Matrix3D();
-							// todo set rotation + scale from matrix 2x3 to matrix3d
-							thisMatrix.position = new Vector3D(matrix_2d[4], matrix_2d[5], 0);
-							thisMatrix.rawData[0]=matrix_2d[0];
-							thisMatrix.rawData[1]=matrix_2d[1];
-							thisMatrix.rawData[4]=matrix_2d[2];
-							thisMatrix.rawData[5]=matrix_2d[3];
-							frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "_iMatrix3D", thisMatrix));
+								commandString += "\n                transformArray = " + matrix_2d;
+							}
+							//matrix2d must provide 20 values to be valid
+							if (colortransform.length == 20) {
+								// TODO: set ColorTransform on objectProps
+								commandString += "\n                colorMatrix = " + colortransform;
+							}
 
-							commandString += "\n                transformArray = " + matrix_2d;
+							// blendmode must be positive to be valid
+							if (blendmode >= 0) {
+								var blendmode_string:string = this.blendModeDic[blendmode];
+								// TODO: set Blendmode on objectProps
+								commandString += "\n                BlendMode = " + blendmode_string;
+							}
+							// visibilty must be positive to be valid
+							if (visibilty >= 0) {
+								if (visibilty == 0)
+									frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "visible", false));
+								else
+									frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "visible", true));
+							}
+							// depth must be positive to be valid
+							if (depth >= 0) {
+								commandString += "\n                Depth = " + depth;
+								frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "__AS2Depth", depth));
+								hasDepthChanges = true;
+							}
+							// mask must be positive to be valid. i think only add-commands will have this value.
+							// e.g. it should never be updated on already existing objects. (because depth of objects can change, i am not sure)
+							if (mask >= 0) {
+								commandString += "\n                Mask-up to obj-id: " + mask;
+								// TODO: set depthClipChange on objectProps
+							}
+							// todo: handle filters
 						}
-						//matrix2d must provide 20 values to be valid
-						if (colortransform.length==20) {
-							// TODO: set ColorTransform on objectProps
-							commandString += "\n                colorMatrix = " + colortransform;
-						}
-
-						// blendmode must be positive to be valid
-						if (blendmode>=0) {
-							var blendmode_string:string = this.blendModeDic[blendmode];
-							// TODO: set Blendmode on objectProps
-							commandString += "\n                BlendMode = " + blendmode_string;
-						}
-						// visibilty must be positive to be valid
-						if (visibilty>=0) {
-							if(visibilty==0)
-								frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "visible", false));
-							else
-								frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "visible", true));
-						}
-						// depth must be positive to be valid
-						if (depth>=0) {
-							commandString += "\n                Depth = " + depth;
-							frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "__AS2Depth", depth));
-							hasDepthChanges = true;
-						}
-						// mask must be positive to be valid. i think only add-commands will have this value.
-						// e.g. it should never be updated on already existing objects. (because depth of objects can change, i am not sure)
-						if (mask>=0) {
-							commandString += "\n                Mask-up to obj-id: " + mask;
-							// TODO: set depthClipChange on objectProps
-						}
-						// todo: handle filters
 						break;
 
 					case 4:
@@ -1213,7 +1196,7 @@ class AWDParser extends ParserBase
 			traceString += commandString;
 			//trace("length_code = "+length_code+" frame_code = "+frame_code);
 			this._newBlockBytes.readUnsignedInt();// user attributes - skip for now
-			//console.log(traceString);
+			console.log(traceString);
 			timeLineContainer.addFrame(frame);
 
 		}
@@ -1223,7 +1206,6 @@ class AWDParser extends ParserBase
 		this.parseProperties(null);
 		this.parseUserAttributes();
 	}
-
 	//Block ID = 1
 	private parseTriangleGeometrieBlock(blockID:number):void
 	{
