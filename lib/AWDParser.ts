@@ -569,6 +569,10 @@ class AWDParser extends ParserBase
 			var factory = new AS2SceneGraphFactory();
 
 			switch (type) {
+				case 24:
+					this.parseMeshLibraryBlock(this._cur_block_id);
+					isParsed = true;
+					break;
 				case 44:
 					this.parseAudioBlock(this._cur_block_id, factory);
 					isParsed = true;
@@ -830,6 +834,74 @@ class AWDParser extends ParserBase
 	}
 	private paresTextField(blockID:number):void {
 		this._blocks[blockID].name = this.parseVarStr();
+	}
+
+	// Block ID = 24
+	private parseMeshLibraryBlock(blockID:number):void {
+		var num_materials:number;
+		var materials_parsed:number;
+
+		var name:string = this.parseVarStr();
+
+		var data_id:number = this._newBlockBytes.readUnsignedInt();
+		var geom:Geometry;
+		var returnedArrayGeometry:Array<any> = this.getAssetByID(data_id, [AssetType.GEOMETRY])
+
+		if (returnedArrayGeometry[0]) {
+			geom = <Geometry> returnedArrayGeometry[1];
+		} else {
+			this._blocks[blockID].addError("Could not find a Geometry for this Mesh. A empty Geometry is created!");
+			geom = new Geometry();
+		}
+
+		this._blocks[blockID].geoID = data_id;
+		var materials:Array<MaterialBase> = new Array<MaterialBase>();
+		num_materials = this._newBlockBytes.readUnsignedShort();
+
+		var materialNames:Array<string> = new Array<string>();
+		materials_parsed = 0;
+
+		var returnedArrayMaterial:Array<any>;
+
+		while (materials_parsed < num_materials) {
+			var mat_id:number;
+			mat_id = this._newBlockBytes.readUnsignedInt();
+			returnedArrayMaterial = this.getAssetByID(mat_id, [AssetType.MATERIAL])
+			if ((!returnedArrayMaterial[0]) && (mat_id > 0)) {
+				this._blocks[blockID].addError("Could not find Material Nr " + materials_parsed + " (ID = " + mat_id + " ) for this Mesh");
+			}
+
+			var m:MaterialBase = <MaterialBase> returnedArrayMaterial[1];
+
+			materials.push(m);
+			materialNames.push(m.name);
+
+			materials_parsed++;
+		}
+
+		var mesh:Mesh = new Mesh(geom, null);
+
+
+		if (materials.length >= 1 && mesh.subMeshes.length == 1) {
+			mesh.material = materials[0];
+		} else if (materials.length > 1) {
+			var i:number;
+
+			// Assign each sub-mesh in the mesh a material from the list. If more sub-meshes
+			// than materials, repeat the last material for all remaining sub-meshes.
+			for (i = 0; i < mesh.subMeshes.length; i++) {
+				mesh.subMeshes[i].material = materials[Math.min(materials.length - 1, i)];
+			}
+		}
+		this.parseProperties(null);
+		mesh.extra = this.parseUserAttributes();
+
+		this._pFinalizeAsset(<IAsset> mesh, name);
+		this._blocks[blockID].data = mesh;
+
+		if (this._debug) {
+			console.log("Parsed a Library-Mesh: Name = '" + name + "| Geometry-Name = " + geom.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames.toString());
+		}
 	}
 	private parseAudioBlock(blockID:number, factory:TimelineSceneGraphFactory):void {
 
