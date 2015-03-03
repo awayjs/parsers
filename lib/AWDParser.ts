@@ -573,6 +573,10 @@ class AWDParser extends ParserBase
 					this.parseMeshLibraryBlock(this._cur_block_id);
 					isParsed = true;
 					break;
+				case 25:
+					this.parseBillBoardLibraryBlock(this._cur_block_id);
+					isParsed = true;
+					break;
 				case 44:
 					this.parseAudioBlock(this._cur_block_id, factory);
 					isParsed = true;
@@ -836,6 +840,36 @@ class AWDParser extends ParserBase
 		this._blocks[blockID].name = this.parseVarStr();
 	}
 
+	// Block ID = 25
+	private parseBillBoardLibraryBlock(blockID:number):void {
+
+		var name:string = this.parseVarStr();
+
+		var data_id:number = this._newBlockBytes.readUnsignedInt();
+		var mat:BasicMaterial;
+		var returnedArrayMaterial:Array<any> = this.getAssetByID(data_id, [AssetType.MATERIAL])
+
+		if (returnedArrayMaterial[0]) {
+			mat = <BasicMaterial> returnedArrayMaterial[1];
+		} else {
+			this._blocks[blockID].addError("Could not find a Material for this Billboard. A empty material is created!");
+			mat = new BasicMaterial();
+		}
+		mat.bothSides=true;
+		var billboard:Billboard = new Billboard(mat);
+
+		// todo: optional matrix etc can be put in properties.
+		this.parseProperties(null);
+
+		billboard.extra = this.parseUserAttributes();
+
+		this._pFinalizeAsset(<IAsset> billboard, name);
+		this._blocks[blockID].data = billboard;
+
+		if (this._debug) {
+			console.log("Parsed a Library-Billboard: Name = '" + name + "| Material-Name = " + mat.name);
+		}
+	}
 	// Block ID = 24
 	private parseMeshLibraryBlock(blockID:number):void {
 		var num_materials:number;
