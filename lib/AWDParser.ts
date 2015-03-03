@@ -32,6 +32,7 @@ import DirectionalLight					= require("awayjs-display/lib/entities/DirectionalLi
 import PointLight						= require("awayjs-display/lib/entities/PointLight");
 import Camera							= require("awayjs-display/lib/entities/Camera");
 import Mesh								= require("awayjs-display/lib/entities/Mesh");
+import Billboard						= require("awayjs-display/lib/entities/Billboard");
 import Skybox							= require("awayjs-display/lib/entities/Skybox");
 import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
 import LightPickerBase					= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
