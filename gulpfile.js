@@ -170,7 +170,7 @@ gulp.task('commit', ['package-min'], function(callback){
         stdout.forEach(function (line) {
             if (line.indexOf('build/') != -1)
                 buildModified = true;
-            else
+            else if (line.indexOf(' M ') != -1)
                 packageModified = true;
         });
 
