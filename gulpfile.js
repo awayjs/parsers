@@ -15,6 +15,10 @@ var livereload = require('gulp-livereload');
 
 var typescript = require('gulp-typescript');
 
+var package = require('./package.json');
+var shell = require('gulp-shell');
+var git = require('gulp-git');
+
 gulp.task('compile', function() {
     var tsProject = typescript.createProject({
         declarationFiles: true,
@@ -152,3 +156,39 @@ function bundleShare(b) {
 function unixStylePath(filePath) {
     return filePath.split(path.sep).join('/');
 }
+
+
+gulp.task('commit', ['package-min'], function(){
+    return gulp.src('./build/*')
+        .pipe(git.commit('update build files'))
+        .on('error', function(err) {
+            console.log(err);
+        });
+});
+
+
+gulp.task('version', ['commit'], function(){
+    return gulp.src('')
+        .pipe(shell([
+            'npm version patch'
+        ])).on('error', function(err) {
+            throw err;
+        });
+});
+
+gulp.task('push', ['version'], function(){
+    return git.push('origin', 'dev', function (err) {
+        if (err)
+            throw err;
+    })
+
+});
+
+gulp.task('publish', ['push'], function(){
+    return gulp.src('')
+        .pipe(shell([
+            'npm publish'
+        ])).on('error', function(err) {
+            throw err;
+        });
+});
