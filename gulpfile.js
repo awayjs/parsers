@@ -160,8 +160,9 @@ function unixStylePath(filePath) {
 
 gulp.task('commit', ['package-min'], function(){
     return gulp.src('./build/*')
-        .pipe(git.commit('update build files'), function (err) {
-            if (err) throw err;
+        .pipe(git.commit('update build files'))
+        .on('error', function(err) {
+            console.log(err);
         });
 });
 
@@ -177,7 +178,8 @@ gulp.task('version', ['commit'], function(){
 
 gulp.task('push', ['version'], function(){
     return git.push('origin', 'dev', function (err) {
-        if (err) throw err;
+        if (err)
+            throw err;
     })
 
 });
