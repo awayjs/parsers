@@ -17,6 +17,7 @@ var typescript = require('gulp-typescript');
 
 var shell = require('gulp-shell');
 var git = require('gulp-git');
+var package = require('./package.json');
 
 gulp.task('compile', function() {
     var tsProject = typescript.createProject({
@@ -204,7 +205,7 @@ gulp.task('version', ['commit'], function(callback){
 gulp.task('push', ['version'], function(callback){
     gulp.src('')
         .pipe(shell([
-            'git push'
+            'git push origin v' + package.version
         ])).on('error', function(err) {
             throw err;
         }).on('end', callback);
