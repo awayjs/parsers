@@ -157,7 +157,6 @@ function unixStylePath(filePath) {
     return filePath.split(path.sep).join('/');
 }
 
-
 gulp.task('commit', ['package-min'], function(callback){
 
     git.status({args:'--porcelain'}, function(err, stdout) {
@@ -205,7 +204,7 @@ gulp.task('version', ['commit'], function(callback){
 gulp.task('push', ['version'], function(callback){
     gulp.src('')
         .pipe(shell([
-            'git push origin v' + package.version
+            'git push origin dev --tags'
         ])).on('error', function(err) {
             throw err;
         }).on('end', callback);
