@@ -32,6 +32,7 @@ import DirectionalLight					= require("awayjs-display/lib/entities/DirectionalLi
 import PointLight						= require("awayjs-display/lib/entities/PointLight");
 import Camera							= require("awayjs-display/lib/entities/Camera");
 import Mesh								= require("awayjs-display/lib/entities/Mesh");
+import TextField						= require("awayjs-display/lib/entities/TextField");
 import Billboard						= require("awayjs-display/lib/entities/Billboard");
 import Skybox							= require("awayjs-display/lib/entities/Skybox");
 import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
@@ -98,17 +99,18 @@ import CurveMaterial					= require("awayjs-display/lib/materials/CurveMaterial")
 import BasicMaterial					= require("awayjs-display/lib/materials/BasicMaterial");
 
 
-import TimelineSceneGraphFactory 	= require("awayjs-player/lib/factories/TimelineSceneGraphFactory");
-import AS2SceneGraphFactory 		= require("awayjs-player/lib/factories/AS2SceneGraphFactory");
-import MovieClip 					= require("awayjs-player/lib/display/MovieClip");
-import TimelineKeyFrame 			= require("awayjs-player/lib/timeline/TimelineKeyFrame");
-import AddChildCommand 				= require("awayjs-player/lib/timeline/commands/AddChildCommand");
-import UpdatePropertyCommand 		= require("awayjs-player/lib/timeline/commands/UpdatePropertyCommand");
-import RemoveChildCommand 			= require("awayjs-player/lib/timeline/commands/RemoveChildCommand");
-import ApplyAS2DepthsCommand		= require("awayjs-player/lib/timeline/commands/ApplyAS2DepthsCommand");
+import TimelineSceneGraphFactory 	= require("awayjs-player/lib/fl/factories/TimelineSceneGraphFactory");
+import AS2SceneGraphFactory 		= require("awayjs-player/lib/fl/factories/AS2SceneGraphFactory");
+import MovieClip 					= require("awayjs-player/lib/fl/display/MovieClip");
+import TimelineKeyFrame 			= require("awayjs-player/lib/fl/timeline/TimelineKeyFrame");
+import AddChildCommand 				= require("awayjs-player/lib/fl/timeline/commands/AddChildCommand");
+import UpdatePropertyCommand 		= require("awayjs-player/lib/fl/timeline/commands/UpdatePropertyCommand");
+import RemoveChildCommand 			= require("awayjs-player/lib/fl/timeline/commands/RemoveChildCommand");
+import ApplyAS2DepthsCommand		= require("awayjs-player/lib/fl/timeline/commands/ApplyAS2DepthsCommand");
 
 import Font							= require("awayjs-display/lib/text/Font");
 import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTable");
+import TextFormat			= require("awayjs-display/lib/text/TextFormat");
 /**
  * AWDParser provides a parser for the AWD data type.
  */
@@ -752,7 +754,8 @@ class AWDParser extends ParserBase
 
 
 	private parseTesselatedFont(blockID:number):void {
-		this._blocks[blockID].name = this.parseVarStr();
+		var name:string = this.parseVarStr();
+		this._blocks[blockID].name = name;
 		//console.log("Font name = "+this._blocks[blockID].name);
 		var font_style_cnt:number = this._newBlockBytes.readUnsignedInt();
 		//console.log("Font font_style_cnt = "+font_style_cnt);
@@ -826,19 +829,132 @@ class AWDParser extends ParserBase
 				curve_sub_geom.updateUVs(uvs);
 				new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
 			}
+			console.log("Parsed a font-table");
 
 		}
+		//console.log("Parsed a font");
 		this.parseProperties(null);
 		this.parseUserAttributes();
 		this._pFinalizeAsset(<IAsset>new_font, name);
 		this._blocks[blockID].data = new_font;
+		if (this._debug) {
+			console.log("Parsed a font: Name = '" + name);
+		}
+
 	}
 
 	private parseTextFormat(blockID:number):void {
-		this._blocks[blockID].name = this.parseVarStr();
+		var name:string = this.parseVarStr();
+		this._blocks[blockID].name = name;
+		//console.log("this._blocks[blockID].name  '" + this._blocks[blockID].name );
+		var font_id:number = this._newBlockBytes.readUnsignedInt();
+		//console.log("font_id  '" + font_id);
+		var font_style_name:string = this.parseVarStr();
+		//console.log("font_style_name  '" + font_style_name);
+		var returnArrayFont:Array<any> = this.getAssetByID(font_id, [AssetType.FONT]);
+		var font:Font;
+		if (returnArrayFont[0]) {
+			font = <Font> returnArrayFont[1];
+		} else {
+			this._blocks[blockID].addError("Could not find a Font for this TextFormat. A empty Font is created!");
+			font = new Font();
+		}
+		var newTextFormat:TextFormat = new TextFormat();
+		newTextFormat.font_name = font.name;
+		var font_table:TesselatedFontTable = font.get_font_table(font_style_name);
+		if(font_table!=null){
+			newTextFormat.font_style = font_style_name;
+			newTextFormat.font_table = font_table;
+		}
+
+		var data_id:number = this._newBlockBytes.readUnsignedInt();
+		//console.log("mat  '" + data_id);
+		var mat:BasicMaterial;
+		var returnedArrayMaterial:Array<any> = this.getAssetByID(data_id, [AssetType.MATERIAL]);
+
+		if (returnedArrayMaterial[0]) {
+			mat = <BasicMaterial> returnedArrayMaterial[1];
+		} else {
+			this._blocks[blockID].addError("Could not find a Material for this TextFormat. Default Material will be used!");
+			mat = new BasicMaterial();
+		}
+		mat.bothSides=true;
+
+		var num_uv_values:number = this._newBlockBytes.readUnsignedByte();
+		//console.log("num_uv_values  '" + num_uv_values);
+		for(var uvcnt:number=0; uvcnt<num_uv_values; uvcnt++){
+			var uv_value:number=this._newBlockBytes.readFloat();
+			//console.log("uv_value  '" + uv_value);
+		}
+		var format_props:AWDProperties = this.parseProperties({1:AWDParser.UINT16, 2:AWDParser.UINT16, 3:AWDParser.UINT8,4:AWDParser.UINT8,5:AWDParser.UINT8});
+
+		newTextFormat.size = format_props.get(1,12);
+		newTextFormat.letterSpacing = format_props.get(2,0);
+		//newTextFormat.rotated = format_props.get(3,false);
+		newTextFormat.kerning = format_props.get(4,true);
+		//newTextFormat.baseline_shift = format_props.get(5,1);
+		newTextFormat.material = mat;
+		this.parseUserAttributes();// textformat has no extra-properties
+		//newTextFormat.extra =
+
+		this._pFinalizeAsset(<IAsset> newTextFormat, name);
+		this._blocks[blockID].data = newTextFormat;
+
+		if (this._debug) {
+			console.log("Parsed a TextFormat: Name = '" + name + " font: "+font.name);
+		}
+
 	}
 	private paresTextField(blockID:number):void {
-		this._blocks[blockID].name = this.parseVarStr();
+		var name:string = this.parseVarStr();
+		this._blocks[blockID].name = name;
+		//console.log("name  '" + name);
+		var newTextField:TextField = new TextField();
+		var num_paragraphs:number = this._newBlockBytes.readUnsignedInt();
+		var complete_text:string = "";
+		//console.log("num_paragraphs  '" + num_paragraphs);
+		for(var paracnt:number=0; paracnt<num_paragraphs; paracnt++){
+
+			var num_textruns:number = this._newBlockBytes.readUnsignedInt();
+			//console.log("num_textruns  '" + num_textruns);
+			for(var textrun_cnt:number=0; textrun_cnt<num_textruns; textrun_cnt++) {
+
+				var format_id:number = this._newBlockBytes.readUnsignedInt();
+				//console.log("format_id  '" + format_id);
+				var text_format:TextFormat;
+				var textFormatArray:Array<any> = this.getAssetByID(format_id, [AssetType.TEXTFORMAT]);
+				if (textFormatArray[0]) {
+					text_format = <TextFormat> textFormatArray[1];
+				} else {
+					this._blocks[blockID].addError("Could not find a Material for this Billboard. A empty material is created!");
+					text_format = new TextFormat();
+				}
+				//console.log("text_format  '" + text_format.name);
+				var txt_length = this._newBlockBytes.readUnsignedInt();
+				//console.log("txt_length  '" + txt_length);
+				if (txt_length > 0) {
+					var this_txt:string = this._newBlockBytes.readUTFBytes(txt_length);
+					newTextField.appendText(this_txt, text_format);
+					complete_text+=this_txt;
+					//console.log("this_txt  '" + this_txt);
+				}
+			}
+			newTextField.closeParagraph();
+		}
+		newTextField.construct_geometry();
+		// todo: optional matrix etc can be put in properties.
+		this.parseProperties(null);
+
+		newTextField.extra = this.parseUserAttributes();
+
+		//console.log("Parsed a TextField: Name = '" + name + "| text  = " + complete_text);
+		this._pFinalizeAsset(<IAsset> newTextField, name);
+		this._blocks[blockID].data = newTextField;
+
+		if (this._debug) {
+			console.log("Parsed a TextField: Name = '" + name + "| text  = " + complete_text);
+		}
+
 	}
 
 	// Block ID = 25
@@ -848,7 +964,7 @@ class AWDParser extends ParserBase
 
 		var data_id:number = this._newBlockBytes.readUnsignedInt();
 		var mat:BasicMaterial;
-		var returnedArrayMaterial:Array<any> = this.getAssetByID(data_id, [AssetType.MATERIAL])
+		var returnedArrayMaterial:Array<any> = this.getAssetByID(data_id, [AssetType.MATERIAL]);
 
 		if (returnedArrayMaterial[0]) {
 			mat = <BasicMaterial> returnedArrayMaterial[1];
