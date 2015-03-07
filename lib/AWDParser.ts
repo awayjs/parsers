@@ -1216,7 +1216,7 @@ class AWDParser extends ParserBase
 							var blendmode:number = props.get(4, -1);
 							var visibilty:number = props.get(5, -1);
 							var depth:number = props.get(6, -1);
-							var mask:number = props.get(7, -1);
+							var mask:Array<number> = props.get(7, []);
 							// todo: handle filters
 
 							//matrix2d must provide 6 values to be valid
@@ -1261,9 +1261,15 @@ class AWDParser extends ParserBase
 							}
 							// mask must be positive to be valid. i think only add-commands will have this value.
 							// e.g. it should never be updated on already existing objects. (because depth of objects can change, i am not sure)
-							if (mask >= 0) {
-								commandString += "\n                Mask-up to obj-id: " + mask;
-								// TODO: set depthClipChange on objectProps
+							if (mask.length > 0) {
+								if((mask.length==1)&&(mask[0]<0)){
+									// TODO: this object is used as mask
+									commandString += "\n                obj is used as mask";
+								}
+								else{
+									// TODO: this object is masked by one or more objects defined by ids in mask-array
+									commandString += "\n                obj is masked by "+mask.length+" objects";
+								}
 							}
 							// todo: handle filters
 						}
