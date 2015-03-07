@@ -98,15 +98,14 @@ import CurveSubGeometry					= require("awayjs-display/lib/base/CurveSubGeometry"
 import CurveMaterial					= require("awayjs-display/lib/materials/CurveMaterial")
 import BasicMaterial					= require("awayjs-display/lib/materials/BasicMaterial");
 
-
-import TimelineSceneGraphFactory 	= require("awayjs-player/lib/fl/factories/TimelineSceneGraphFactory");
-import AS2SceneGraphFactory 		= require("awayjs-player/lib/fl/factories/AS2SceneGraphFactory");
-import MovieClip 					= require("awayjs-player/lib/fl/display/MovieClip");
-import TimelineKeyFrame 			= require("awayjs-player/lib/fl/timeline/TimelineKeyFrame");
-import AddChildCommand 				= require("awayjs-player/lib/fl/timeline/commands/AddChildCommand");
-import UpdatePropertyCommand 		= require("awayjs-player/lib/fl/timeline/commands/UpdatePropertyCommand");
-import RemoveChildCommand 			= require("awayjs-player/lib/fl/timeline/commands/RemoveChildCommand");
-import ApplyAS2DepthsCommand		= require("awayjs-player/lib/fl/timeline/commands/ApplyAS2DepthsCommand");
+import TimelineSceneGraphFactory 	= require("awayjs-player/lib/factories/TimelineSceneGraphFactory");
+import AS2SceneGraphFactory 		= require("awayjs-player/lib/factories/AS2SceneGraphFactory");
+import MovieClip 					= require("awayjs-player/lib/display/MovieClip");
+import TimelineKeyFrame 			= require("awayjs-player/lib/timeline/TimelineKeyFrame");
+import AddChildCommand 				= require("awayjs-player/lib/timeline/commands/AddChildCommand");
+import UpdatePropertyCommand 		= require("awayjs-player/lib/timeline/commands/UpdatePropertyCommand");
+import RemoveChildCommand 			= require("awayjs-player/lib/timeline/commands/RemoveChildCommand");
+import ApplyAS2DepthsCommand		= require("awayjs-player/lib/timeline/commands/ApplyAS2DepthsCommand");
 
 import Font							= require("awayjs-display/lib/text/Font");
 import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTable");
