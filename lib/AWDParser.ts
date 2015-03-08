@@ -1,5 +1,9 @@
-import BitmapData						= require("awayjs-core/lib/base/BitmapData");
-import BlendMode						= require("awayjs-core/lib/base/BlendMode");
+import BitmapData						= require("awayjs-core/lib/data/BitmapData");
+import BlendMode						= require("awayjs-core/lib/data/BlendMode");
+import Geometry							= require("awayjs-core/lib/data/Geometry");
+import SubGeometryBase					= require("awayjs-core/lib/data/SubGeometryBase");
+import CurveSubGeometry					= require("awayjs-core/lib/data/CurveSubGeometry");
+import TriangleSubGeometry				= require("awayjs-core/lib/data/TriangleSubGeometry");
 import ColorTransform					= require("awayjs-core/lib/geom/ColorTransform");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
@@ -25,9 +29,7 @@ import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
 
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import DisplayObject					= require("awayjs-display/lib/base/DisplayObject");
-import Geometry							= require("awayjs-display/lib/base/Geometry");
 import LightBase						= require("awayjs-display/lib/base/LightBase");
-import TriangleSubGeometry				= require("awayjs-display/lib/base/TriangleSubGeometry");
 import DirectionalLight					= require("awayjs-display/lib/entities/DirectionalLight");
 import PointLight						= require("awayjs-display/lib/entities/PointLight");
 import Camera							= require("awayjs-display/lib/entities/Camera");
@@ -93,8 +95,6 @@ import SpecularPhongMethod				= require("awayjs-methodmaterials/lib/methods/Spec
 import ShadowNearMethod					= require("awayjs-methodmaterials/lib/methods/ShadowNearMethod");
 import ShadowSoftMethod					= require("awayjs-methodmaterials/lib/methods/ShadowSoftMethod");
 
-import SubGeometryBase					= require("awayjs-display/lib/base/SubGeometryBase");
-import CurveSubGeometry					= require("awayjs-display/lib/base/CurveSubGeometry");
 import CurveMaterial					= require("awayjs-display/lib/materials/CurveMaterial")
 import BasicMaterial					= require("awayjs-display/lib/materials/BasicMaterial");
 
@@ -1469,7 +1469,7 @@ class AWDParser extends ParserBase
 					triangle_sub_geom.autoDeriveNormals = false;
 				if (uvs)
 					triangle_sub_geom.autoDeriveUVs = false;
-				triangle_sub_geom.autoDeriveNormals = false;
+				//triangle_sub_geom.autoDeriveNormals = false;
 				if (true) {
 					triangle_sub_geom.autoDeriveTangents = true;
 				}
