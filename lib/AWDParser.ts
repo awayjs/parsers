@@ -167,6 +167,7 @@ class AWDParser extends ParserBase
 
 	private blendModeDic:Array<string>;
 	private _depthSizeDic:Array<number>;
+	private _allFontTables:Array<TesselatedFontTable>;
 
 	/**
 	 * Creates a new AWDParser object.
@@ -881,10 +882,13 @@ class AWDParser extends ParserBase
 
 		var num_uv_values:number = this._newBlockBytes.readUnsignedByte();
 		//console.log("num_uv_values  '" + num_uv_values);
+		var uv_values:Array<number>=[];
 		for(var uvcnt:number=0; uvcnt<num_uv_values; uvcnt++){
 			var uv_value:number=this._newBlockBytes.readFloat();
+			uv_values.push(uv_value);
 			//console.log("uv_value  '" + uv_value);
 		}
+		newTextFormat.uv_values=uv_values;
 		var format_props:AWDProperties = this.parseProperties({1:AWDParser.UINT16, 2:AWDParser.UINT16, 3:AWDParser.UINT8,4:AWDParser.UINT8,5:AWDParser.UINT8});
 
 		newTextFormat.size = format_props.get(1,12);
@@ -904,6 +908,7 @@ class AWDParser extends ParserBase
 		}
 
 	}
+
 	private paresTextField(blockID:number):void {
 		var name:string = this.parseVarStr();
 		this._blocks[blockID].name = name;
@@ -912,6 +917,7 @@ class AWDParser extends ParserBase
 		var num_paragraphs:number = this._newBlockBytes.readUnsignedInt();
 		var complete_text:string = "";
 		//console.log("num_paragraphs  '" + num_paragraphs);
+		var text_format:TextFormat;
 		for(var paracnt:number=0; paracnt<num_paragraphs; paracnt++){
 
 			var num_textruns:number = this._newBlockBytes.readUnsignedInt();
@@ -920,7 +926,6 @@ class AWDParser extends ParserBase
 
 				var format_id:number = this._newBlockBytes.readUnsignedInt();
 				//console.log("format_id  '" + format_id);
-				var text_format:TextFormat;
 				var textFormatArray:Array<any> = this.getAssetByID(format_id, [AssetType.TEXTFORMAT]);
 				if (textFormatArray[0]) {
 					text_format = <TextFormat> textFormatArray[1];
@@ -933,14 +938,16 @@ class AWDParser extends ParserBase
 				//console.log("txt_length  '" + txt_length);
 				if (txt_length > 0) {
 					var this_txt:string = this._newBlockBytes.readUTFBytes(txt_length);
-					newTextField.appendText(this_txt, text_format);
+					//newTextField.appendText(this_txt, text_format);
 					complete_text+=this_txt;
 					//console.log("this_txt  '" + this_txt);
 				}
 			}
-			newTextField.closeParagraph();
+			//newTextField.closeParagraph();
 		}
-		newTextField.construct_geometry();
+		newTextField.textFormat=text_format;
+		newTextField.text=complete_text;
+		//newTextField.construct_geometry();
 		// todo: optional matrix etc can be put in properties.
 		this.parseProperties(null);
 
