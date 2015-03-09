@@ -904,9 +904,15 @@ var AWDParser = (function (_super) {
                             3: this._propsNrType,
                             4: AWDParser.UINT8,
                             5: AWDParser.UINT8,
-                            6: AWDParser.UINT32,
-                            7: AWDParser.UINT32
+                            6: AWDParser.UINT32
                         });
+                        // todo: fix property parsing so we can read variable size list (atm list with size = 1 is returned as single number)
+                        // for this reason, for now the mask-property is read sepperatly
+                        var mask_id_nums = this._newBlockBytes.readUnsignedInt();
+                        var mask_ids = new Array();
+                        for (var mi_cnt = 0; mi_cnt < mask_id_nums; mi_cnt++) {
+                            mask_ids.push(this._newBlockBytes.readUnsignedInt());
+                        }
                         if (valid_command) {
                             var matrix_2d = props.get(1, []);
                             //var matrix_3d:Float32Array = props.get(2, []);
@@ -955,14 +961,17 @@ var AWDParser = (function (_super) {
                             }
                             // mask must be positive to be valid. i think only add-commands will have this value.
                             // e.g. it should never be updated on already existing objects. (because depth of objects can change, i am not sure)
-                            if (mask.length > 0) {
-                                if ((mask.length == 1) && (mask[0] < 0)) {
+                            if (mask_ids.length > 0) {
+                                if ((mask_ids.length == 1) && (mask_ids[0] == 0)) {
                                     // TODO: this object is used as mask
                                     commandString += "\n                obj is used as mask";
                                 }
                                 else {
                                     // TODO: this object is masked by one or more objects defined by ids in mask-array
-                                    commandString += "\n                obj is masked by " + mask.length + " objects";
+                                    commandString += "\n                obj is masked by " + mask_ids.length + " objects";
+                                    for (var cm = 0; cm < mask_ids.length; cm++) {
+                                        commandString += "\n                obj is masked by " + mask_ids[cm];
+                                    }
                                 }
                             }
                         }
