@@ -646,9 +646,13 @@ var AWDParser = (function (_super) {
         }
         mat.bothSides = true;
         var num_uv_values = this._newBlockBytes.readUnsignedByte();
+        //console.log("num_uv_values  '" + num_uv_values);
+        var uv_values = [];
         for (var uvcnt = 0; uvcnt < num_uv_values; uvcnt++) {
             var uv_value = this._newBlockBytes.readFloat();
+            uv_values.push(uv_value);
         }
+        newTextFormat.uv_values = uv_values;
         var format_props = this.parseProperties({ 1: AWDParser.UINT16, 2: AWDParser.UINT16, 3: AWDParser.UINT8, 4: AWDParser.UINT8, 5: AWDParser.UINT8 });
         newTextFormat.size = format_props.get(1, 12);
         newTextFormat.letterSpacing = format_props.get(2, 0);
@@ -671,12 +675,13 @@ var AWDParser = (function (_super) {
         var newTextField = new TextField();
         var num_paragraphs = this._newBlockBytes.readUnsignedInt();
         var complete_text = "";
+        //console.log("num_paragraphs  '" + num_paragraphs);
+        var text_format;
         for (var paracnt = 0; paracnt < num_paragraphs; paracnt++) {
             var num_textruns = this._newBlockBytes.readUnsignedInt();
             for (var textrun_cnt = 0; textrun_cnt < num_textruns; textrun_cnt++) {
                 var format_id = this._newBlockBytes.readUnsignedInt();
                 //console.log("format_id  '" + format_id);
-                var text_format;
                 var textFormatArray = this.getAssetByID(format_id, [AssetType.TEXTFORMAT]);
                 if (textFormatArray[0]) {
                     text_format = textFormatArray[1];
@@ -690,13 +695,14 @@ var AWDParser = (function (_super) {
                 //console.log("txt_length  '" + txt_length);
                 if (txt_length > 0) {
                     var this_txt = this._newBlockBytes.readUTFBytes(txt_length);
-                    newTextField.appendText(this_txt, text_format);
+                    //newTextField.appendText(this_txt, text_format);
                     complete_text += this_txt;
                 }
             }
-            newTextField.closeParagraph();
         }
-        newTextField.construct_geometry();
+        newTextField.textFormat = text_format;
+        newTextField.text = complete_text;
+        //newTextField.construct_geometry();
         // todo: optional matrix etc can be put in properties.
         this.parseProperties(null);
         newTextField.extra = this.parseUserAttributes();

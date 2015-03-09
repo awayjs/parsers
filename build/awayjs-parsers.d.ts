@@ -55,6 +55,7 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    static MTX4x4: number;
 	    private blendModeDic;
 	    private _depthSizeDic;
+	    private _allFontTables;
 	    /**
 	     * Creates a new AWDParser object.
 	     * @param uri The url or id of the data or file to be parsed.
