@@ -14,7 +14,6 @@ var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var URLLoaderDataFormat = require("awayjs-core/lib/net/URLLoaderDataFormat");
 var URLRequest = require("awayjs-core/lib/net/URLRequest");
-var AssetType = require("awayjs-core/lib/library/AssetType");
 var ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 var ParserUtils = require("awayjs-core/lib/parsers/ParserUtils");
 var PerspectiveProjection = require("awayjs-core/lib/projections/PerspectiveProjection");
@@ -23,8 +22,11 @@ var OrthographicOffCenterProjection = require("awayjs-core/lib/projections/Ortho
 var BitmapCubeTexture = require("awayjs-core/lib/textures/BitmapCubeTexture");
 var ImageCubeTexture = require("awayjs-core/lib/textures/ImageCubeTexture");
 var ImageTexture = require("awayjs-core/lib/textures/ImageTexture");
+var TextureBase = require("awayjs-core/lib/textures/TextureBase");
 var ByteArray = require("awayjs-core/lib/utils/ByteArray");
+var AnimationNodeBase = require("awayjs-display/lib/animators/nodes/AnimationNodeBase");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
+var LightBase = require("awayjs-display/lib/base/LightBase");
 var DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
 var PointLight = require("awayjs-display/lib/entities/PointLight");
 var Camera = require("awayjs-display/lib/entities/Camera");
@@ -32,6 +34,9 @@ var Mesh = require("awayjs-display/lib/entities/Mesh");
 var TextField = require("awayjs-display/lib/entities/TextField");
 var Billboard = require("awayjs-display/lib/entities/Billboard");
 var Skybox = require("awayjs-display/lib/entities/Skybox");
+var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
+var MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+var LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 var StaticLightPicker = require("awayjs-display/lib/materials/lightpickers/StaticLightPicker");
 var CubeMapShadowMapper = require("awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper");
 var DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
@@ -43,6 +48,7 @@ var PrimitiveCylinderPrefab = require("awayjs-display/lib/prefabs/PrimitiveCylin
 var PrimitivePlanePrefab = require("awayjs-display/lib/prefabs/PrimitivePlanePrefab");
 var PrimitiveSpherePrefab = require("awayjs-display/lib/prefabs/PrimitiveSpherePrefab");
 var PrimitiveTorusPrefab = require("awayjs-display/lib/prefabs/PrimitiveTorusPrefab");
+var AnimationSetBase = require("awayjs-renderergl/lib/animators/AnimationSetBase");
 var VertexAnimationSet = require("awayjs-renderergl/lib/animators/VertexAnimationSet");
 var VertexAnimator = require("awayjs-renderergl/lib/animators/VertexAnimator");
 var SkeletonAnimationSet = require("awayjs-renderergl/lib/animators/SkeletonAnimationSet");
@@ -53,7 +59,6 @@ var SkeletonPose = require("awayjs-renderergl/lib/animators/data/SkeletonPose");
 var SkeletonJoint = require("awayjs-renderergl/lib/animators/data/SkeletonJoint");
 var SkeletonClipNode = require("awayjs-renderergl/lib/animators/nodes/SkeletonClipNode");
 var VertexClipNode = require("awayjs-renderergl/lib/animators/nodes/VertexClipNode");
-var DefaultMaterialManager = require("awayjs-renderergl/lib/managers/DefaultMaterialManager");
 var MethodMaterialMode = require("awayjs-methodmaterials/lib/MethodMaterialMode");
 var MethodMaterial = require("awayjs-methodmaterials/lib/MethodMaterial");
 var AmbientEnvMapMethod = require("awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod");
@@ -69,10 +74,12 @@ var EffectEnvMapMethod = require("awayjs-methodmaterials/lib/methods/EffectEnvMa
 var EffectFogMethod = require("awayjs-methodmaterials/lib/methods/EffectFogMethod");
 var EffectFresnelEnvMapMethod = require("awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod");
 var EffectLightMapMethod = require("awayjs-methodmaterials/lib/methods/EffectLightMapMethod");
+var EffectMethodBase = require("awayjs-methodmaterials/lib/methods/EffectMethodBase");
 var EffectRimLightMethod = require("awayjs-methodmaterials/lib/methods/EffectRimLightMethod");
 var NormalSimpleWaterMethod = require("awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod");
 var ShadowDitheredMethod = require("awayjs-methodmaterials/lib/methods/ShadowDitheredMethod");
 var ShadowFilteredMethod = require("awayjs-methodmaterials/lib/methods/ShadowFilteredMethod");
+var ShadowMapMethodBase = require("awayjs-methodmaterials/lib/methods/ShadowMapMethodBase");
 var SpecularFresnelMethod = require("awayjs-methodmaterials/lib/methods/SpecularFresnelMethod");
 var ShadowHardMethod = require("awayjs-methodmaterials/lib/methods/ShadowHardMethod");
 var SpecularAnisotropicMethod = require("awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod");
@@ -617,7 +624,7 @@ var AWDParser = (function (_super) {
         //console.log("font_id  '" + font_id);
         var font_style_name = this.parseVarStr();
         //console.log("font_style_name  '" + font_style_name);
-        var returnArrayFont = this.getAssetByID(font_id, [AssetType.FONT]);
+        var returnArrayFont = this.getAssetByID(font_id, [Font.assetType]);
         var font;
         if (returnArrayFont[0]) {
             font = returnArrayFont[1];
@@ -636,7 +643,7 @@ var AWDParser = (function (_super) {
         var data_id = this._newBlockBytes.readUnsignedInt();
         //console.log("mat  '" + data_id);
         var mat;
-        var returnedArrayMaterial = this.getAssetByID(data_id, [AssetType.MATERIAL]);
+        var returnedArrayMaterial = this.getAssetByID(data_id, [MaterialBase.assetType]);
         if (returnedArrayMaterial[0]) {
             mat = returnedArrayMaterial[1];
         }
@@ -682,7 +689,7 @@ var AWDParser = (function (_super) {
             for (var textrun_cnt = 0; textrun_cnt < num_textruns; textrun_cnt++) {
                 var format_id = this._newBlockBytes.readUnsignedInt();
                 //console.log("format_id  '" + format_id);
-                var textFormatArray = this.getAssetByID(format_id, [AssetType.TEXTFORMAT]);
+                var textFormatArray = this.getAssetByID(format_id, [TextFormat.assetType]);
                 if (textFormatArray[0]) {
                     text_format = textFormatArray[1];
                 }
@@ -718,7 +725,7 @@ var AWDParser = (function (_super) {
         var name = this.parseVarStr();
         var data_id = this._newBlockBytes.readUnsignedInt();
         var mat;
-        var returnedArrayMaterial = this.getAssetByID(data_id, [AssetType.MATERIAL]);
+        var returnedArrayMaterial = this.getAssetByID(data_id, [MaterialBase.assetType]);
         if (returnedArrayMaterial[0]) {
             mat = returnedArrayMaterial[1];
         }
@@ -744,7 +751,7 @@ var AWDParser = (function (_super) {
         var name = this.parseVarStr();
         var data_id = this._newBlockBytes.readUnsignedInt();
         var geom;
-        var returnedArrayGeometry = this.getAssetByID(data_id, [AssetType.GEOMETRY]);
+        var returnedArrayGeometry = this.getAssetByID(data_id, [Geometry.assetType]);
         if (returnedArrayGeometry[0]) {
             geom = returnedArrayGeometry[1];
         }
@@ -761,7 +768,7 @@ var AWDParser = (function (_super) {
         while (materials_parsed < num_materials) {
             var mat_id;
             mat_id = this._newBlockBytes.readUnsignedInt();
-            returnedArrayMaterial = this.getAssetByID(mat_id, [AssetType.MATERIAL]);
+            returnedArrayMaterial = this.getAssetByID(mat_id, [MaterialBase.assetType]);
             if ((!returnedArrayMaterial[0]) && (mat_id > 0)) {
                 this._blocks[blockID].addError("Could not find Material Nr " + materials_parsed + " (ID = " + mat_id + " ) for this Mesh");
             }
@@ -1253,7 +1260,7 @@ var AWDParser = (function (_super) {
         var parentName = "Root (TopLevel)";
         ctr = new DisplayObjectContainer();
         ctr.transform.matrix3D = mtx;
-        var returnedArray = this.getAssetByID(par_id, [AssetType.CONTAINER, AssetType.LIGHT, AssetType.MESH]);
+        var returnedArray = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType]);
         if (returnedArray[0]) {
             var obj = returnedArray[1].addChild(ctr);
             parentName = returnedArray[1].name;
@@ -1292,7 +1299,7 @@ var AWDParser = (function (_super) {
         var parentName = "Root (TopLevel)";
         var data_id = this._newBlockBytes.readUnsignedInt();
         var geom;
-        var returnedArrayGeometry = this.getAssetByID(data_id, [AssetType.GEOMETRY]);
+        var returnedArrayGeometry = this.getAssetByID(data_id, [Geometry.assetType]);
         if (returnedArrayGeometry[0]) {
             geom = returnedArrayGeometry[1];
         }
@@ -1309,7 +1316,7 @@ var AWDParser = (function (_super) {
         while (materials_parsed < num_materials) {
             var mat_id;
             mat_id = this._newBlockBytes.readUnsignedInt();
-            returnedArrayMaterial = this.getAssetByID(mat_id, [AssetType.MATERIAL]);
+            returnedArrayMaterial = this.getAssetByID(mat_id, [MaterialBase.assetType]);
             if ((!returnedArrayMaterial[0]) && (mat_id > 0)) {
                 this._blocks[blockID].addError("Could not find Material Nr " + materials_parsed + " (ID = " + mat_id + " ) for this Mesh");
             }
@@ -1320,7 +1327,7 @@ var AWDParser = (function (_super) {
         }
         var mesh = new Mesh(geom, null);
         mesh.transform.matrix3D = mtx;
-        var returnedArrayParent = this.getAssetByID(par_id, [AssetType.CONTAINER, AssetType.LIGHT, AssetType.MESH]);
+        var returnedArrayParent = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType]);
         if (returnedArrayParent[0]) {
             var objC = returnedArrayParent[1];
             objC.addChild(mesh);
@@ -1361,7 +1368,7 @@ var AWDParser = (function (_super) {
     AWDParser.prototype.parseSkyboxInstance = function (blockID) {
         var name = this.parseVarStr();
         var cubeTexAddr = this._newBlockBytes.readUnsignedInt();
-        var returnedArrayCubeTex = this.getAssetByID(cubeTexAddr, [AssetType.TEXTURE], "CubeTexture");
+        var returnedArrayCubeTex = this.getAssetByID(cubeTexAddr, [TextureBase.assetType], "CubeTexture");
         if ((!returnedArrayCubeTex[0]) && (cubeTexAddr != 0))
             this._blocks[blockID].addError("Could not find the Cubetexture (ID = " + cubeTexAddr + " ) for this Skybox");
         var asset = new Skybox(returnedArrayCubeTex[1]);
@@ -1425,7 +1432,7 @@ var AWDParser = (function (_super) {
             light.castsShadows = true;
         }
         if (par_id != 0) {
-            var returnedArrayParent = this.getAssetByID(par_id, [AssetType.CONTAINER, AssetType.LIGHT, AssetType.MESH]);
+            var returnedArrayParent = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType]);
             if (returnedArrayParent[0]) {
                 returnedArrayParent[1].addChild(light);
                 parentName = returnedArrayParent[1].name;
@@ -1471,7 +1478,7 @@ var AWDParser = (function (_super) {
         }
         var camera = new Camera(projection);
         camera.transform.matrix3D = mtx;
-        var returnedArrayParent = this.getAssetByID(par_id, [AssetType.CONTAINER, AssetType.LIGHT, AssetType.MESH]);
+        var returnedArrayParent = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType]);
         if (returnedArrayParent[0]) {
             var objC = returnedArrayParent[1];
             objC.addChild(camera);
@@ -1505,7 +1512,7 @@ var AWDParser = (function (_super) {
         var lightsArrayNames = new Array();
         for (k = 0; k < numLights; k++) {
             lightID = this._newBlockBytes.readUnsignedInt();
-            returnedArrayLight = this.getAssetByID(lightID, [AssetType.LIGHT]);
+            returnedArrayLight = this.getAssetByID(lightID, [LightBase.assetType]);
             if (returnedArrayLight[0]) {
                 lightsArray.push(returnedArrayLight[1]);
                 lightsArrayNames.push(returnedArrayLight[1].name);
@@ -1571,7 +1578,7 @@ var AWDParser = (function (_super) {
         }
         else if (type === 2) {
             var tex_addr = props.get(2, 0);
-            returnedArray = this.getAssetByID(tex_addr, [AssetType.TEXTURE]);
+            returnedArray = this.getAssetByID(tex_addr, [TextureBase.assetType]);
             if ((!returnedArray[0]) && (tex_addr > 0))
                 this._blocks[blockID].addError("Could not find the DiffsueTexture (ID = " + tex_addr + " ) for this Material");
             mat = new MethodMaterial(returnedArray[1]);
@@ -1631,7 +1638,7 @@ var AWDParser = (function (_super) {
                 }
                 else if (type == 2) {
                     var tex_addr = props.get(2, 0); //TODO temporarily swapped so that diffuse texture goes to ambient
-                    returnedArray = this.getAssetByID(tex_addr, [AssetType.TEXTURE]);
+                    returnedArray = this.getAssetByID(tex_addr, [TextureBase.assetType]);
                     if ((!returnedArray[0]) && (tex_addr > 0))
                         this._blocks[blockID].addError("Could not find the AmbientTexture (ID = " + tex_addr + " ) for this MethodMaterial");
                     var texture = returnedArray[1];
@@ -1648,7 +1655,7 @@ var AWDParser = (function (_super) {
                 }
                 var diffuseTexture;
                 var diffuseTex_addr = props.get(17, 0);
-                returnedArray = this.getAssetByID(diffuseTex_addr, [AssetType.TEXTURE]);
+                returnedArray = this.getAssetByID(diffuseTex_addr, [TextureBase.assetType]);
                 if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
                     this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
                 }
@@ -1659,7 +1666,7 @@ var AWDParser = (function (_super) {
                     debugString += " | DiffuseTexture-Name = " + diffuseTexture.name;
                 }
                 var normalTex_addr = props.get(3, 0);
-                returnedArray = this.getAssetByID(normalTex_addr, [AssetType.TEXTURE]);
+                returnedArray = this.getAssetByID(normalTex_addr, [TextureBase.assetType]);
                 if ((!returnedArray[0]) && (normalTex_addr != 0)) {
                     this._blocks[blockID].addError("Could not find the NormalTexture (ID = " + normalTex_addr + " ) for this MethodMaterial");
                 }
@@ -1668,7 +1675,7 @@ var AWDParser = (function (_super) {
                     debugString += " | NormalTexture-Name = " + normalTexture.name;
                 }
                 var specTex_addr = props.get(21, 0);
-                returnedArray = this.getAssetByID(specTex_addr, [AssetType.TEXTURE]);
+                returnedArray = this.getAssetByID(specTex_addr, [TextureBase.assetType]);
                 if ((!returnedArray[0]) && (specTex_addr != 0)) {
                     this._blocks[blockID].addError("Could not find the SpecularTexture (ID = " + specTex_addr + " ) for this MethodMaterial");
                 }
@@ -1677,7 +1684,7 @@ var AWDParser = (function (_super) {
                     debugString += " | SpecularTexture-Name = " + specTexture.name;
                 }
                 var lightPickerAddr = props.get(22, 0);
-                returnedArray = this.getAssetByID(lightPickerAddr, [AssetType.LIGHT_PICKER]);
+                returnedArray = this.getAssetByID(lightPickerAddr, [LightPickerBase.assetType]);
                 if ((!returnedArray[0]) && (lightPickerAddr)) {
                     this._blocks[blockID].addError("Could not find the LightPicker (ID = " + lightPickerAddr + " ) for this MethodMaterial");
                 }
@@ -1727,7 +1734,7 @@ var AWDParser = (function (_super) {
                     switch (method_type) {
                         case 999:
                             targetID = props.get(1, 0);
-                            returnedArray = this.getAssetByID(targetID, [AssetType.EFFECTS_METHOD]);
+                            returnedArray = this.getAssetByID(targetID, [EffectMethodBase.assetType]);
                             if (!returnedArray[0]) {
                                 this._blocks[blockID].addError("Could not find the EffectMethod (ID = " + targetID + " ) for this Material");
                             }
@@ -1738,7 +1745,7 @@ var AWDParser = (function (_super) {
                             break;
                         case 998:
                             targetID = props.get(1, 0);
-                            returnedArray = this.getAssetByID(targetID, [AssetType.SHADOW_MAP_METHOD]);
+                            returnedArray = this.getAssetByID(targetID, [ShadowMapMethodBase.assetType]);
                             if (!returnedArray[0]) {
                                 this._blocks[blockID].addError("Could not find the ShadowMethod (ID = " + targetID + " ) for this Material");
                             }
@@ -1749,7 +1756,7 @@ var AWDParser = (function (_super) {
                             break;
                         case 1:
                             targetID = props.get(1, 0);
-                            returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE], "CubeTexture");
+                            returnedArray = this.getAssetByID(targetID, [TextureBase.assetType], "CubeTexture");
                             if (!returnedArray[0])
                                 this._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this EnvMapAmbientMethodMaterial");
                             mat.ambientMethod = new AmbientEnvMapMethod(returnedArray[1]);
@@ -1761,7 +1768,7 @@ var AWDParser = (function (_super) {
                             break;
                         case 52:
                             targetID = props.get(1, 0);
-                            returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE]);
+                            returnedArray = this.getAssetByID(targetID, [TextureBase.assetType]);
                             if (!returnedArray[0])
                                 this._blocks[blockID].addError("Could not find the GradientDiffuseTexture (ID = " + targetID + " ) for this GradientDiffuseMethod");
                             mat.diffuseMethod = new DiffuseGradientMethod(returnedArray[1]);
@@ -1773,7 +1780,7 @@ var AWDParser = (function (_super) {
                             break;
                         case 54:
                             targetID = props.get(1, 0);
-                            returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE]);
+                            returnedArray = this.getAssetByID(targetID, [TextureBase.assetType]);
                             if (!returnedArray[0])
                                 this._blocks[blockID].addError("Could not find the LightMap (ID = " + targetID + " ) for this LightMapDiffuseMethod");
                             mat.diffuseMethod = new DiffuseLightMapMethod(returnedArray[1], this.blendModeDic[props.get(401, 10)], false, mat.diffuseMethod);
@@ -1809,7 +1816,7 @@ var AWDParser = (function (_super) {
                             break;
                         case 152:
                             targetID = props.get(1, 0);
-                            returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE]);
+                            returnedArray = this.getAssetByID(targetID, [TextureBase.assetType]);
                             if (!returnedArray[0])
                                 this._blocks[blockID].addError("Could not find the SecoundNormalMap (ID = " + targetID + " ) for this SimpleWaterNormalMethod");
                             if (!mat.normalMap)
@@ -1830,7 +1837,7 @@ var AWDParser = (function (_super) {
             debugString += color;
             var diffuseTexture;
             var diffuseTex_addr = props.get(2, 0);
-            returnedArray = this.getAssetByID(diffuseTex_addr, [AssetType.TEXTURE]);
+            returnedArray = this.getAssetByID(diffuseTex_addr, [TextureBase.assetType]);
             if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
                 this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
                 diffuseTexture = DefaultMaterialManager.getDefaultTexture();
@@ -1952,7 +1959,7 @@ var AWDParser = (function (_super) {
         var shadowLightID;
         this._blocks[blockID].name = this.parseVarStr();
         shadowLightID = this._newBlockBytes.readUnsignedInt();
-        var returnedArray = this.getAssetByID(shadowLightID, [AssetType.LIGHT]);
+        var returnedArray = this.getAssetByID(shadowLightID, [LightBase.assetType]);
         if (!returnedArray[0]) {
             this._blocks[blockID].addError("Could not find the TargetLight (ID = " + shadowLightID + " ) for this ShadowMethod - ShadowMethod not created");
             return;
@@ -1975,7 +1982,7 @@ var AWDParser = (function (_super) {
         var name = this.parseVarStr();
         var parentObject;
         var targetObject;
-        var returnedArray = this.getAssetByID(par_id, [AssetType.CONTAINER, AssetType.LIGHT, AssetType.MESH]);
+        var returnedArray = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType]);
         if (returnedArray[0]) {
             parentObject = returnedArray[1];
         }
@@ -1985,7 +1992,8 @@ var AWDParser = (function (_super) {
         switch (typeCommand) {
             case 1:
                 var targetID = props.get(1, 0);
-                var returnedArrayTarget = this.getAssetByID(targetID, [AssetType.LIGHT, AssetType.TEXTURE_PROJECTOR]); //for no only light is requested!!!!
+                //var returnedArrayTarget:Array<any> = this.getAssetByID(targetID, [LightBase.assetType, TextureProjector.assetType]); //for no only light is requested!!!!
+                var returnedArrayTarget = this.getAssetByID(targetID, [LightBase.assetType]); //for no only light is requested!!!!
                 if ((!returnedArrayTarget[0]) && (targetID != 0)) {
                     this._blocks[blockID].addError("Could not find the light (ID = " + targetID + " ( for this CommandBock!");
                     return;
@@ -2036,7 +2044,7 @@ var AWDParser = (function (_super) {
         switch (methodType) {
             case 1002:
                 targetID = props.get(1, 0);
-                returnedArray = this.getAssetByID(targetID, [AssetType.SHADOW_MAP_METHOD]);
+                returnedArray = this.getAssetByID(targetID, [ShadowMapMethodBase.assetType]);
                 if (!returnedArray[0]) {
                     this._blocks[blockID].addError("Could not find the ShadowBaseMethod (ID = " + targetID + " ) for this ShadowNearMethod - ShadowMethod not created");
                     return shadowMethod;
@@ -2140,7 +2148,7 @@ var AWDParser = (function (_super) {
         while (frames_parsed < num_frames) {
             pose_addr = this._newBlockBytes.readUnsignedInt();
             frame_dur = this._newBlockBytes.readUnsignedShort();
-            returnedArray = this.getAssetByID(pose_addr, [AssetType.SKELETON_POSE]);
+            returnedArray = this.getAssetByID(pose_addr, [SkeletonPose.assetType]);
             if (!returnedArray[0])
                 this._blocks[blockID].addError("Could not find the SkeletonPose Frame # " + frames_parsed + " (ID = " + pose_addr + " ) for this SkeletonClipNode");
             else
@@ -2184,7 +2192,7 @@ var AWDParser = (function (_super) {
         var thisGeo;
         var name = this.parseVarStr();
         var geoAdress = this._newBlockBytes.readUnsignedInt();
-        var returnedArray = this.getAssetByID(geoAdress, [AssetType.GEOMETRY]);
+        var returnedArray = this.getAssetByID(geoAdress, [Geometry.assetType]);
         if (!returnedArray[0]) {
             this._blocks[blockID].addError("Could not find the target-Geometry-Object " + geoAdress + " ) for this VertexClipNode");
             return;
@@ -2261,7 +2269,7 @@ var AWDParser = (function (_super) {
         var vertexFrames = new Array();
         while (frames_parsed < num_frames) {
             poseBlockAdress = this._newBlockBytes.readUnsignedInt();
-            var returnedArray = this.getAssetByID(poseBlockAdress, [AssetType.ANIMATION_NODE]);
+            var returnedArray = this.getAssetByID(poseBlockAdress, [AnimationNodeBase.assetType]);
             if (!returnedArray[0])
                 this._blocks[blockID].addError("Could not find the AnimationClipNode Nr " + frames_parsed + " ( " + poseBlockAdress + " ) for this AnimationSet");
             else {
@@ -2287,7 +2295,7 @@ var AWDParser = (function (_super) {
                 console.log("Parsed a VertexAnimationSet: Name = " + name + " | Animations = " + newVertexAnimationSet.animations.length + " | Animation-Names = " + newVertexAnimationSet.animationNames.toString());
         }
         else if (skeletonFrames.length > 0) {
-            returnedArray = this.getAssetByID(poseBlockAdress, [AssetType.ANIMATION_NODE]);
+            returnedArray = this.getAssetByID(poseBlockAdress, [AnimationNodeBase.assetType]);
             var newSkeletonAnimationSet = new SkeletonAnimationSet(props.get(1, 4)); //props.get(1,4));
             for (var i = 0; i < skeletonFrames.length; i++)
                 newSkeletonAnimationSet.addAnimation(skeletonFrames[i]);
@@ -2318,11 +2326,11 @@ var AWDParser = (function (_super) {
         var returnedArray;
         var targetMeshes = new Array();
         for (i = 0; i < meshAdresses.length; i++) {
-            returnedArray = this.getAssetByID(meshAdresses[i], [AssetType.MESH]);
+            returnedArray = this.getAssetByID(meshAdresses[i], [Mesh.assetType]);
             if (returnedArray[0])
                 targetMeshes.push(returnedArray[1]);
         }
-        returnedArray = this.getAssetByID(animSetBlockAdress, [AssetType.ANIMATION_SET]);
+        returnedArray = this.getAssetByID(animSetBlockAdress, [AnimationSetBase.assetType]);
         if (!returnedArray[0]) {
             this._blocks[blockID].addError("Could not find the AnimationSet ( " + animSetBlockAdress + " ) for this Animator");
             ;
@@ -2331,7 +2339,7 @@ var AWDParser = (function (_super) {
         targetAnimationSet = returnedArray[1];
         var thisAnimator;
         if (type == 1) {
-            returnedArray = this.getAssetByID(props.get(1, 0), [AssetType.SKELETON]);
+            returnedArray = this.getAssetByID(props.get(1, 0), [Skeleton.assetType]);
             if (!returnedArray[0]) {
                 this._blocks[blockID].addError("Could not find the Skeleton ( " + props.get(1, 0) + " ) for this Animator");
                 return;
@@ -2370,20 +2378,20 @@ var AWDParser = (function (_super) {
             case 403:
                 targetID = props.get(1, 0);
                 console.log('ENV MAP', targetID);
-                returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE], "CubeTexture");
+                returnedArray = this.getAssetByID(targetID, [TextureBase.assetType], "CubeTexture");
                 if (!returnedArray[0])
                     this._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this EnvMapMethod");
                 effectMethodReturn = new EffectEnvMapMethod(returnedArray[1], props.get(101, 1));
                 targetID = props.get(2, 0);
                 if (targetID > 0) {
-                    returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE]);
+                    returnedArray = this.getAssetByID(targetID, [TextureBase.assetType]);
                     if (!returnedArray[0])
                         this._blocks[blockID].addError("Could not find the Mask-texture (ID = " + targetID + " ) for this EnvMapMethod");
                 }
                 break;
             case 404:
                 targetID = props.get(1, 0);
-                returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE]);
+                returnedArray = this.getAssetByID(targetID, [TextureBase.assetType]);
                 if (!returnedArray[0])
                     this._blocks[blockID].addError("Could not find the LightMap (ID = " + targetID + " ) for this LightMapMethod");
                 effectMethodReturn = new EffectLightMapMethod(returnedArray[1], this.blendModeDic[props.get(401, 10)]); //usesecondaryUV not set
@@ -2393,14 +2401,14 @@ var AWDParser = (function (_super) {
                 break;
             case 407:
                 targetID = props.get(1, 0);
-                returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE]);
+                returnedArray = this.getAssetByID(targetID, [TextureBase.assetType]);
                 if (!returnedArray[0])
                     this._blocks[blockID].addError("Could not find the Alpha-texture (ID = " + targetID + " ) for this AlphaMaskMethod");
                 effectMethodReturn = new EffectAlphaMaskMethod(returnedArray[1], props.get(701, false));
                 break;
             case 410:
                 targetID = props.get(1, 0);
-                returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE], "CubeTexture");
+                returnedArray = this.getAssetByID(targetID, [TextureBase.assetType], "CubeTexture");
                 if (!returnedArray[0])
                     this._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this FresnelEnvMapMethod");
                 effectMethodReturn = new EffectFresnelEnvMapMethod(returnedArray[1], props.get(101, 1));
@@ -2667,14 +2675,14 @@ var AWDParser = (function (_super) {
                         var iasset = this._blocks[assetID].data;
                         if (iasset.assetType == assetTypesToGet[typeCnt]) {
                             //if the right assetType was found
-                            if ((assetTypesToGet[typeCnt] == AssetType.TEXTURE) && (extraTypeInfo == "CubeTexture")) {
+                            if ((assetTypesToGet[typeCnt] == TextureBase.assetType) && (extraTypeInfo == "CubeTexture")) {
                                 if (this._blocks[assetID].data instanceof ImageCubeTexture) {
                                     returnArray.push(true);
                                     returnArray.push(this._blocks[assetID].data);
                                     return returnArray;
                                 }
                             }
-                            if ((assetTypesToGet[typeCnt] == AssetType.TEXTURE) && (extraTypeInfo == "SingleTexture")) {
+                            if ((assetTypesToGet[typeCnt] == TextureBase.assetType) && (extraTypeInfo == "SingleTexture")) {
                                 if (this._blocks[assetID].data instanceof ImageTexture) {
                                     returnArray.push(true);
                                     returnArray.push(this._blocks[assetID].data);
@@ -2687,8 +2695,8 @@ var AWDParser = (function (_super) {
                                 return returnArray;
                             }
                         }
-                        //if ((assetTypesToGet[typeCnt] == AssetType.GEOMETRY) && (IAsset(_blocks[assetID].data).assetType == AssetType.MESH)) {
-                        if ((assetTypesToGet[typeCnt] == AssetType.GEOMETRY) && (iasset.assetType == AssetType.MESH)) {
+                        //if ((assetTypesToGet[typeCnt] == Geometry.assetType) && (IAsset(_blocks[assetID].data).assetType == Mesh.assetType)) {
+                        if ((assetTypesToGet[typeCnt] == Geometry.assetType) && (iasset.assetType == Mesh.assetType)) {
                             var mesh = this._blocks[assetID].data;
                             returnArray.push(true);
                             returnArray.push(mesh.geometry);
@@ -2706,13 +2714,13 @@ var AWDParser = (function (_super) {
     };
     AWDParser.prototype.getDefaultAsset = function (assetType, extraTypeInfo) {
         switch (true) {
-            case (assetType == AssetType.TEXTURE):
+            case (assetType == TextureBase.assetType):
                 if (extraTypeInfo == "CubeTexture")
                     return this.getDefaultCubeTexture();
                 if (extraTypeInfo == "SingleTexture")
                     return DefaultMaterialManager.getDefaultTexture();
                 break;
-            case (assetType == AssetType.MATERIAL):
+            case (assetType == MaterialBase.assetType):
                 return DefaultMaterialManager.getDefaultMaterial();
                 break;
             default:
@@ -2868,7 +2876,7 @@ var BitFlags = (function () {
 module.exports = AWDParser;
 
 
-},{"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/data/CurveSubGeometry":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/textures/BitmapCubeTexture":undefined,"awayjs-core/lib/textures/ImageCubeTexture":undefined,"awayjs-core/lib/textures/ImageTexture":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Billboard":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/entities/TextField":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-display/lib/materials/CurveMaterial":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-display/lib/text/TextFormat":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-player/lib/timeline/TimelineKeyFrame":undefined,"awayjs-player/lib/timeline/commands/AddChildCommand":undefined,"awayjs-player/lib/timeline/commands/ApplyAS2DepthsCommand":undefined,"awayjs-player/lib/timeline/commands/RemoveChildCommand":undefined,"awayjs-player/lib/timeline/commands/UpdatePropertyCommand":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
+},{"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/data/CurveSubGeometry":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/textures/BitmapCubeTexture":undefined,"awayjs-core/lib/textures/ImageCubeTexture":undefined,"awayjs-core/lib/textures/ImageTexture":undefined,"awayjs-core/lib/textures/TextureBase":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/animators/nodes/AnimationNodeBase":undefined,"awayjs-display/lib/base/LightBase":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Billboard":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/entities/TextField":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-display/lib/materials/CurveMaterial":undefined,"awayjs-display/lib/materials/MaterialBase":undefined,"awayjs-display/lib/materials/lightpickers/LightPickerBase":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-display/lib/text/TextFormat":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectMethodBase":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowMapMethodBase":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-player/lib/timeline/TimelineKeyFrame":undefined,"awayjs-player/lib/timeline/commands/AddChildCommand":undefined,"awayjs-player/lib/timeline/commands/ApplyAS2DepthsCommand":undefined,"awayjs-player/lib/timeline/commands/RemoveChildCommand":undefined,"awayjs-player/lib/timeline/commands/UpdatePropertyCommand":undefined,"awayjs-renderergl/lib/animators/AnimationSetBase":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -2883,9 +2891,9 @@ var ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 var ParserUtils = require("awayjs-core/lib/parsers/ParserUtils");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
+var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
 var VertexClipNode = require("awayjs-renderergl/lib/animators/nodes/VertexClipNode");
 var VertexAnimationSet = require("awayjs-renderergl/lib/animators/VertexAnimationSet");
-var DefaultMaterialManager = require("awayjs-renderergl/lib/managers/DefaultMaterialManager");
 var MethodMaterial = require("awayjs-methodmaterials/lib/MethodMaterial");
 var MethodMaterialMode = require("awayjs-methodmaterials/lib/MethodMaterialMode");
 /**
@@ -3259,7 +3267,7 @@ var MD2Parser = (function (_super) {
 module.exports = MD2Parser;
 
 
-},{"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers/lib/MD5AnimParser":[function(require,module,exports){
+},{"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD5AnimParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -4341,14 +4349,14 @@ var Geometry = require("awayjs-core/lib/data/Geometry");
 var TriangleSubGeometry = require("awayjs-core/lib/data/TriangleSubGeometry");
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
-var AssetType = require("awayjs-core/lib/library/AssetType");
 var URLLoaderDataFormat = require("awayjs-core/lib/net/URLLoaderDataFormat");
 var URLRequest = require("awayjs-core/lib/net/URLRequest");
 var ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 var ParserUtils = require("awayjs-core/lib/parsers/ParserUtils");
+var TextureBase = require("awayjs-core/lib/textures/TextureBase");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
-var DefaultMaterialManager = require("awayjs-renderergl/lib/managers/DefaultMaterialManager");
+var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
 var MethodMaterial = require("awayjs-methodmaterials/lib/MethodMaterial");
 var MethodMaterialMode = require("awayjs-methodmaterials/lib/MethodMaterialMode");
 /**
@@ -4397,7 +4405,7 @@ var Max3DSParser = (function (_super) {
         if (resourceDependency.assets.length == 1) {
             var asset;
             asset = resourceDependency.assets[0];
-            if (asset.assetType == AssetType.TEXTURE) {
+            if (asset.isAsset(TextureBase)) {
                 var tex;
                 tex = this._textures[resourceDependency.id];
                 tex.texture = asset;
@@ -4463,7 +4471,7 @@ var Max3DSParser = (function (_super) {
                         this._cur_obj.materialFaces = {};
                         break;
                     case 0x4100:
-                        this._cur_obj.type = AssetType.MESH;
+                        this._cur_obj.type = Mesh.assetType;
                         break;
                     case 0x4110:
                         this.parseVertexList();
@@ -4705,7 +4713,7 @@ var Max3DSParser = (function (_super) {
     };
     Max3DSParser.prototype.constructObject = function (obj, pivot) {
         if (pivot === void 0) { pivot = null; }
-        if (obj.type == AssetType.MESH) {
+        if (obj.type == Mesh.assetType) {
             var i /*uint*/;
             var sub;
             var geom;
@@ -5017,7 +5025,7 @@ var VertexVO = (function () {
 module.exports = Max3DSParser;
 
 
-},{"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers/lib/OBJParser":[function(require,module,exports){
+},{"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/textures/TextureBase":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined}],"awayjs-parsers/lib/OBJParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -5026,14 +5034,14 @@ var __extends = this.__extends || function (d, b) {
 };
 var TriangleSubGeometry = require("awayjs-core/lib/data/TriangleSubGeometry");
 var Geometry = require("awayjs-core/lib/data/Geometry");
-var AssetType = require("awayjs-core/lib/library/AssetType");
 var URLLoaderDataFormat = require("awayjs-core/lib/net/URLLoaderDataFormat");
 var URLRequest = require("awayjs-core/lib/net/URLRequest");
 var ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 var ParserUtils = require("awayjs-core/lib/parsers/ParserUtils");
+var TextureBase = require("awayjs-core/lib/textures/TextureBase");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
-var DefaultMaterialManager = require("awayjs-renderergl/lib/managers/DefaultMaterialManager");
+var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
 var MethodMaterial = require("awayjs-methodmaterials/lib/MethodMaterial");
 var MethodMaterialMode = require("awayjs-methodmaterials/lib/MethodMaterialMode");
 var SpecularBasicMethod = require("awayjs-methodmaterials/lib/methods/SpecularBasicMethod");
@@ -5103,7 +5111,7 @@ var OBJParser = (function (_super) {
                 return;
             }
             asset = resourceDependency.assets[0];
-            if (asset.assetType == AssetType.TEXTURE) {
+            if (asset.isAsset(TextureBase)) {
                 var lm = new LoadedMaterial();
                 lm.materialID = resourceDependency.id;
                 lm.texture = asset;
@@ -5929,7 +5937,7 @@ var Vertex = (function () {
 module.exports = OBJParser;
 
 
-},{"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/SpecularBasicMethod":undefined,"awayjs-renderergl/lib/managers/DefaultMaterialManager":undefined}],"awayjs-parsers/lib/Parsers":[function(require,module,exports){
+},{"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/textures/TextureBase":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/SpecularBasicMethod":undefined}],"awayjs-parsers/lib/Parsers":[function(require,module,exports){
 var AssetLoader = require("awayjs-core/lib/library/AssetLoader");
 var AWDParser = require("awayjs-parsers/lib/AWDParser");
 var Max3DSParser = require("awayjs-parsers/lib/Max3DSParser");
