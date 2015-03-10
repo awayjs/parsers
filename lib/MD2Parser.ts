@@ -14,10 +14,10 @@ import DisplayObjectContainer			= require("awayjs-display/lib/containers/Display
 import DisplayObject					= require("awayjs-display/lib/base/DisplayObject");
 import Camera							= require("awayjs-display/lib/entities/Camera");
 import Mesh								= require("awayjs-display/lib/entities/Mesh");
+import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
 
 import VertexClipNode					= require("awayjs-renderergl/lib/animators/nodes/VertexClipNode");
 import VertexAnimationSet				= require("awayjs-renderergl/lib/animators/VertexAnimationSet");
-import DefaultMaterialManager			= require("awayjs-renderergl/lib/managers/DefaultMaterialManager");
 
 import MethodMaterial					= require("awayjs-methodmaterials/lib/MethodMaterial");
 import MethodMaterialMode				= require("awayjs-methodmaterials/lib/MethodMaterialMode");

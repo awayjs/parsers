@@ -2,7 +2,6 @@ import Geometry							= require("awayjs-core/lib/data/Geometry");
 import TriangleSubGeometry				= require("awayjs-core/lib/data/TriangleSubGeometry");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
-import AssetType						= require("awayjs-core/lib/library/AssetType");
 import IAsset							= require("awayjs-core/lib/library/IAsset");
 import URLLoaderDataFormat				= require("awayjs-core/lib/net/URLLoaderDataFormat");
 import URLRequest						= require("awayjs-core/lib/net/URLRequest");
@@ -10,14 +9,13 @@ import ParserBase						= require("awayjs-core/lib/parsers/ParserBase");
 import ParserUtils						= require("awayjs-core/lib/parsers/ParserUtils");
 import ResourceDependency				= require("awayjs-core/lib/parsers/ResourceDependency");
 import Texture2DBase					= require("awayjs-core/lib/textures/Texture2DBase");
-import TextureProxyBase					= require("awayjs-core/lib/textures/TextureProxyBase");
+import TextureBase						= require("awayjs-core/lib/textures/TextureBase");
 import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
 
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import Mesh								= require("awayjs-display/lib/entities/Mesh");
+import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
 import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
-
-import DefaultMaterialManager			= require("awayjs-renderergl/lib/managers/DefaultMaterialManager");
 
 import MethodMaterial					= require("awayjs-methodmaterials/lib/MethodMaterial");
 import MethodMaterialMode				= require("awayjs-methodmaterials/lib/MethodMaterialMode");
@@ -91,7 +89,7 @@ class Max3DSParser extends ParserBase
 			var asset:IAsset;
 
 			asset = resourceDependency.assets[0];
-			if (asset.assetType == AssetType.TEXTURE) {
+			if (asset.isAsset(TextureBase)) {
 				var tex:TextureVO;
 
 				tex = this._textures[resourceDependency.id];
@@ -182,7 +180,7 @@ class Max3DSParser extends ParserBase
 						break;
 
 					case 0x4100: // OBJ_TRIMESH
-						this._cur_obj.type = AssetType.MESH;
+						this._cur_obj.type = Mesh.assetType;
 						break;
 
 					case 0x4110: // TRI_VERTEXL
@@ -502,7 +500,7 @@ class Max3DSParser extends ParserBase
 
 	private constructObject(obj:ObjectVO, pivot:Vector3D = null):DisplayObjectContainer
 	{
-		if (obj.type == AssetType.MESH) {
+		if (obj.type == Mesh.assetType) {
 			var i:number /*uint*/;
 			var sub:TriangleSubGeometry;
 			var geom:Geometry;

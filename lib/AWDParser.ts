@@ -9,7 +9,6 @@ import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
 import URLLoaderDataFormat				= require("awayjs-core/lib/net/URLLoaderDataFormat");
 import URLRequest						= require("awayjs-core/lib/net/URLRequest");
-import AssetType						= require("awayjs-core/lib/library/AssetType");
 import IAsset							= require("awayjs-core/lib/library/IAsset");
 import ParserBase						= require("awayjs-core/lib/parsers/ParserBase");
 import ParserUtils						= require("awayjs-core/lib/parsers/ParserUtils");
@@ -24,9 +23,10 @@ import CubeTextureBase					= require("awayjs-core/lib/textures/CubeTextureBase")
 import ImageCubeTexture					= require("awayjs-core/lib/textures/ImageCubeTexture");
 import ImageTexture						= require("awayjs-core/lib/textures/ImageTexture");
 import Texture2DBase					= require("awayjs-core/lib/textures/Texture2DBase");
-import TextureProxyBase					= require("awayjs-core/lib/textures/TextureProxyBase");
+import TextureBase						= require("awayjs-core/lib/textures/TextureBase");
 import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
 
+import AnimationNodeBase				= require("awayjs-display/lib/animators/nodes/AnimationNodeBase");
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import DisplayObject					= require("awayjs-display/lib/base/DisplayObject");
 import LightBase						= require("awayjs-display/lib/base/LightBase");
@@ -37,6 +37,7 @@ import Mesh								= require("awayjs-display/lib/entities/Mesh");
 import TextField						= require("awayjs-display/lib/entities/TextField");
 import Billboard						= require("awayjs-display/lib/entities/Billboard");
 import Skybox							= require("awayjs-display/lib/entities/Skybox");
+import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
 import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
 import LightPickerBase					= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 import StaticLightPicker				= require("awayjs-display/lib/materials/lightpickers/StaticLightPicker");
@@ -64,7 +65,6 @@ import SkeletonPose						= require("awayjs-renderergl/lib/animators/data/Skeleto
 import SkeletonJoint					= require("awayjs-renderergl/lib/animators/data/SkeletonJoint");
 import SkeletonClipNode					= require("awayjs-renderergl/lib/animators/nodes/SkeletonClipNode");
 import VertexClipNode					= require("awayjs-renderergl/lib/animators/nodes/VertexClipNode");
-import DefaultMaterialManager			= require("awayjs-renderergl/lib/managers/DefaultMaterialManager");
 
 import MethodMaterialMode				= require("awayjs-methodmaterials/lib/MethodMaterialMode");
 import MethodMaterial					= require("awayjs-methodmaterials/lib/MethodMaterial");
@@ -86,6 +86,7 @@ import EffectRimLightMethod				= require("awayjs-methodmaterials/lib/methods/Eff
 import NormalSimpleWaterMethod			= require("awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod");
 import ShadowDitheredMethod				= require("awayjs-methodmaterials/lib/methods/ShadowDitheredMethod");
 import ShadowFilteredMethod				= require("awayjs-methodmaterials/lib/methods/ShadowFilteredMethod");
+import ShadowMapMethodBase				= require("awayjs-methodmaterials/lib/methods/ShadowMapMethodBase");
 import ShadowMethodBase					= require("awayjs-methodmaterials/lib/methods/ShadowMethodBase");
 import SpecularFresnelMethod			= require("awayjs-methodmaterials/lib/methods/SpecularFresnelMethod");
 import ShadowHardMethod					= require("awayjs-methodmaterials/lib/methods/ShadowHardMethod");
@@ -241,7 +242,7 @@ class AWDParser extends ParserBase
 		if (resourceDependency.assets.length == 1) {
 			var isCubeTextureArray:Array<string> = resourceDependency.id.split("#");
 			var ressourceID:string = isCubeTextureArray[0];
-			var asset:TextureProxyBase;
+			var asset:TextureBase;
 			var thisBitmapTexture:Texture2DBase;
 			var block:AWDBlock;
 
@@ -291,7 +292,7 @@ class AWDParser extends ParserBase
 					var posZ:any = this._cubeTextures[4];
 					var negZ:any = this._cubeTextures[5];
 
-					asset = <TextureProxyBase> new ImageCubeTexture(posX, negX, posY, negY, posZ, negZ);
+					asset = <TextureBase> new ImageCubeTexture(posX, negX, posY, negY, posZ, negZ);
 					block = this._blocks[ressourceID];
 					block.data = asset; // Store finished asset
 
@@ -851,7 +852,7 @@ class AWDParser extends ParserBase
 		//console.log("font_id  '" + font_id);
 		var font_style_name:string = this.parseVarStr();
 		//console.log("font_style_name  '" + font_style_name);
-		var returnArrayFont:Array<any> = this.getAssetByID(font_id, [AssetType.FONT]);
+		var returnArrayFont:Array<any> = this.getAssetByID(font_id, [Font.assetType]);
 		var font:Font;
 		if (returnArrayFont[0]) {
 			font = <Font> returnArrayFont[1];
@@ -870,7 +871,7 @@ class AWDParser extends ParserBase
 		var data_id:number = this._newBlockBytes.readUnsignedInt();
 		//console.log("mat  '" + data_id);
 		var mat:BasicMaterial;
-		var returnedArrayMaterial:Array<any> = this.getAssetByID(data_id, [AssetType.MATERIAL]);
+		var returnedArrayMaterial:Array<any> = this.getAssetByID(data_id, [MaterialBase.assetType]);
 
 		if (returnedArrayMaterial[0]) {
 			mat = <BasicMaterial> returnedArrayMaterial[1];
@@ -926,7 +927,7 @@ class AWDParser extends ParserBase
 
 				var format_id:number = this._newBlockBytes.readUnsignedInt();
 				//console.log("format_id  '" + format_id);
-				var textFormatArray:Array<any> = this.getAssetByID(format_id, [AssetType.TEXTFORMAT]);
+				var textFormatArray:Array<any> = this.getAssetByID(format_id, [TextFormat.assetType]);
 				if (textFormatArray[0]) {
 					text_format = <TextFormat> textFormatArray[1];
 				} else {
@@ -970,7 +971,7 @@ class AWDParser extends ParserBase
 
 		var data_id:number = this._newBlockBytes.readUnsignedInt();
 		var mat:BasicMaterial;
-		var returnedArrayMaterial:Array<any> = this.getAssetByID(data_id, [AssetType.MATERIAL]);
+		var returnedArrayMaterial:Array<any> = this.getAssetByID(data_id, [MaterialBase.assetType]);
 
 		if (returnedArrayMaterial[0]) {
 			mat = <BasicMaterial> returnedArrayMaterial[1];
@@ -1002,7 +1003,7 @@ class AWDParser extends ParserBase
 
 		var data_id:number = this._newBlockBytes.readUnsignedInt();
 		var geom:Geometry;
-		var returnedArrayGeometry:Array<any> = this.getAssetByID(data_id, [AssetType.GEOMETRY])
+		var returnedArrayGeometry:Array<any> = this.getAssetByID(data_id, [Geometry.assetType])
 
 		if (returnedArrayGeometry[0]) {
 			geom = <Geometry> returnedArrayGeometry[1];
@@ -1023,7 +1024,7 @@ class AWDParser extends ParserBase
 		while (materials_parsed < num_materials) {
 			var mat_id:number;
 			mat_id = this._newBlockBytes.readUnsignedInt();
-			returnedArrayMaterial = this.getAssetByID(mat_id, [AssetType.MATERIAL])
+			returnedArrayMaterial = this.getAssetByID(mat_id, [MaterialBase.assetType])
 			if ((!returnedArrayMaterial[0]) && (mat_id > 0)) {
 				this._blocks[blockID].addError("Could not find Material Nr " + materials_parsed + " (ID = " + mat_id + " ) for this Mesh");
 			}
@@ -1629,7 +1630,7 @@ class AWDParser extends ParserBase
 		ctr = new DisplayObjectContainer();
 		ctr.transform.matrix3D = mtx;
 
-		var returnedArray:Array<any> = this.getAssetByID(par_id, [AssetType.CONTAINER, AssetType.LIGHT, AssetType.MESH]);
+		var returnedArray:Array<any> = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType]);
 
 		if (returnedArray[0]) {
 			var obj:DisplayObject = (<DisplayObjectContainer> returnedArray[1]).addChild(ctr);
@@ -1674,7 +1675,7 @@ class AWDParser extends ParserBase
 		var parentName:string = "Root (TopLevel)";
 		var data_id:number = this._newBlockBytes.readUnsignedInt();
 		var geom:Geometry;
-		var returnedArrayGeometry:Array<any> = this.getAssetByID(data_id, [AssetType.GEOMETRY])
+		var returnedArrayGeometry:Array<any> = this.getAssetByID(data_id, [Geometry.assetType])
 
 		if (returnedArrayGeometry[0]) {
 			geom = <Geometry> returnedArrayGeometry[1];
@@ -1695,7 +1696,7 @@ class AWDParser extends ParserBase
 		while (materials_parsed < num_materials) {
 			var mat_id:number;
 			mat_id = this._newBlockBytes.readUnsignedInt();
-			returnedArrayMaterial = this.getAssetByID(mat_id, [AssetType.MATERIAL])
+			returnedArrayMaterial = this.getAssetByID(mat_id, [MaterialBase.assetType])
 			if ((!returnedArrayMaterial[0]) && (mat_id > 0)) {
 				this._blocks[blockID].addError("Could not find Material Nr " + materials_parsed + " (ID = " + mat_id + " ) for this Mesh");
 			}
@@ -1711,7 +1712,7 @@ class AWDParser extends ParserBase
 		var mesh:Mesh = new Mesh(geom, null);
 		mesh.transform.matrix3D = mtx;
 
-		var returnedArrayParent:Array<any> = this.getAssetByID(par_id, [AssetType.CONTAINER, AssetType.LIGHT, AssetType.MESH])
+		var returnedArrayParent:Array<any> = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType])
 
 		if (returnedArrayParent[0]) {
 			var objC:DisplayObjectContainer = <DisplayObjectContainer> returnedArrayParent[1];
@@ -1760,7 +1761,7 @@ class AWDParser extends ParserBase
 		var name:string = this.parseVarStr();
 		var cubeTexAddr:number = this._newBlockBytes.readUnsignedInt();
 
-		var returnedArrayCubeTex:Array<any> = this.getAssetByID(cubeTexAddr, [AssetType.TEXTURE], "CubeTexture");
+		var returnedArrayCubeTex:Array<any> = this.getAssetByID(cubeTexAddr, [TextureBase.assetType], "CubeTexture");
 		if ((!returnedArrayCubeTex[0]) && (cubeTexAddr != 0))
 			this._blocks[blockID].addError("Could not find the Cubetexture (ID = " + cubeTexAddr + " ) for this Skybox");
 		var asset:Skybox = new Skybox(<ImageCubeTexture> returnedArrayCubeTex[1]);
@@ -1847,7 +1848,7 @@ class AWDParser extends ParserBase
 
 		if (par_id != 0) {
 
-			var returnedArrayParent:Array<any> = this.getAssetByID(par_id, [AssetType.CONTAINER, AssetType.LIGHT, AssetType.MESH])
+			var returnedArrayParent:Array<any> = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType])
 
 			if (returnedArrayParent[0]) {
 				(<DisplayObjectContainer> returnedArrayParent[1]).addChild(light);
@@ -1905,7 +1906,7 @@ class AWDParser extends ParserBase
 		var camera:Camera = new Camera(projection);
 		camera.transform.matrix3D = mtx;
 
-		var returnedArrayParent:Array<any> = this.getAssetByID(par_id, [AssetType.CONTAINER, AssetType.LIGHT, AssetType.MESH])
+		var returnedArrayParent:Array<any> = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType])
 
 		if (returnedArrayParent[0]) {
 
@@ -1950,7 +1951,7 @@ class AWDParser extends ParserBase
 
 		for (k = 0; k < numLights; k++) {
 			lightID = this._newBlockBytes.readUnsignedInt();
-			returnedArrayLight = this.getAssetByID(lightID, [AssetType.LIGHT])
+			returnedArrayLight = this.getAssetByID(lightID, [LightBase.assetType])
 
 			if (returnedArrayLight[0]) {
 				lightsArray.push(<LightBase> returnedArrayLight[1]);
@@ -2026,7 +2027,7 @@ class AWDParser extends ParserBase
 		} else if (type === 2) {
 			var tex_addr:number = props.get(2, 0);
 
-			returnedArray = this.getAssetByID(tex_addr, [AssetType.TEXTURE]);
+			returnedArray = this.getAssetByID(tex_addr, [TextureBase.assetType]);
 
 			if ((!returnedArray[0]) && (tex_addr > 0))
 				this._blocks[blockID].addError("Could not find the DiffsueTexture (ID = " + tex_addr + " ) for this Material");
@@ -2099,7 +2100,7 @@ class AWDParser extends ParserBase
 
 				} else if (type == 2) {// texture material
 					var tex_addr:number = props.get(2, 0);//TODO temporarily swapped so that diffuse texture goes to ambient
-					returnedArray = this.getAssetByID(tex_addr, [AssetType.TEXTURE]);
+					returnedArray = this.getAssetByID(tex_addr, [TextureBase.assetType]);
 
 					if ((!returnedArray[0]) && (tex_addr > 0))
 						this._blocks[blockID].addError("Could not find the AmbientTexture (ID = " + tex_addr + " ) for this MethodMaterial");
@@ -2123,7 +2124,7 @@ class AWDParser extends ParserBase
 				var diffuseTexture:Texture2DBase;
 				var diffuseTex_addr:number = props.get(17, 0);
 
-				returnedArray = this.getAssetByID(diffuseTex_addr, [AssetType.TEXTURE]);
+				returnedArray = this.getAssetByID(diffuseTex_addr, [TextureBase.assetType]);
 
 				if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
 					this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
@@ -2139,7 +2140,7 @@ class AWDParser extends ParserBase
 
 				var normalTex_addr:number = props.get(3, 0);
 
-				returnedArray = this.getAssetByID(normalTex_addr, [AssetType.TEXTURE]);
+				returnedArray = this.getAssetByID(normalTex_addr, [TextureBase.assetType]);
 
 				if ((!returnedArray[0]) && (normalTex_addr != 0)) {
 					this._blocks[blockID].addError("Could not find the NormalTexture (ID = " + normalTex_addr + " ) for this MethodMaterial");
@@ -2151,7 +2152,7 @@ class AWDParser extends ParserBase
 				}
 
 				var specTex_addr:number = props.get(21, 0);
-				returnedArray = this.getAssetByID(specTex_addr, [AssetType.TEXTURE]);
+				returnedArray = this.getAssetByID(specTex_addr, [TextureBase.assetType]);
 
 				if ((!returnedArray[0]) && (specTex_addr != 0)) {
 					this._blocks[blockID].addError("Could not find the SpecularTexture (ID = " + specTex_addr + " ) for this MethodMaterial");
@@ -2162,7 +2163,7 @@ class AWDParser extends ParserBase
 				}
 
 				var lightPickerAddr:number = props.get(22, 0);
-				returnedArray = this.getAssetByID(lightPickerAddr, [AssetType.LIGHT_PICKER])
+				returnedArray = this.getAssetByID(lightPickerAddr, [LightPickerBase.assetType])
 
 				if ((!returnedArray[0]) && (lightPickerAddr)) {
 					this._blocks[blockID].addError("Could not find the LightPicker (ID = " + lightPickerAddr + " ) for this MethodMaterial");
@@ -2222,7 +2223,7 @@ class AWDParser extends ParserBase
 						case 999: //wrapper-Methods that will load a previous parsed EffektMethod returned
 
 							targetID = props.get(1, 0);
-							returnedArray = this.getAssetByID(targetID, [AssetType.EFFECTS_METHOD]);
+							returnedArray = this.getAssetByID(targetID, [EffectMethodBase.assetType]);
 
 							if (!returnedArray[0]) {
 								this._blocks[blockID].addError("Could not find the EffectMethod (ID = " + targetID + " ) for this Material");
@@ -2237,7 +2238,7 @@ class AWDParser extends ParserBase
 						case 998: //wrapper-Methods that will load a previous parsed ShadowMapMethod
 
 							targetID = props.get(1, 0);
-							returnedArray = this.getAssetByID(targetID, [AssetType.SHADOW_MAP_METHOD]);
+							returnedArray = this.getAssetByID(targetID, [ShadowMapMethodBase.assetType]);
 
 							if (!returnedArray[0]) {
 								this._blocks[blockID].addError("Could not find the ShadowMethod (ID = " + targetID + " ) for this Material");
@@ -2250,7 +2251,7 @@ class AWDParser extends ParserBase
 
 						case 1: //EnvMapAmbientMethod
 							targetID = props.get(1, 0);
-							returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE], "CubeTexture");
+							returnedArray = this.getAssetByID(targetID, [TextureBase.assetType], "CubeTexture");
 							if (!returnedArray[0])
 								this._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this EnvMapAmbientMethodMaterial");
 							mat.ambientMethod = new AmbientEnvMapMethod(returnedArray[1]);
@@ -2263,7 +2264,7 @@ class AWDParser extends ParserBase
 							break;
 						case 52: //GradientDiffuseMethod
 							targetID = props.get(1, 0);
-							returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE]);
+							returnedArray = this.getAssetByID(targetID, [TextureBase.assetType]);
 							if (!returnedArray[0])
 								this._blocks[blockID].addError("Could not find the GradientDiffuseTexture (ID = " + targetID + " ) for this GradientDiffuseMethod");
 							mat.diffuseMethod = new DiffuseGradientMethod(returnedArray[1]);
@@ -2275,7 +2276,7 @@ class AWDParser extends ParserBase
 							break;
 						case 54: //LightMapDiffuseMethod
 							targetID = props.get(1, 0);
-							returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE]);
+							returnedArray = this.getAssetByID(targetID, [TextureBase.assetType]);
 							if (!returnedArray[0])
 								this._blocks[blockID].addError("Could not find the LightMap (ID = " + targetID + " ) for this LightMapDiffuseMethod");
 							mat.diffuseMethod = new DiffuseLightMapMethod(returnedArray[1], this.blendModeDic[props.get(401, 10)], false, mat.diffuseMethod);
@@ -2317,7 +2318,7 @@ class AWDParser extends ParserBase
 							break;
 						case 152: //SimpleWaterNormalMethod
 							targetID = props.get(1, 0);
-							returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE]);
+							returnedArray = this.getAssetByID(targetID, [TextureBase.assetType]);
 							if (!returnedArray[0])
 								this._blocks[blockID].addError("Could not find the SecoundNormalMap (ID = " + targetID + " ) for this SimpleWaterNormalMethod");
 							if (!mat.normalMap)
@@ -2342,7 +2343,7 @@ class AWDParser extends ParserBase
 			var diffuseTexture:Texture2DBase;
 			var diffuseTex_addr:number = props.get(2, 0);
 
-			returnedArray = this.getAssetByID(diffuseTex_addr, [AssetType.TEXTURE]);
+			returnedArray = this.getAssetByID(diffuseTex_addr, [TextureBase.assetType]);
 
 			if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
 				this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
@@ -2502,7 +2503,7 @@ class AWDParser extends ParserBase
 		this._blocks[blockID].name = this.parseVarStr();
 
 		shadowLightID = this._newBlockBytes.readUnsignedInt();
-		var returnedArray:Array<any> = this.getAssetByID(shadowLightID, [AssetType.LIGHT]);
+		var returnedArray:Array<any> = this.getAssetByID(shadowLightID, [LightBase.assetType]);
 
 		if (!returnedArray[0]) {
 			this._blocks[blockID].addError("Could not find the TargetLight (ID = " + shadowLightID + " ) for this ShadowMethod - ShadowMethod not created");
@@ -2535,7 +2536,7 @@ class AWDParser extends ParserBase
 		var parentObject:DisplayObjectContainer;
 		var targetObject:DisplayObjectContainer;
 
-		var returnedArray:Array<any> = this.getAssetByID(par_id, [AssetType.CONTAINER, AssetType.LIGHT, AssetType.MESH]);
+		var returnedArray:Array<any> = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType]);
 
 		if (returnedArray[0]) {
 			parentObject = <DisplayObjectContainer> returnedArray[1];
@@ -2550,7 +2551,8 @@ class AWDParser extends ParserBase
 			case 1:
 
 				var targetID:number = props.get(1, 0);
-				var returnedArrayTarget:Array<any> = this.getAssetByID(targetID, [AssetType.LIGHT, AssetType.TEXTURE_PROJECTOR]); //for no only light is requested!!!!
+				//var returnedArrayTarget:Array<any> = this.getAssetByID(targetID, [LightBase.assetType, TextureProjector.assetType]); //for no only light is requested!!!!
+				var returnedArrayTarget:Array<any> = this.getAssetByID(targetID, [LightBase.assetType]); //for no only light is requested!!!!
 
 				if ((!returnedArrayTarget[0]) && (targetID != 0)) {
 					this._blocks[blockID].addError("Could not find the light (ID = " + targetID + " ( for this CommandBock!");
@@ -2621,7 +2623,7 @@ class AWDParser extends ParserBase
 		switch (methodType) {
 			//				case 1001: //CascadeShadowMapMethod
 			//					targetID = props.get(1, 0);
-			//					returnedArray = getAssetByID(targetID, [AssetType.SHADOW_MAP_METHOD]);
+			//					returnedArray = getAssetByID(targetID, [ShadowMapMethodBase.assetType]);
 			//					if (!returnedArray[0]) {
 			//						_blocks[blockID].addError("Could not find the ShadowBaseMethod (ID = " + targetID + " ) for this CascadeShadowMapMethod - ShadowMethod not created");
 			//						return shadowMethod;
@@ -2630,7 +2632,7 @@ class AWDParser extends ParserBase
 			//					break;
 			case 1002: //ShadowNearMethod
 				targetID = props.get(1, 0);
-				returnedArray = this.getAssetByID(targetID, [AssetType.SHADOW_MAP_METHOD]);
+				returnedArray = this.getAssetByID(targetID, [ShadowMapMethodBase.assetType]);
 				if (!returnedArray[0]) {
 					this._blocks[blockID].addError("Could not find the ShadowBaseMethod (ID = " + targetID + " ) for this ShadowNearMethod - ShadowMethod not created");
 					return shadowMethod;
@@ -2756,7 +2758,7 @@ class AWDParser extends ParserBase
 		while (frames_parsed < num_frames) {
 			pose_addr = this._newBlockBytes.readUnsignedInt();
 			frame_dur = this._newBlockBytes.readUnsignedShort();
-			returnedArray = this.getAssetByID(pose_addr, [AssetType.SKELETON_POSE]);
+			returnedArray = this.getAssetByID(pose_addr, [SkeletonPose.assetType]);
 			if (!returnedArray[0])
 				this._blocks[blockID].addError("Could not find the SkeletonPose Frame # " + frames_parsed + " (ID = " + pose_addr + " ) for this SkeletonClipNode");
 			else
@@ -2801,7 +2803,7 @@ class AWDParser extends ParserBase
 		var thisGeo:Geometry;
 		var name:string = this.parseVarStr();
 		var geoAdress:number /*int*/ = this._newBlockBytes.readUnsignedInt();
-		var returnedArray:Array<any> = this.getAssetByID(geoAdress, [AssetType.GEOMETRY]);
+		var returnedArray:Array<any> = this.getAssetByID(geoAdress, [Geometry.assetType]);
 		if (!returnedArray[0]) {
 			this._blocks[blockID].addError("Could not find the target-Geometry-Object " + geoAdress + " ) for this VertexClipNode");
 			return;
@@ -2883,7 +2885,7 @@ class AWDParser extends ParserBase
 		var vertexFrames:Array<VertexClipNode> = new Array<VertexClipNode>();
 		while (frames_parsed < num_frames) {
 			poseBlockAdress = this._newBlockBytes.readUnsignedInt();
-			var returnedArray:Array<any> = this.getAssetByID(poseBlockAdress, [AssetType.ANIMATION_NODE]);
+			var returnedArray:Array<any> = this.getAssetByID(poseBlockAdress, [AnimationNodeBase.assetType]);
 			if (!returnedArray[0])
 				this._blocks[blockID].addError("Could not find the AnimationClipNode Nr " + frames_parsed + " ( " + poseBlockAdress + " ) for this AnimationSet");
 			else {
@@ -2909,7 +2911,7 @@ class AWDParser extends ParserBase
 				console.log("Parsed a VertexAnimationSet: Name = " + name + " | Animations = " + newVertexAnimationSet.animations.length + " | Animation-Names = " + newVertexAnimationSet.animationNames.toString());
 
 		} else if (skeletonFrames.length > 0) {
-			returnedArray = this.getAssetByID(poseBlockAdress, [AssetType.ANIMATION_NODE]);
+			returnedArray = this.getAssetByID(poseBlockAdress, [AnimationNodeBase.assetType]);
 			var newSkeletonAnimationSet:SkeletonAnimationSet = new SkeletonAnimationSet(props.get(1, 4)); //props.get(1,4));
 			for (var i:number /*int*/ = 0; i < skeletonFrames.length; i++)
 				newSkeletonAnimationSet.addAnimation(skeletonFrames[i]);
@@ -2948,11 +2950,11 @@ class AWDParser extends ParserBase
 		var targetMeshes:Array<Mesh> = new Array<Mesh>();
 
 		for (i = 0; i < meshAdresses.length; i++) {
-			returnedArray = this.getAssetByID(meshAdresses[i], [AssetType.MESH]);
+			returnedArray = this.getAssetByID(meshAdresses[i], [Mesh.assetType]);
 			if (returnedArray[0])
 				targetMeshes.push(<Mesh> returnedArray[1]);
 		}
-		returnedArray = this.getAssetByID(animSetBlockAdress, [AssetType.ANIMATION_SET]);
+		returnedArray = this.getAssetByID(animSetBlockAdress, [AnimationSetBase.assetType]);
 		if (!returnedArray[0]) {
 			this._blocks[blockID].addError("Could not find the AnimationSet ( " + animSetBlockAdress + " ) for this Animator");;
 			return
@@ -2961,7 +2963,7 @@ class AWDParser extends ParserBase
 		var thisAnimator:AnimatorBase;
 		if (type == 1) {
 
-			returnedArray = this.getAssetByID(props.get(1, 0), [AssetType.SKELETON]);
+			returnedArray = this.getAssetByID(props.get(1, 0), [Skeleton.assetType]);
 			if (!returnedArray[0]) {
 				this._blocks[blockID].addError("Could not find the Skeleton ( " + props.get(1, 0) + " ) for this Animator");
 				return
@@ -3011,13 +3013,13 @@ class AWDParser extends ParserBase
 				console.log('ENV MAP', targetID);
 
 
-				returnedArray = this.getAssetByID(targetID, [ AssetType.TEXTURE ], "CubeTexture");
+				returnedArray = this.getAssetByID(targetID, [ TextureBase.assetType ], "CubeTexture");
 				if (!returnedArray[0])
 					this._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this EnvMapMethod");
 				effectMethodReturn = new EffectEnvMapMethod(<CubeTextureBase> returnedArray[1], <number> props.get(101, 1));
 				targetID = props.get(2, 0);
 				if (targetID > 0) {
-					returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE]);
+					returnedArray = this.getAssetByID(targetID, [TextureBase.assetType]);
 					if (!returnedArray[0])
 						this._blocks[blockID].addError("Could not find the Mask-texture (ID = " + targetID + " ) for this EnvMapMethod");
 
@@ -3027,14 +3029,14 @@ class AWDParser extends ParserBase
 				break;
 			case 404: //LightMapMethod
 				targetID = props.get(1, 0);
-				returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE]);
+				returnedArray = this.getAssetByID(targetID, [TextureBase.assetType]);
 				if (!returnedArray[0])
 					this._blocks[blockID].addError("Could not find the LightMap (ID = " + targetID + " ) for this LightMapMethod");
 				effectMethodReturn = new EffectLightMapMethod(returnedArray[1], this.blendModeDic[props.get(401, 10)]); //usesecondaryUV not set
 				break;
 			//				case 405: //ProjectiveTextureMethod
 			//					targetID = props.get(1, 0);
-			//					returnedArray = getAssetByID(targetID, [AssetType.TEXTURE_PROJECTOR]);
+			//					returnedArray = getAssetByID(targetID, [TextureProjector.assetType]);
 			//					if (!returnedArray[0])
 			//						_blocks[blockID].addError("Could not find the TextureProjector (ID = " + targetID + " ) for this ProjectiveTextureMethod");
 			//					effectMethodReturn = new ProjectiveTextureMethod(returnedArray[1], blendModeDic[props.get(401, 10)]);
@@ -3044,14 +3046,14 @@ class AWDParser extends ParserBase
 				break;
 			case 407: //AlphaMaskMethod
 				targetID = props.get(1, 0);
-				returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE]);
+				returnedArray = this.getAssetByID(targetID, [TextureBase.assetType]);
 				if (!returnedArray[0])
 					this._blocks[blockID].addError("Could not find the Alpha-texture (ID = " + targetID + " ) for this AlphaMaskMethod");
 				effectMethodReturn = new EffectAlphaMaskMethod(returnedArray[1], props.get(701, false));
 				break;
 			//				case 408: //RefractionEnvMapMethod
 			//					targetID = props.get(1, 0);
-			//					returnedArray = getAssetByID(targetID, [AssetType.TEXTURE], "CubeTexture");
+			//					returnedArray = getAssetByID(targetID, [TextureBase.assetType], "CubeTexture");
 			//					if (!returnedArray[0])
 			//						_blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this RefractionEnvMapMethod");
 			//					effectMethodReturn = new RefractionEnvMapMethod(returnedArray[1], props.get(101, 0.1), props.get(102, 0.01), props.get(103, 0.01), props.get(104, 0.01));
@@ -3062,7 +3064,7 @@ class AWDParser extends ParserBase
 			//					break;
 			case 410: //FresnelEnvMapMethod
 				targetID = props.get(1, 0);
-				returnedArray = this.getAssetByID(targetID, [AssetType.TEXTURE], "CubeTexture");
+				returnedArray = this.getAssetByID(targetID, [TextureBase.assetType], "CubeTexture");
 				if (!returnedArray[0])
 					this._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this FresnelEnvMapMethod");
 				effectMethodReturn = new EffectFresnelEnvMapMethod(returnedArray[1], props.get(101, 1));
@@ -3397,14 +3399,14 @@ class AWDParser extends ParserBase
 
 						if (iasset.assetType == assetTypesToGet[typeCnt]) {
 							//if the right assetType was found
-							if ((assetTypesToGet[typeCnt] == AssetType.TEXTURE) && (extraTypeInfo == "CubeTexture")) {
+							if ((assetTypesToGet[typeCnt] == TextureBase.assetType) && (extraTypeInfo == "CubeTexture")) {
 								if (this._blocks[assetID].data instanceof ImageCubeTexture) {
 									returnArray.push(true);
 									returnArray.push(this._blocks[assetID].data);
 									return returnArray;
 								}
 							}
-							if ((assetTypesToGet[typeCnt] == AssetType.TEXTURE) && (extraTypeInfo == "SingleTexture")) {
+							if ((assetTypesToGet[typeCnt] == TextureBase.assetType) && (extraTypeInfo == "SingleTexture")) {
 								if (this._blocks[assetID].data instanceof ImageTexture) {
 									returnArray.push(true);
 									returnArray.push(this._blocks[assetID].data);
@@ -3417,8 +3419,8 @@ class AWDParser extends ParserBase
 
 							}
 						}
-						//if ((assetTypesToGet[typeCnt] == AssetType.GEOMETRY) && (IAsset(_blocks[assetID].data).assetType == AssetType.MESH)) {
-						if ((assetTypesToGet[typeCnt] == AssetType.GEOMETRY) && (iasset.assetType == AssetType.MESH)) {
+						//if ((assetTypesToGet[typeCnt] == Geometry.assetType) && (IAsset(_blocks[assetID].data).assetType == Mesh.assetType)) {
+						if ((assetTypesToGet[typeCnt] == Geometry.assetType) && (iasset.assetType == Mesh.assetType)) {
 
 							var mesh:Mesh = <Mesh> this._blocks[assetID].data
 
@@ -3441,13 +3443,13 @@ class AWDParser extends ParserBase
 	private getDefaultAsset(assetType:string, extraTypeInfo:string):IAsset
 	{
 		switch (true) {
-			case (assetType == AssetType.TEXTURE):
+			case (assetType == TextureBase.assetType):
 				if (extraTypeInfo == "CubeTexture")
 					return this.getDefaultCubeTexture();
 				if (extraTypeInfo == "SingleTexture")
 					return DefaultMaterialManager.getDefaultTexture();
 				break;
-			case (assetType == AssetType.MATERIAL):
+			case (assetType == MaterialBase.assetType):
 				return DefaultMaterialManager.getDefaultMaterial();
 				break;
 			default:

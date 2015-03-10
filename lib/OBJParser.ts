@@ -3,7 +3,6 @@ import Geometry							= require("awayjs-core/lib/data/Geometry");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
 import Quaternion						= require("awayjs-core/lib/geom/Quaternion");
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
-import AssetType						= require("awayjs-core/lib/library/AssetType");
 import IAsset							= require("awayjs-core/lib/library/IAsset");
 import URLLoaderDataFormat				= require("awayjs-core/lib/net/URLLoaderDataFormat");
 import URLRequest						= require("awayjs-core/lib/net/URLRequest");
@@ -11,12 +10,12 @@ import ParserBase						= require("awayjs-core/lib/parsers/ParserBase");
 import ParserUtils						= require("awayjs-core/lib/parsers/ParserUtils");
 import ResourceDependency				= require("awayjs-core/lib/parsers/ResourceDependency");
 import Texture2DBase					= require("awayjs-core/lib/textures/Texture2DBase");
+import TextureBase						= require("awayjs-core/lib/textures/TextureBase");
 
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import Mesh								= require("awayjs-display/lib/entities/Mesh");
+import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
 import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
-
-import DefaultMaterialManager			= require("awayjs-renderergl/lib/managers/DefaultMaterialManager");
 
 import MethodMaterial					= require("awayjs-methodmaterials/lib/MethodMaterial");
 import MethodMaterialMode				= require("awayjs-methodmaterials/lib/MethodMaterialMode");
@@ -120,7 +119,7 @@ class OBJParser extends ParserBase
 
 			asset = resourceDependency.assets[0];
 
-			if (asset.assetType == AssetType.TEXTURE) {
+			if (asset.isAsset(TextureBase)) {
 
 				var lm:LoadedMaterial = new LoadedMaterial();
 				lm.materialID = resourceDependency.id;
