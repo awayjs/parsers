@@ -977,14 +977,19 @@ var AWDParser = (function (_super) {
                             if (mask_ids.length > 0) {
                                 if ((mask_ids.length == 1) && (mask_ids[0] == 0)) {
                                     // TODO: this object is used as mask
+                                    frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "_iMaskID", instanceID));
                                     commandString += "\n                obj is used as mask";
                                 }
                                 else {
                                     // TODO: this object is masked by one or more objects defined by ids in mask-array
                                     commandString += "\n                obj is masked by " + mask_ids.length + " objects";
+                                    var maskDOs = [];
+                                    var instanceID = objectIDMap[objectID];
                                     for (var cm = 0; cm < mask_ids.length; cm++) {
+                                        maskDOs[cm] = timeLineContainer.getPotentialChild(instanceID);
                                         commandString += "\n                obj is masked by " + mask_ids[cm];
                                     }
+                                    frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "_iMasks", maskDOs));
                                 }
                             }
                         }
