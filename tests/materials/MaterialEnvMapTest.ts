@@ -1,10 +1,10 @@
+import Geometry						= require("awayjs-core/lib/data/Geometry");
 import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
 import LoaderEvent					= require("awayjs-core/lib/events/LoaderEvent");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import AssetLibrary					= require("awayjs-core/lib/library/AssetLibrary");
 import AssetLoader					= require("awayjs-core/lib/library/AssetLoader");
 import AssetLoaderToken				= require("awayjs-core/lib/library/AssetLoaderToken");
-import AssetType					= require("awayjs-core/lib/library/AssetType");
 import IAsset						= require("awayjs-core/lib/library/IAsset");
 import URLRequest					= require("awayjs-core/lib/net/URLRequest");
 import Debug						= require("awayjs-core/lib/utils/Debug");
@@ -13,6 +13,7 @@ import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationF
 import View							= require("awayjs-display/lib/containers/View");
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
 import Skybox						= require("awayjs-display/lib/entities/Skybox");
+import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 
 import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
 
@@ -90,23 +91,23 @@ class MaterialEnvMapTest
 			console.log(asset.assetType);
 
 			switch (asset.assetType) {
-				case AssetType.SKYBOX:
+				case Skybox.assetType:
 
 					var skybox:Skybox = <Skybox> asset;
 					this._view.scene.addChild(skybox);
 					break;
 
-				case AssetType.MESH:
+				case Mesh.assetType:
 
 					this._torus = <Mesh> asset;
 					this._view.scene.addChild(this._torus);
 
 					break;
 
-				case AssetType.GEOMETRY:
+				case Geometry.assetType:
 					break;
 
-				case AssetType.MATERIAL:
+				case MaterialBase.assetType:
 					break;
 			}
 		}

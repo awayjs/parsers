@@ -34,8 +34,8 @@
 
  */
 
+import Geometry						= require("awayjs-core/lib/data/Geometry");
 import AssetLibrary					= require("awayjs-core/lib/library/AssetLibrary");
-import AssetType					= require("awayjs-core/lib/library/AssetType");
 import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
 import URLRequest					= require("awayjs-core/lib/net/URLRequest");
 import LoaderEvent					= require("awayjs-core/lib/events/LoaderEvent");
@@ -48,7 +48,6 @@ import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationF
 import View							= require("awayjs-display/lib/containers/View");
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
 import Container					= require("awayjs-display/lib/containers/DisplayObjectContainer");
-import Geometry						= require("awayjs-display/lib/base/Geometry");
 import HoverController				= require("awayjs-display/lib/controllers/HoverController");
 import Loader						= require("awayjs-display/lib/containers/Loader");
 import ColorMaterial				= require("awayjs-display/lib/materials/BasicMaterial");
@@ -61,8 +60,9 @@ import MethodMaterial				= require("awayjs-methodmaterials/lib/MethodMaterial");
 import MethodRendererPool			= require("awayjs-methodmaterials/lib/pool/MethodRendererPool");
 
 import AWDParser					= require("awayjs-parsers/lib/AWDParser");
-import Partition2D					= require("awayjs-player/lib/fl/partition/Partition2D");
-import MovieClip					= require("awayjs-player/lib/fl/display/MovieClip");
+
+import Partition2D					= require("awayjs-player/lib/partition/Partition2D");
+import MovieClip					= require("awayjs-player/lib/display/MovieClip");
 
 import CoordinateSystem = require("awayjs-core/lib/projections/CoordinateSystem");
 import PerspectiveProjection = require("awayjs-core/lib/projections/PerspectiveProjection");
@@ -194,7 +194,7 @@ class AWD3ParserTest
 	 */
 	private onAssetComplete(event: AssetEvent): void
 	{
-		if(event.asset.assetType == AssetType.TIMELINE) {
+		if(event.asset.isAsset(MovieClip)) {
 			this._rootTimeLine = <MovieClip> event.asset;
 			this._rootTimeLine.partition = new Partition2D(this._rootTimeLine);
 		}

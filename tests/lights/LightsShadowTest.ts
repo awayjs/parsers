@@ -4,7 +4,6 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import AssetLibrary					= require("awayjs-core/lib/library/AssetLibrary");
 import AssetLoader					= require("awayjs-core/lib/library/AssetLoader");
 import AssetLoaderToken				= require("awayjs-core/lib/library/AssetLoaderToken");
-import AssetType					= require("awayjs-core/lib/library/AssetType");
 import IAsset						= require("awayjs-core/lib/library/IAsset");
 import URLRequest					= require("awayjs-core/lib/net/URLRequest");
 import Debug						= require("awayjs-core/lib/utils/Debug");
@@ -14,6 +13,7 @@ import View							= require("awayjs-display/lib/containers/View");
 import HoverController				= require("awayjs-display/lib/controllers/HoverController");
 import LightBase					= require("awayjs-display/lib/base/LightBase");
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
+import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 
 import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
 
@@ -104,17 +104,17 @@ class LightsShadowTest
 			var asset:IAsset = loader.baseDependency.assets[ i ];
 
 			switch (asset.assetType) {
-				case AssetType.MESH:
+				case Mesh.assetType:
 					this._awdMesh = <Mesh> asset;
 					this._view.scene.addChild(this._awdMesh);
 					this.resize();
 					break;
 
-				case AssetType.LIGHT:
+				case LightBase.assetType:
 					this._view.scene.addChild(<LightBase> asset);
 					break;
 
-				case AssetType.MATERIAL:
+				case MaterialBase.assetType:
 					break;
 
 			}

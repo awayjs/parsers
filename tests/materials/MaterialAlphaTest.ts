@@ -1,16 +1,16 @@
-import BlendMode					= require("awayjs-core/lib/base/BlendMode");
+import BlendMode					= require("awayjs-core/lib/data/BlendMode");
 import LoaderEvent					= require("awayjs-core/lib/events/LoaderEvent");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import AssetLibrary					= require("awayjs-core/lib/library/AssetLibrary");
 import AssetLoader					= require("awayjs-core/lib/library/AssetLoader");
 import AssetLoaderToken				= require("awayjs-core/lib/library/AssetLoaderToken");
-import AssetType					= require("awayjs-core/lib/library/AssetType");
 import IAsset						= require("awayjs-core/lib/library/IAsset");
 import URLLoader					= require("awayjs-core/lib/net/URLLoader");
 import URLLoaderDataFormat			= require("awayjs-core/lib/net/URLLoaderDataFormat");
 import URLRequest					= require("awayjs-core/lib/net/URLRequest");
 import PerspectiveProjection		= require("awayjs-core/lib/projections/PerspectiveProjection");
 import ImageTexture					= require("awayjs-core/lib/textures/ImageTexture");
+import TextureBase					= require("awayjs-core/lib/textures/TextureBase");
 import Debug						= require("awayjs-core/lib/utils/Debug");
 import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationFrame");
 
@@ -127,7 +127,7 @@ class MaterialAlphaTest
 			console.log( d.name);
 
 			switch (d.assetType) {
-				case AssetType.MESH:
+				case Mesh.assetType:
 					var mesh:Mesh = <Mesh> d;
 
 					this.loadedMesh = mesh;
@@ -148,7 +148,7 @@ class MaterialAlphaTest
 
 					this.raf.start();
 					break;
-				case AssetType.TEXTURE:
+				case TextureBase.assetType:
 					// Loaded Texture
 					var tx:ImageTexture = <ImageTexture> d;
 

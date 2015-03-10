@@ -10084,7 +10084,7 @@ var __extends = this.__extends || function (d, b) {
 };
 var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 var MipmapGenerator = require("awayjs-core/lib/textures/MipmapGenerator");
-var TextureProxyBase = require("awayjs-core/lib/textures/TextureProxyBase");
+var TextureBase = require("awayjs-core/lib/textures/TextureBase");
 var CubeTextureBase = (function (_super) {
     __extends(CubeTextureBase, _super);
     function CubeTextureBase() {
@@ -10137,11 +10137,11 @@ var CubeTextureBase = (function (_super) {
         throw new AbstractMethodError();
     };
     return CubeTextureBase;
-})(TextureProxyBase);
+})(TextureBase);
 module.exports = CubeTextureBase;
 
 
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/textures/MipmapGenerator":undefined,"awayjs-core/lib/textures/TextureProxyBase":undefined}],"awayjs-core/lib/textures/ImageCubeTexture":[function(require,module,exports){
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/textures/MipmapGenerator":undefined,"awayjs-core/lib/textures/TextureBase":undefined}],"awayjs-core/lib/textures/ImageCubeTexture":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -10544,7 +10544,7 @@ var __extends = this.__extends || function (d, b) {
 };
 var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 var MipmapGenerator = require("awayjs-core/lib/textures/MipmapGenerator");
-var TextureProxyBase = require("awayjs-core/lib/textures/TextureProxyBase");
+var TextureBase = require("awayjs-core/lib/textures/TextureBase");
 var Texture2DBase = (function (_super) {
     __extends(Texture2DBase, _super);
     function Texture2DBase() {
@@ -10623,11 +10623,11 @@ var Texture2DBase = (function (_super) {
         throw new AbstractMethodError();
     };
     return Texture2DBase;
-})(TextureProxyBase);
+})(TextureBase);
 module.exports = Texture2DBase;
 
 
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/textures/MipmapGenerator":undefined,"awayjs-core/lib/textures/TextureProxyBase":undefined}],"awayjs-core/lib/textures/TextureProxyBase":[function(require,module,exports){
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/textures/MipmapGenerator":undefined,"awayjs-core/lib/textures/TextureBase":undefined}],"awayjs-core/lib/textures/TextureBase":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -10639,25 +10639,25 @@ var NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
 /**
  *
  */
-var TextureProxyBase = (function (_super) {
-    __extends(TextureProxyBase, _super);
+var TextureBase = (function (_super) {
+    __extends(TextureBase, _super);
     /**
      *
      */
-    function TextureProxyBase(generateMipmaps) {
+    function TextureBase(generateMipmaps) {
         if (generateMipmaps === void 0) { generateMipmaps = false; }
         _super.call(this);
         this._pFormat = "bgra";
         this._textureData = new Array();
     }
-    Object.defineProperty(TextureProxyBase.prototype, "size", {
+    Object.defineProperty(TextureBase.prototype, "size", {
         get: function () {
             return this._pSize;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(TextureProxyBase.prototype, "format", {
+    Object.defineProperty(TextureBase.prototype, "format", {
         /**
          *
          * @returns {string}
@@ -10668,7 +10668,7 @@ var TextureProxyBase = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(TextureProxyBase.prototype, "assetType", {
+    Object.defineProperty(TextureBase.prototype, "assetType", {
         /**
          *
          * @returns {string}
@@ -10682,7 +10682,7 @@ var TextureProxyBase = (function (_super) {
     /**
      *
      */
-    TextureProxyBase.prototype.invalidateContent = function () {
+    TextureBase.prototype.invalidateContent = function () {
         var len = this._textureData.length;
         for (var i = 0; i < len; i++)
             this._textureData[i].invalidate();
@@ -10691,28 +10691,28 @@ var TextureProxyBase = (function (_super) {
      *
      * @private
      */
-    TextureProxyBase.prototype.invalidateSize = function () {
+    TextureBase.prototype.invalidateSize = function () {
         while (this._textureData.length)
             this._textureData[0].dispose();
     };
     /**
      * @inheritDoc
      */
-    TextureProxyBase.prototype.dispose = function () {
+    TextureBase.prototype.dispose = function () {
         while (this._textureData.length)
             this._textureData[0].dispose();
     };
-    TextureProxyBase.prototype._iAddTextureData = function (textureData) {
+    TextureBase.prototype._iAddTextureData = function (textureData) {
         this._textureData.push(textureData);
         return textureData;
     };
-    TextureProxyBase.prototype._iRemoveTextureData = function (textureData) {
+    TextureBase.prototype._iRemoveTextureData = function (textureData) {
         this._textureData.splice(this._textureData.indexOf(textureData), 1);
         return textureData;
     };
-    return TextureProxyBase;
+    return TextureBase;
 })(NamedAssetBase);
-module.exports = TextureProxyBase;
+module.exports = TextureBase;
 
 
 },{"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/library/NamedAssetBase":undefined}],"awayjs-core/lib/ui/Keyboard":[function(require,module,exports){
