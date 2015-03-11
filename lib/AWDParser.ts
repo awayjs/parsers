@@ -1285,10 +1285,9 @@ class AWDParser extends ParserBase
 									// TODO: this object is masked by one or more objects defined by ids in mask-array
 									commandString += "\n                obj is masked by "+mask_ids.length+" objects";
                                     var maskDOs : DisplayObject[] = [];
-                                    var instanceID = objectIDMap[objectID];
 									for (var cm:number = 0; cm < mask_ids.length; cm++) {
-                                        maskDOs[cm] = timeLineContainer.getPotentialChild(instanceID);
-										commandString += "\n                obj is masked by "+mask_ids[cm];
+                                        maskDOs[cm] = timeLineContainer.getPotentialChild(objectIDMap[mask_ids[cm]]);
+                                        commandString += "\n                obj is masked by "+mask_ids[cm];
 									}
                                     frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "_iMasks", maskDOs));
 								}
