@@ -977,7 +977,6 @@ var AWDParser = (function (_super) {
                             if (mask_ids.length > 0) {
                                 if ((mask_ids.length == 1) && (mask_ids[0] == 0)) {
                                     // TODO: this object is used as mask
-                                    console.log("Parsed mask: " + instanceID, depth);
                                     frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "_iMaskID", instanceID));
                                     commandString += "\n                obj is used as mask";
                                 }
@@ -987,7 +986,6 @@ var AWDParser = (function (_super) {
                                     var maskDOs = [];
                                     for (var cm = 0; cm < mask_ids.length; cm++) {
                                         maskDOs[cm] = timeLineContainer.getPotentialChild(objectIDMap[mask_ids[cm]]);
-                                        console.log("Used mask ID: ", maskDOs[cm]._iMaskID, objectIDMap[mask_ids[cm]]);
                                         commandString += "\n                obj is masked by " + mask_ids[cm];
                                     }
                                     frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "_iMasks", maskDOs));
