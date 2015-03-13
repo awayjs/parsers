@@ -144,6 +144,7 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	export = AWDParser;
 	
 }
+
 declare module "awayjs-parsers/lib/MD2Parser" {
 	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 	import ResourceDependency = require("awayjs-core/lib/parsers/ResourceDependency");
@@ -258,6 +259,7 @@ declare module "awayjs-parsers/lib/MD2Parser" {
 	export = MD2Parser;
 	
 }
+
 declare module "awayjs-parsers/lib/MD5AnimParser" {
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
@@ -405,6 +407,7 @@ declare module "awayjs-parsers/lib/MD5AnimParser" {
 	export = MD5AnimParser;
 	
 }
+
 declare module "awayjs-parsers/lib/MD5MeshParser" {
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
@@ -567,6 +570,7 @@ declare module "awayjs-parsers/lib/MD5MeshParser" {
 	export = MD5MeshParser;
 	
 }
+
 declare module "awayjs-parsers/lib/Max3DSParser" {
 	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 	import ResourceDependency = require("awayjs-core/lib/parsers/ResourceDependency");
@@ -633,6 +637,7 @@ declare module "awayjs-parsers/lib/Max3DSParser" {
 	export = Max3DSParser;
 	
 }
+
 declare module "awayjs-parsers/lib/OBJParser" {
 	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 	import ResourceDependency = require("awayjs-core/lib/parsers/ResourceDependency");
@@ -763,6 +768,7 @@ declare module "awayjs-parsers/lib/OBJParser" {
 	export = OBJParser;
 	
 }
+
 declare module "awayjs-parsers/lib/Parsers" {
 	/**
 	 *
@@ -816,3 +822,4 @@ declare module "awayjs-parsers/lib/Parsers" {
 	export = Parsers;
 	
 }
+
