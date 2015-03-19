@@ -104,9 +104,11 @@ import AS2SceneGraphFactory 		= require("awayjs-player/lib/factories/AS2SceneGra
 import MovieClip 					= require("awayjs-player/lib/display/MovieClip");
 import TimelineKeyFrame 			= require("awayjs-player/lib/timeline/TimelineKeyFrame");
 import AddChildCommand 				= require("awayjs-player/lib/timeline/commands/AddChildCommand");
-import UpdatePropertyCommand 		= require("awayjs-player/lib/timeline/commands/UpdatePropertyCommand");
-import RemoveChildCommand 			= require("awayjs-player/lib/timeline/commands/RemoveChildCommand");
 import ApplyAS2DepthsCommand		= require("awayjs-player/lib/timeline/commands/ApplyAS2DepthsCommand");
+import ExecuteScriptCommand 		= require("awayjs-player/lib/timeline/commands/ExecuteScriptCommand");
+import RemoveChildCommand 			= require("awayjs-player/lib/timeline/commands/RemoveChildCommand");
+import SetInstanceNameCommand 		= require("awayjs-player/lib/timeline/commands/SetInstanceNameCommand");
+import UpdatePropertyCommand 		= require("awayjs-player/lib/timeline/commands/UpdatePropertyCommand");
 
 import Font							= require("awayjs-display/lib/text/Font");
 import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTable");
@@ -1184,7 +1186,7 @@ class AWDParser extends ParserBase
 								frame.addConstructCommand(new AddChildCommand(instanceID));
 
 								if (instanceName.length) {
-									frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "name", instanceName));
+									frame.addConstructCommand(new SetInstanceNameCommand(instanceID, instanceName));
 									commandString += "\n                instanceName = " + instanceName;
 								}
 								valid_command = true;
@@ -1333,7 +1335,7 @@ class AWDParser extends ParserBase
 			if (length_code > 0) {
 				// TODO: Script should probably not be attached to keyframes?
 				var frame_code = this._newBlockBytes.readUTFBytes(length_code);
-				//frame.addToScript(frame_code);
+				frame.addConstructCommand(new ExecuteScriptCommand(frame_code));
 				traceString += "\nframe-code = " + frame_code;
 			}
 			traceString += commandString;
