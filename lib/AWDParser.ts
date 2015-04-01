@@ -104,9 +104,11 @@ import AS2SceneGraphFactory 		= require("awayjs-player/lib/factories/AS2SceneGra
 import MovieClip 					= require("awayjs-player/lib/display/MovieClip");
 import TimelineKeyFrame 			= require("awayjs-player/lib/timeline/TimelineKeyFrame");
 import AddChildCommand 				= require("awayjs-player/lib/timeline/commands/AddChildCommand");
+import AddChildAtDepthCommand		= require("awayjs-player/lib/timeline/commands/AddChildAtDepthCommand");
 import ApplyAS2DepthsCommand		= require("awayjs-player/lib/timeline/commands/ApplyAS2DepthsCommand");
 import ExecuteScriptCommand 		= require("awayjs-player/lib/timeline/commands/ExecuteScriptCommand");
 import RemoveChildCommand 			= require("awayjs-player/lib/timeline/commands/RemoveChildCommand");
+import RemoveChildrenAtDepthCommand	= require("awayjs-player/lib/timeline/commands/RemoveChildrenAtDepthCommand");
 import SetInstanceNameCommand 		= require("awayjs-player/lib/timeline/commands/SetInstanceNameCommand");
 import UpdatePropertyCommand 		= require("awayjs-player/lib/timeline/commands/UpdatePropertyCommand");
 
@@ -1114,21 +1116,88 @@ class AWDParser extends ParserBase
 
 		var i:number;
 		var j:number;
-		var k:number;
+		var c:number;
 		var timeLineContainer = factory.createMovieClip();
 		var name = this.parseVarStr();
 		var isScene = !!this._newBlockBytes.readUnsignedByte();
 		var sceneID = this._newBlockBytes.readUnsignedByte();
 		var fps:number = this._newBlockBytes.readFloat();
+		//console.log("fps = "+fps);
+		//timeLineContainer.fps=fps;
 		var ms_per_frame = 1000 / fps;
-		var numFrames = this._newBlockBytes.readUnsignedShort();
-		var objectIDMap : { [id:string]:number; } = {};
+		var num_instances:number=0;
+		var num_all_display_instances:number=0;
 
+
+		// register list of potential childs
+		// a potential child can be reused on a timeline (added / removed / added)
+		// However, for each potential child, we need to register the max-number of instances that a frame contains
+		// we parse 2 lists of potential-childs:
+		// -	the first list contains potential-childs that are only ever instanced once per frame.
+		// -	the second list contains potential-childs that are instanced multiple times on some frames.
+
+		// on registering a child, the child gets a incremental-id assigned. This is the id, that the commands are using to access the childs.
+		// hence we need to be careful to register all objects in correct order.
+
+		var num_potential_childs:number = this._newBlockBytes.readUnsignedShort();
+		for (i = 0; i < num_potential_childs; i++) {
+			resourceID = this._newBlockBytes.readUnsignedInt();
+			var cmd_asset:DisplayObject = <DisplayObject>this._blocks[resourceID].data;
+			if (cmd_asset != null) {
+				timeLineContainer.registerPotentialChild(cmd_asset);
+			}
+			else{
+				//todo: register a default display object on timeline, so we do not mess up the incremental obj-id
+				//timeLineContainer.registerPotentialChild(cmd_asset);
+				console.log("ERROR when collecting objects for timeline");
+			}
+		}
+		num_all_display_instances+=num_potential_childs;
+		var num_potential_childs_multi_instanced = this._newBlockBytes.readUnsignedShort();
+		num_potential_childs+=num_potential_childs_multi_instanced;
+		for (i = 0; i < num_potential_childs_multi_instanced; i++) {
+			resourceID = this._newBlockBytes.readUnsignedInt();
+			num_instances = this._newBlockBytes.readUnsignedShort();
+			num_all_display_instances+=num_instances;
+			var cmd_asset:DisplayObject = <DisplayObject>this._blocks[resourceID].data;
+			if (cmd_asset != null) {
+				for (j = 0; j < num_instances; j++) {
+					timeLineContainer.registerPotentialChild(cmd_asset);
+				}
+			}
+			else{
+				for (j = 0; j < num_instances; j++) {
+					//todo: register a default display object on timeline, so we do not mess up the incremental obj-id
+					//timeLineContainer.registerPotentialChild(cmd_asset);
+					console.log("ERROR when collecting objects for timeline");
+				}
+			}
+		}
+		console.log("Parsed "+num_potential_childs+" potential childs. They will be used by "+num_all_display_instances+" instances.");
+
+		// register list of potential sounds
+		// a potential child can be reused on a timeline (added / removed / added)
+		var num_potential_sounds = this._newBlockBytes.readUnsignedShort();
+		for (i = 0; i < num_potential_sounds; i++) {
+			resourceID = this._newBlockBytes.readUnsignedInt();
+			var cmd_asset:DisplayObject = <DisplayObject>this._blocks[resourceID].data;
+			if (cmd_asset != null) {
+				//todo: register sound objects on movieclip
+				console.log("ERROR when collecting objects for timeline");
+				//timeLineContainer.registerPotentialChild(cmd_asset);
+			}
+			else{
+				//todo: this is a error that might break complete timeline, because all sound obj-id shift
+			}
+		}
+		console.log("Parsed "+num_potential_sounds+" potential sounds");
+
+		var numFrames = this._newBlockBytes.readUnsignedShort();
+
+		//console.log("numFrames "+numFrames);
 		// var previousTimeLine:TimeLineFrame;
 		// var fill_props:AWDProperties = this.parseProperties({1:AWDParser.UINT32});// { 1:UINT32, 6:AWDSTRING }  ); //; , 2:UINT32, 3:UINT32, 5:BOOL } );
 
-		if (this._debug)
-			console.log("Parsed a TIMELINE: Name = " + name + "| isScene = " + isScene + "| sceneID = " + sceneID + "| numFrames = " + numFrames);
 
 		var totalDuration = 0;
 		for (i = 0; i < numFrames; i++) {
@@ -1136,70 +1205,82 @@ class AWDParser extends ParserBase
 			var frame = new TimelineKeyFrame();
 			var traceString = "frame = " + i;
 			// TODO: remove the ms_per_frame to set the duration in frames
-			var frameDuration = this._newBlockBytes.readUnsignedInt() * ms_per_frame;
+			var frameDuration = this._newBlockBytes.readUnsignedInt()*ms_per_frame;
+			//console.log("frameDuration "+frameDuration);
 			frame.setFrameTime(totalDuration, frameDuration);
 			totalDuration += frameDuration;
 			//console.log("duration = " + frameDuration);
-			traceString += "duration = " + frameDuration;
+			//traceString += "duration = " + frameDuration;
 
-			var numLabels = this._newBlockBytes.readUnsignedShort();
+			var numLabels = this._newBlockBytes.readUnsignedByte();
+			//console.log("numLabels "+numLabels);
 			for (j = 0; j < numLabels; j++) {
-				var labelType = this._newBlockBytes.readUnsignedByte();
+				//var labelType = this._newBlockBytes.readUnsignedByte();
 				var label = this.parseVarStr();
 				// TODO: Handle labels differently
 				//timeLineContainer.addFrameLabel(new FrameLabel(label, labelType, frame));
-				traceString += "\n     label = " + label + " - labelType = " + labelType;
+				//traceString += "\n     label = " + label;
+				//console.log("label "+label);
 			}
 
 			var numCommands = this._newBlockBytes.readUnsignedShort();
-			traceString += "\n      Commands " + numCommands;
+			//console.log("numCommands "+numCommands);
+			//traceString += "\n      Commands " + numCommands;
 			var hasDepthChanges = false;
 			var commandString = "";
 			for (j = 0; j < numCommands; j++) {
 				var objectID:number;
+				var target_depth:number;
 				var resourceID:number;
-				var commandType = this._newBlockBytes.readUnsignedShort();
+				var number_of_obj:number=0;
+				var commandType = this._newBlockBytes.readUnsignedByte();
 
-				// 1 = Add object by local id (awd-block-id) + update properties
-				// 2 = Add object by global id (string identifier) + update properties !Not used yet.!
-				// 3 = UpdateObject - update a object that is already present
-				// 4 = remove object
-				// 5 = add / update sound
+				// 1 = remove a number of objects by depth
+				// 2 = add a object by child-id at specific depth
+				// 3 = update a object by child-id
+				// 4 = add / update sound - (not finished)
 
 				switch (commandType) {
 
-					case 1:
-					case 3:
-						var valid_command:boolean = false;
-						objectID = this._newBlockBytes.readUnsignedInt();
-						var instanceID = 0; // must be set in folling conditions:
-						if (commandType == 1) {
-							// this commands looks for a object by awd-id and puts it into the timeline
-							resourceID = this._newBlockBytes.readUnsignedInt();
-							var instanceName = this.parseVarStr();
-							// sound is added to timeline with dedicated Command, as it is no display-object (has no matrix etc)
-							// check if a Geometry can be found at the resourceID (AWD-ID)
-							var cmd_asset:DisplayObject = <DisplayObject>this._blocks[resourceID].data;
-							if (cmd_asset != null) {
-								instanceID = timeLineContainer.registerPotentialChild(cmd_asset);
-								objectIDMap[objectID] = instanceID;
-								frame.addConstructCommand(new AddChildCommand(instanceID));
+					case 1:// remove a number of objects at specific depth
+						//console.log("remove_obj ");
 
-								if (instanceName.length) {
-									frame.addConstructCommand(new SetInstanceNameCommand(instanceID, instanceName));
-									commandString += "\n                instanceName = " + instanceName;
-								}
-								valid_command = true;
-								commandString += "\n      - Add new Resource = " + resourceID + " as object_id = " + objectID;
-							}
-							else {
-								commandString += "\n      - ERROR - object_id = " + objectID + " - NO DISPLAY_OBJECT AT ID = " + resourceID;
-							}
+						number_of_obj = this._newBlockBytes.readUnsignedShort();
+						//console.log("number_of_obj ", number_of_obj);
+						var remove_depths:Array<number>=new Array<number>();
+						for (c = 0; c < number_of_obj; c++) {
+							// Remove Object Command
+							target_depth = this._newBlockBytes.readShort();
+							remove_depths.push(target_depth);
+							//commandString += "\n       - Remove object at depth: " + target_depth;
+							//console.log("\n       - Remove object at depth: " + target_depth);
 						}
-						else if (commandType == 3) {
-							instanceID = objectIDMap[objectID];
-							valid_command = true;
-							commandString += "\n      - Update object_id = " + objectID;
+						frame.addConstructCommand(new RemoveChildrenAtDepthCommand(remove_depths));
+
+						break;
+
+					case 2:// add a of object by child-id at specific depth
+					case 3:// update a object by child-id
+						//console.log("add / remove obj ");
+						objectID = this._newBlockBytes.readUnsignedShort();
+						//console.log("objectID ", objectID);
+						if (commandType == 2) {
+							hasDepthChanges=true;
+							target_depth = this._newBlockBytes.readShort();
+							var instanceName = this.parseVarStr();
+							//console.log("target_depth ", target_depth);
+							if (timeLineContainer.getPotentialChild(objectID)!=undefined) {
+								frame.addConstructCommand(new AddChildAtDepthCommand(objectID, target_depth));
+								// this commands looks for a object by awd-id and puts it into the timeline
+								if (instanceName.length) {
+									frame.addConstructCommand(new SetInstanceNameCommand(objectID, instanceName));
+									//commandString += "\n                instanceName = " + instanceName;
+									//console.log("instanceName ", instanceName);
+								}
+							}
+							else{
+								console.log("ERROR: could not find the objectID ", objectID);
+							}
 						}
 						// read the command properties
 						// 1: matrix2d (6 x number with storage precision matrix)
@@ -1207,37 +1288,32 @@ class AWDParser extends ParserBase
 						// 3: colortransform (20 x number with storage precision properties)
 						// 4: blendmode (uint8)
 						// 5: visibilty (uint8)
-						// 6: depth (uint32)
-						// 7: mask (uint32)
 						var props:AWDProperties = this.parseProperties({
 							1: this._matrixNrType,
 							2: this._matrixNrType,
 							3: this._propsNrType,
 							4: AWDParser.UINT8,
-							5: AWDParser.UINT8,
-							6: AWDParser.UINT32
+							5: AWDParser.UINT8
 						});
 						// todo: fix property parsing so we can read variable size list (atm list with size = 1 is returned as single number)
 						// for this reason, for now the mask-property is read sepperatly
-						var mask_id_nums:number = this._newBlockBytes.readUnsignedInt();
+						var mask_id_nums:number = this._newBlockBytes.readUnsignedShort();
 						var mask_ids:Array<number> = new Array<number>();
 						for (var mi_cnt:number = 0; mi_cnt < mask_id_nums; mi_cnt++) {
-							mask_ids.push(this._newBlockBytes.readUnsignedInt());
+							mask_ids.push(this._newBlockBytes.readShort());
 						}
-						if (valid_command) {
+						if (timeLineContainer.getPotentialChild(objectID)!=undefined) {
 
 							var matrix_2d:Float32Array = props.get(1, []);
 							//var matrix_3d:Float32Array = props.get(2, []);
 							var colortransform:Float32Array = props.get(3, []);
 							var blendmode:number = props.get(4, -1);
 							var visibilty:number = props.get(5, -1);
-							var depth:number = props.get(6, -1);
-							var mask:Array<number> = props.get(7, []);
 							// todo: handle filters
 
-							//matrix2d must provide 6 values to be valid
+								//matrix2d must provide 6 values to be valid
 
-							commandString += "\n                transformArray = " + matrix_2d.length;
+							//commandString += "\n                transformArray = " + matrix_2d.length;
 							if (matrix_2d.length == 6) {
 								var thisMatrix = new Matrix3D();
 								thisMatrix.position = new Vector3D(matrix_2d[4], matrix_2d[5], 0);
@@ -1246,80 +1322,67 @@ class AWDParser extends ParserBase
 								thisMatrix.rawData[1] = matrix_2d[1];
 								thisMatrix.rawData[4] = matrix_2d[2];
 								thisMatrix.rawData[5] = matrix_2d[3];
-								frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "_iMatrix3D", thisMatrix));
-
-								commandString += "\n                transformArray = " + matrix_2d;
+								frame.addConstructCommand(new UpdatePropertyCommand(objectID, "_iMatrix3D", thisMatrix));
+								//commandString += "\n                transformArray = " + matrix_2d;
 							}
 							//matrix2d must provide 20 values to be valid
 							if (colortransform.length == 20) {
 								// TODO: set ColorTransform on objectProps
-								commandString += "\n                colorMatrix = " + colortransform;
+								//commandString += "\n                colorMatrix = " + colortransform;
 							}
 
 							// blendmode must be positive to be valid
 							if (blendmode >= 0) {
 								var blendmode_string:string = this.blendModeDic[blendmode];
 								// TODO: set Blendmode on objectProps
-								commandString += "\n                BlendMode = " + blendmode_string;
+								//commandString += "\n                BlendMode = " + blendmode_string;
 							}
 							// visibilty must be positive to be valid
 							if (visibilty >= 0) {
 								if (visibilty == 0)
-									frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "visible", false));
+									frame.addConstructCommand(new UpdatePropertyCommand(objectID, "visible", false));
 								else
-									frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "visible", true));
-							}
-							// depth must be positive to be valid
-							if (depth >= 0) {
-								commandString += "\n                Depth = " + depth;
-								frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "__AS2Depth", depth));
-								hasDepthChanges = true;
+									frame.addConstructCommand(new UpdatePropertyCommand(objectID, "visible", true));
 							}
 							// mask must be positive to be valid. i think only add-commands will have this value.
 							// e.g. it should never be updated on already existing objects. (because depth of objects can change, i am not sure)
 							if (mask_ids.length > 0) {
-								if((mask_ids.length==1)&&(mask_ids[0]==0)){
+								if ((mask_ids.length == 1) && (mask_ids[0] == -1)) {
 									// TODO: this object is used as mask
-                                    frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "_iMaskID", instanceID));
-									commandString += "\n                obj is used as mask";
+									frame.addConstructCommand(new UpdatePropertyCommand(objectID, "_iMaskID", objectID));
+									//commandString += "\n                obj is used as mask";
 								}
-								else{
+								else {
 									// TODO: this object is masked by one or more objects defined by ids in mask-array
-									commandString += "\n                obj is masked by "+mask_ids.length+" objects";
-                                    var maskDOs : DisplayObject[] = [];
+									commandString += "\n                obj is masked by " + mask_ids.length + " objects";
+									var maskDOs:DisplayObject[] = [];
 									for (var cm:number = 0; cm < mask_ids.length; cm++) {
-                                        maskDOs[cm] = timeLineContainer.getPotentialChild(objectIDMap[mask_ids[cm]]);
-                                        commandString += "\n                obj is masked by "+mask_ids[cm];
+										maskDOs[cm] = timeLineContainer.getPotentialChild(mask_ids[cm]);
+										//commandString += "\n                obj is masked by " + mask_ids[cm];
 									}
-                                    frame.addConstructCommand(new UpdatePropertyCommand(instanceID, "_iMasks", maskDOs));
+									frame.addConstructCommand(new UpdatePropertyCommand(objectID, "_iMasks", maskDOs));
 								}
 							}
 							// todo: handle filters
 						}
+						else{
+							console.log("ERROR: could not find the objectID ", objectID);
+						}
 						break;
 
 					case 4:
-
-						// Remove Object Command
-						objectID = this._newBlockBytes.readUnsignedInt();
-						var instanceID = objectIDMap[objectID];
-						frame.addConstructCommand(new RemoveChildCommand(instanceID));
-						commandString += "\n       - Remove object with ID: " + objectID;
-						break;
-
-					case 5:
 
 						// Add Sound Command
 						// TODO: create CommandPropsSound and check which asset to use
 						objectID = this._newBlockBytes.readUnsignedInt();
 						resourceID = this._newBlockBytes.readUnsignedInt();
 						// TODO: implement sound in timeline
-						commandString += "\n      - Add new Sound AWD-ID = " + resourceID.toString() + " as object_id = " + objectID.toString();
+						//commandString += "\n      - Add new Sound AWD-ID = " + resourceID.toString() + " as object_id = " + objectID.toString();
 						break;
 
 					default:
 
-						commandString += "\n       - Unknown Command Type = " + commandType;
+						//commandString += "\n       - Unknown Command Type = " + commandType;
 						break;
 
 				}
@@ -1335,13 +1398,13 @@ class AWDParser extends ParserBase
 			if (length_code > 0) {
 				// TODO: Script should probably not be attached to keyframes?
 				var frame_code = this._newBlockBytes.readUTFBytes(length_code);
-				frame.addConstructCommand(new ExecuteScriptCommand(frame_code));
-				traceString += "\nframe-code = " + frame_code;
+				frame.addConstructCommand(new ExecuteScriptCommand("stop();"));
+				//traceString += "\nframe-code = " + frame_code;
 			}
-			traceString += commandString;
+			//traceString += commandString;
 			//trace("length_code = "+length_code+" frame_code = "+frame_code);
 			this._newBlockBytes.readUnsignedInt();// user attributes - skip for now
-			console.log(traceString);
+			//console.log(traceString);
 			timeLineContainer.addFrame(frame);
 
 		}
@@ -1350,6 +1413,8 @@ class AWDParser extends ParserBase
 		this._blocks[blockID].data = timeLineContainer;
 		this.parseProperties(null);
 		this.parseUserAttributes();
+		if (this._debug)
+			console.log("Parsed a TIMELINE: Name = " + name + "| isScene = " + isScene + "| sceneID = " + sceneID + "| numFrames = " + numFrames);
 	}
 	//Block ID = 1
 	private parseTriangleGeometrieBlock(blockID:number):void
