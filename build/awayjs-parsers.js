@@ -1060,7 +1060,7 @@ var AWDParser = (function (_super) {
             if (length_code > 0) {
                 // TODO: Script should probably not be attached to keyframes?
                 var frame_code = this._newBlockBytes.readUTFBytes(length_code);
-                frame.addConstructCommand(new ExecuteScriptCommand("stop();"));
+                frame.addConstructCommand(new ExecuteScriptCommand(frame_code));
             }
             //traceString += commandString;
             //trace("length_code = "+length_code+" frame_code = "+frame_code);
