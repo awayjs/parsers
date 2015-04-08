@@ -111,6 +111,7 @@ import RemoveChildCommand 			= require("awayjs-player/lib/timeline/commands/Remo
 import RemoveChildrenAtDepthCommand	= require("awayjs-player/lib/timeline/commands/RemoveChildrenAtDepthCommand");
 import SetInstanceNameCommand 		= require("awayjs-player/lib/timeline/commands/SetInstanceNameCommand");
 import UpdatePropertyCommand 		= require("awayjs-player/lib/timeline/commands/UpdatePropertyCommand");
+import SetMaskCommand 		        = require("awayjs-player/lib/timeline/commands/SetMaskCommand");
 
 import Font							= require("awayjs-display/lib/text/Font");
 import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTable");
@@ -1352,16 +1353,8 @@ class AWDParser extends ParserBase
 									frame.addConstructCommand(new UpdatePropertyCommand(objectID, "_iMaskID", objectID));
 									//commandString += "\n                obj is used as mask";
 								}
-								else {
-									// TODO: this object is masked by one or more objects defined by ids in mask-array
-									commandString += "\n                obj is masked by " + mask_ids.length + " objects";
-									var maskDOs:DisplayObject[] = [];
-									for (var cm:number = 0; cm < mask_ids.length; cm++) {
-										maskDOs[cm] = timeLineContainer.getPotentialChild(mask_ids[cm]);
-										//commandString += "\n                obj is masked by " + mask_ids[cm];
-									}
-									frame.addConstructCommand(new UpdatePropertyCommand(objectID, "_iMasks", maskDOs));
-								}
+								else
+									frame.addConstructCommand(new SetMaskCommand(objectID, mask_ids));
 							}
 							// todo: handle filters
 						}
