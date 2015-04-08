@@ -1027,17 +1027,8 @@ var AWDParser = (function (_super) {
                                     // TODO: this object is used as mask
                                     frame.addConstructCommand(new UpdatePropertyCommand(objectID, "_iMaskID", objectID));
                                 }
-                                else {
-                                    // TODO: this object is masked by one or more objects defined by ids in mask-array
-                                    //commandString += "\n                obj is masked by " + mask_ids.length + " objects";
-                                    //var maskDOs:DisplayObject[] = [];
-                                    //for (var cm:number = 0; cm < mask_ids.length; cm++) {
-                                    //	maskDOs[cm] = timeLineContainer.getPotentialChild(mask_ids[cm]);
-                                    //	commandString += "\n                obj is masked by " + mask_ids[cm];
-                                    //}
-                                    //frame.addConstructCommand(new UpdatePropertyCommand(objectID, "_iMasks", maskDOs));
+                                else
                                     frame.addConstructCommand(new SetMaskCommand(objectID, mask_ids));
-                                }
                             }
                         }
                         else {
