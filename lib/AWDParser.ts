@@ -595,7 +595,7 @@ class AWDParser extends ParserBase
 					isParsed = true;
 					break;
 				case 134:
-					this.paresTextField(this._cur_block_id);
+					this.paresTextField(this._cur_block_id, factory);
 					isParsed = true;
 					break;
 				case 135:
@@ -915,11 +915,11 @@ class AWDParser extends ParserBase
 
 	}
 
-	private paresTextField(blockID:number):void {
+	private paresTextField(blockID:number, factory:TimelineSceneGraphFactory):void {
 		var name:string = this.parseVarStr();
 		this._blocks[blockID].name = name;
 		//console.log("name  '" + name);
-		var newTextField:TextField = new TextField();
+        var newTextField = factory.createTextField();
 		var num_paragraphs:number = this._newBlockBytes.readUnsignedInt();
 		var complete_text:string = "";
 		//console.log("num_paragraphs  '" + num_paragraphs);
@@ -1270,14 +1270,15 @@ class AWDParser extends ParserBase
 							target_depth = this._newBlockBytes.readShort();
 							var instanceName = this.parseVarStr();
 							//console.log("target_depth ", target_depth);
-							if (timeLineContainer.getPotentialChild(objectID)!=undefined) {
+                            var potChild = timeLineContainer.getPotentialChild(objectID);
+							if (potChild != undefined) {
 								frame.addConstructCommand(new AddChildAtDepthCommand(objectID, target_depth));
-								// this commands looks for a object by awd-id and puts it into the timeline
-								if (instanceName.length) {
-									frame.addConstructCommand(new SetInstanceNameCommand(objectID, instanceName));
-									//commandString += "\n                instanceName = " + instanceName;
-									//console.log("instanceName ", instanceName);
-								}
+
+                                if (instanceName.length)
+                                    frame.addConstructCommand(new SetInstanceNameCommand(objectID, instanceName));
+                                if(potChild.isAsset(TextField)) {
+                                    frame.addConstructCommand(new SetInstanceNameCommand(objectID, potChild.name));
+                                }
 							}
 							else{
 								console.log("ERROR: could not find the objectID ", objectID);
