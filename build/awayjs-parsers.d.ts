@@ -97,7 +97,7 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private parseNextBlock();
 	    private parseTesselatedFont(blockID);
 	    private parseTextFormat(blockID);
-	    private paresTextField(blockID);
+	    private paresTextField(blockID, factory);
 	    private parseBillBoardLibraryBlock(blockID);
 	    private parseMeshLibraryBlock(blockID);
 	    private parseAudioBlock(blockID, factory);

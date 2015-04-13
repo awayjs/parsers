@@ -400,7 +400,7 @@ var AWDParser = (function (_super) {
                     isParsed = true;
                     break;
                 case 134:
-                    this.paresTextField(this._cur_block_id);
+                    this.paresTextField(this._cur_block_id, factory);
                     isParsed = true;
                     break;
                 case 135:
@@ -678,11 +678,11 @@ var AWDParser = (function (_super) {
             console.log("Parsed a TextFormat: Name = '" + name + " font: " + font.name);
         }
     };
-    AWDParser.prototype.paresTextField = function (blockID) {
+    AWDParser.prototype.paresTextField = function (blockID, factory) {
         var name = this.parseVarStr();
         this._blocks[blockID].name = name;
         //console.log("name  '" + name);
-        var newTextField = new TextField();
+        var newTextField = factory.createTextField();
         var num_paragraphs = this._newBlockBytes.readUnsignedInt();
         var complete_text = "";
         //console.log("num_paragraphs  '" + num_paragraphs);
@@ -956,11 +956,13 @@ var AWDParser = (function (_super) {
                             target_depth = this._newBlockBytes.readShort();
                             var instanceName = this.parseVarStr();
                             //console.log("target_depth ", target_depth);
-                            if (timeLineContainer.getPotentialChild(objectID) != undefined) {
+                            var potChild = timeLineContainer.getPotentialChild(objectID);
+                            if (potChild != undefined) {
                                 frame.addConstructCommand(new AddChildAtDepthCommand(objectID, target_depth));
-                                // this commands looks for a object by awd-id and puts it into the timeline
-                                if (instanceName.length) {
+                                if (instanceName.length)
                                     frame.addConstructCommand(new SetInstanceNameCommand(objectID, instanceName));
+                                if (potChild.isAsset(TextField)) {
+                                    frame.addConstructCommand(new SetInstanceNameCommand(objectID, potChild.name));
                                 }
                             }
                             else {
