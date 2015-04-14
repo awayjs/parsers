@@ -113,7 +113,7 @@ var AWDParser = (function (_super) {
     function AWDParser() {
         _super.call(this, URLLoaderDataFormat.ARRAY_BUFFER);
         //set to "true" to have some console.logs in the Console
-        this._debug = true;
+        this._debug = false;
         this._startedParsing = false;
         this._texture_users = {};
         this._parsed_header = false;
@@ -608,7 +608,6 @@ var AWDParser = (function (_super) {
                 curve_sub_geom.updateUVs(uvs);
                 new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
             }
-            console.log("Parsed a font-table");
         }
         //console.log("Parsed a font");
         this.parseProperties(null);
@@ -683,6 +682,8 @@ var AWDParser = (function (_super) {
         this._blocks[blockID].name = name;
         //console.log("name  '" + name);
         var newTextField = factory.createTextField();
+        newTextField.width = this._newBlockBytes.readFloat();
+        newTextField.height = this._newBlockBytes.readFloat();
         var num_paragraphs = this._newBlockBytes.readUnsignedInt();
         var complete_text = "";
         //console.log("num_paragraphs  '" + num_paragraphs);
@@ -887,7 +888,7 @@ var AWDParser = (function (_super) {
                 }
             }
         }
-        console.log("Parsed " + num_potential_childs + " potential childs. They will be used by " + num_all_display_instances + " instances.");
+        //console.log("Parsed "+num_potential_childs+" potential childs. They will be used by "+num_all_display_instances+" instances.");
         // register list of potential sounds
         // a potential child can be reused on a timeline (added / removed / added)
         var num_potential_sounds = this._newBlockBytes.readUnsignedShort();
@@ -901,41 +902,43 @@ var AWDParser = (function (_super) {
             else {
             }
         }
-        console.log("Parsed " + num_potential_sounds + " potential sounds");
+        //console.log("Parsed "+num_potential_sounds+" potential sounds");
         var numFrames = this._newBlockBytes.readUnsignedShort();
         //console.log("numFrames "+numFrames);
         // var previousTimeLine:TimeLineFrame;
         // var fill_props:AWDProperties = this.parseProperties({1:AWDParser.UINT32});// { 1:UINT32, 6:AWDSTRING }  ); //; , 2:UINT32, 3:UINT32, 5:BOOL } );
-        var totalDuration = 0;
+        var totalDuration;
+        var frameDuration;
+        var numLabels;
+        var numCommands;
+        var objectID;
+        var target_depth;
+        var resourceID;
+        var number_of_obj;
+        var commandType;
+        var frame;
+        var label;
+        var hasDepthChanges;
+        totalDuration = 0;
         for (i = 0; i < numFrames; i++) {
-            var frame = new TimelineKeyFrame();
-            var traceString = "frame = " + i;
-            // TODO: remove the ms_per_frame to set the duration in frames
-            var frameDuration = this._newBlockBytes.readUnsignedInt() * ms_per_frame;
-            //console.log("frameDuration "+frameDuration);
+            frame = new TimelineKeyFrame();
+            // todo: remove the ms_per_frame to set the duration in frames
+            frameDuration = this._newBlockBytes.readUnsignedInt() * ms_per_frame;
             frame.setFrameTime(totalDuration, frameDuration);
             totalDuration += frameDuration;
             //console.log("duration = " + frameDuration);
-            //traceString += "duration = " + frameDuration;
-            var numLabels = this._newBlockBytes.readUnsignedByte();
+            numLabels = this._newBlockBytes.readUnsignedByte();
             for (j = 0; j < numLabels; j++) {
-                //var labelType = this._newBlockBytes.readUnsignedByte();
-                var label = this.parseVarStr();
+                label = this.parseVarStr();
             }
-            var numCommands = this._newBlockBytes.readUnsignedShort();
+            numCommands = this._newBlockBytes.readUnsignedShort();
             //console.log("numCommands "+numCommands);
             //traceString += "\n      Commands " + numCommands;
-            var hasDepthChanges = false;
-            var commandString = "";
+            hasDepthChanges = false;
             for (j = 0; j < numCommands; j++) {
-                var objectID;
-                var target_depth;
-                var resourceID;
-                var number_of_obj = 0;
-                var commandType = this._newBlockBytes.readUnsignedByte();
+                commandType = this._newBlockBytes.readUnsignedByte();
                 switch (commandType) {
                     case 1:
-                        //console.log("remove_obj ");
                         number_of_obj = this._newBlockBytes.readUnsignedShort();
                         //console.log("number_of_obj ", number_of_obj);
                         var remove_depths = new Array();
@@ -948,19 +951,16 @@ var AWDParser = (function (_super) {
                         break;
                     case 2:
                     case 3:
-                        //console.log("add / remove obj ");
                         objectID = this._newBlockBytes.readUnsignedShort();
-                        //console.log("objectID ", objectID);
+                        //console.log("add / update objectID ", objectID);
                         if (commandType == 2) {
                             hasDepthChanges = true;
                             target_depth = this._newBlockBytes.readShort();
-                            var instanceName = this.parseVarStr();
                             //console.log("target_depth ", target_depth);
                             var potChild = timeLineContainer.getPotentialChild(objectID);
                             if (potChild != undefined) {
                                 frame.addConstructCommand(new AddChildAtDepthCommand(objectID, target_depth));
-                                if (instanceName.length)
-                                    frame.addConstructCommand(new SetInstanceNameCommand(objectID, instanceName));
+                                // if the object is a tetfield, we set the textfield-name as instancename
                                 if (potChild.isAsset(TextField)) {
                                     frame.addConstructCommand(new SetInstanceNameCommand(objectID, potChild.name));
                                 }
@@ -969,61 +969,65 @@ var AWDParser = (function (_super) {
                                 console.log("ERROR: could not find the objectID ", objectID);
                             }
                         }
-                        // read the command properties
-                        // 1: matrix2d (6 x number with storage precision matrix)
-                        // 2: matrix2d (12 x number with storage precision matrix) not used yet
-                        // 3: colortransform (20 x number with storage precision properties)
-                        // 4: blendmode (uint8)
-                        // 5: visibilty (uint8)
-                        var props = this.parseProperties({
-                            1: this._matrixNrType,
-                            2: this._matrixNrType,
-                            3: this._propsNrType,
-                            4: AWDParser.UINT8,
-                            5: AWDParser.UINT8
-                        });
-                        // todo: fix property parsing so we can read variable size list (atm list with size = 1 is returned as single number)
-                        // for this reason, for now the mask-property is read sepperatly
-                        var mask_id_nums = this._newBlockBytes.readUnsignedShort();
-                        var mask_ids = new Array();
-                        for (var mi_cnt = 0; mi_cnt < mask_id_nums; mi_cnt++) {
-                            mask_ids.push(this._newBlockBytes.readShort());
+                        var props_flag = this._newBlockBytes.readUnsignedShort();
+                        /*	Props_flags
+                         1: read display matrix - 6 x float,
+                         2: read display matrix - read another UINT8-bitflag that determinates what matrix components to parse
+                         3: read color matrix - 4 x float, 4 x uint16
+                         4: read color matrix - read another UINT8-bitflag that determinates what matrix components to parse
+                         5: blendmode - uint8
+                         6: visible - boolean
+                         7: AWDParser.UINT8
+                         });*/
+                        // read display matrix
+                        if (BitFlags.test(props_flag, BitFlags.FLAG1)) {
+                            var thisMatrix = new Matrix3D();
+                            if (BitFlags.test(props_flag, BitFlags.FLAG2)) {
+                            }
+                            else {
+                                thisMatrix.rawData[0] = this._newBlockBytes.readFloat();
+                                thisMatrix.rawData[1] = this._newBlockBytes.readFloat();
+                                thisMatrix.rawData[4] = this._newBlockBytes.readFloat();
+                                thisMatrix.rawData[5] = this._newBlockBytes.readFloat();
+                                thisMatrix.position = new Vector3D(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0);
+                            }
+                            frame.addConstructCommand(new UpdatePropertyCommand(objectID, "_iMatrix3D", thisMatrix));
                         }
-                        if (timeLineContainer.getPotentialChild(objectID) != undefined) {
-                            var matrix_2d = props.get(1, []);
-                            //var matrix_3d:Float32Array = props.get(2, []);
-                            var colortransform = props.get(3, []);
-                            var blendmode = props.get(4, -1);
-                            var visibilty = props.get(5, -1);
-                            // todo: handle filters
-                            //matrix2d must provide 6 values to be valid
-                            //commandString += "\n                transformArray = " + matrix_2d.length;
-                            if (matrix_2d.length == 6) {
-                                var thisMatrix = new Matrix3D();
-                                thisMatrix.position = new Vector3D(matrix_2d[4], matrix_2d[5], 0);
-                                // todo is this correct for 2d -> 3d scale and rotation. (i doubt it)
-                                thisMatrix.rawData[0] = matrix_2d[0];
-                                thisMatrix.rawData[1] = matrix_2d[1];
-                                thisMatrix.rawData[4] = matrix_2d[2];
-                                thisMatrix.rawData[5] = matrix_2d[3];
-                                frame.addConstructCommand(new UpdatePropertyCommand(objectID, "_iMatrix3D", thisMatrix));
+                        // read colortransforms
+                        if (BitFlags.test(props_flag, BitFlags.FLAG3)) {
+                            var thisColorTransform = new ColorTransform();
+                            if (BitFlags.test(props_flag, BitFlags.FLAG4)) {
                             }
-                            //matrix2d must provide 20 values to be valid
-                            if (colortransform.length == 20) {
+                            else {
+                                thisColorTransform.redMultiplier = this._newBlockBytes.readFloat();
+                                thisColorTransform.greenMultiplier = this._newBlockBytes.readFloat();
+                                thisColorTransform.blueMultiplier = this._newBlockBytes.readFloat();
+                                thisColorTransform.alphaMultiplier = this._newBlockBytes.readFloat();
+                                thisColorTransform.redOffset = this._newBlockBytes.readShort();
+                                thisColorTransform.greenOffset = this._newBlockBytes.readShort();
+                                thisColorTransform.blueOffset = this._newBlockBytes.readShort();
+                                thisColorTransform.alphaOffset = this._newBlockBytes.readShort();
                             }
-                            // blendmode must be positive to be valid
-                            if (blendmode >= 0) {
-                                var blendmode_string = this.blendModeDic[blendmode];
+                        }
+                        if (BitFlags.test(props_flag, BitFlags.FLAG5)) {
+                            var blendmode_int = this._newBlockBytes.readUnsignedByte();
+                            var blendmode_string = this.blendModeDic[blendmode_int];
+                        }
+                        if (BitFlags.test(props_flag, BitFlags.FLAG6)) {
+                            frame.addConstructCommand(new UpdatePropertyCommand(objectID, "visible", this._newBlockBytes.readByte()));
+                        }
+                        if (BitFlags.test(props_flag, BitFlags.FLAG7)) {
+                            var instanceName = this.parseVarStr();
+                            if (instanceName.length) {
+                                frame.addConstructCommand(new SetInstanceNameCommand(objectID, instanceName));
                             }
-                            // visibilty must be positive to be valid
-                            if (visibilty >= 0) {
-                                if (visibilty == 0)
-                                    frame.addConstructCommand(new UpdatePropertyCommand(objectID, "visible", false));
-                                else
-                                    frame.addConstructCommand(new UpdatePropertyCommand(objectID, "visible", true));
+                        }
+                        if (BitFlags.test(props_flag, BitFlags.FLAG8)) {
+                            var mask_id_nums = this._newBlockBytes.readUnsignedShort();
+                            var mask_ids = new Array();
+                            for (var mi_cnt = 0; mi_cnt < mask_id_nums; mi_cnt++) {
+                                mask_ids.push(this._newBlockBytes.readShort());
                             }
-                            // mask must be positive to be valid. i think only add-commands will have this value.
-                            // e.g. it should never be updated on already existing objects. (because depth of objects can change, i am not sure)
                             if (mask_ids.length > 0) {
                                 if ((mask_ids.length == 1) && (mask_ids[0] == -1)) {
                                     // TODO: this object is used as mask
@@ -1032,9 +1036,6 @@ var AWDParser = (function (_super) {
                                 else
                                     frame.addConstructCommand(new SetMaskCommand(objectID, mask_ids));
                             }
-                        }
-                        else {
-                            console.log("ERROR: could not find the objectID ", objectID);
                         }
                         break;
                     case 4:
