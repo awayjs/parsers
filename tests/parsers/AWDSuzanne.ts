@@ -21,7 +21,7 @@ import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
 import MethodMaterial				= require("awayjs-methodmaterials/lib/MethodMaterial");
 import MethodRendererPool			= require("awayjs-methodmaterials/lib/pool/MethodRendererPool");
 
-import AWDParser					= require("awayjs-parsers/lib/AWDParser");
+import AWD3Parser					= require("awayjs-parsers/lib/AWD3Parser");
 
 class AWDSuzanne
 {
@@ -39,7 +39,7 @@ class AWDSuzanne
 		Debug.LOG_PI_ERRORS = true;
 		Debug.THROW_ERRORS = false;
 
-		AssetLibrary.enableParser(AWDParser) ;
+		AssetLibrary.enableParser(AWD3Parser) ;
 
 		this._token = AssetLibrary.load(new URLRequest('assets/suzanne.awd'));
 		this._token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, (event:LoaderEvent) => this.onResourceComplete(event));

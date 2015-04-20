@@ -59,7 +59,7 @@ import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
 import MethodMaterial				= require("awayjs-methodmaterials/lib/MethodMaterial");
 import MethodRendererPool			= require("awayjs-methodmaterials/lib/pool/MethodRendererPool");
 
-import AWDParser					= require("awayjs-parsers/lib/AWDParser");
+import AWD3Parser					= require("awayjs-parsers/lib/AWD3Parser");
 
 import Partition2D					= require("awayjs-player/lib/partition/Partition2D");
 import MovieClip					= require("awayjs-player/lib/display/MovieClip");
@@ -154,7 +154,7 @@ class AWD3ParserTest
 	 */
 	private initObjects(): void
 	{
-		AssetLibrary.enableParser(AWDParser);
+		AssetLibrary.enableParser(AWD3Parser);
 
 		//kickoff asset loading
 		var loader:Loader = new Loader();
