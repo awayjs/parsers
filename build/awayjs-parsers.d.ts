@@ -417,7 +417,7 @@ declare module "awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData" {
 	    propsNrType: number;
 	    geoNrType: number;
 	    newBlockBytes: ByteArray;
-	    create_new_block(type: number): void;
+	    create_new_block(type: number, id: number): void;
 	    cur_block: AWDBlock;
 	    block_cnt(): number;
 	    parseUserAttributes(): Object;

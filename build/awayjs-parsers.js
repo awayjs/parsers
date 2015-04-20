@@ -42,6 +42,7 @@ var SkyboxAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/SkyboxAWDPars
 var TesselatedFontAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/TesselatedFontAWDParser");
 var TextfieldAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/TextfieldAWDParser");
 var TextformatAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/TextformatAWDParser");
+var VertexAnimationSetAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/VertexAnimationSetAWDParser");
 var VertexAnimClipAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/VertexAnimClipAWDParser");
 var CommandAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/CommandAWDParser");
 var MetadataAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/MetadataAWDParser");
@@ -71,8 +72,8 @@ var AWDBlockParsers = (function () {
         this.add_block_parser(new SkeletonAWDParser(), [101]);
         this.add_block_parser(new SkeletonPoseAWDParser(), [102]);
         this.add_block_parser(new SkeletonAnimClipAWDParser(), [103]);
-        this.add_block_parser(new SharedMethodAWDParser(), [111, 112]);
-        this.add_block_parser(new VertexAnimClipAWDParser(), [113]);
+        this.add_block_parser(new VertexAnimClipAWDParser(), [111, 112]);
+        this.add_block_parser(new VertexAnimationSetAWDParser(), [113]);
         //this.add_block_parser(new UVAnimationClipAWDParser(), [121]);
         this.add_block_parser(new AnimatorAWDParser(), [122]);
         this.add_block_parser(new MovieClipAWDParser(), [133]);
@@ -80,8 +81,8 @@ var AWDBlockParsers = (function () {
         this.add_block_parser(new TesselatedFontAWDParser(), [135]);
         this.add_block_parser(new TextformatAWDParser(), [136]);
         this.add_block_parser(new CommandAWDParser(), [253]);
-        this.add_block_parser(new MetadataAWDParser(), [254]);
-        this.add_block_parser(new BlockNameSpaceAWDParser(), [255]);
+        this.add_block_parser(new BlockNameSpaceAWDParser(), [254]);
+        this.add_block_parser(new MetadataAWDParser(), [255]);
     }
     AWDBlockParsers.prototype.add_block_parser = function (block_parser, block_types) {
         for (var i = 0; i < block_types.length; i++) {
@@ -106,7 +107,7 @@ var AWDBlockParsers = (function () {
 })();
 module.exports = AWDBlockParsers;
 
-},{"awayjs-parsers/lib/AWD3BlockParsers/AnimatorAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/AnimatorAWDParser","awayjs-parsers/lib/AWD3BlockParsers/AudioAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/AudioAWDParser","awayjs-parsers/lib/AWD3BlockParsers/BillboardAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/BillboardAWDParser","awayjs-parsers/lib/AWD3BlockParsers/BitmapTextureAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/BitmapTextureAWDParser","awayjs-parsers/lib/AWD3BlockParsers/BlockNameSpaceAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/BlockNameSpaceAWDParser","awayjs-parsers/lib/AWD3BlockParsers/CameraAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/CameraAWDParser","awayjs-parsers/lib/AWD3BlockParsers/CommandAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/CommandAWDParser","awayjs-parsers/lib/AWD3BlockParsers/CubeTextureAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/CubeTextureAWDParser","awayjs-parsers/lib/AWD3BlockParsers/DisplayObjectContainerAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/DisplayObjectContainerAWDParser","awayjs-parsers/lib/AWD3BlockParsers/GeometryAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/GeometryAWDParser","awayjs-parsers/lib/AWD3BlockParsers/LightAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/LightAWDParser","awayjs-parsers/lib/AWD3BlockParsers/LightPickerAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/LightPickerAWDParser","awayjs-parsers/lib/AWD3BlockParsers/MaterialAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/MaterialAWDParser","awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser","awayjs-parsers/lib/AWD3BlockParsers/MetadataAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/MetadataAWDParser","awayjs-parsers/lib/AWD3BlockParsers/MovieClipAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/MovieClipAWDParser","awayjs-parsers/lib/AWD3BlockParsers/PrefabAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/PrefabAWDParser","awayjs-parsers/lib/AWD3BlockParsers/ShadowMethodAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/ShadowMethodAWDParser","awayjs-parsers/lib/AWD3BlockParsers/SharedMethodAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/SharedMethodAWDParser","awayjs-parsers/lib/AWD3BlockParsers/SkeletonAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/SkeletonAWDParser","awayjs-parsers/lib/AWD3BlockParsers/SkeletonAnimClipAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/SkeletonAnimClipAWDParser","awayjs-parsers/lib/AWD3BlockParsers/SkeletonPoseAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/SkeletonPoseAWDParser","awayjs-parsers/lib/AWD3BlockParsers/SkyboxAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/SkyboxAWDParser","awayjs-parsers/lib/AWD3BlockParsers/TesselatedFontAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/TesselatedFontAWDParser","awayjs-parsers/lib/AWD3BlockParsers/TextfieldAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/TextfieldAWDParser","awayjs-parsers/lib/AWD3BlockParsers/TextformatAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/TextformatAWDParser","awayjs-parsers/lib/AWD3BlockParsers/VertexAnimClipAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/VertexAnimClipAWDParser"}],"awayjs-parsers/lib/AWD3BlockParsers/AnimatorAWDParser":[function(require,module,exports){
+},{"awayjs-parsers/lib/AWD3BlockParsers/AnimatorAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/AnimatorAWDParser","awayjs-parsers/lib/AWD3BlockParsers/AudioAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/AudioAWDParser","awayjs-parsers/lib/AWD3BlockParsers/BillboardAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/BillboardAWDParser","awayjs-parsers/lib/AWD3BlockParsers/BitmapTextureAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/BitmapTextureAWDParser","awayjs-parsers/lib/AWD3BlockParsers/BlockNameSpaceAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/BlockNameSpaceAWDParser","awayjs-parsers/lib/AWD3BlockParsers/CameraAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/CameraAWDParser","awayjs-parsers/lib/AWD3BlockParsers/CommandAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/CommandAWDParser","awayjs-parsers/lib/AWD3BlockParsers/CubeTextureAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/CubeTextureAWDParser","awayjs-parsers/lib/AWD3BlockParsers/DisplayObjectContainerAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/DisplayObjectContainerAWDParser","awayjs-parsers/lib/AWD3BlockParsers/GeometryAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/GeometryAWDParser","awayjs-parsers/lib/AWD3BlockParsers/LightAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/LightAWDParser","awayjs-parsers/lib/AWD3BlockParsers/LightPickerAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/LightPickerAWDParser","awayjs-parsers/lib/AWD3BlockParsers/MaterialAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/MaterialAWDParser","awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser","awayjs-parsers/lib/AWD3BlockParsers/MetadataAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/MetadataAWDParser","awayjs-parsers/lib/AWD3BlockParsers/MovieClipAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/MovieClipAWDParser","awayjs-parsers/lib/AWD3BlockParsers/PrefabAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/PrefabAWDParser","awayjs-parsers/lib/AWD3BlockParsers/ShadowMethodAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/ShadowMethodAWDParser","awayjs-parsers/lib/AWD3BlockParsers/SharedMethodAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/SharedMethodAWDParser","awayjs-parsers/lib/AWD3BlockParsers/SkeletonAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/SkeletonAWDParser","awayjs-parsers/lib/AWD3BlockParsers/SkeletonAnimClipAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/SkeletonAnimClipAWDParser","awayjs-parsers/lib/AWD3BlockParsers/SkeletonPoseAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/SkeletonPoseAWDParser","awayjs-parsers/lib/AWD3BlockParsers/SkyboxAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/SkyboxAWDParser","awayjs-parsers/lib/AWD3BlockParsers/TesselatedFontAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/TesselatedFontAWDParser","awayjs-parsers/lib/AWD3BlockParsers/TextfieldAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/TextfieldAWDParser","awayjs-parsers/lib/AWD3BlockParsers/TextformatAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/TextformatAWDParser","awayjs-parsers/lib/AWD3BlockParsers/VertexAnimClipAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/VertexAnimClipAWDParser","awayjs-parsers/lib/AWD3BlockParsers/VertexAnimationSetAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/VertexAnimationSetAWDParser"}],"awayjs-parsers/lib/AWD3BlockParsers/AnimatorAWDParser":[function(require,module,exports){
 /**
  * Created by 80prozent on 4/18/2015.
  */
@@ -159,7 +160,7 @@ var AnimatorAWDParser = (function (_super) {
                 //this.awd_file_data._blocks[blockID].addError("Could not find the Skeleton ( " + props.get(1, 0) + " ) for this.awd_file_data Animator");
                 return;
             }
-            thisAnimator = new SkeletonAnimator(targetAnimationSet, returnedArray[1]);
+            thisAnimator = new SkeletonAnimator(targetAnimationSet, skeleton);
         }
         else if (type == 2)
             thisAnimator = new VertexAnimator(targetAnimationSet);
@@ -1733,7 +1734,7 @@ var ShadowMethodAWDParser = (function (_super) {
         var data_len;
         var asset;
         var shadowLightID;
-        var name = this.awd_file_data.parseVarStr();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
         shadowLightID = this.awd_file_data.newBlockBytes.readUnsignedInt();
         var light = this.awd_file_data.getAssetByID(shadowLightID);
         if (light == undefined) {
@@ -1743,8 +1744,8 @@ var ShadowMethodAWDParser = (function (_super) {
         asset = this.parseShadowMethodList(light);
         if (!asset)
             return;
-        asset.name = name;
         this.awd_file_data.parseUserAttributes(); // Ignore for now
+        this.awd_file_data.cur_block.data = asset;
         if (this.awd_file_data.debug) {
             console.log("Parsed a ShadowMapMethodMethod: Name = " + asset.name + " | Type = " + asset + " | Light-Name = ", light.name);
         }
@@ -1817,10 +1818,10 @@ var SharedMethodAWDParser = (function (_super) {
     }
     SharedMethodAWDParser.prototype.parseFromBytes = function () {
         var asset;
-        var name = this.awd_file_data.parseVarStr();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
         asset = this.parseSharedMethodList();
-        asset.name = name;
         this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = asset;
         if (this.awd_file_data.debug) {
             console.log("Parsed a EffectMethod: Name = " + asset.name + " Type = " + asset);
         }
@@ -1880,7 +1881,7 @@ var SkeletonAWDParser = (function (_super) {
     }
     SkeletonAWDParser.prototype.parseFromBytes = function () {
         var skeleton = new Skeleton();
-        skeleton.name = this.awd_file_data.parseVarStr();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
         var num_joints = this.awd_file_data.newBlockBytes.readUnsignedShort();
         this.awd_file_data.parseProperties(null); // Discard properties for now
         var joints_parsed = 0;
@@ -1902,8 +1903,9 @@ var SkeletonAWDParser = (function (_super) {
         }
         // Discard attributes for now
         this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = skeleton;
         if (this.awd_file_data.debug)
-            console.log("Parsed a Skeleton: Name = " + skeleton.name + " | Number of Joints = " + joints_parsed);
+            console.log("Parsed a Skeleton: Name = " + this.awd_file_data.cur_block.name + " | Number of Joints = " + joints_parsed);
     };
     return SkeletonAWDParser;
 })(AWDBlockParserBase);
@@ -1927,29 +1929,24 @@ var SkeletonAnimClipAWDParser = (function (_super) {
         var frame_dur;
         var pose_addr /*uint*/;
         var clip = new SkeletonClipNode();
-        clip.name = this.awd_file_data.parseVarStr();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
         var num_frames = this.awd_file_data.newBlockBytes.readUnsignedShort();
         this.awd_file_data.parseProperties(null); // Ignore properties for now
         var frames_parsed = 0;
-        var returnedArray;
         while (frames_parsed < num_frames) {
             pose_addr = this.awd_file_data.newBlockBytes.readUnsignedInt();
             frame_dur = this.awd_file_data.newBlockBytes.readUnsignedShort();
             var skel_pose = this.awd_file_data.getAssetByID(pose_addr);
-            if (skel_pose == undefined) {
+            if (skel_pose != undefined) {
+                clip.addFrame(skel_pose, frame_dur);
             }
-            else
-                clip.addFrame(this.awd_file_data.getBlockByID(pose_addr).data, frame_dur);
             frames_parsed++;
-        }
-        if (clip.frames.length == 0) {
-            //this.awd_file_data._blocks[blockID].addError("Could not this.awd_file_data SkeletonClipNode, because no Frames where set.");
-            return undefined;
         }
         // Ignore attributes for now
         this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = clip;
         if (this.awd_file_data.debug)
-            console.log("Parsed a SkeletonClipNode: Name = " + clip.name + " | Number of Frames = " + clip.frames.length);
+            console.log("Parsed a SkeletonClipNode: Name = " + this.awd_file_data.cur_block.name + " | Number of Frames = " + clip.frames.length);
     };
     return SkeletonAnimClipAWDParser;
 })(AWDBlockParserBase);
@@ -1973,7 +1970,7 @@ var SkeletonPoseAWDParser = (function (_super) {
     }
     SkeletonPoseAWDParser.prototype.parseFromBytes = function () {
         var pose = new SkeletonPose();
-        pose.name = this.awd_file_data.parseVarStr();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
         var num_joints = this.awd_file_data.newBlockBytes.readUnsignedShort();
         this.awd_file_data.parseProperties(null); // Ignore properties for now
         var joints_parsed = 0;
@@ -1993,8 +1990,9 @@ var SkeletonPoseAWDParser = (function (_super) {
         }
         // Skip attributes for now
         this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = pose;
         if (this.awd_file_data.debug)
-            console.log("Parsed a SkeletonPose: Name = " + pose.name + " | Number of Joints = " + joints_parsed);
+            console.log("Parsed a SkeletonPose: Name = " + this.awd_file_data.cur_block.name + " | Number of Joints = " + joints_parsed);
     };
     return SkeletonPoseAWDParser;
 })(AWDBlockParserBase);
@@ -2015,7 +2013,7 @@ var SkyboxAWDParser = (function (_super) {
         _super.call(this);
     }
     SkyboxAWDParser.prototype.parseFromBytes = function () {
-        var name = this.awd_file_data.parseVarStr();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
         var cubeTexAddr = this.awd_file_data.newBlockBytes.readUnsignedInt();
         var cube_tex = undefined;
         if (cubeTexAddr > 0) {
@@ -2029,9 +2027,9 @@ var SkyboxAWDParser = (function (_super) {
         var new_skybox = new Skybox(cube_tex);
         this.awd_file_data.parseProperties(null);
         new_skybox.extra = this.awd_file_data.parseUserAttributes();
-        new_skybox.name = name;
+        this.awd_file_data.cur_block.data = new_skybox;
         if (this.awd_file_data.debug)
-            console.log("Parsed a Skybox: Name = '" + new_skybox.name + "' | CubeTexture-Name = " + cube_tex.name);
+            console.log("Parsed a Skybox: Name = '" + this.awd_file_data.cur_block.name + "' | CubeTexture-Name = " + cube_tex.name);
     };
     return SkyboxAWDParser;
 })(AWDBlockParserBase);
@@ -2054,7 +2052,7 @@ var TesselatedFontAWDParser = (function (_super) {
     }
     TesselatedFontAWDParser.prototype.parseFromBytes = function () {
         var new_font = new Font();
-        new_font.name = this.awd_file_data.parseVarStr();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
         var font_style_cnt = this.awd_file_data.newBlockBytes.readUnsignedInt();
         for (var i = 0; i < font_style_cnt; ++i) {
             var font_style_name = this.awd_file_data.parseVarStr();
@@ -2116,8 +2114,9 @@ var TesselatedFontAWDParser = (function (_super) {
         //console.log("Parsed a font");
         this.awd_file_data.parseProperties(null);
         this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = new_font;
         if (this.awd_file_data.debug) {
-            console.log("Parsed a font: Name = '" + new_font.name);
+            console.log("Parsed a font: Name = '" + this.awd_file_data.cur_block.name);
         }
     };
     return TesselatedFontAWDParser;
@@ -2143,7 +2142,7 @@ var TextfieldAWDParser = (function (_super) {
     }
     TextfieldAWDParser.prototype.parseFromBytes = function () {
         var newTextField = this.factory.createTextField();
-        newTextField.name = this.awd_file_data.parseVarStr();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
         var text_field_type = this.awd_file_data.newBlockBytes.readUnsignedByte();
         if (text_field_type == 0) {
             newTextField.type = "static";
@@ -2196,6 +2195,7 @@ var TextfieldAWDParser = (function (_super) {
         //newTextField.orientationMode =  props.get(8, 0);
         //newTextField.line_mode =  props.get(9, 0);
         newTextField.extra = this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = newTextField;
         if (this.awd_file_data.debug) {
             console.log("Parsed a TextField: Name = '" + newTextField.name + "| text  = " + complete_text);
         }
@@ -2223,7 +2223,7 @@ var TextformatAWDParser = (function (_super) {
     }
     TextformatAWDParser.prototype.parseFromBytes = function () {
         var newTextFormat = new TextFormat();
-        newTextFormat.name = this.awd_file_data.parseVarStr();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
         //console.log("this.awd_file_data._blocks[blockID].name  '" + this.awd_file_data._blocks[blockID].name );
         var font_id = this.awd_file_data.newBlockBytes.readUnsignedInt();
         //console.log("font_id  '" + font_id);
@@ -2273,6 +2273,7 @@ var TextformatAWDParser = (function (_super) {
         newTextFormat.material = mat;
         this.awd_file_data.parseUserAttributes(); // textformat has no extra-properties
         //newTextFormat.extra =
+        this.awd_file_data.cur_block.data = newTextFormat;
         if (this.awd_file_data.debug) {
             console.log("Parsed a TextFormat: Name = '" + name + " font: " + font.name);
         }
@@ -2300,7 +2301,7 @@ var VertexAnimClipAWDParser = (function (_super) {
     }
     VertexAnimClipAWDParser.prototype.parseFromBytes = function () {
         var poseOnly = false;
-        if (this.awd_file_data.cur_block.type == 123) {
+        if (this.awd_file_data.cur_block.type == 111) {
             poseOnly = true;
         }
         var num_frames = 1;
@@ -2324,7 +2325,7 @@ var VertexAnimClipAWDParser = (function (_super) {
         var props;
         var thisGeo;
         var clip = new VertexClipNode();
-        clip.name = this.awd_file_data.parseVarStr();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
         var geoAdress = this.awd_file_data.newBlockBytes.readUnsignedInt();
         var geom = this.awd_file_data.getAssetByID(geoAdress);
         if (geom == undefined) {
@@ -2386,6 +2387,7 @@ var VertexAnimClipAWDParser = (function (_super) {
             frames_parsed++;
         }
         this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = clip;
         if (this.awd_file_data.debug)
             console.log("Parsed a VertexClipNode: Name = " + clip.name + " | Target-Geometry-Name = " + geom.name + " | Number of Frames = " + clip.frames.length);
     };
@@ -2413,8 +2415,7 @@ var VertexAnimationSetAWDParser = (function (_super) {
     }
     VertexAnimationSetAWDParser.prototype.parseFromBytes = function () {
         var poseBlockAdress; /*int*/
-        var outputString = "";
-        var name = this.awd_file_data.parseVarStr();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
         var num_frames = this.awd_file_data.newBlockBytes.readUnsignedShort();
         var props = this.awd_file_data.parseProperties({ 1: AWD3Utils.UINT16 });
         var frames_parsed = 0;
@@ -2442,7 +2443,7 @@ var VertexAnimationSetAWDParser = (function (_super) {
             var newVertexAnimationSet = new VertexAnimationSet();
             for (var i = 0; i < vertexFrames.length; i++)
                 newVertexAnimationSet.addAnimation(vertexFrames[i]);
-            newVertexAnimationSet.name = name;
+            this.awd_file_data.cur_block.data = newVertexAnimationSet;
             if (this.awd_file_data.debug)
                 console.log("Parsed a VertexAnimationSet: Name = " + newVertexAnimationSet.name + " | Animations = " + newVertexAnimationSet.animations.length + " | Animation-Names = " + newVertexAnimationSet.animationNames.toString());
             return;
@@ -2451,7 +2452,7 @@ var VertexAnimationSetAWDParser = (function (_super) {
             var newSkeletonAnimationSet = new SkeletonAnimationSet(props.get(1, 4)); //props.get(1,4));
             for (var i = 0; i < skeletonFrames.length; i++)
                 newSkeletonAnimationSet.addAnimation(skeletonFrames[i]);
-            newSkeletonAnimationSet.name = name;
+            this.awd_file_data.cur_block.data = newSkeletonAnimationSet;
             if (this.awd_file_data.debug)
                 console.log("Parsed a SkeletonAnimationSet: Name = " + newSkeletonAnimationSet.name + " | Animations = " + newSkeletonAnimationSet.animations.length + " | Animation-Names = " + newSkeletonAnimationSet.animationNames.toString());
         }
@@ -2486,6 +2487,8 @@ var AWD3FileData = (function () {
         this.major_version = 0;
         this.minor_version = 0;
         this._blocks = new Array();
+        this._blocks.push(new AWDBlock(255, 0));
+        this._cur_block = this._blocks[0];
         this.blendModeDic = new Array(); // used to translate ints to blendMode-strings
         this.blendModeDic.push(BlendMode.NORMAL);
         this.blendModeDic.push(BlendMode.ADD);
@@ -2605,10 +2608,10 @@ var AWD3FileData = (function () {
         enumerable: true,
         configurable: true
     });
-    AWD3FileData.prototype.create_new_block = function (type) {
+    AWD3FileData.prototype.create_new_block = function (type, id) {
         var new_block = new AWDBlock(this._blocks.length, type);
         this._cur_block = new_block;
-        this._blocks.push(new_block);
+        this._blocks[id] = new_block;
     };
     Object.defineProperty(AWD3FileData.prototype, "cur_block", {
         get: function () {
@@ -3040,6 +3043,7 @@ var ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 var ParserUtils = require("awayjs-core/lib/parsers/ParserUtils");
 var ImageCubeTexture = require("awayjs-core/lib/textures/ImageCubeTexture");
 var ByteArray = require("awayjs-core/lib/utils/ByteArray");
+var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var AWDBitFlags = require("awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags");
 var AWDAssetParsers = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParsers");
@@ -3266,23 +3270,26 @@ var AWD3Parser = (function (_super) {
         //this._newBlockBytes.endian = Endian.LITTLE_ENDIAN;
         //----------------------------------------------------------------------------
         this._awd_data.newBlockBytes.position = 0;
-        // if this is the first block, and it is no metadatablock, we add a empty block at index 0,to keep in synch with blocks
-        if ((block_type != 255) && (this._awd_data.block_cnt() == 0)) {
-            this._awd_data.create_new_block(255);
-        }
-        this._awd_data.create_new_block(block_type);
+        // we create AWDBlock for all exept the metadata. the metadata block has is the first awdblock in the list by default.
+        //if(block_type!=255)
+        this._awd_data.create_new_block(block_type, block_id);
         if (blockCompression) {
             this._pDieWithError('Compressed AWD formats not yet supported');
         }
-        if (this._debug) {
-            console.log("AWDBlock:  ID = " + block_id + " | TypeID = " + block_type + " | Compression = " + blockCompression + " | Matrix-Precision = " + this._awd_data.accuracyMatrix + " | Geometry-Precision = " + this._awd_data.accuracyGeo + " | Properties-Precision = " + this._awd_data.accuracyProps);
-        }
+        //if (this._debug) {
+        console.log("AWDBlock:  ID = " + block_id + " | TypeID = " + block_type + " | Compression = " + blockCompression + " | Matrix-Precision = " + this._awd_data.accuracyMatrix + " | Geometry-Precision = " + this._awd_data.accuracyGeo + " | Properties-Precision = " + this._awd_data.accuracyProps);
+        //}
         var time_start = performance.now();
         // first check if the block is any of the 3 blocks that does not produce a asset.
         // this block contains a asset.
         if (this._block_parser.parseAsset(block_type)) {
             if (this._awd_data.cur_block.state == AWD3Utils.BLOCKSTATE_FINALIZE) {
                 this._pFinalizeAsset(this._awd_data.cur_block.data, this._awd_data.cur_block.name);
+                if (this._awd_data.cur_block.data instanceof DisplayObject) {
+                    if (this._awd_data.cur_block.data.parent == undefined) {
+                        this._pContent.addChild(this._awd_data.cur_block.data);
+                    }
+                }
             }
             else if (this._awd_data.cur_block.state == AWD3Utils.BLOCKSTATE_INVALID) {
                 console.log("ERROR while parsing block - type = ", block_type, " id = ", block_id);
@@ -3363,7 +3370,7 @@ var AWD3Parser = (function (_super) {
 })(ParserBase);
 module.exports = AWD3Parser;
 
-},{"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/textures/ImageCubeTexture":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParsers":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParsers","awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData":"awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils","awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags":"awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags"}],"awayjs-parsers/lib/AWDParser":[function(require,module,exports){
+},{"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/textures/ImageCubeTexture":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/DisplayObject":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParsers":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParsers","awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData":"awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils","awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags":"awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags"}],"awayjs-parsers/lib/AWDParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
