@@ -25,8 +25,7 @@ class VertexAnimationSetAWDParser extends AWDBlockParserBase
 	public parseFromBytes():void
 	{
 		var poseBlockAdress:number /*int*/
-		var outputString:string = "";
-		var name:string = this.awd_file_data.parseVarStr();
+		this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
 		var num_frames:number /*uint*/ = this.awd_file_data.newBlockBytes.readUnsignedShort();
 		var props:AWDProperties = this.awd_file_data.parseProperties({1:AWD3Utils.UINT16});
 		var frames_parsed:number /*uint*/ = 0;
@@ -55,7 +54,7 @@ class VertexAnimationSetAWDParser extends AWDBlockParserBase
 			var newVertexAnimationSet:VertexAnimationSet = new VertexAnimationSet();
 			for (var i:number /*int*/ = 0; i < vertexFrames.length; i++)
 				newVertexAnimationSet.addAnimation(vertexFrames[i]);
-			newVertexAnimationSet.name=name;
+			this.awd_file_data.cur_block.data = newVertexAnimationSet;
 			if (this.awd_file_data.debug)
 				console.log("Parsed a VertexAnimationSet: Name = " + newVertexAnimationSet.name + " | Animations = " + newVertexAnimationSet.animations.length + " | Animation-Names = " + newVertexAnimationSet.animationNames.toString());
 			return;
@@ -63,7 +62,7 @@ class VertexAnimationSetAWDParser extends AWDBlockParserBase
 			var newSkeletonAnimationSet:SkeletonAnimationSet = new SkeletonAnimationSet(props.get(1, 4)); //props.get(1,4));
 			for (var i:number /*int*/ = 0; i < skeletonFrames.length; i++)
 				newSkeletonAnimationSet.addAnimation(skeletonFrames[i]);
-			newSkeletonAnimationSet.name=name;
+			this.awd_file_data.cur_block.data = newSkeletonAnimationSet;
 			if (this.awd_file_data.debug)
 				console.log("Parsed a SkeletonAnimationSet: Name = " + newSkeletonAnimationSet.name + " | Animations = " + newSkeletonAnimationSet.animations.length + " | Animation-Names = " + newSkeletonAnimationSet.animationNames.toString());
 		}

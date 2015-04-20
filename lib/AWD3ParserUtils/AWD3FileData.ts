@@ -81,7 +81,8 @@ class AWD3FileData
 		this.minor_version=0;
 
 		this._blocks = new Array<AWDBlock>();
-
+		this._blocks.push(new AWDBlock(255, 0));
+		this._cur_block=this._blocks[0];
 		this.blendModeDic = new Array<string>(); // used to translate ints to blendMode-strings
 		this.blendModeDic.push(BlendMode.NORMAL);
 		this.blendModeDic.push(BlendMode.ADD);
@@ -196,11 +197,11 @@ class AWD3FileData
 	{
 		return this._newBlockBytes;
 	}
-	public create_new_block(type:number)
+	public create_new_block(type:number, id:number)
 	{
 		var new_block:AWDBlock= new AWDBlock(this._blocks.length, type);
 		this._cur_block=new_block;
-		this._blocks.push(new_block);
+		this._blocks[id]=new_block;
 	}
 	public get cur_block():AWDBlock
 	{

@@ -34,7 +34,7 @@ class ShadowMethodAWDParser extends AWDBlockParserBase
 		var data_len:number;
 		var asset:ShadowMethodBase;
 		var shadowLightID:number;
-		var name:string = this.awd_file_data.parseVarStr();
+		this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
 
 		shadowLightID = this.awd_file_data.newBlockBytes.readUnsignedInt();
 		var light:LightBase=<LightBase> this.awd_file_data.getAssetByID(shadowLightID);
@@ -48,9 +48,8 @@ class ShadowMethodAWDParser extends AWDBlockParserBase
 
 		if (!asset)
 			return;
-		asset.name=name;
 		this.awd_file_data.parseUserAttributes(); // Ignore for now
-
+		this.awd_file_data.cur_block.data = asset;
 		if (this.awd_file_data.debug) {
 			console.log("Parsed a ShadowMapMethodMethod: Name = " + asset.name + " | Type = " + asset + " | Light-Name = ", light.name);
 		}

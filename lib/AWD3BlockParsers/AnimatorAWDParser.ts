@@ -70,7 +70,7 @@ class AnimatorAWDParser extends AWDBlockParserBase
 				//this.awd_file_data._blocks[blockID].addError("Could not find the Skeleton ( " + props.get(1, 0) + " ) for this.awd_file_data Animator");
 				return;
 			}
-			thisAnimator = new SkeletonAnimator(<SkeletonAnimationSet> targetAnimationSet, <Skeleton> returnedArray[1]);
+			thisAnimator = new SkeletonAnimator(<SkeletonAnimationSet> targetAnimationSet, skeleton);
 
 		} else if (type == 2)
 			thisAnimator = new VertexAnimator(<VertexAnimationSet> targetAnimationSet);

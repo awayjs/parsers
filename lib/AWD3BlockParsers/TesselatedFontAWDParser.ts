@@ -23,7 +23,7 @@ class TesselatedFontAWDParser extends AWDBlockParserBase
 	public parseFromBytes():void
 	{
 		var new_font:Font=new Font();
-		new_font.name = this.awd_file_data.parseVarStr();
+		this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
 		var font_style_cnt:number = this.awd_file_data.newBlockBytes.readUnsignedInt();
 		//console.log("Font font_style_cnt = "+font_style_cnt);
 		for (var i:number = 0; i < font_style_cnt; ++i) {
@@ -101,8 +101,9 @@ class TesselatedFontAWDParser extends AWDBlockParserBase
 		//console.log("Parsed a font");
 		this.awd_file_data.parseProperties(null);
 		this.awd_file_data.parseUserAttributes();
+		this.awd_file_data.cur_block.data = new_font;
 		if (this.awd_file_data.debug) {
-			console.log("Parsed a font: Name = '" + new_font.name);
+			console.log("Parsed a font: Name = '" + this.awd_file_data.cur_block.name);
 		}
 
 	}

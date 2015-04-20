@@ -27,7 +27,7 @@ class TextfieldAWDParser extends AWDBlockParserBase
 	public parseFromBytes():void
 	{
 		var newTextField = this.factory.createTextField();
-		newTextField.name = this.awd_file_data.parseVarStr();
+		this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
 		var text_field_type:number=this.awd_file_data.newBlockBytes.readUnsignedByte();
 		if(text_field_type==0) {
 			newTextField.type = "static";
@@ -89,7 +89,7 @@ class TextfieldAWDParser extends AWDBlockParserBase
 		//newTextField.line_mode =  props.get(9, 0);
 
 		newTextField.extra = this.awd_file_data.parseUserAttributes();
-
+		this.awd_file_data.cur_block.data = newTextField;
 		if (this.awd_file_data.debug) {
 			console.log("Parsed a TextField: Name = '" + newTextField.name + "| text  = " + complete_text);
 		}

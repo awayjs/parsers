@@ -67,8 +67,8 @@ class AWDBlockParsers
 		this.add_block_parser(new SkeletonAWDParser(), [101]);
 		this.add_block_parser(new SkeletonPoseAWDParser(), [102]);
 		this.add_block_parser(new SkeletonAnimClipAWDParser(), [103]);
-		this.add_block_parser(new SharedMethodAWDParser(), [111, 112]);
-		this.add_block_parser(new VertexAnimClipAWDParser(), [113]);
+		this.add_block_parser(new VertexAnimClipAWDParser(), [111, 112]);
+		this.add_block_parser(new VertexAnimationSetAWDParser(), [113]);
 		//this.add_block_parser(new UVAnimationClipAWDParser(), [121]);
 		this.add_block_parser(new AnimatorAWDParser(), [122]);
 		this.add_block_parser(new MovieClipAWDParser(), [133]);
@@ -78,8 +78,8 @@ class AWDBlockParsers
 
 
 		this.add_block_parser(new CommandAWDParser(), [253]);
-		this.add_block_parser(new MetadataAWDParser(), [254]);
-		this.add_block_parser(new BlockNameSpaceAWDParser(), [255]);
+		this.add_block_parser(new BlockNameSpaceAWDParser(), [254]);
+		this.add_block_parser(new MetadataAWDParser(), [255]);
 
 
 	}

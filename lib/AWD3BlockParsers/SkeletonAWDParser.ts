@@ -23,7 +23,7 @@ class SkeletonAWDParser extends AWDBlockParserBase
 	public parseFromBytes():void
 	{
 		var skeleton:Skeleton = new Skeleton();
-		skeleton.name = this.awd_file_data.parseVarStr();
+		this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
 		var num_joints:number /*uint*/ = this.awd_file_data.newBlockBytes.readUnsignedShort();
 		this.awd_file_data.parseProperties(null); // Discard properties for now
 
@@ -48,8 +48,9 @@ class SkeletonAWDParser extends AWDBlockParserBase
 
 		// Discard attributes for now
 		this.awd_file_data.parseUserAttributes();
+		this.awd_file_data.cur_block.data = skeleton;
 		if (this.awd_file_data.debug)
-			console.log("Parsed a Skeleton: Name = " + skeleton.name + " | Number of Joints = " + joints_parsed);
+			console.log("Parsed a Skeleton: Name = " + this.awd_file_data.cur_block.name + " | Number of Joints = " + joints_parsed);
 	}
 
 

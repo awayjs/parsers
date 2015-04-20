@@ -23,7 +23,7 @@ class SkeletonPoseAWDParser extends AWDBlockParserBase
 	public parseFromBytes():void
 	{
 		var pose:SkeletonPose = new SkeletonPose();
-		pose.name = this.awd_file_data.parseVarStr();
+		this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
 		var num_joints:number /*uint*/ = this.awd_file_data.newBlockBytes.readUnsignedShort();
 		this.awd_file_data.parseProperties(null); // Ignore properties for now
 
@@ -47,8 +47,9 @@ class SkeletonPoseAWDParser extends AWDBlockParserBase
 		}
 		// Skip attributes for now
 		this.awd_file_data.parseUserAttributes();
+		this.awd_file_data.cur_block.data = pose;
 		if (this.awd_file_data.debug)
-			console.log("Parsed a SkeletonPose: Name = " + pose.name + " | Number of Joints = " + joints_parsed);
+			console.log("Parsed a SkeletonPose: Name = " + this.awd_file_data.cur_block.name + " | Number of Joints = " + joints_parsed);
 	}
 
 

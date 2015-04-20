@@ -25,7 +25,7 @@ class TextformatAWDParser extends AWDBlockParserBase
 	public parseFromBytes():void
 	{
 		var newTextFormat:TextFormat = new TextFormat();
-		newTextFormat.name = this.awd_file_data.parseVarStr();
+		this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
 		//console.log("this.awd_file_data._blocks[blockID].name  '" + this.awd_file_data._blocks[blockID].name );
 		var font_id:number = this.awd_file_data.newBlockBytes.readUnsignedInt();
 		//console.log("font_id  '" + font_id);
@@ -81,7 +81,7 @@ class TextformatAWDParser extends AWDBlockParserBase
 		this.awd_file_data.parseUserAttributes();// textformat has no extra-properties
 		//newTextFormat.extra =
 
-
+		this.awd_file_data.cur_block.data = newTextFormat;
 		if (this.awd_file_data.debug) {
 			console.log("Parsed a TextFormat: Name = '" + name + " font: "+font.name);
 		}

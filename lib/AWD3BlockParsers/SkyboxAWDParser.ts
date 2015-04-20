@@ -23,7 +23,7 @@ class SkyboxAWDParser extends AWDBlockParserBase
 
 	public parseFromBytes():void
 	{
-		var name:string = this.awd_file_data.parseVarStr();
+		this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
 		var cubeTexAddr:number = this.awd_file_data.newBlockBytes.readUnsignedInt();
 
 		var cube_tex:ImageCubeTexture = undefined;
@@ -39,9 +39,9 @@ class SkyboxAWDParser extends AWDBlockParserBase
 
 		this.awd_file_data.parseProperties(null)
 		new_skybox.extra = this.awd_file_data.parseUserAttributes();
-		new_skybox.name = name;
+		this.awd_file_data.cur_block.data = new_skybox;
 		if (this.awd_file_data.debug)
-			console.log("Parsed a Skybox: Name = '" + new_skybox.name + "' | CubeTexture-Name = " + cube_tex.name);
+			console.log("Parsed a Skybox: Name = '" + this.awd_file_data.cur_block.name + "' | CubeTexture-Name = " + cube_tex.name);
 	}
 
 

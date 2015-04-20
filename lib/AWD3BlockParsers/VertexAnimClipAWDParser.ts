@@ -22,7 +22,7 @@ class VertexAnimClipAWDParser extends AWDBlockParserBase
 	public parseFromBytes():void
 	{
 		var poseOnly:boolean=false;
-		if(this.awd_file_data.cur_block.type==123){
+		if(this.awd_file_data.cur_block.type==111){
 			poseOnly=true
 		}
 		var num_frames:number /*uint*/ = 1;
@@ -46,7 +46,7 @@ class VertexAnimClipAWDParser extends AWDBlockParserBase
 		var props:AWDProperties;
 		var thisGeo:Geometry;
 		var clip:VertexClipNode = new VertexClipNode();
-		clip.name = this.awd_file_data.parseVarStr();
+		this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
 		var geoAdress:number /*int*/ = this.awd_file_data.newBlockBytes.readUnsignedInt();
 		var geom:Geometry = <Geometry>this.awd_file_data.getAssetByID(geoAdress);
 		if (geom==undefined) {
@@ -110,6 +110,7 @@ class VertexAnimClipAWDParser extends AWDBlockParserBase
 			frames_parsed++;
 		}
 		this.awd_file_data.parseUserAttributes();
+		this.awd_file_data.cur_block.data=clip;
 		if (this.awd_file_data.debug)
 			console.log("Parsed a VertexClipNode: Name = " + clip.name + " | Target-Geometry-Name = " + geom.name + " | Number of Frames = " + clip.frames.length);
 	}

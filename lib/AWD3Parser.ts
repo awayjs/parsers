@@ -387,12 +387,10 @@ class AWD3Parser extends ParserBase
 
 		this._awd_data.newBlockBytes.position = 0;
 
-		// if this is the first block, and it is no metadatablock, we add a empty block at index 0,to keep in synch with blocks
-		if((block_type!=255)&&(this._awd_data.block_cnt()==0)){
-			this._awd_data.create_new_block(255);
-		}
+		// we create AWDBlock for all exept the metadata. the metadata block has is the first awdblock in the list by default.
+		//if(block_type!=255)
+		this._awd_data.create_new_block(block_type, block_id);
 
-		this._awd_data.create_new_block(block_type);
 
 		if (blockCompression) {
 			this._pDieWithError('Compressed AWD formats not yet supported');
@@ -400,9 +398,9 @@ class AWD3Parser extends ParserBase
 			//block.len       = blockEndBlock;
 		}
 
-		if (this._debug) {
+		//if (this._debug) {
 			console.log("AWDBlock:  ID = " + block_id + " | TypeID = " + block_type + " | Compression = " + blockCompression + " | Matrix-Precision = " + this._awd_data.accuracyMatrix + " | Geometry-Precision = " + this._awd_data.accuracyGeo + " | Properties-Precision = " + this._awd_data.accuracyProps);
-		}
+		//}
 
 		var time_start = performance.now();
 
@@ -411,6 +409,11 @@ class AWD3Parser extends ParserBase
 		if(this._block_parser.parseAsset(block_type)){
 			if(this._awd_data.cur_block.state==AWD3Utils.BLOCKSTATE_FINALIZE){
 				this._pFinalizeAsset(<IAsset>this._awd_data.cur_block.data, this._awd_data.cur_block.name);
+				if(this._awd_data.cur_block.data instanceof DisplayObject){
+					if((<DisplayObjectContainer> this._awd_data.cur_block.data).parent==undefined){
+						(<DisplayObjectContainer> this._pContent).addChild((<DisplayObjectContainer> this._awd_data.cur_block.data));
+					}
+				}
 			}
 			else if(this._awd_data.cur_block.state==AWD3Utils.BLOCKSTATE_INVALID){
 				console.log("ERROR while parsing block - type = ", block_type, " id = ", block_id);

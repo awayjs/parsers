@@ -35,11 +35,10 @@ class SharedMethodAWDParser extends AWDBlockParserBase
 
 		var asset:EffectMethodBase;
 
-		var name:string = this.awd_file_data.parseVarStr();
+		this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
 		asset = this.parseSharedMethodList();
-		asset.name=name;
 		this.awd_file_data.parseUserAttributes();
-
+		this.awd_file_data.cur_block.data = asset;
 		if (this.awd_file_data.debug) {
 			console.log("Parsed a EffectMethod: Name = " + asset.name + " Type = " + asset);
 		}
