@@ -116,6 +116,8 @@ import SetMaskCommand 		        = require("awayjs-player/lib/timeline/commands/S
 import Font							= require("awayjs-display/lib/text/Font");
 import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTable");
 import TextFormat			= require("awayjs-display/lib/text/TextFormat");
+import TextFieldType			= require("awayjs-display/lib/text/TextFieldType");
+
 /**
  * AWDParser provides a parser for the AWD data type.
  */
@@ -145,6 +147,12 @@ class AWDParser extends ParserBase
 	private _cubeTextures:Array<any>;
 	private _defaultBitmapMaterial:MethodMaterial;
 	private _defaultCubeTexture:BitmapCubeTexture;
+
+
+	// temp for checking stats
+	public total_time:number = 0;
+	public geom_time:number = 0;
+	public timeline_time:number = 0;
 
 	public static COMPRESSIONMODE_LZMA:string = "lzma";
 	public static UNCOMPRESSED:number = 0;
@@ -176,7 +184,7 @@ class AWDParser extends ParserBase
 	private _allFontTables:Array<TesselatedFontTable>;
 
 	/**
-	 * Creates a new AWDParser object.
+	 * Creates a new AWD3Parserutils object.
 	 * @param uri The url or id of the data or file to be parsed.
 	 * @param extra The holder for extra contextual data that the parser might need.
 	 */
@@ -389,14 +397,14 @@ class AWDParser extends ParserBase
 				//----------------------------------------------------------------------------
 
 				/*
-				 case AWDParser.DEFLATE:
+				 case AWD3Parserutils.DEFLATE:
 
 				 this._body = new ByteArray();
 				 this._byteData.readBytes(this._body, 0, this._byteData.getBytesAvailable());
 				 this._body.uncompress();
 
 				 break;
-				 case AWDParser.LZMA:
+				 case AWD3Parserutils.LZMA:
 
 				 this._body = new ByteArray();
 				 this._byteData.readBytes(this._body, 0, this._byteData.getBytesAvailable());
@@ -538,7 +546,7 @@ class AWDParser extends ParserBase
 			/*
 			 if (blockCompressionLZMA)
 			 {
-			 this._newBlockBytes.uncompress(AWDParser.COMPRESSIONMODE_LZMA);
+			 this._newBlockBytes.uncompress(AWD3Parserutils.COMPRESSIONMODE_LZMA);
 			 }
 			 else
 			 {
@@ -573,6 +581,7 @@ class AWDParser extends ParserBase
 
 		this._blocks[this._cur_block_id] = block;
 
+		//var time_start = performance.now();
 		if ((this._version[0] == 3) && (this._version[1] == 0)) {
 			// probably should contain some info about the type of animation
 			var factory = new AS2SceneGraphFactory();
@@ -749,7 +758,18 @@ class AWDParser extends ParserBase
 				}
 			}
 		}
-
+/*
+		var time_end = performance.now();
+		var thisTime:number=time_end-time_start;
+		this.total_time+=thisTime;
+		if(type==1){
+			this.geom_time+=thisTime;
+		}
+		else if(type==133){
+			this.timeline_time+=thisTime;
+		}
+		console.log("'parsed '"+type+"'  block in "+thisTime+ " ms", " total: ",this.total_time," geom: ",this.geom_time,"timelines:",this.timeline_time);
+*/
 		this._body.position = blockEndAll;
 		this._newBlockBytes = null;
 
@@ -895,13 +915,18 @@ class AWDParser extends ParserBase
 			//console.log("uv_value  '" + uv_value);
 		}
 		newTextFormat.uv_values=uv_values;
-		var format_props:AWDProperties = this.parseProperties({1:AWDParser.UINT16, 2:AWDParser.UINT16, 3:AWDParser.UINT8,4:AWDParser.UINT8,5:AWDParser.UINT8});
+		var format_props:AWDProperties = this.parseProperties({1:AWDParser.UINT16, 2:AWDParser.UINT16, 3:AWDParser.UINT8,4:AWDParser.UINT8,5:AWDParser.UINT8,6:AWDParser.UINT8, 7:AWDParser.UINT16, 8:AWDParser.UINT16, 9:AWDParser.UINT16, 10:AWDParser.UINT16});
 
 		newTextFormat.size = format_props.get(1,12);
 		newTextFormat.letterSpacing = format_props.get(2,0);
 		//newTextFormat.rotated = format_props.get(3,false);
 		newTextFormat.kerning = format_props.get(4,true);
 		//newTextFormat.baseline_shift = format_props.get(5,1);
+		//newTextFormat.align = format_props.get(6,0);
+		newTextFormat.indent = format_props.get(7,0);
+		newTextFormat.leftMargin = format_props.get(8,0);
+		newTextFormat.rightMargin = format_props.get(9,0);
+		//newTextFormat.linespacing = format_props.get(10,0);
 		newTextFormat.material = mat;
 		this.parseUserAttributes();// textformat has no extra-properties
 		//newTextFormat.extra =
@@ -920,6 +945,21 @@ class AWDParser extends ParserBase
 		this._blocks[blockID].name = name;
 		//console.log("name  '" + name);
         var newTextField = factory.createTextField();
+		var text_field_type:number=this._newBlockBytes.readUnsignedByte();
+		if(text_field_type==0) {
+			newTextField.type = "static";
+		}
+		else if(text_field_type==1) {
+			newTextField.type = "dynamic";
+		}
+		else if(text_field_type==2) {
+			newTextField.type = "input";
+		}
+		else if(text_field_type==3) {
+			newTextField.type ="input";
+			newTextField.displayAsPassword=true;
+		}
+
 		newTextField.width=this._newBlockBytes.readFloat();
 		newTextField.height=this._newBlockBytes.readFloat();
 		var num_paragraphs:number = this._newBlockBytes.readUnsignedInt();
@@ -957,8 +997,15 @@ class AWDParser extends ParserBase
 		newTextField.text=complete_text;
 		//newTextField.construct_geometry();
 		// todo: optional matrix etc can be put in properties.
-		this.parseProperties(null);
 
+		var props:AWDProperties = this.parseProperties({1:AWDParser.BOOL, 3:AWDParser.BOOL, 4:AWDParser.BOOL, 5:AWDParser.BOOL, 7:AWDParser.UINT8, 8:AWDParser.UINT8, 9:AWDParser.UINT8});
+		newTextField.selectable = props.get(1, false);
+		newTextField.border =  props.get(3, false);
+		//newTextField.renderHTML =  props.get(4, false);
+		//newTextField.scrollable =  props.get(5, false);
+		//newTextField.text_flow =  props.get(7, 0);
+		//newTextField.orientationMode =  props.get(8, 0);
+		//newTextField.line_mode =  props.get(9, 0);
 		newTextField.extra = this.parseUserAttributes();
 
 		//console.log("Parsed a TextField: Name = '" + name + "| text  = " + complete_text);
@@ -1199,7 +1246,7 @@ class AWDParser extends ParserBase
 
 		//console.log("numFrames "+numFrames);
 		// var previousTimeLine:TimeLineFrame;
-		// var fill_props:AWDProperties = this.parseProperties({1:AWDParser.UINT32});// { 1:UINT32, 6:AWDSTRING }  ); //; , 2:UINT32, 3:UINT32, 5:BOOL } );
+		// var fill_props:AWDProperties = this.parseProperties({1:AWD3Parserutils.UINT32});// { 1:UINT32, 6:AWDSTRING }  ); //; , 2:UINT32, 3:UINT32, 5:BOOL } );
 
 
 		var totalDuration:number;
@@ -1284,7 +1331,7 @@ class AWDParser extends ParserBase
 						 4: read color matrix - read another UINT8-bitflag that determinates what matrix components to parse
 						 5: blendmode - uint8
 						 6: visible - boolean
-						 7: AWDParser.UINT8
+						 7: AWD3Parserutils.UINT8
 						 });*/
 						// read display matrix
 						if (BitFlags.test(props_flag, BitFlags.FLAG1)) {
@@ -2450,7 +2497,7 @@ class AWDParser extends ParserBase
 			this._newBlockBytes.readBytes(data, 0, data_len);
 
 			//
-			// AWDParser - Fix for FireFox Bug: https://bugzilla.mozilla.org/show_bug.cgi?id=715075 .
+			// AWD3Parserutils - Fix for FireFox Bug: https://bugzilla.mozilla.org/show_bug.cgi?id=715075 .
 			//
 			// Converting data to image here instead of parser - fix FireFox bug where image width / height is 0 when created from data
 			// This gives the browser time to initialise image width / height.
