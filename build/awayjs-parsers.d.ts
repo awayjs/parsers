@@ -55,16 +55,6 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/BillboardAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/BitmapTextureAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class BitmapTextureAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = BitmapTextureAWDParser;
-	
-}
-
 declare module "awayjs-parsers/lib/AWD3BlockParsers/BlockNameSpaceAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 	class BlockNameSpaceAWDParser extends AWDBlockParserBase {
@@ -92,16 +82,6 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/CommandAWDParser" {
 	    parseFromBytes(): void;
 	}
 	export = CommandAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/CubeTextureAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class CubeTextureAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = CubeTextureAWDParser;
 	
 }
 
@@ -215,6 +195,26 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/SharedMethodAWDParser" {
 	    private parseSharedMethodList();
 	}
 	export = SharedMethodAWDParser;
+	
+}
+
+declare module "awayjs-parsers/lib/AWD3BlockParsers/Single2DTextureAWDParser" {
+	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+	class Single2DTextureAWDParser extends AWDBlockParserBase {
+	    constructor();
+	    parseFromBytes(): void;
+	}
+	export = Single2DTextureAWDParser;
+	
+}
+
+declare module "awayjs-parsers/lib/AWD3BlockParsers/SingleCubeTextureAWDParser" {
+	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+	class SingleCubeTextureAWDParser extends AWDBlockParserBase {
+	    constructor();
+	    parseFromBytes(): void;
+	}
+	export = SingleCubeTextureAWDParser;
 	
 }
 
@@ -427,7 +427,7 @@ declare module "awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData" {
 	    parseVarStr(): string;
 	    getBlockByID(assetID: number): AWDBlock;
 	    getAssetByID(assetID: number): IAsset;
-	    private getDefaultAsset(assetType, extraTypeInfo);
+	    private getDefaultAsset(assetType);
 	    getDefaultCubeTexture(): IAsset;
 	    readNumber(precision?: boolean): number;
 	    parseMatrix3D(): Matrix3D;
@@ -563,7 +563,7 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private _parsed_header;
 	    private _body;
 	    private _defaultTexture;
-	    private _cubeTextures;
+	    private _cubeBitmaps;
 	    private _defaultBitmapMaterial;
 	    private _defaultCubeTexture;
 	    total_time: number;
@@ -673,9 +673,9 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private parseHeader();
 	    private getUVForVertexAnimation(meshID);
 	    private parseVarStr();
-	    private getAssetByID(assetID, assetTypesToGet, extraTypeInfo?);
-	    private getDefaultAsset(assetType, extraTypeInfo);
-	    private getDefaultCubeTexture();
+	    private getAssetByID(assetID, assetTypesToGet);
+	    private getDefaultAsset(assetType);
+	    getDefaultCubeTexture(): IAsset;
 	    private readNumber(precision?);
 	    private parseMatrix3D();
 	    private parseMatrix32RawData();
