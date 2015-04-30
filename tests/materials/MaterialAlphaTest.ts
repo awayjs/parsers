@@ -1,3 +1,4 @@
+import BitmapImage2D				= require("awayjs-core/lib/data/BitmapImage2D");
 import BlendMode					= require("awayjs-core/lib/data/BlendMode");
 import LoaderEvent					= require("awayjs-core/lib/events/LoaderEvent");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
@@ -9,8 +10,6 @@ import URLLoader					= require("awayjs-core/lib/net/URLLoader");
 import URLLoaderDataFormat			= require("awayjs-core/lib/net/URLLoaderDataFormat");
 import URLRequest					= require("awayjs-core/lib/net/URLRequest");
 import PerspectiveProjection		= require("awayjs-core/lib/projections/PerspectiveProjection");
-import ImageTexture					= require("awayjs-core/lib/textures/ImageTexture");
-import TextureBase					= require("awayjs-core/lib/textures/TextureBase");
 import Debug						= require("awayjs-core/lib/utils/Debug");
 import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationFrame");
 
@@ -22,6 +21,7 @@ import StaticLightPicker			= require("awayjs-display/lib/materials/lightpickers/
 import PrimitiveTorusPrefab			= require("awayjs-display/lib/prefabs/PrimitiveTorusPrefab");
 import PrimitiveCubePrefab			= require("awayjs-display/lib/prefabs/PrimitiveCubePrefab");
 import PrimitiveCapsulePrefab		= require("awayjs-display/lib/prefabs/PrimitiveCapsulePrefab");
+import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
 
 import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
 
@@ -148,9 +148,9 @@ class MaterialAlphaTest
 
 					this.raf.start();
 					break;
-				case TextureBase.assetType:
+				case BitmapImage2D.assetType:
 					// Loaded Texture
-					var tx:ImageTexture = <ImageTexture> d;
+					var tx:Single2DTexture = new Single2DTexture(<BitmapImage2D> d);
 
 					// Light Picker
 					this.staticLightPicker = new StaticLightPicker( [this.light , this.lightB ] );

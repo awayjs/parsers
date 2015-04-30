@@ -19,7 +19,7 @@ import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
 import MethodMaterial				= require("awayjs-methodmaterials/lib/MethodMaterial");
 import MethodRendererPool			= require("awayjs-methodmaterials/lib/pool/MethodRendererPool");
 
-import AWD3Parser					= require("awayjs-parsers/lib/AWD3Parser");
+import AWDParser					= require("awayjs-parsers/lib/AWDParser");
 
 class AWDParserTest
 {
@@ -34,6 +34,7 @@ class AWDParserTest
 		Debug.LOG_PI_ERRORS = true;
 		Debug.THROW_ERRORS = false;
 
+		AssetLibrary.enableParser(AWDParser);
 
 		this._token = AssetLibrary.load(new URLRequest('assets/suzanne.awd'));
 		this._token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, (event:LoaderEvent) => this.onResourceComplete(event));
