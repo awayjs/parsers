@@ -1,8 +1,7 @@
-
-
-
-import BitmapData						= require("awayjs-core/lib/data/BitmapData");
+import BitmapImage2D					= require("awayjs-core/lib/data/BitmapImage2D");
+import BitmapImageCube					= require("awayjs-core/lib/data/BitmapImageCube");
 import BlendMode						= require("awayjs-core/lib/data/BlendMode");
+import Geometry							= require("awayjs-core/lib/data/Geometry");
 import TriangleSubGeometry				= require("awayjs-core/lib/data/TriangleSubGeometry");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
@@ -12,27 +11,16 @@ import IAsset							= require("awayjs-core/lib/library/IAsset");
 import ParserBase						= require("awayjs-core/lib/parsers/ParserBase");
 import ParserUtils						= require("awayjs-core/lib/parsers/ParserUtils");
 import ResourceDependency				= require("awayjs-core/lib/parsers/ResourceDependency");
-
-import BitmapCubeTexture				= require("awayjs-core/lib/textures/BitmapCubeTexture");
-import BitmapTexture					= require("awayjs-core/lib/textures/BitmapTexture");
-
-import CubeTextureBase					= require("awayjs-core/lib/textures/CubeTextureBase");
-import ImageCubeTexture					= require("awayjs-core/lib/textures/ImageCubeTexture");
-import ImageTexture						= require("awayjs-core/lib/textures/ImageTexture");
-import TextureBase						= require("awayjs-core/lib/textures/TextureBase");
 import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
-import Geometry							= require("awayjs-core/lib/data/Geometry");
 
-import Texture2DBase					= require("awayjs-core/lib/textures/Texture2DBase");
 import DisplayObject					= require("awayjs-display/lib/base/DisplayObject");
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
-
 import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
 import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
-
-
 import Mesh								= require("awayjs-display/lib/entities/Mesh");
-
+import TextureBase						= require("awayjs-display/lib/textures/TextureBase");
+import SingleCubeTexture				= require("awayjs-display/lib/textures/SingleCubeTexture");
+import Single2DTexture					= require("awayjs-display/lib/textures/Single2DTexture");
 
 
 
@@ -71,7 +59,7 @@ class AWD3FileData
 	private blendModeDic:Array<string>;
 	private _depthSizeDic:Array<number>;
 
-	private _defaultCubeTexture:BitmapCubeTexture;
+	private _defaultCubeTexture:SingleCubeTexture;
 	/**
 	 * Creates a new AWD3FileData object.
 	 */
@@ -474,14 +462,14 @@ class AWD3FileData
 	{
 		return this._blocks[assetID].data;
 	}
-	private getDefaultAsset(assetType:string, extraTypeInfo:string):IAsset
+	private getDefaultAsset(assetType:string):IAsset
 	{
 		switch (true) {
-			case (assetType == TextureBase.assetType):
-				if (extraTypeInfo == "CubeTexture")
-					return this.getDefaultCubeTexture();
-				if (extraTypeInfo == "SingleTexture")
-					return DefaultMaterialManager.getDefaultTexture();
+			case (assetType == SingleCubeTexture.assetType):
+				return this.getDefaultCubeTexture();
+				break;
+			case (assetType == Single2DTexture.assetType):
+				return DefaultMaterialManager.getDefaultTexture();
 				break;
 			case (assetType == MaterialBase.assetType):
 				return DefaultMaterialManager.getDefaultMaterial();
@@ -496,9 +484,15 @@ class AWD3FileData
 	public getDefaultCubeTexture():IAsset
 	{
 		if (!this._defaultCubeTexture) {
-			var defaultBitmap:BitmapData = DefaultMaterialManager.createCheckeredBitmapData();
+			var defaultBitmap:BitmapImage2D = DefaultMaterialManager.createCheckeredBitmapImage2D();
 
-			this._defaultCubeTexture = new BitmapCubeTexture(defaultBitmap, defaultBitmap, defaultBitmap, defaultBitmap, defaultBitmap, defaultBitmap);
+			var bitmapImageCube = new BitmapImageCube(defaultBitmap.width);
+
+			for (var i:number = 0; i < 6; i++)
+				bitmapImageCube.draw(i, defaultBitmap);
+
+
+			this._defaultCubeTexture = new SingleCubeTexture(bitmapImageCube);
 			this._defaultCubeTexture.name = "defaultCubeTexture";
 		}
 

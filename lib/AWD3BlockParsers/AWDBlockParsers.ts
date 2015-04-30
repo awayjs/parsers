@@ -12,9 +12,9 @@ import PrefabAWDParser 								= require("awayjs-parsers/lib/AWD3BlockParsers/Pr
 import DisplayObjectContainerAWDParser 				= require("awayjs-parsers/lib/AWD3BlockParsers/DisplayObjectContainerAWDParser");
 import MeshAWDParser 								= require("awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser");
 import BillboardAWDParser 							= require("awayjs-parsers/lib/AWD3BlockParsers/BillboardAWDParser");
-import BitmapTextureAWDParser 						= require("awayjs-parsers/lib/AWD3BlockParsers/BitmapTextureAWDParser");
+import Single2DTextureAWDParser 					= require("awayjs-parsers/lib/AWD3BlockParsers/Single2DTextureAWDParser");
 import CameraAWDParser 								= require("awayjs-parsers/lib/AWD3BlockParsers/CameraAWDParser");
-import CubeTextureAWDParser 						= require("awayjs-parsers/lib/AWD3BlockParsers/CubeTextureAWDParser");
+import SingleCubeTextureAWDParser 					= require("awayjs-parsers/lib/AWD3BlockParsers/SingleCubeTextureAWDParser");
 import LightAWDParser 								= require("awayjs-parsers/lib/AWD3BlockParsers/LightAWDParser");
 import LightPickerAWDParser 						= require("awayjs-parsers/lib/AWD3BlockParsers/LightPickerAWDParser");
 import MaterialAWDParser 							= require("awayjs-parsers/lib/AWD3BlockParsers/MaterialAWDParser");
@@ -60,8 +60,8 @@ class AWDBlockParsers
 		this.add_block_parser(new AudioAWDParser(), [44]);
 		this.add_block_parser(new LightPickerAWDParser(), [51]);
 		this.add_block_parser(new MaterialAWDParser(), [81]);
-		this.add_block_parser(new BitmapTextureAWDParser(), [82]);
-		this.add_block_parser(new CubeTextureAWDParser(), [83]);
+		this.add_block_parser(new Single2DTextureAWDParser(), [82]);
+		this.add_block_parser(new SingleCubeTextureAWDParser(), [83]);
 		this.add_block_parser(new SharedMethodAWDParser(), [91]);
 		this.add_block_parser(new ShadowMethodAWDParser(), [92]);
 		this.add_block_parser(new SkeletonAWDParser(), [101]);

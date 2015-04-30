@@ -1,17 +1,18 @@
-
-import EventDispatcher			= require("awayjs-core/lib/events/EventDispatcher");
-import ByteArray				= require("awayjs-core/lib/utils/ByteArray");
-import AbstractMethodError		= require("awayjs-core/lib/errors/AbstractMethodError");
-import IAsset					= require("awayjs-core/lib/library/IAsset");
-import AWDBlockParserBase		= require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-import AWDProperties			= require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
-import AWD3Utils						= require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
-
+import EventDispatcher					= require("awayjs-core/lib/events/EventDispatcher");
+import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
+import AbstractMethodError				= require("awayjs-core/lib/errors/AbstractMethodError");
+import IAsset							= require("awayjs-core/lib/library/IAsset");
 import URLRequest						= require("awayjs-core/lib/net/URLRequest");
-import CubeTextureBase					= require("awayjs-core/lib/textures/CubeTextureBase");
 import ParserUtils						= require("awayjs-core/lib/parsers/ParserUtils");
 
-class CubeTextureAWDParser extends AWDBlockParserBase
+import SingleCubeTexture				= require("awayjs-display/lib/textures/SingleCubeTexture");
+
+import AWDBlockParserBase				= require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+import AWDProperties					= require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
+import AWD3Utils						= require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+
+
+class SingleCubeTextureAWDParser extends AWDBlockParserBase
 {
 
 	constructor()
@@ -74,4 +75,4 @@ class CubeTextureAWDParser extends AWDBlockParserBase
 
 }
 
-export = CubeTextureAWDParser;
+export = SingleCubeTextureAWDParser;

@@ -1,3 +1,4 @@
+import BitmapImage2D					= require("awayjs-core/lib/data/BitmapImage2D");
 import TriangleSubGeometry				= require("awayjs-core/lib/data/TriangleSubGeometry");
 import Geometry							= require("awayjs-core/lib/data/Geometry");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
@@ -9,13 +10,12 @@ import URLRequest						= require("awayjs-core/lib/net/URLRequest");
 import ParserBase						= require("awayjs-core/lib/parsers/ParserBase");
 import ParserUtils						= require("awayjs-core/lib/parsers/ParserUtils");
 import ResourceDependency				= require("awayjs-core/lib/parsers/ResourceDependency");
-import Texture2DBase					= require("awayjs-core/lib/textures/Texture2DBase");
-import TextureBase						= require("awayjs-core/lib/textures/TextureBase");
 
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import Mesh								= require("awayjs-display/lib/entities/Mesh");
 import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
 import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
+import Single2DTexture					= require("awayjs-display/lib/textures/Single2DTexture");
 
 import MethodMaterial					= require("awayjs-methodmaterials/lib/MethodMaterial");
 import MethodMaterialMode				= require("awayjs-methodmaterials/lib/MethodMaterialMode");
@@ -119,11 +119,11 @@ class OBJParser extends ParserBase
 
 			asset = resourceDependency.assets[0];
 
-			if (asset.isAsset(TextureBase)) {
+			if (asset.isAsset(BitmapImage2D)) {
 
 				var lm:LoadedMaterial = new LoadedMaterial();
 				lm.materialID = resourceDependency.id;
-				lm.texture = <Texture2DBase> asset;
+				lm.texture = new Single2DTexture(<BitmapImage2D> asset);
 
 				this._materialLoaded.push(lm);
 
@@ -986,7 +986,7 @@ class SpecularData
 class LoadedMaterial
 {
 	public materialID:string;
-	public texture:Texture2DBase;
+	public texture:Single2DTexture;
 	public cm:MaterialBase;
 	public specularMethod:SpecularBasicMethod;
 	public color:number = 0xFFFFFF;

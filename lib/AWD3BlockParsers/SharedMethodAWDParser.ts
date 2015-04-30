@@ -1,15 +1,14 @@
-
-import EventDispatcher			= require("awayjs-core/lib/events/EventDispatcher");
-import ByteArray				= require("awayjs-core/lib/utils/ByteArray");
-import AbstractMethodError		= require("awayjs-core/lib/errors/AbstractMethodError");
-import IAsset					= require("awayjs-core/lib/library/IAsset");
-import AWDBlockParserBase		= require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-import AWDProperties			= require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
-import AWD3Utils				= require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
-
+import EventDispatcher					= require("awayjs-core/lib/events/EventDispatcher");
+import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
+import AbstractMethodError				= require("awayjs-core/lib/errors/AbstractMethodError");
+import IAsset							= require("awayjs-core/lib/library/IAsset");
 import ColorTransform					= require("awayjs-core/lib/geom/ColorTransform");
-import TextureBase						= require("awayjs-core/lib/textures/TextureBase");
-import CubeTextureBase					= require("awayjs-core/lib/textures/CubeTextureBase");
+
+import TextureBase						= require("awayjs-display/lib/textures/TextureBase");
+import SingleCubeTexture				= require("awayjs-display/lib/textures/SingleCubeTexture");
+import AWDBlockParserBase				= require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+import AWDProperties					= require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
+import AWD3Utils						= require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
 
 import EffectMethodBase					= require("awayjs-methodmaterials/lib/methods/EffectMethodBase");
 import EffectColorMatrixMethod			= require("awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod");
@@ -75,7 +74,7 @@ class SharedMethodAWDParser extends AWDBlockParserBase
 				returnedArray = this.awd_file_data.getAssetByID(targetID, [ TextureBase.assetType ], "CubeTexture");
 				//if (!returnedArray[0])
 				//	this.awd_file_data._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this.awd_file_data EnvMapMethod");
-				effectMethodReturn = new EffectEnvMapMethod(<CubeTextureBase> returnedArray[1], <number> props.get(101, 1));
+				effectMethodReturn = new EffectEnvMapMethod(<SingleCubeTexture> returnedArray[1], <number> props.get(101, 1));
 				targetID = props.get(2, 0);
 				if (targetID > 0) {
 					returnedArray = this.awd_file_data.getAssetByID(targetID, [TextureBase.assetType]);

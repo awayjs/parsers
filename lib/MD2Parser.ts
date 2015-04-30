@@ -1,4 +1,4 @@
-import BitmapData						= require("awayjs-core/lib/data/BitmapData");
+import BitmapImage2D					= require("awayjs-core/lib/data/BitmapImage2D");
 import Geometry							= require("awayjs-core/lib/data/Geometry");
 import TriangleSubGeometry				= require("awayjs-core/lib/data/TriangleSubGeometry");
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
@@ -7,7 +7,6 @@ import URLRequest						= require("awayjs-core/lib/net/URLRequest");
 import ParserBase						= require("awayjs-core/lib/parsers/ParserBase");
 import ParserUtils						= require("awayjs-core/lib/parsers/ParserUtils");
 import ResourceDependency				= require("awayjs-core/lib/parsers/ResourceDependency");
-import Texture2DBase					= require("awayjs-core/lib/textures/Texture2DBase");
 import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
 
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
@@ -15,6 +14,7 @@ import DisplayObject					= require("awayjs-display/lib/base/DisplayObject");
 import Camera							= require("awayjs-display/lib/entities/Camera");
 import Mesh								= require("awayjs-display/lib/entities/Mesh");
 import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
+import Single2DTexture					= require("awayjs-display/lib/textures/Single2DTexture");
 
 import VertexClipNode					= require("awayjs-renderergl/lib/animators/nodes/VertexClipNode");
 import VertexAnimationSet				= require("awayjs-renderergl/lib/animators/VertexAnimationSet");
@@ -115,7 +115,7 @@ class MD2Parser extends ParserBase
 		if (resourceDependency.assets.length != 1)
 			return;
 
-		var asset:Texture2DBase = <Texture2DBase> resourceDependency.assets[0];
+		var asset:Single2DTexture = new Single2DTexture(<BitmapImage2D> resourceDependency.assets[0]);
 
 		if (asset) {
 			var material:MethodMaterial = new MethodMaterial(asset);

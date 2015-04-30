@@ -1,4 +1,5 @@
-import BitmapData						= require("awayjs-core/lib/data/BitmapData");
+import BitmapImage2D					= require("awayjs-core/lib/data/BitmapImage2D");
+import BitmapImageCube					= require("awayjs-core/lib/data/BitmapImageCube");
 import BlendMode						= require("awayjs-core/lib/data/BlendMode");
 import Geometry							= require("awayjs-core/lib/data/Geometry");
 import SubGeometryBase					= require("awayjs-core/lib/data/SubGeometryBase");
@@ -17,13 +18,6 @@ import ProjectionBase					= require("awayjs-core/lib/projections/ProjectionBase"
 import PerspectiveProjection			= require("awayjs-core/lib/projections/PerspectiveProjection");
 import OrthographicProjection			= require("awayjs-core/lib/projections/OrthographicProjection");
 import OrthographicOffCenterProjection	= require("awayjs-core/lib/projections/OrthographicOffCenterProjection");
-import BitmapCubeTexture				= require("awayjs-core/lib/textures/BitmapCubeTexture");
-import BitmapTexture					= require("awayjs-core/lib/textures/BitmapTexture");
-import CubeTextureBase					= require("awayjs-core/lib/textures/CubeTextureBase");
-import ImageCubeTexture					= require("awayjs-core/lib/textures/ImageCubeTexture");
-import ImageTexture						= require("awayjs-core/lib/textures/ImageTexture");
-import Texture2DBase					= require("awayjs-core/lib/textures/Texture2DBase");
-import TextureBase						= require("awayjs-core/lib/textures/TextureBase");
 import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
 
 import AnimationNodeBase				= require("awayjs-display/lib/animators/nodes/AnimationNodeBase");
@@ -52,6 +46,9 @@ import PrimitiveCylinderPrefab			= require("awayjs-display/lib/prefabs/Primitive
 import PrimitivePlanePrefab				= require("awayjs-display/lib/prefabs/PrimitivePlanePrefab");
 import PrimitiveSpherePrefab			= require("awayjs-display/lib/prefabs/PrimitiveSpherePrefab");
 import PrimitiveTorusPrefab				= require("awayjs-display/lib/prefabs/PrimitiveTorusPrefab");
+import SingleCubeTexture				= require("awayjs-display/lib/textures/SingleCubeTexture");
+import Single2DTexture					= require("awayjs-display/lib/textures/Single2DTexture");
+import TextureBase						= require("awayjs-display/lib/textures/TextureBase");
 
 import AnimationSetBase					= require("awayjs-renderergl/lib/animators/AnimationSetBase");
 import AnimatorBase						= require("awayjs-renderergl/lib/animators/AnimatorBase");
@@ -143,10 +140,10 @@ class AWDParser extends ParserBase
 	private _texture_users:Object = {};
 	private _parsed_header:boolean = false;
 	private _body:ByteArray;
-	private _defaultTexture:BitmapTexture;     // HTML IMAGE TEXTURE >? !
-	private _cubeTextures:Array<any>;
+	private _defaultTexture:Single2DTexture;     // HTML IMAGE TEXTURE >? !
+	private _cubeBitmaps:Array<BitmapImage2D>;
 	private _defaultBitmapMaterial:MethodMaterial;
-	private _defaultCubeTexture:BitmapCubeTexture;
+	private _defaultCubeTexture:SingleCubeTexture;
 
 
 	// temp for checking stats
@@ -256,15 +253,12 @@ class AWDParser extends ParserBase
 			var isCubeTextureArray:Array<string> = resourceDependency.id.split("#");
 			var ressourceID:string = isCubeTextureArray[0];
 			var asset:TextureBase;
-			var thisBitmapTexture:Texture2DBase;
 			var block:AWDBlock;
 
 			if (isCubeTextureArray.length == 1) // Not a cube texture
 			{
-				asset = <Texture2DBase> resourceDependency.assets[0];
+				asset = new Single2DTexture(<BitmapImage2D> resourceDependency.assets[0]);
 				if (asset) {
-					var mat:MethodMaterial;
-					var users:Array<string>;
 
 					block = this._blocks[ resourceDependency.id ];
 					block.data = asset; // Store finished asset
@@ -286,26 +280,20 @@ class AWDParser extends ParserBase
 
 			if (isCubeTextureArray.length > 1) // Cube Texture
 			{
-				thisBitmapTexture = <BitmapTexture> resourceDependency.assets[0];
-
-				var tx:ImageTexture = <ImageTexture> thisBitmapTexture;
-
-				this._cubeTextures[ isCubeTextureArray[1] ] = tx.htmlImageElement; // ?
+				this._cubeBitmaps[ isCubeTextureArray[1] ] = <BitmapImage2D> resourceDependency.assets[0];
 				this._texture_users[ressourceID].push(1);
 
 				if (this._debug) {
 					console.log("Successfully loaded Bitmap " + this._texture_users[ressourceID].length + " / 6 for Cubetexture");
 				}
-				if (this._texture_users[ressourceID].length == this._cubeTextures.length) {
+				if (this._texture_users[ressourceID].length == this._cubeBitmaps.length) {
 
-					var posX:any = this._cubeTextures[0];
-					var negX:any = this._cubeTextures[1];
-					var posY:any = this._cubeTextures[2];
-					var negY:any = this._cubeTextures[3];
-					var posZ:any = this._cubeTextures[4];
-					var negZ:any = this._cubeTextures[5];
+					var cube_image_asset = new BitmapImageCube(this._cubeBitmaps[0].width);
 
-					asset = <TextureBase> new ImageCubeTexture(posX, negX, posY, negY, posZ, negZ);
+					for (var i:number = 0; i < 6; i++)
+						cube_image_asset.draw(i, this._cubeBitmaps[i]);
+
+					asset = new SingleCubeTexture(cube_image_asset);
 					block = this._blocks[ressourceID];
 					block.data = asset; // Store finished asset
 
@@ -1855,17 +1843,17 @@ class AWDParser extends ParserBase
 		var name:string = this.parseVarStr();
 		var cubeTexAddr:number = this._newBlockBytes.readUnsignedInt();
 
-		var returnedArrayCubeTex:Array<any> = this.getAssetByID(cubeTexAddr, [TextureBase.assetType], "CubeTexture");
+		var returnedArrayCubeTex:Array<any> = this.getAssetByID(cubeTexAddr, [SingleCubeTexture.assetType]);
 		if ((!returnedArrayCubeTex[0]) && (cubeTexAddr != 0))
 			this._blocks[blockID].addError("Could not find the Cubetexture (ID = " + cubeTexAddr + " ) for this Skybox");
-		var asset:Skybox = new Skybox(<ImageCubeTexture> returnedArrayCubeTex[1]);
+		var asset:Skybox = new Skybox(<SingleCubeTexture> returnedArrayCubeTex[1]);
 
 		this.parseProperties(null)
 		asset.extra = this.parseUserAttributes();
 		this._pFinalizeAsset(asset, name);
 		this._blocks[blockID].data = asset;
 		if (this._debug)
-			console.log("Parsed a Skybox: Name = '" + name + "' | CubeTexture-Name = " + (<ImageCubeTexture> returnedArrayCubeTex[1]).name);
+			console.log("Parsed a Skybox: Name = '" + name + "' | CubeTexture-Name = " + (<SingleCubeTexture> returnedArrayCubeTex[1]).name);
 
 	}
 
@@ -2121,12 +2109,12 @@ class AWDParser extends ParserBase
 		} else if (type === 2) {
 			var tex_addr:number = props.get(2, 0);
 
-			returnedArray = this.getAssetByID(tex_addr, [TextureBase.assetType]);
+			returnedArray = this.getAssetByID(tex_addr, [Single2DTexture.assetType]);
 
 			if ((!returnedArray[0]) && (tex_addr > 0))
 				this._blocks[blockID].addError("Could not find the DiffsueTexture (ID = " + tex_addr + " ) for this Material");
 
-			mat = new MethodMaterial(<Texture2DBase> returnedArray[1]);
+			mat = new MethodMaterial(<TextureBase> returnedArray[1]);
 
 			if (this.materialMode < 2) {
 				mat.alphaBlending = props.get(11, false);
@@ -2154,8 +2142,8 @@ class AWDParser extends ParserBase
 	private parseMaterial_v1(blockID:number):void
 	{
 		var mat:MethodMaterial;
-		var normalTexture:Texture2DBase;
-		var specTexture:Texture2DBase;
+		var normalTexture:TextureBase;
+		var specTexture:TextureBase;
 		var returnedArray:Array<any>;
 
 		var name:string = this.parseVarStr();
@@ -2194,12 +2182,12 @@ class AWDParser extends ParserBase
 
 				} else if (type == 2) {// texture material
 					var tex_addr:number = props.get(2, 0);//TODO temporarily swapped so that diffuse texture goes to ambient
-					returnedArray = this.getAssetByID(tex_addr, [TextureBase.assetType]);
+					returnedArray = this.getAssetByID(tex_addr, [Single2DTexture.assetType]);
 
 					if ((!returnedArray[0]) && (tex_addr > 0))
 						this._blocks[blockID].addError("Could not find the AmbientTexture (ID = " + tex_addr + " ) for this MethodMaterial");
 
-					var texture:Texture2DBase = returnedArray[1];
+					var texture:Single2DTexture = returnedArray[1];
 
 					mat = new MethodMaterial(texture);
 
@@ -2215,10 +2203,10 @@ class AWDParser extends ParserBase
 					}
 				}
 
-				var diffuseTexture:Texture2DBase;
+				var diffuseTexture:Single2DTexture;
 				var diffuseTex_addr:number = props.get(17, 0);
 
-				returnedArray = this.getAssetByID(diffuseTex_addr, [TextureBase.assetType]);
+				returnedArray = this.getAssetByID(diffuseTex_addr, [Single2DTexture.assetType]);
 
 				if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
 					this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
@@ -2234,7 +2222,7 @@ class AWDParser extends ParserBase
 
 				var normalTex_addr:number = props.get(3, 0);
 
-				returnedArray = this.getAssetByID(normalTex_addr, [TextureBase.assetType]);
+				returnedArray = this.getAssetByID(normalTex_addr, [Single2DTexture.assetType]);
 
 				if ((!returnedArray[0]) && (normalTex_addr != 0)) {
 					this._blocks[blockID].addError("Could not find the NormalTexture (ID = " + normalTex_addr + " ) for this MethodMaterial");
@@ -2246,7 +2234,7 @@ class AWDParser extends ParserBase
 				}
 
 				var specTex_addr:number = props.get(21, 0);
-				returnedArray = this.getAssetByID(specTex_addr, [TextureBase.assetType]);
+				returnedArray = this.getAssetByID(specTex_addr, [Single2DTexture.assetType]);
 
 				if ((!returnedArray[0]) && (specTex_addr != 0)) {
 					this._blocks[blockID].addError("Could not find the SpecularTexture (ID = " + specTex_addr + " ) for this MethodMaterial");
@@ -2345,11 +2333,12 @@ class AWDParser extends ParserBase
 
 						case 1: //EnvMapAmbientMethod
 							targetID = props.get(1, 0);
-							returnedArray = this.getAssetByID(targetID, [TextureBase.assetType], "CubeTexture");
+							returnedArray = this.getAssetByID(targetID, [SingleCubeTexture.assetType]);
 							if (!returnedArray[0])
 								this._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this EnvMapAmbientMethodMaterial");
-							mat.ambientMethod = new AmbientEnvMapMethod(returnedArray[1]);
-							debugString += " | AmbientEnvMapMethod | EnvMap-Name =" + (<CubeTextureBase> returnedArray[1]).name;
+							mat.ambientMethod = new AmbientEnvMapMethod();
+							mat.texture = returnedArray[1];
+							debugString += " | AmbientEnvMapMethod | EnvMap-Name =" + (<SingleCubeTexture> returnedArray[1]).name;
 							break;
 
 						case 51: //DepthDiffuseMethod
@@ -2358,11 +2347,11 @@ class AWDParser extends ParserBase
 							break;
 						case 52: //GradientDiffuseMethod
 							targetID = props.get(1, 0);
-							returnedArray = this.getAssetByID(targetID, [TextureBase.assetType]);
+							returnedArray = this.getAssetByID(targetID, [Single2DTexture.assetType]);
 							if (!returnedArray[0])
 								this._blocks[blockID].addError("Could not find the GradientDiffuseTexture (ID = " + targetID + " ) for this GradientDiffuseMethod");
 							mat.diffuseMethod = new DiffuseGradientMethod(returnedArray[1]);
-							debugString += " | DiffuseGradientMethod | GradientDiffuseTexture-Name =" + (<Texture2DBase> returnedArray[1]).name;
+							debugString += " | DiffuseGradientMethod | GradientDiffuseTexture-Name =" + (<TextureBase> returnedArray[1]).name;
 							break;
 						case 53: //WrapDiffuseMethod
 							mat.diffuseMethod = new DiffuseWrapMethod(props.get(101, 5));
@@ -2370,11 +2359,11 @@ class AWDParser extends ParserBase
 							break;
 						case 54: //LightMapDiffuseMethod
 							targetID = props.get(1, 0);
-							returnedArray = this.getAssetByID(targetID, [TextureBase.assetType]);
+							returnedArray = this.getAssetByID(targetID, [Single2DTexture.assetType]);
 							if (!returnedArray[0])
 								this._blocks[blockID].addError("Could not find the LightMap (ID = " + targetID + " ) for this LightMapDiffuseMethod");
 							mat.diffuseMethod = new DiffuseLightMapMethod(returnedArray[1], this.blendModeDic[props.get(401, 10)], false, mat.diffuseMethod);
-							debugString += " | DiffuseLightMapMethod | LightMapTexture-Name =" + (<Texture2DBase> returnedArray[1]).name;
+							debugString += " | DiffuseLightMapMethod | LightMapTexture-Name =" + (<TextureBase> returnedArray[1]).name;
 							break;
 						case 55: //CelDiffuseMethod
 							mat.diffuseMethod = new DiffuseCelMethod(props.get(401, 3), mat.diffuseMethod);
@@ -2412,7 +2401,7 @@ class AWDParser extends ParserBase
 							break;
 						case 152: //SimpleWaterNormalMethod
 							targetID = props.get(1, 0);
-							returnedArray = this.getAssetByID(targetID, [TextureBase.assetType]);
+							returnedArray = this.getAssetByID(targetID, [Single2DTexture.assetType]);
 							if (!returnedArray[0])
 								this._blocks[blockID].addError("Could not find the SecoundNormalMap (ID = " + targetID + " ) for this SimpleWaterNormalMethod");
 							if (!mat.normalMap)
@@ -2420,7 +2409,7 @@ class AWDParser extends ParserBase
 
 							mat.normalMap = returnedArray[1];
 							mat.normalMethod = new NormalSimpleWaterMethod(mat.normalMap, returnedArray[1]);
-							debugString += " | NormalSimpleWaterMethod | Second-NormalTexture-Name = " + (<Texture2DBase> returnedArray[1]).name;
+							debugString += " | NormalSimpleWaterMethod | Second-NormalTexture-Name = " + (<TextureBase> returnedArray[1]).name;
 							break;
 					}
 					this.parseUserAttributes();
@@ -2434,10 +2423,10 @@ class AWDParser extends ParserBase
 			var color:number = props.get(1, 0xcccccc);
 			debugString+=color;
 
-			var diffuseTexture:Texture2DBase;
+			var diffuseTexture:Single2DTexture;
 			var diffuseTex_addr:number = props.get(2, 0);
 
-			returnedArray = this.getAssetByID(diffuseTex_addr, [TextureBase.assetType]);
+			returnedArray = this.getAssetByID(diffuseTex_addr, [Single2DTexture.assetType]);
 
 			if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
 				this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
@@ -2473,7 +2462,7 @@ class AWDParser extends ParserBase
 	private parseTexture(blockID:number):void
 	{
 
-		var asset:Texture2DBase;
+		var asset:TextureBase;
 
 		this._blocks[blockID].name = this.parseVarStr();
 
@@ -2525,10 +2514,10 @@ class AWDParser extends ParserBase
 	{
 		//blockLength = block.len;
 		var data_len:number;
-		var asset:CubeTextureBase;
+		var asset:SingleCubeTexture;
 		var i:number;
 
-		this._cubeTextures = new Array<any>();
+		this._cubeBitmaps = new Array<BitmapImage2D>();
 		this._texture_users[ this._cur_block_id.toString() ] = [];
 
 		var type:number = this._newBlockBytes.readUnsignedByte();
@@ -2537,7 +2526,7 @@ class AWDParser extends ParserBase
 
 		for (i = 0; i < 6; i++) {
 			this._texture_users[this._cur_block_id.toString()] = [];
-			this._cubeTextures.push(null);
+			this._cubeBitmaps.push(null);
 
 			// External
 			if (type == 0) {
@@ -3107,23 +3096,23 @@ class AWDParser extends ParserBase
 				console.log('ENV MAP', targetID);
 
 
-				returnedArray = this.getAssetByID(targetID, [ TextureBase.assetType ], "CubeTexture");
+				returnedArray = this.getAssetByID(targetID, [ SingleCubeTexture.assetType ]);
 				if (!returnedArray[0])
 					this._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this EnvMapMethod");
-				effectMethodReturn = new EffectEnvMapMethod(<CubeTextureBase> returnedArray[1], <number> props.get(101, 1));
+				effectMethodReturn = new EffectEnvMapMethod(<SingleCubeTexture> returnedArray[1], <number> props.get(101, 1));
 				targetID = props.get(2, 0);
 				if (targetID > 0) {
-					returnedArray = this.getAssetByID(targetID, [TextureBase.assetType]);
+					returnedArray = this.getAssetByID(targetID, [Single2DTexture.assetType]);
 					if (!returnedArray[0])
 						this._blocks[blockID].addError("Could not find the Mask-texture (ID = " + targetID + " ) for this EnvMapMethod");
 
 					// Todo: test mask with EnvMapMethod
-					//(<EnvMapMethod> effectMethodReturn).mask = <Texture2DBase> returnedArray[1];
+					//(<EnvMapMethod> effectMethodReturn).mask = <TextureBase> returnedArray[1];
 				}
 				break;
 			case 404: //LightMapMethod
 				targetID = props.get(1, 0);
-				returnedArray = this.getAssetByID(targetID, [TextureBase.assetType]);
+				returnedArray = this.getAssetByID(targetID, [Single2DTexture.assetType]);
 				if (!returnedArray[0])
 					this._blocks[blockID].addError("Could not find the LightMap (ID = " + targetID + " ) for this LightMapMethod");
 				effectMethodReturn = new EffectLightMapMethod(returnedArray[1], this.blendModeDic[props.get(401, 10)]); //usesecondaryUV not set
@@ -3140,7 +3129,7 @@ class AWDParser extends ParserBase
 				break;
 			case 407: //AlphaMaskMethod
 				targetID = props.get(1, 0);
-				returnedArray = this.getAssetByID(targetID, [TextureBase.assetType]);
+				returnedArray = this.getAssetByID(targetID, [Single2DTexture.assetType]);
 				if (!returnedArray[0])
 					this._blocks[blockID].addError("Could not find the Alpha-texture (ID = " + targetID + " ) for this AlphaMaskMethod");
 				effectMethodReturn = new EffectAlphaMaskMethod(returnedArray[1], props.get(701, false));
@@ -3158,7 +3147,7 @@ class AWDParser extends ParserBase
 			//					break;
 			case 410: //FresnelEnvMapMethod
 				targetID = props.get(1, 0);
-				returnedArray = this.getAssetByID(targetID, [TextureBase.assetType], "CubeTexture");
+				returnedArray = this.getAssetByID(targetID, [SingleCubeTexture.assetType]);
 				if (!returnedArray[0])
 					this._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this FresnelEnvMapMethod");
 				effectMethodReturn = new EffectFresnelEnvMapMethod(returnedArray[1], props.get(101, 1));
@@ -3480,7 +3469,7 @@ class AWDParser extends ParserBase
 		return this._newBlockBytes.readUTFBytes(len);
 	}
 
-	private getAssetByID(assetID:number, assetTypesToGet:Array<string>, extraTypeInfo:string = "SingleTexture"):Array<any>
+	private getAssetByID(assetID:number, assetTypesToGet:Array<string>):Array<any>
 	{
 		var returnArray:Array<any> = new Array<any>();
 		var typeCnt:number = 0;
@@ -3493,15 +3482,15 @@ class AWDParser extends ParserBase
 
 						if (iasset.assetType == assetTypesToGet[typeCnt]) {
 							//if the right assetType was found
-							if ((assetTypesToGet[typeCnt] == TextureBase.assetType) && (extraTypeInfo == "CubeTexture")) {
-								if (this._blocks[assetID].data instanceof ImageCubeTexture) {
+							if ((assetTypesToGet[typeCnt] == SingleCubeTexture.assetType)) {
+								if (this._blocks[assetID].data instanceof SingleCubeTexture) {
 									returnArray.push(true);
 									returnArray.push(this._blocks[assetID].data);
 									return returnArray;
 								}
 							}
-							if ((assetTypesToGet[typeCnt] == TextureBase.assetType) && (extraTypeInfo == "SingleTexture")) {
-								if (this._blocks[assetID].data instanceof ImageTexture) {
+							if ((assetTypesToGet[typeCnt] == Single2DTexture.assetType)) {
+								if (this._blocks[assetID].data instanceof Single2DTexture) {
 									returnArray.push(true);
 									returnArray.push(this._blocks[assetID].data);
 									return returnArray;
@@ -3531,17 +3520,17 @@ class AWDParser extends ParserBase
 		}
 		// if the has not returned anything yet, the asset is not found, or the found asset is not the right type.
 		returnArray.push(false);
-		returnArray.push(this.getDefaultAsset(assetTypesToGet[0], extraTypeInfo));
+		returnArray.push(this.getDefaultAsset(assetTypesToGet[0]));
 		return returnArray;
 	}
-	private getDefaultAsset(assetType:string, extraTypeInfo:string):IAsset
+	private getDefaultAsset(assetType:string):IAsset
 	{
 		switch (true) {
-			case (assetType == TextureBase.assetType):
-				if (extraTypeInfo == "CubeTexture")
-					return this.getDefaultCubeTexture();
-				if (extraTypeInfo == "SingleTexture")
-					return DefaultMaterialManager.getDefaultTexture();
+			case (assetType == SingleCubeTexture.assetType):
+				return this.getDefaultCubeTexture();
+				break;
+			case (assetType == Single2DTexture.assetType):
+				return DefaultMaterialManager.getDefaultTexture();
 				break;
 			case (assetType == MaterialBase.assetType):
 				return DefaultMaterialManager.getDefaultMaterial();
@@ -3553,12 +3542,18 @@ class AWDParser extends ParserBase
 		return null;
 	}
 
-	private getDefaultCubeTexture():IAsset
+	public getDefaultCubeTexture():IAsset
 	{
 		if (!this._defaultCubeTexture) {
-			var defaultBitmap:BitmapData = DefaultMaterialManager.createCheckeredBitmapData();
+			var defaultBitmap:BitmapImage2D = DefaultMaterialManager.createCheckeredBitmapImage2D();
 
-			this._defaultCubeTexture = new BitmapCubeTexture(defaultBitmap, defaultBitmap, defaultBitmap, defaultBitmap, defaultBitmap, defaultBitmap);
+			var bitmapImageCube = new BitmapImageCube(defaultBitmap.width);
+
+			for (var i:number = 0; i < 6; i++)
+				bitmapImageCube.draw(i, defaultBitmap);
+
+
+			this._defaultCubeTexture = new SingleCubeTexture(bitmapImageCube);
 			this._defaultCubeTexture.name = "defaultCubeTexture";
 		}
 

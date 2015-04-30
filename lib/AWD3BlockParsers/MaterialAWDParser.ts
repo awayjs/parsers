@@ -6,18 +6,17 @@ import IAsset					= require("awayjs-core/lib/library/IAsset");
 import AWDBlockParserBase		= require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 import AWDProperties			= require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
 
-import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
 import MethodMaterialMode				= require("awayjs-methodmaterials/lib/MethodMaterialMode");
 import MethodMaterial					= require("awayjs-methodmaterials/lib/MethodMaterial");
-import TextureBase						= require("awayjs-core/lib/textures/TextureBase");
-import Texture2DBase					= require("awayjs-core/lib/textures/Texture2DBase");
-import LightPickerBase					= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 
+import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
+import LightPickerBase					= require("awayjs-display/lib/materials/lightpickers/LightPickerBase")
 import CurveMaterial					= require("awayjs-display/lib/materials/CurveMaterial")
 import BasicMaterial					= require("awayjs-display/lib/materials/BasicMaterial");
-
 import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
-import CubeTextureBase					= require("awayjs-core/lib/textures/CubeTextureBase");
+import TextureBase						= require("awayjs-display/lib/textures/TextureBase");
+import Single2DTexture					= require("awayjs-display/lib/textures/Single2DTexture");
+import SingleCubeTexture				= require("awayjs-display/lib/textures/SingleCubeTexture");
 
 import EffectMethodBase					= require("awayjs-methodmaterials/lib/methods/EffectMethodBase");
 import AmbientEnvMapMethod				= require("awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod");
@@ -58,8 +57,8 @@ class MaterialAWDParser extends AWDBlockParserBase
 		var methods_parsed:number;
 		var returnedArray:Array<any>;
 		var mat:MethodMaterial;
-		var normalTexture:Texture2DBase;
-		var specTexture:Texture2DBase;
+		var normalTexture:Single2DTexture;
+		var specTexture:Single2DTexture;
 		var returnedArray:Array<any>;
 
 		this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
@@ -109,7 +108,7 @@ class MaterialAWDParser extends AWDBlockParserBase
 					texture= DefaultMaterialManager.getDefaultTexture();
 				}
 
-				mat = new MethodMaterial(<Texture2DBase>texture);
+				mat = new MethodMaterial(<Single2DTexture>texture);
 				/*
 				if (this.awd_file_data.materialMode < 2) {
 					mat.alphaBlending = props.get(11, false);
@@ -178,7 +177,7 @@ class MaterialAWDParser extends AWDBlockParserBase
 					if (diftexture==undefined) {
 						diftexture= DefaultMaterialManager.getDefaultTexture();
 					}
-					mat = new MethodMaterial(<Texture2DBase>diftexture);
+					mat = new MethodMaterial(<Single2DTexture>diftexture);
 
 					if (spezialType == 1) {// MultiPassMaterial
 						mat.mode = MethodMaterialMode.MULTI_PASS;
@@ -197,10 +196,10 @@ class MaterialAWDParser extends AWDBlockParserBase
 
 				diffuseTexture=undefined;
 				if (diffuseTex_addr > 0) {
-					diffuseTexture = <Texture2DBase> this.awd_file_data.getAssetByID(diffuseTex_addr);
+					diffuseTexture = <Single2DTexture> this.awd_file_data.getAssetByID(diffuseTex_addr);
 				}
 				if (diffuseTexture) {
-					mat.diffuseTexture = <Texture2DBase>diffuseTexture;
+					mat.diffuseTexture = <Single2DTexture>diffuseTexture;
 					debugString += " | DiffuseTexture-Name = " + diffuseTexture.name;
 				}
 
@@ -209,13 +208,13 @@ class MaterialAWDParser extends AWDBlockParserBase
 
 				normalTexture = undefined;
 				if (normalTex_addr > 0) {
-					normalTexture = <Texture2DBase> this.awd_file_data.getAssetByID(normalTex_addr);
+					normalTexture = <Single2DTexture> this.awd_file_data.getAssetByID(normalTex_addr);
 				}
 
 				var specTex_addr:number = props.get(21, 0);
 				specTexture=undefined;
 				if (specTex_addr > 0) {
-					specTexture = <Texture2DBase> this.awd_file_data.getAssetByID(specTex_addr);
+					specTexture = <Single2DTexture> this.awd_file_data.getAssetByID(specTex_addr);
 				}
 
 				var lightPickerAddr:number = props.get(22, 0);
@@ -295,17 +294,18 @@ class MaterialAWDParser extends AWDBlockParserBase
 
 						case 1: //EnvMapAmbientMethod
 							targetID = props.get(1, 0);
-							var cubeTex:CubeTextureBase=undefined;
+							var cubeTex:SingleCubeTexture=undefined;
 							if (targetID>0) {
-								cubeTex = <CubeTextureBase>this.awd_file_data.getAssetByID(targetID);
+								cubeTex = <SingleCubeTexture>this.awd_file_data.getAssetByID(targetID);
 							}
 							if(cubeTex==undefined){
-								cubeTex=<CubeTextureBase>this.awd_file_data.getDefaultCubeTexture();
+								cubeTex=<SingleCubeTexture>this.awd_file_data.getDefaultCubeTexture();
 							}
 							//if (!returnedArray[0])
 								//this.awd_file_data._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this.awd_file_data EnvMapAmbientMethodMaterial");
-							mat.ambientMethod = new AmbientEnvMapMethod(cubeTex);
-							debugString += " | AmbientEnvMapMethod | EnvMap-Name =" + (<CubeTextureBase> cubeTex).name;
+							mat.ambientMethod = new AmbientEnvMapMethod();
+							mat.texture = cubeTex;
+							debugString += " | AmbientEnvMapMethod | EnvMap-Name =" + (<SingleCubeTexture> cubeTex).name;
 							break;
 
 						case 51: //DepthDiffuseMethod
@@ -323,8 +323,8 @@ class MaterialAWDParser extends AWDBlockParserBase
 							}
 							//if (!returnedArray[0])
 								//this.awd_file_data._blocks[blockID].addError("Could not find the GradientDiffuseTexture (ID = " + targetID + " ) for this.awd_file_data GradientDiffuseMethod");
-							mat.diffuseMethod = new DiffuseGradientMethod(<Texture2DBase>thisTex);
-							debugString += " | DiffuseGradientMethod | GradientDiffuseTexture-Name =" + (<Texture2DBase>thisTex).name;
+							mat.diffuseMethod = new DiffuseGradientMethod(<Single2DTexture>thisTex);
+							debugString += " | DiffuseGradientMethod | GradientDiffuseTexture-Name =" + (<Single2DTexture>thisTex).name;
 							break;
 						case 53: //WrapDiffuseMethod
 							mat.diffuseMethod = new DiffuseWrapMethod(props.get(101, 5));
@@ -341,8 +341,8 @@ class MaterialAWDParser extends AWDBlockParserBase
 							}
 							//if (!returnedArray[0])
 								//this.awd_file_data._blocks[blockID].addError("Could not find the LightMap (ID = " + targetID + " ) for this.awd_file_data LightMapDiffuseMethod");
-							mat.diffuseMethod = new DiffuseLightMapMethod(<Texture2DBase>thisTex, this.awd_file_data.getBlendModeStringFromEnum(props.get(401, 10)), false, mat.diffuseMethod);
-							debugString += " | DiffuseLightMapMethod | LightMapTexture-Name =" + (<Texture2DBase> thisTex).name;
+							mat.diffuseMethod = new DiffuseLightMapMethod(<Single2DTexture>thisTex, this.awd_file_data.getBlendModeStringFromEnum(props.get(401, 10)), false, mat.diffuseMethod);
+							debugString += " | DiffuseLightMapMethod | LightMapTexture-Name =" + (<Single2DTexture> thisTex).name;
 							break;
 						case 55: //CelDiffuseMethod
 							mat.diffuseMethod = new DiffuseCelMethod(props.get(401, 3), mat.diffuseMethod);
@@ -392,9 +392,9 @@ class MaterialAWDParser extends AWDBlockParserBase
 							//if (!mat.normalMap)
 							//	this.awd_file_data._blocks[blockID].addError("Could not find a normal Map on this.awd_file_data Material to use with this.awd_file_data SimpleWaterNormalMethod");
 							if(mat.normalMap==undefined)
-								mat.normalMap = <Texture2DBase>thisTex;
-							mat.normalMethod = new NormalSimpleWaterMethod(<Texture2DBase>mat.normalMap, <Texture2DBase>thisTex);
-							debugString += " | NormalSimpleWaterMethod | Second-NormalTexture-Name = " + (<Texture2DBase> thisTex).name;
+								mat.normalMap = <Single2DTexture>thisTex;
+							mat.normalMethod = new NormalSimpleWaterMethod(<Single2DTexture>mat.normalMap, <Single2DTexture>thisTex);
+							debugString += " | NormalSimpleWaterMethod | Second-NormalTexture-Name = " + (<Single2DTexture> thisTex).name;
 							break;
 					}
 					this.awd_file_data.parseUserAttributes();
@@ -418,7 +418,7 @@ class MaterialAWDParser extends AWDBlockParserBase
 				diffuseTexture=DefaultMaterialManager.getDefaultTexture();
 			}
 
-			var curve_mat:CurveMaterial = new CurveMaterial(<Texture2DBase>diffuseTexture);
+			var curve_mat:CurveMaterial = new CurveMaterial(<Single2DTexture>diffuseTexture);
 			//debugString+= " alpha = "+props.get(10, 1.0)+" ";
 			debugString+= " texture = "+diffuseTex_addr+" ";
 			curve_mat.bothSides = true;

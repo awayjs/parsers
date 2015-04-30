@@ -7,9 +7,9 @@ import AWDBlockParserBase		= require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlo
 import AWDProperties			= require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
 import AWD3Utils				= require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
 
-import Texture2DBase					= require("awayjs-core/lib/textures/Texture2DBase");
+import Single2DTexture			= require("awayjs-display/lib/textures/Single2DTexture");
 
-class BitmapTextureAWDParser extends AWDBlockParserBase
+class Single2DTextureAWDParser extends AWDBlockParserBase
 {
 
 	constructor()
@@ -21,7 +21,7 @@ class BitmapTextureAWDParser extends AWDBlockParserBase
 	public parseFromBytes():void
 	{
 
-		var asset:Texture2DBase;
+		var asset:Single2DTexture;
 
 		this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
 
@@ -68,4 +68,4 @@ class BitmapTextureAWDParser extends AWDBlockParserBase
 
 }
 
-export = BitmapTextureAWDParser;
+export = Single2DTextureAWDParser;

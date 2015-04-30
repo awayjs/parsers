@@ -1,6 +1,3 @@
-
-
-import BitmapData						= require("awayjs-core/lib/data/BitmapData");
 import BlendMode						= require("awayjs-core/lib/data/BlendMode");
 import TriangleSubGeometry				= require("awayjs-core/lib/data/TriangleSubGeometry");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
@@ -12,19 +9,16 @@ import ParserBase						= require("awayjs-core/lib/parsers/ParserBase");
 import ParserUtils						= require("awayjs-core/lib/parsers/ParserUtils");
 import ResourceDependency				= require("awayjs-core/lib/parsers/ResourceDependency");
 
-import BitmapCubeTexture				= require("awayjs-core/lib/textures/BitmapCubeTexture");
-import BitmapTexture					= require("awayjs-core/lib/textures/BitmapTexture");
-
-import CubeTextureBase					= require("awayjs-core/lib/textures/CubeTextureBase");
-import ImageCubeTexture					= require("awayjs-core/lib/textures/ImageCubeTexture");
-import ImageTexture						= require("awayjs-core/lib/textures/ImageTexture");
-import TextureBase						= require("awayjs-core/lib/textures/TextureBase");
+import BitmapImage2D					= require("awayjs-core/lib/data/BitmapImage2D");
+import BitmapImageCube					= require("awayjs-core/lib/data/BitmapImageCube");
 import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
 import Geometry							= require("awayjs-core/lib/data/Geometry");
 
-import Texture2DBase					= require("awayjs-core/lib/textures/Texture2DBase");
 import DisplayObject					= require("awayjs-display/lib/base/DisplayObject");
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
+import SingleCubeTexture				= require("awayjs-display/lib/textures/SingleCubeTexture");
+import Single2DTexture					= require("awayjs-display/lib/textures/Single2DTexture");
+
 
 import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
 import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
@@ -114,7 +108,7 @@ class AWD3Parser extends ParserBase
 		if (resourceDependency.assets.length == 1) {
 			var this_block:AWDBlock = this._awd_data.getBlockByID(parseInt(resourceDependency.id));
 			if(this_block.type==82){
-				var testure_asset:Texture2DBase = <Texture2DBase> resourceDependency.assets[0];
+				var testure_asset:Single2DTexture = new Single2DTexture(<BitmapImage2D> resourceDependency.assets[0]);
 				this_block.data = testure_asset; // Store finished asset
 				// Finalize texture asset to dispatch texture event, which was
 				// previously suppressed while the dependency was loaded.
@@ -127,7 +121,7 @@ class AWD3Parser extends ParserBase
 			}
 			else if(this_block.type==44){
 				// todo: implement parsing of Audio block data
-				/*asset = <Texture2DBase> resourceDependency.assets[0];
+				/*asset = <Single2DTexture> resourceDependency.assets[0];
 				this_block.data = asset; // Store finished asset
 				// Finalize texture asset to dispatch texture event, which was
 				// previously suppressed while the dependency was loaded.
@@ -139,20 +133,20 @@ class AWD3Parser extends ParserBase
 				}*/
 			}
 			else if(this_block.type==83){
-				this_block.loaded_dependencies[resourceDependency.sub_id]=<Texture2DBase> resourceDependency.assets[0];
+				this_block.loaded_dependencies[resourceDependency.sub_id]= resourceDependency.assets[0];
 				this_block.loaded_dependencies_cnt++;
 				if(this_block.loaded_dependencies_cnt==6){
 					if (this._debug) {
 						console.log("Successfully loaded Bitmap " + resourceDependency.sub_id + " / 6 for Cubetexture");
 					}
-					var posX:any = this_block.loaded_dependencies[0];
-					var negX:any = this_block.loaded_dependencies[1];
-					var posY:any = this_block.loaded_dependencies[2];
-					var negY:any = this_block.loaded_dependencies[3];
-					var posZ:any = this_block.loaded_dependencies[4];
-					var negZ:any = this_block.loaded_dependencies[5];
 
-					var cube_tex_asset = <TextureBase> new ImageCubeTexture(posX, negX, posY, negY, posZ, negZ);
+					var cube_image_asset = new BitmapImageCube(this_block.loaded_dependencies[0].width);
+
+					for (var i:number = 0; i < 6; i++)
+						cube_image_asset.draw(i, this_block.loaded_dependencies[i]);
+
+
+					var cube_tex_asset = new SingleCubeTexture(cube_image_asset);
 					this_block.data = cube_tex_asset; // Store finished asset
 					this._pFinalizeAsset(<IAsset> cube_tex_asset, this_block.name);
 					if (this._debug) {
