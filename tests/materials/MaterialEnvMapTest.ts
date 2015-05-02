@@ -13,11 +13,10 @@ import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationF
 import View							= require("awayjs-display/lib/containers/View");
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
 import Skybox						= require("awayjs-display/lib/entities/Skybox");
-import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 
 import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
 
-import MethodRendererPool			= require("awayjs-methodmaterials/lib/pool/MethodRendererPool");
+import MethodMaterial				= require("awayjs-methodmaterials/lib/MethodMaterial");
 
 import AWDParser					= require("awayjs-parsers/lib/AWDParser");
 
@@ -42,7 +41,7 @@ class MaterialEnvMapTest
 		this._token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, (event:LoaderEvent) => this.onResourceComplete(event));
 		this._token.addEventListener(AssetEvent.ASSET_COMPLETE, (event:AssetEvent) => this.onAssetComplete(event));
 
-		this._view = new View(new DefaultRenderer(MethodRendererPool));
+		this._view = new View(new DefaultRenderer());
 		this._timer = new RequestAnimationFrame(this.render, this);
 
 		window.onresize = () => this.resize();
@@ -107,7 +106,7 @@ class MaterialEnvMapTest
 				case Geometry.assetType:
 					break;
 
-				case MaterialBase.assetType:
+				case MethodMaterial.assetType:
 					break;
 			}
 		}

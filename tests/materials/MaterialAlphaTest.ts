@@ -26,7 +26,6 @@ import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture
 import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
 
 import MethodMaterial				= require("awayjs-methodmaterials/lib/MethodMaterial");
-import MethodRendererPool			= require("awayjs-methodmaterials/lib/pool/MethodRendererPool");
 
 import OBJParser					= require("awayjs-parsers/lib/OBJParser");
 
@@ -57,7 +56,7 @@ class MaterialAlphaTest
 		Debug.LOG_PI_ERRORS = false;
 		Debug.THROW_ERRORS = false;
 
-		this.view = new View(new DefaultRenderer(MethodRendererPool));
+		this.view = new View(new DefaultRenderer());
 		this.raf = new RequestAnimationFrame(this.render, this);
 		this.onResize();
 

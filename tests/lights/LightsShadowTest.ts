@@ -13,11 +13,10 @@ import View							= require("awayjs-display/lib/containers/View");
 import HoverController				= require("awayjs-display/lib/controllers/HoverController");
 import LightBase					= require("awayjs-display/lib/base/LightBase");
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
-import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 
 import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
 
-import MethodRendererPool			= require("awayjs-methodmaterials/lib/pool/MethodRendererPool");
+import MethodMaterial				= require("awayjs-methodmaterials/lib/MethodMaterial");
 
 import AWDParser					= require("awayjs-parsers/lib/AWDParser");
 
@@ -48,7 +47,7 @@ class LightsShadowTest
 		this._token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, (event:LoaderEvent) => this.onResourceComplete(event));
 		this._token.addEventListener(AssetEvent.ASSET_COMPLETE, (event:AssetEvent) => this.onAssetComplete(event));
 
-		this._view = new View(new DefaultRenderer(MethodRendererPool));
+		this._view = new View(new DefaultRenderer());
 		this._view.camera.projection.far = 5000;
 		this._view.camera.y = 100;
 
@@ -114,7 +113,7 @@ class LightsShadowTest
 					this._view.scene.addChild(<LightBase> asset);
 					break;
 
-				case MaterialBase.assetType:
+				case MethodMaterial.assetType:
 					break;
 
 			}

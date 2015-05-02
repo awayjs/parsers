@@ -19,7 +19,6 @@ import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture
 import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
 
 import MethodMaterial				= require("awayjs-methodmaterials/lib/MethodMaterial");
-import MethodRendererPool			= require("awayjs-methodmaterials/lib/pool/MethodRendererPool");
 
 import OBJParser					= require("awayjs-parsers/lib/OBJParser");
 
@@ -49,7 +48,7 @@ class ObjChiefTestDay
 		Debug.LOG_PI_ERRORS = false;
 		Debug.THROW_ERRORS = false;
 
-		this.view = new View(new DefaultRenderer(MethodRendererPool));
+		this.view = new View(new DefaultRenderer());
 		this.view.camera.z = -50;
 		this.view.camera.y = 20;
 		this.view.camera.projection.near = 0.1;
