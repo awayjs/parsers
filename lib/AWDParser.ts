@@ -93,7 +93,6 @@ import SpecularPhongMethod				= require("awayjs-methodmaterials/lib/methods/Spec
 import ShadowNearMethod					= require("awayjs-methodmaterials/lib/methods/ShadowNearMethod");
 import ShadowSoftMethod					= require("awayjs-methodmaterials/lib/methods/ShadowSoftMethod");
 
-import CurveMaterial					= require("awayjs-display/lib/materials/CurveMaterial")
 import BasicMaterial					= require("awayjs-display/lib/materials/BasicMaterial");
 
 import TimelineSceneGraphFactory 	= require("awayjs-player/lib/factories/TimelineSceneGraphFactory");
@@ -884,7 +883,7 @@ class AWDParser extends ParserBase
 		var data_id:number = this._newBlockBytes.readUnsignedInt();
 		//console.log("mat  '" + data_id);
 		var mat:BasicMaterial;
-		var returnedArrayMaterial:Array<any> = this.getAssetByID(data_id, [MaterialBase.assetType]);
+		var returnedArrayMaterial:Array<any> = this.getAssetByID(data_id, [MethodMaterial.assetType]);
 
 		if (returnedArrayMaterial[0]) {
 			mat = <BasicMaterial> returnedArrayMaterial[1];
@@ -1013,7 +1012,7 @@ class AWDParser extends ParserBase
 
 		var data_id:number = this._newBlockBytes.readUnsignedInt();
 		var mat:BasicMaterial;
-		var returnedArrayMaterial:Array<any> = this.getAssetByID(data_id, [MaterialBase.assetType]);
+		var returnedArrayMaterial:Array<any> = this.getAssetByID(data_id, [MethodMaterial.assetType]);
 
 		if (returnedArrayMaterial[0]) {
 			mat = <BasicMaterial> returnedArrayMaterial[1];
@@ -1055,7 +1054,7 @@ class AWDParser extends ParserBase
 		}
 
 		this._blocks[blockID].geoID = data_id;
-		var materials:Array<MaterialBase> = new Array<MaterialBase>();
+		var materials:Array<MethodMaterial> = new Array<MethodMaterial>();
 		num_materials = this._newBlockBytes.readUnsignedShort();
 
 		var materialNames:Array<string> = new Array<string>();
@@ -1066,12 +1065,12 @@ class AWDParser extends ParserBase
 		while (materials_parsed < num_materials) {
 			var mat_id:number;
 			mat_id = this._newBlockBytes.readUnsignedInt();
-			returnedArrayMaterial = this.getAssetByID(mat_id, [MaterialBase.assetType])
+			returnedArrayMaterial = this.getAssetByID(mat_id, [MethodMaterial.assetType])
 			if ((!returnedArrayMaterial[0]) && (mat_id > 0)) {
 				this._blocks[blockID].addError("Could not find Material Nr " + materials_parsed + " (ID = " + mat_id + " ) for this Mesh");
 			}
 
-			var m:MaterialBase = <MaterialBase> returnedArrayMaterial[1];
+			var m:MethodMaterial = <MethodMaterial> returnedArrayMaterial[1];
 
 			materials.push(m);
 			materialNames.push(m.name);
@@ -1767,7 +1766,7 @@ class AWDParser extends ParserBase
 		}
 
 		this._blocks[blockID].geoID = data_id;
-		var materials:Array<MaterialBase> = new Array<MaterialBase>();
+		var materials:Array<MethodMaterial> = new Array<MethodMaterial>();
 		num_materials = this._newBlockBytes.readUnsignedShort();
 
 		var materialNames:Array<string> = new Array<string>();
@@ -1778,12 +1777,12 @@ class AWDParser extends ParserBase
 		while (materials_parsed < num_materials) {
 			var mat_id:number;
 			mat_id = this._newBlockBytes.readUnsignedInt();
-			returnedArrayMaterial = this.getAssetByID(mat_id, [MaterialBase.assetType])
+			returnedArrayMaterial = this.getAssetByID(mat_id, [MethodMaterial.assetType])
 			if ((!returnedArrayMaterial[0]) && (mat_id > 0)) {
 				this._blocks[blockID].addError("Could not find Material Nr " + materials_parsed + " (ID = " + mat_id + " ) for this Mesh");
 			}
 
-			var m:MaterialBase = <MaterialBase> returnedArrayMaterial[1];
+			var m:MethodMaterial = <MethodMaterial> returnedArrayMaterial[1];
 
 			materials.push(m);
 			materialNames.push(m.name);
@@ -2418,37 +2417,37 @@ class AWDParser extends ParserBase
 			}
 		}
 		// todo: we should not need this anymore (if using texture-atlas)
-		else if ((type>=3)&&(type<=7)){
-			// if this is a curve material, we create it, finalize it, assign it to block-cache and return and return.
-			var color:number = props.get(1, 0xcccccc);
-			debugString+=color;
-
-			var diffuseTexture:Single2DTexture;
-			var diffuseTex_addr:number = props.get(2, 0);
-
-			returnedArray = this.getAssetByID(diffuseTex_addr, [Single2DTexture.assetType]);
-
-			if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
-				this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
-				diffuseTexture = DefaultMaterialManager.getDefaultTexture();
-			}
-
-			if (returnedArray[0])
-				diffuseTexture = returnedArray[1];
-			var curve_mat:CurveMaterial = new CurveMaterial(diffuseTexture);
-			//debugString+= " alpha = "+props.get(10, 1.0)+" ";
-			debugString+= " texture = "+diffuseTex_addr+" ";
-			curve_mat.bothSides = true;
-			curve_mat.preserveAlpha = true;
-			curve_mat.alphaBlending = true;
-			curve_mat.extra = this.parseUserAttributes();
-			this._pFinalizeAsset(<IAsset> curve_mat, name);
-			this._blocks[blockID].data = curve_mat;
-			if (this._debug)
-				console.log(debugString);
-			return;
-
-		}
+		//else if ((type>=3)&&(type<=7)){
+		//	// if this is a curve material, we create it, finalize it, assign it to block-cache and return and return.
+		//	var color:number = props.get(1, 0xcccccc);
+		//	debugString+=color;
+		//
+		//	var diffuseTexture:Single2DTexture;
+		//	var diffuseTex_addr:number = props.get(2, 0);
+		//
+		//	returnedArray = this.getAssetByID(diffuseTex_addr, [Single2DTexture.assetType]);
+		//
+		//	if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
+		//		this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
+		//		diffuseTexture = DefaultMaterialManager.getDefaultTexture();
+		//	}
+		//
+		//	if (returnedArray[0])
+		//		diffuseTexture = returnedArray[1];
+		//	var curve_mat:CurveMaterial = new CurveMaterial(diffuseTexture);
+		//	//debugString+= " alpha = "+props.get(10, 1.0)+" ";
+		//	debugString+= " texture = "+diffuseTex_addr+" ";
+		//	curve_mat.bothSides = true;
+		//	curve_mat.preserveAlpha = true;
+		//	curve_mat.alphaBlending = true;
+		//	curve_mat.extra = this.parseUserAttributes();
+		//	this._pFinalizeAsset(<IAsset> curve_mat, name);
+		//	this._blocks[blockID].data = curve_mat;
+		//	if (this._debug)
+		//		console.log(debugString);
+		//	return;
+		//
+		//}
 		mat.extra = this.parseUserAttributes();
 		this._pFinalizeAsset(<IAsset> mat, name);
 
@@ -3532,7 +3531,7 @@ class AWDParser extends ParserBase
 			case (assetType == Single2DTexture.assetType):
 				return DefaultMaterialManager.getDefaultTexture();
 				break;
-			case (assetType == MaterialBase.assetType):
+			case (assetType == MethodMaterial.assetType):
 				return DefaultMaterialManager.getDefaultMaterial();
 				break;
 			default:

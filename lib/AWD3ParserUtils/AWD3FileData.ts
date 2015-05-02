@@ -15,14 +15,13 @@ import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
 
 import DisplayObject					= require("awayjs-display/lib/base/DisplayObject");
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
-import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
 import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
 import Mesh								= require("awayjs-display/lib/entities/Mesh");
 import TextureBase						= require("awayjs-display/lib/textures/TextureBase");
 import SingleCubeTexture				= require("awayjs-display/lib/textures/SingleCubeTexture");
 import Single2DTexture					= require("awayjs-display/lib/textures/Single2DTexture");
 
-
+import MethodMaterial					= require("awayjs-methodmaterials/lib/MethodMaterial");
 
 import AWDBitFlags						= require("awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags");
 import AWDProperties					= require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
@@ -471,7 +470,7 @@ class AWD3FileData
 			case (assetType == Single2DTexture.assetType):
 				return DefaultMaterialManager.getDefaultTexture();
 				break;
-			case (assetType == MaterialBase.assetType):
+			case (assetType == MethodMaterial.assetType):
 				return DefaultMaterialManager.getDefaultMaterial();
 				break;
 			default:
