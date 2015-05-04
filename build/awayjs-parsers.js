@@ -789,6 +789,7 @@ var __extends = this.__extends || function (d, b) {
 var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 var MethodMaterialMode = require("awayjs-methodmaterials/lib/MethodMaterialMode");
 var MethodMaterial = require("awayjs-methodmaterials/lib/MethodMaterial");
+var BasicMaterial = require("awayjs-display/lib/materials/BasicMaterial");
 var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
 var AmbientEnvMapMethod = require("awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod");
 var DiffuseDepthMethod = require("awayjs-methodmaterials/lib/methods/DiffuseDepthMethod");
@@ -1105,35 +1106,30 @@ var MaterialAWDParser = (function (_super) {
                 }
             }
         }
-        // todo: we should not need this.awd_file_data anymore (if using texture-atlas)
-        //else if ((type>=3)&&(type<=7)){
-        //	// if this.awd_file_data is a curve material, we create it, finalize it, assign it to block-cache and return and return.
-        //	var color:number = props.get(1, 0xcccccc);
-        //	debugString+=color;
-        //
-        //	var diffuseTex_addr:number = props.get(2, 0);
-        //
-        //	var diffuseTexture:TextureBase=undefined;
-        //	if (diffuseTex_addr>0) {
-        //		diffuseTexture = <TextureBase>this.awd_file_data.getAssetByID(diffuseTex_addr);
-        //	}
-        //	if(diffuseTex_addr==undefined){
-        //		diffuseTexture=DefaultMaterialManager.getDefaultTexture();
-        //	}
-        //
-        //	var curve_mat:CurveMaterial = new CurveMaterial(<Single2DTexture>diffuseTexture);
-        //	//debugString+= " alpha = "+props.get(10, 1.0)+" ";
-        //	debugString+= " texture = "+diffuseTex_addr+" ";
-        //	curve_mat.bothSides = true;
-        //	curve_mat.preserveAlpha = true;
-        //	curve_mat.alphaBlending = true;
-        //	curve_mat.extra = this.awd_file_data.parseUserAttributes();
-        //	if (this.awd_file_data.debug)
-        //		console.log(debugString);
-        //	this.awd_file_data.cur_block.data=curve_mat;
-        //	return;
-        //
-        //}
+        else if ((type >= 3) && (type <= 7)) {
+            // if this.awd_file_data is a curve material, we create it, finalize it, assign it to block-cache and return and return.
+            var color = props.get(1, 0xcccccc);
+            debugString += color;
+            var diffuseTex_addr = props.get(2, 0);
+            var diffuseTexture = undefined;
+            if (diffuseTex_addr > 0) {
+                diffuseTexture = this.awd_file_data.getAssetByID(diffuseTex_addr);
+            }
+            if (diffuseTex_addr == undefined) {
+                diffuseTexture = DefaultMaterialManager.getDefaultTexture();
+            }
+            var basic_mat = new BasicMaterial(diffuseTexture);
+            //debugString+= " alpha = "+props.get(10, 1.0)+" ";
+            debugString += " texture = " + diffuseTex_addr + " ";
+            basic_mat.bothSides = true;
+            basic_mat.preserveAlpha = true;
+            basic_mat.alphaBlending = true;
+            basic_mat.extra = this.awd_file_data.parseUserAttributes();
+            if (this.awd_file_data.debug)
+                console.log(debugString);
+            this.awd_file_data.cur_block.data = basic_mat;
+            return;
+        }
         mat.extra = this.awd_file_data.parseUserAttributes();
         this.awd_file_data.cur_block.data = mat;
         if (this.awd_file_data.debug) {
@@ -1144,7 +1140,7 @@ var MaterialAWDParser = (function (_super) {
 })(AWDBlockParserBase);
 module.exports = MaterialAWDParser;
 
-},{"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser":[function(require,module,exports){
+},{"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser":[function(require,module,exports){
 /**
  * Created by 80prozent on 4/18/2015.
  */
@@ -5284,38 +5280,32 @@ var AWDParser = (function (_super) {
                 }
             }
         }
-        // todo: we should not need this anymore (if using texture-atlas)
-        //else if ((type>=3)&&(type<=7)){
-        //	// if this is a curve material, we create it, finalize it, assign it to block-cache and return and return.
-        //	var color:number = props.get(1, 0xcccccc);
-        //	debugString+=color;
-        //
-        //	var diffuseTexture:Single2DTexture;
-        //	var diffuseTex_addr:number = props.get(2, 0);
-        //
-        //	returnedArray = this.getAssetByID(diffuseTex_addr, [Single2DTexture.assetType]);
-        //
-        //	if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
-        //		this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
-        //		diffuseTexture = DefaultMaterialManager.getDefaultTexture();
-        //	}
-        //
-        //	if (returnedArray[0])
-        //		diffuseTexture = returnedArray[1];
-        //	var curve_mat:CurveMaterial = new CurveMaterial(diffuseTexture);
-        //	//debugString+= " alpha = "+props.get(10, 1.0)+" ";
-        //	debugString+= " texture = "+diffuseTex_addr+" ";
-        //	curve_mat.bothSides = true;
-        //	curve_mat.preserveAlpha = true;
-        //	curve_mat.alphaBlending = true;
-        //	curve_mat.extra = this.parseUserAttributes();
-        //	this._pFinalizeAsset(<IAsset> curve_mat, name);
-        //	this._blocks[blockID].data = curve_mat;
-        //	if (this._debug)
-        //		console.log(debugString);
-        //	return;
-        //
-        //}
+        else if ((type >= 3) && (type <= 7)) {
+            // if this is a basic material, we create it, finalize it, assign it to block-cache and return and return.
+            var color = props.get(1, 0xcccccc);
+            debugString += color;
+            var diffuseTexture;
+            var diffuseTex_addr = props.get(2, 0);
+            returnedArray = this.getAssetByID(diffuseTex_addr, [Single2DTexture.assetType]);
+            if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
+                this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
+                diffuseTexture = DefaultMaterialManager.getDefaultTexture();
+            }
+            if (returnedArray[0])
+                diffuseTexture = returnedArray[1];
+            var basic_mat = new BasicMaterial(diffuseTexture);
+            //debugString+= " alpha = "+props.get(10, 1.0)+" ";
+            debugString += " texture = " + diffuseTex_addr + " ";
+            basic_mat.bothSides = true;
+            basic_mat.preserveAlpha = true;
+            basic_mat.alphaBlending = true;
+            basic_mat.extra = this.parseUserAttributes();
+            this._pFinalizeAsset(basic_mat, name);
+            this._blocks[blockID].data = basic_mat;
+            if (this._debug)
+                console.log(debugString);
+            return;
+        }
         mat.extra = this.parseUserAttributes();
         this._pFinalizeAsset(mat, name);
         this._blocks[blockID].data = mat;
