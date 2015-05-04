@@ -2417,37 +2417,37 @@ class AWDParser extends ParserBase
 			}
 		}
 		// todo: we should not need this anymore (if using texture-atlas)
-		//else if ((type>=3)&&(type<=7)){
-		//	// if this is a curve material, we create it, finalize it, assign it to block-cache and return and return.
-		//	var color:number = props.get(1, 0xcccccc);
-		//	debugString+=color;
-		//
-		//	var diffuseTexture:Single2DTexture;
-		//	var diffuseTex_addr:number = props.get(2, 0);
-		//
-		//	returnedArray = this.getAssetByID(diffuseTex_addr, [Single2DTexture.assetType]);
-		//
-		//	if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
-		//		this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
-		//		diffuseTexture = DefaultMaterialManager.getDefaultTexture();
-		//	}
-		//
-		//	if (returnedArray[0])
-		//		diffuseTexture = returnedArray[1];
-		//	var curve_mat:CurveMaterial = new CurveMaterial(diffuseTexture);
-		//	//debugString+= " alpha = "+props.get(10, 1.0)+" ";
-		//	debugString+= " texture = "+diffuseTex_addr+" ";
-		//	curve_mat.bothSides = true;
-		//	curve_mat.preserveAlpha = true;
-		//	curve_mat.alphaBlending = true;
-		//	curve_mat.extra = this.parseUserAttributes();
-		//	this._pFinalizeAsset(<IAsset> curve_mat, name);
-		//	this._blocks[blockID].data = curve_mat;
-		//	if (this._debug)
-		//		console.log(debugString);
-		//	return;
-		//
-		//}
+		else if ((type>=3)&&(type<=7)){
+			// if this is a basic material, we create it, finalize it, assign it to block-cache and return and return.
+			var color:number = props.get(1, 0xcccccc);
+			debugString+=color;
+		
+			var diffuseTexture:Single2DTexture;
+			var diffuseTex_addr:number = props.get(2, 0);
+		
+			returnedArray = this.getAssetByID(diffuseTex_addr, [Single2DTexture.assetType]);
+		
+			if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
+				this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
+				diffuseTexture = DefaultMaterialManager.getDefaultTexture();
+			}
+		
+			if (returnedArray[0])
+				diffuseTexture = returnedArray[1];
+			var basic_mat:BasicMaterial = new BasicMaterial(diffuseTexture);
+			//debugString+= " alpha = "+props.get(10, 1.0)+" ";
+			debugString+= " texture = "+diffuseTex_addr+" ";
+			basic_mat.bothSides = true;
+			basic_mat.preserveAlpha = true;
+			basic_mat.alphaBlending = true;
+			basic_mat.extra = this.parseUserAttributes();
+			this._pFinalizeAsset(<IAsset> basic_mat, name);
+			this._blocks[blockID].data = basic_mat;
+			if (this._debug)
+				console.log(debugString);
+			return;
+		
+		}
 		mat.extra = this.parseUserAttributes();
 		this._pFinalizeAsset(<IAsset> mat, name);
 

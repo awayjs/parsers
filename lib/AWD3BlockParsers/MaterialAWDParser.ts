@@ -402,34 +402,34 @@ class MaterialAWDParser extends AWDBlockParserBase
 			}
 		}
 		// todo: we should not need this.awd_file_data anymore (if using texture-atlas)
-		//else if ((type>=3)&&(type<=7)){
-		//	// if this.awd_file_data is a curve material, we create it, finalize it, assign it to block-cache and return and return.
-		//	var color:number = props.get(1, 0xcccccc);
-		//	debugString+=color;
-		//
-		//	var diffuseTex_addr:number = props.get(2, 0);
-		//
-		//	var diffuseTexture:TextureBase=undefined;
-		//	if (diffuseTex_addr>0) {
-		//		diffuseTexture = <TextureBase>this.awd_file_data.getAssetByID(diffuseTex_addr);
-		//	}
-		//	if(diffuseTex_addr==undefined){
-		//		diffuseTexture=DefaultMaterialManager.getDefaultTexture();
-		//	}
-		//
-		//	var curve_mat:CurveMaterial = new CurveMaterial(<Single2DTexture>diffuseTexture);
-		//	//debugString+= " alpha = "+props.get(10, 1.0)+" ";
-		//	debugString+= " texture = "+diffuseTex_addr+" ";
-		//	curve_mat.bothSides = true;
-		//	curve_mat.preserveAlpha = true;
-		//	curve_mat.alphaBlending = true;
-		//	curve_mat.extra = this.awd_file_data.parseUserAttributes();
-		//	if (this.awd_file_data.debug)
-		//		console.log(debugString);
-		//	this.awd_file_data.cur_block.data=curve_mat;
-		//	return;
-		//
-		//}
+		else if ((type>=3)&&(type<=7)){
+			// if this.awd_file_data is a curve material, we create it, finalize it, assign it to block-cache and return and return.
+			var color:number = props.get(1, 0xcccccc);
+			debugString+=color;
+		
+			var diffuseTex_addr:number = props.get(2, 0);
+		
+			var diffuseTexture:TextureBase=undefined;
+			if (diffuseTex_addr>0) {
+				diffuseTexture = <TextureBase>this.awd_file_data.getAssetByID(diffuseTex_addr);
+			}
+			if(diffuseTex_addr==undefined){
+				diffuseTexture=DefaultMaterialManager.getDefaultTexture();
+			}
+		
+			var basic_mat:BasicMaterial = new BasicMaterial(<Single2DTexture>diffuseTexture);
+			//debugString+= " alpha = "+props.get(10, 1.0)+" ";
+			debugString+= " texture = "+diffuseTex_addr+" ";
+			basic_mat.bothSides = true;
+			basic_mat.preserveAlpha = true;
+			basic_mat.alphaBlending = true;
+			basic_mat.extra = this.awd_file_data.parseUserAttributes();
+			if (this.awd_file_data.debug)
+				console.log(debugString);
+			this.awd_file_data.cur_block.data=basic_mat;
+			return;
+		
+		}
 		mat.extra = this.awd_file_data.parseUserAttributes();
 		this.awd_file_data.cur_block.data=mat;
 		if (this.awd_file_data.debug) {
