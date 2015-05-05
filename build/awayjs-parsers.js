@@ -4027,7 +4027,7 @@ var AWDParser = (function (_super) {
         var data_id = this._newBlockBytes.readUnsignedInt();
         //console.log("mat  '" + data_id);
         var mat;
-        var returnedArrayMaterial = this.getAssetByID(data_id, [MethodMaterial.assetType]);
+        var returnedArrayMaterial = this.getAssetByID(data_id, [MethodMaterial.assetType, BasicMaterial.assetType]);
         if (returnedArrayMaterial[0]) {
             mat = returnedArrayMaterial[1];
         }
@@ -4137,7 +4137,7 @@ var AWDParser = (function (_super) {
         var name = this.parseVarStr();
         var data_id = this._newBlockBytes.readUnsignedInt();
         var mat;
-        var returnedArrayMaterial = this.getAssetByID(data_id, [MethodMaterial.assetType]);
+        var returnedArrayMaterial = this.getAssetByID(data_id, [MethodMaterial.assetType, BasicMaterial.assetType]);
         if (returnedArrayMaterial[0]) {
             mat = returnedArrayMaterial[1];
         }
@@ -4180,7 +4180,7 @@ var AWDParser = (function (_super) {
         while (materials_parsed < num_materials) {
             var mat_id;
             mat_id = this._newBlockBytes.readUnsignedInt();
-            returnedArrayMaterial = this.getAssetByID(mat_id, [MethodMaterial.assetType]);
+            returnedArrayMaterial = this.getAssetByID(mat_id, [MethodMaterial.assetType, BasicMaterial.assetType]);
             if ((!returnedArrayMaterial[0]) && (mat_id > 0)) {
                 this._blocks[blockID].addError("Could not find Material Nr " + materials_parsed + " (ID = " + mat_id + " ) for this Mesh");
             }
@@ -4764,7 +4764,7 @@ var AWDParser = (function (_super) {
         while (materials_parsed < num_materials) {
             var mat_id;
             mat_id = this._newBlockBytes.readUnsignedInt();
-            returnedArrayMaterial = this.getAssetByID(mat_id, [MethodMaterial.assetType]);
+            returnedArrayMaterial = this.getAssetByID(mat_id, [MethodMaterial.assetType, BasicMaterial.assetType]);
             if ((!returnedArrayMaterial[0]) && (mat_id > 0)) {
                 this._blocks[blockID].addError("Could not find Material Nr " + materials_parsed + " (ID = " + mat_id + " ) for this Mesh");
             }
