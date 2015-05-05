@@ -883,7 +883,7 @@ class AWDParser extends ParserBase
 		var data_id:number = this._newBlockBytes.readUnsignedInt();
 		//console.log("mat  '" + data_id);
 		var mat:BasicMaterial;
-		var returnedArrayMaterial:Array<any> = this.getAssetByID(data_id, [MethodMaterial.assetType]);
+		var returnedArrayMaterial:Array<any> = this.getAssetByID(data_id, [MethodMaterial.assetType, BasicMaterial.assetType]);
 
 		if (returnedArrayMaterial[0]) {
 			mat = <BasicMaterial> returnedArrayMaterial[1];
@@ -1012,7 +1012,7 @@ class AWDParser extends ParserBase
 
 		var data_id:number = this._newBlockBytes.readUnsignedInt();
 		var mat:BasicMaterial;
-		var returnedArrayMaterial:Array<any> = this.getAssetByID(data_id, [MethodMaterial.assetType]);
+		var returnedArrayMaterial:Array<any> = this.getAssetByID(data_id, [MethodMaterial.assetType, BasicMaterial.assetType]);
 
 		if (returnedArrayMaterial[0]) {
 			mat = <BasicMaterial> returnedArrayMaterial[1];
@@ -1065,7 +1065,7 @@ class AWDParser extends ParserBase
 		while (materials_parsed < num_materials) {
 			var mat_id:number;
 			mat_id = this._newBlockBytes.readUnsignedInt();
-			returnedArrayMaterial = this.getAssetByID(mat_id, [MethodMaterial.assetType])
+			returnedArrayMaterial = this.getAssetByID(mat_id, [MethodMaterial.assetType, BasicMaterial.assetType])
 			if ((!returnedArrayMaterial[0]) && (mat_id > 0)) {
 				this._blocks[blockID].addError("Could not find Material Nr " + materials_parsed + " (ID = " + mat_id + " ) for this Mesh");
 			}
@@ -1777,7 +1777,7 @@ class AWDParser extends ParserBase
 		while (materials_parsed < num_materials) {
 			var mat_id:number;
 			mat_id = this._newBlockBytes.readUnsignedInt();
-			returnedArrayMaterial = this.getAssetByID(mat_id, [MethodMaterial.assetType])
+			returnedArrayMaterial = this.getAssetByID(mat_id, [MethodMaterial.assetType, BasicMaterial.assetType])
 			if ((!returnedArrayMaterial[0]) && (mat_id > 0)) {
 				this._blocks[blockID].addError("Could not find Material Nr " + materials_parsed + " (ID = " + mat_id + " ) for this Mesh");
 			}
