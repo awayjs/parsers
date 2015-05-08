@@ -145,11 +145,6 @@ class AWDParser extends ParserBase
 	private _defaultCubeTexture:SingleCubeTexture;
 
 
-	// temp for checking stats
-	public total_time:number = 0;
-	public geom_time:number = 0;
-	public timeline_time:number = 0;
-
 	public static COMPRESSIONMODE_LZMA:string = "lzma";
 	public static UNCOMPRESSED:number = 0;
 	public static DEFLATE:number = 1;
@@ -177,7 +172,11 @@ class AWDParser extends ParserBase
 
 	private blendModeDic:Array<string>;
 	private _depthSizeDic:Array<number>;
-	private _allFontTables:Array<TesselatedFontTable>;
+
+	private _time_all:number=0;
+	private _time_geom:number=0;
+	private _time_timeline:number=0;
+	private _time_fonts:number=0;
 
 	/**
 	 * Creates a new AWD3Parserutils object.
@@ -478,7 +477,10 @@ class AWDParser extends ParserBase
 		var type:number;
 		var flags:number;
 		var len:number;
-
+/*
+		var start_timeing = 0;
+		start_timeing = performance.now();
+*/
 		this._cur_block_id = this._body.readUnsignedInt();
 
 		ns = this._body.readUnsignedByte();
@@ -568,7 +570,6 @@ class AWDParser extends ParserBase
 
 		this._blocks[this._cur_block_id] = block;
 
-		//var time_start = performance.now();
 		if ((this._version[0] == 3) && (this._version[1] == 0)) {
 			// probably should contain some info about the type of animation
 			var factory = new AS2SceneGraphFactory();
@@ -717,7 +718,9 @@ class AWDParser extends ParserBase
 					break;
 			}
 		}
-		//*/
+
+
+
 
 		var msgCnt:number = 0;
 		if (this._newBlockBytes.position == blockEndBlock) {
@@ -745,21 +748,24 @@ class AWDParser extends ParserBase
 				}
 			}
 		}
-/*
-		var time_end = performance.now();
-		var thisTime:number=time_end-time_start;
-		this.total_time+=thisTime;
-		if(type==1){
-			this.geom_time+=thisTime;
-		}
-		else if(type==133){
-			this.timeline_time+=thisTime;
-		}
-		console.log("'parsed '"+type+"'  block in "+thisTime+ " ms", " total: ",this.total_time," geom: ",this.geom_time,"timelines:",this.timeline_time);
-*/
+
 		this._body.position = blockEndAll;
 		this._newBlockBytes = null;
-
+/*
+		var end_timing = performance.now();
+		var time_delta = end_timing - start_timeing;
+		this._time_all+=time_delta;
+		if(type==1){
+			this._time_geom+=time_delta;
+		}
+		else if(type==133){
+			this._time_timeline+=time_delta;
+		}
+		else if(type==135){
+			this._time_fonts+=time_delta;
+		}
+		console.log("Parsed block of type: "+type +" in "+time_delta+" ms | parsing total: "+this._time_all+" | geoms: "+this._time_geom+" | timelines: "+this._time_timeline+" | fonts: "+this._time_fonts);
+*/
 	}
 
 
