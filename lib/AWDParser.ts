@@ -1160,7 +1160,7 @@ class AWDParser extends ParserBase
 		var sceneID = this._newBlockBytes.readUnsignedByte();
 		var fps:number = this._newBlockBytes.readFloat();
 		//console.log("fps = "+fps);
-		//timeLineContainer.fps=fps;
+		timeLineContainer.fps=fps;
 		var ms_per_frame = 1000 / fps;
 		var num_instances:number=0;
 		var num_all_display_instances:number=0;
@@ -1426,6 +1426,7 @@ class AWDParser extends ParserBase
 		if (this._debug)
 			console.log("Parsed a TIMELINE: Name = " + name + "| isScene = " + isScene + "| sceneID = " + sceneID + "| numFrames = " + numFrames);
 	}
+
 	//Block ID = 1
 	private parseTriangleGeometrieBlock(blockID:number):void
 	{
