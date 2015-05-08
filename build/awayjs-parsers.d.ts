@@ -125,16 +125,6 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/LightPickerAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class MeshAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = MeshAWDParser;
-	
-}
-
 declare module "awayjs-parsers/lib/AWD3BlockParsers/MaterialAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 	class MaterialAWDParser extends AWDBlockParserBase {
@@ -142,6 +132,16 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/MaterialAWDParser" {
 	    parseFromBytes(): void;
 	}
 	export = MaterialAWDParser;
+	
+}
+
+declare module "awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser" {
+	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+	class MeshAWDParser extends AWDBlockParserBase {
+	    constructor();
+	    parseFromBytes(): void;
+	}
+	export = MeshAWDParser;
 	
 }
 
