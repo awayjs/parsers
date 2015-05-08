@@ -1298,7 +1298,7 @@ class AWDParser extends ParserBase
 							hasDepthChanges=true;
 							target_depth = this._newBlockBytes.readShort();
 							//console.log("target_depth ", target_depth);
-                            var potChild = timeLineContainer.getPotentialChild(objectID);
+                            var potChild = timeLineContainer.getPotentialChildPrototype(objectID);
 							if (potChild != undefined) {
 								frame.addConstructCommand(new AddChildAtDepthCommand(objectID, target_depth));
 								// if the object is a tetfield, we set the textfield-name as instancename
