@@ -3490,10 +3490,10 @@ var AWDParser = (function (_super) {
         this._startedParsing = false;
         this._texture_users = {};
         this._parsed_header = false;
-        // temp for checking stats
-        this.total_time = 0;
-        this.geom_time = 0;
-        this.timeline_time = 0;
+        this._time_all = 0;
+        this._time_geom = 0;
+        this._time_timeline = 0;
+        this._time_fonts = 0;
         this._blocks = new Array();
         this._blocks[0] = new AWDBlock();
         this._blocks[0].data = null; // Zero address means null in AWD
@@ -3694,6 +3694,10 @@ var AWDParser = (function (_super) {
         var type;
         var flags;
         var len;
+        /*
+                var start_timeing = 0;
+                start_timeing = performance.now();
+        */
         this._cur_block_id = this._body.readUnsignedInt();
         ns = this._body.readUnsignedByte();
         type = this._body.readUnsignedByte();
@@ -3748,7 +3752,6 @@ var AWDParser = (function (_super) {
             console.log("AWDBlock:  ID = " + this._cur_block_id + " | TypeID = " + type + " | Compression = " + blockCompression + " | Matrix-Precision = " + this._accuracyMatrix + " | Geometry-Precision = " + this._accuracyGeo + " | Properties-Precision = " + this._accuracyProps);
         }
         this._blocks[this._cur_block_id] = block;
-        //var time_start = performance.now();
         if ((this._version[0] == 3) && (this._version[1] == 0)) {
             // probably should contain some info about the type of animation
             var factory = new AS2SceneGraphFactory();
@@ -3885,7 +3888,6 @@ var AWDParser = (function (_super) {
                     break;
             }
         }
-        //*/
         var msgCnt = 0;
         if (this._newBlockBytes.position == blockEndBlock) {
             if (this._debug) {
@@ -3911,20 +3913,23 @@ var AWDParser = (function (_super) {
                 }
             }
         }
-        /*
-                var time_end = performance.now();
-                var thisTime:number=time_end-time_start;
-                this.total_time+=thisTime;
-                if(type==1){
-                    this.geom_time+=thisTime;
-                }
-                else if(type==133){
-                    this.timeline_time+=thisTime;
-                }
-                console.log("'parsed '"+type+"'  block in "+thisTime+ " ms", " total: ",this.total_time," geom: ",this.geom_time,"timelines:",this.timeline_time);
-        */
         this._body.position = blockEndAll;
         this._newBlockBytes = null;
+        /*
+                var end_timing = performance.now();
+                var time_delta = end_timing - start_timeing;
+                this._time_all+=time_delta;
+                if(type==1){
+                    this._time_geom+=time_delta;
+                }
+                else if(type==133){
+                    this._time_timeline+=time_delta;
+                }
+                else if(type==135){
+                    this._time_fonts+=time_delta;
+                }
+                console.log("Parsed block of type: "+type +" in "+time_delta+" ms | parsing total: "+this._time_all+" | geoms: "+this._time_geom+" | timelines: "+this._time_timeline+" | fonts: "+this._time_fonts);
+        */
     };
     //--Parser Blocks---------------------------------------------------------------------------
     AWDParser.prototype.parseTesselatedFont = function (blockID) {
@@ -4185,6 +4190,9 @@ var AWDParser = (function (_super) {
                 this._blocks[blockID].addError("Could not find Material Nr " + materials_parsed + " (ID = " + mat_id + " ) for this Mesh");
             }
             var m = returnedArrayMaterial[1];
+            //m.preserveAlpha = true;
+            m.alphaBlending = true;
+            m.useColorTransform = true;
             materials.push(m);
             materialNames.push(m.name);
             materials_parsed++;
@@ -4250,7 +4258,7 @@ var AWDParser = (function (_super) {
         var sceneID = this._newBlockBytes.readUnsignedByte();
         var fps = this._newBlockBytes.readFloat();
         //console.log("fps = "+fps);
-        //timeLineContainer.fps=fps;
+        timeLineContainer.fps = fps;
         var ms_per_frame = 1000 / fps;
         var num_instances = 0;
         var num_all_display_instances = 0;
@@ -4416,6 +4424,7 @@ var AWDParser = (function (_super) {
                                 thisColorTransform.blueOffset = this._newBlockBytes.readShort();
                                 thisColorTransform.alphaOffset = this._newBlockBytes.readShort();
                             }
+                            frame.addConstructCommand(new UpdatePropertyCommand(objectID, "colorTransform", thisColorTransform));
                         }
                         if (BitFlags.test(props_flag, BitFlags.FLAG5)) {
                             var blendmode_int = this._newBlockBytes.readUnsignedByte();

@@ -566,9 +566,6 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private _cubeBitmaps;
 	    private _defaultBitmapMaterial;
 	    private _defaultCubeTexture;
-	    total_time: number;
-	    geom_time: number;
-	    timeline_time: number;
 	    static COMPRESSIONMODE_LZMA: string;
 	    static UNCOMPRESSED: number;
 	    static DEFLATE: number;
@@ -595,7 +592,10 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    static MTX4x4: number;
 	    private blendModeDic;
 	    private _depthSizeDic;
-	    private _allFontTables;
+	    private _time_all;
+	    private _time_geom;
+	    private _time_timeline;
+	    private _time_fonts;
 	    /**
 	     * Creates a new AWD3Parserutils object.
 	     * @param uri The url or id of the data or file to be parsed.

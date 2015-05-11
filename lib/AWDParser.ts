@@ -1077,7 +1077,9 @@ class AWDParser extends ParserBase
 			}
 
 			var m:MethodMaterial = <MethodMaterial> returnedArrayMaterial[1];
-
+			//m.preserveAlpha = true;
+			m.alphaBlending = true;
+			m.useColorTransform = true;
 			materials.push(m);
 			materialNames.push(m.name);
 
@@ -1355,6 +1357,7 @@ class AWDParser extends ParserBase
 								thisColorTransform.blueOffset = this._newBlockBytes.readShort();
 								thisColorTransform.alphaOffset = this._newBlockBytes.readShort();
 							}
+							frame.addConstructCommand(new UpdatePropertyCommand(objectID, "colorTransform", thisColorTransform));
 						}
 						if (BitFlags.test(props_flag, BitFlags.FLAG5)) {
 							var blendmode_int = this._newBlockBytes.readUnsignedByte();
