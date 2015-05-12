@@ -1218,7 +1218,7 @@ class AWDParser extends ParserBase
 				}
 			}
 		}
-		//console.log("Parsed "+num_potential_childs+" potential childs. They will be used by "+num_all_display_instances+" instances.");
+		console.log("Parsed "+num_potential_childs+" potential childs. They will be used by "+num_all_display_instances+" instances.");
 
 		// register list of potential sounds
 		// a potential child can be reused on a timeline (added / removed / added)
@@ -1260,7 +1260,7 @@ class AWDParser extends ParserBase
 		for (i = 0; i < numFrames; i++) {
 			frame = new TimelineKeyFrame();
 			// todo: remove the ms_per_frame to set the duration in frames
-			frameDuration = this._newBlockBytes.readUnsignedInt()*ms_per_frame;
+			frameDuration = this._newBlockBytes.readUnsignedInt();
 			frame.setFrameTime(totalDuration, frameDuration);
 			totalDuration += frameDuration;
 			//console.log("duration = " + frameDuration);
