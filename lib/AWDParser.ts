@@ -1266,9 +1266,10 @@ class AWDParser extends ParserBase
 			//console.log("duration = " + frameDuration);
 
 			numLabels = this._newBlockBytes.readUnsignedByte();
+
 			for (j = 0; j < numLabels; j++) {
-				label = this.parseVarStr();
-				//console.log("label "+label);
+				// TODO: Temporary way to handle labels
+				frame.label = this.parseVarStr();
 			}
 
 			numCommands = this._newBlockBytes.readUnsignedShort();

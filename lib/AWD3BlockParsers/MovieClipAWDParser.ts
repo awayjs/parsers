@@ -147,7 +147,7 @@ class MovieClipAWDParser extends AWDBlockParserBase
 
 			numLabels = this.awd_file_data.newBlockBytes.readUnsignedByte();
 			for (j = 0; j < numLabels; j++) {
-				label = this.awd_file_data.parseVarStr();
+				frame.label = this.awd_file_data.parseVarStr();
 				//console.log("label "+label);
 			}
 

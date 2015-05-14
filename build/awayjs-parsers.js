@@ -1379,7 +1379,7 @@ var MovieClipAWDParser = (function (_super) {
             //console.log("duration = " + frameDuration);
             numLabels = this.awd_file_data.newBlockBytes.readUnsignedByte();
             for (j = 0; j < numLabels; j++) {
-                label = this.awd_file_data.parseVarStr();
+                frame.label = this.awd_file_data.parseVarStr();
             }
             numCommands = this.awd_file_data.newBlockBytes.readUnsignedShort();
             //console.log("numCommands "+numCommands);
@@ -4345,7 +4345,8 @@ var AWDParser = (function (_super) {
             //console.log("duration = " + frameDuration);
             numLabels = this._newBlockBytes.readUnsignedByte();
             for (j = 0; j < numLabels; j++) {
-                label = this.parseVarStr();
+                // TODO: Temporary way to handle labels
+                frame.label = this.parseVarStr();
             }
             numCommands = this._newBlockBytes.readUnsignedShort();
             //console.log("numCommands "+numCommands);
