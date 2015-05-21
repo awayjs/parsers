@@ -38,7 +38,9 @@ import StaticLightPicker				= require("awayjs-display/lib/materials/lightpickers
 import CubeMapShadowMapper				= require("awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper");
 import DirectionalShadowMapper			= require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
 import ShadowMapperBase					= require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
+
 import PrefabBase						= require("awayjs-display/lib/prefabs/PrefabBase");
+import PrimitivePrefabBase				= require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 import PrimitiveCapsulePrefab			= require("awayjs-display/lib/prefabs/PrimitiveCapsulePrefab");
 import PrimitiveConePrefab				= require("awayjs-display/lib/prefabs/PrimitiveConePrefab");
 import PrimitiveCubePrefab				= require("awayjs-display/lib/prefabs/PrimitiveCubePrefab");
@@ -114,6 +116,7 @@ import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTa
 import TextFormat			= require("awayjs-display/lib/text/TextFormat");
 import TextFieldType			= require("awayjs-display/lib/text/TextFieldType");
 
+import AWDBlock							= require("awayjs-parsers/lib/AWD3ParserUtils/AWDBlock");
 /**
  * AWDParser provides a parser for the AWD data type.
  */
@@ -188,7 +191,7 @@ class AWDParser extends ParserBase
 		super(URLLoaderDataFormat.ARRAY_BUFFER);
 
 		this._blocks = new Array<AWDBlock>();
-		this._blocks[0] = new AWDBlock();
+		this._blocks[0] = new AWDBlock(0,255);
 		this._blocks[0].data = null; // Zero address means null in AWD
 
 		this.blendModeDic = new Array<string>(); // used to translate ints to blendMode-strings
@@ -244,70 +247,56 @@ class AWDParser extends ParserBase
 	public _iResolveDependency(resourceDependency:ResourceDependency)
 	{
 		// this will be called when Dependency has finished loading.
-		// the Assets waiting for this Bitmap, can be Texture or CubeTexture.
-		// if the Bitmap is awaited by a CubeTexture, we need to check if its the last Bitmap of the CubeTexture,
-		// so we know if we have to finalize the Asset (CubeTexture) or not.
+		// the ressource dependecniy has a id that point to the awd_block waiting for it.
+		//console.log("AWDParser resolve dependencies");
 		if (resourceDependency.assets.length == 1) {
-			var isCubeTextureArray:Array<string> = resourceDependency.id.split("#");
-			var ressourceID:string = isCubeTextureArray[0];
-			var asset:TextureBase;
-			var block:AWDBlock;
-
-			if (isCubeTextureArray.length == 1) // Not a cube texture
-			{
-				asset = new Single2DTexture(<BitmapImage2D> resourceDependency.assets[0]);
-				if (asset) {
-
-					block = this._blocks[ resourceDependency.id ];
-					block.data = asset; // Store finished asset
-
-					// Reset name of texture to the one defined in the AWD file,
-					// as opposed to whatever the image parser came up with.
-					asset.resetAssetPath(block.name, null, true);
-					block.name = asset.name;
-					// Finalize texture asset to dispatch texture event, which was
-					// previously suppressed while the dependency was loaded.
-					this._pFinalizeAsset(<IAsset> asset);
-
-					if (this._debug) {
-						console.log("Successfully loaded Bitmap for texture");
-						console.log("Parsed texture: Name = " + block.name);
-					}
-				}
-			}
-
-			if (isCubeTextureArray.length > 1) // Cube Texture
-			{
-				this._cubeBitmaps[ isCubeTextureArray[1] ] = <BitmapImage2D> resourceDependency.assets[0];
-				this._texture_users[ressourceID].push(1);
+			var this_block:AWDBlock = this._blocks[parseInt(resourceDependency.id)];
+			if(this_block.type==82){
+				var texture_asset:Single2DTexture = new Single2DTexture(<BitmapImage2D> resourceDependency.assets[0]);
+				this_block.data = texture_asset; // Store finished asset
+				// Finalize texture asset to dispatch texture event, which was
+				// previously suppressed while the dependency was loaded.
+				this._pFinalizeAsset(<IAsset> texture_asset, this_block.name);
 
 				if (this._debug) {
-					console.log("Successfully loaded Bitmap " + this._texture_users[ressourceID].length + " / 6 for Cubetexture");
+					console.log("Successfully loaded Bitmap for texture");
+					console.log("Parsed texture: Name = " + this_block.name);
 				}
-				if (this._texture_users[ressourceID].length == this._cubeBitmaps.length) {
-
-					var cube_image_asset = new BitmapImageCube(this._cubeBitmaps[0].width);
+			}
+			else if(this_block.type==44){
+				// todo: implement parsing of Audio block data
+				/*
+				var audio_asset:AudioAsset = <AudioAsset> resourceDependency.assets[0];
+				this_block.data = audio_asset; // Store finished asset
+				// Finalize texture asset to dispatch texture event, which was
+				// previously suppressed while the dependency was loaded.
+				this._pFinalizeAsset(<IAsset> audio_asset, this_block.name);
+				*/
+				if (this._debug) {
+					console.log("Successfully loaded Sound into AudioAsset");
+					console.log("Loaded Sound: Name = " + this_block.name);
+				}
+			}
+			else if(this_block.type==83){
+				this_block.loaded_dependencies[resourceDependency.sub_id]= resourceDependency.assets[0];
+				this_block.loaded_dependencies_cnt++;
+				if (this._debug) {
+					console.log("Successfully loaded Bitmap " + resourceDependency.sub_id + " / 6 for Cubetexture");
+				}
+				if(this_block.loaded_dependencies_cnt==6){
+					var cube_image_asset = new BitmapImageCube(this_block.loaded_dependencies[0].width);
 
 					for (var i:number = 0; i < 6; i++)
-						cube_image_asset.draw(i, this._cubeBitmaps[i]);
+						cube_image_asset.draw(i, this_block.loaded_dependencies[i]);
 
-					asset = new SingleCubeTexture(cube_image_asset);
-					block = this._blocks[ressourceID];
-					block.data = asset; // Store finished asset
-
-					// Reset name of texture to the one defined in the AWD file,
-					// as opposed to whatever the image parser came up with.
-					asset.resetAssetPath(block.name, null, true);
-					block.name = asset.name;
-					// Finalize texture asset to dispatch texture event, which was
-					// previously suppressed while the dependency was loaded.
-					this._pFinalizeAsset(<IAsset> asset);
+					var cube_tex_asset = new SingleCubeTexture(cube_image_asset);
+					this_block.data = cube_tex_asset; // Store finished asset
+					this._pFinalizeAsset(<IAsset> cube_tex_asset, this_block.name);
 					if (this._debug) {
-						console.log("Parsed CubeTexture: Name = " + block.name);
+						console.log("Parsed CubeTexture: Name = " + this_block.name);
 					}
 				}
 			}
-
 		}
 	}
 
@@ -552,10 +541,8 @@ class AWDParser extends ParserBase
 		//----------------------------------------------------------------------------
 
 		this._newBlockBytes.position = 0;
-		block = new AWDBlock();
+		block = new AWDBlock(this._cur_block_id, type);
 		block.len = this._newBlockBytes.position + len;
-		block.id = this._cur_block_id;
-
 		var blockEndBlock:number = this._newBlockBytes.position + len;
 
 		if (blockCompression) {
@@ -1050,8 +1037,7 @@ class AWDParser extends ParserBase
 
 		var data_id:number = this._newBlockBytes.readUnsignedInt();
 		var geom:Geometry;
-		var returnedArrayGeometry:Array<any> = this.getAssetByID(data_id, [Geometry.assetType])
-
+		var returnedArrayGeometry:Array<any> = this.getAssetByID(data_id, [Geometry.assetType]);
 		if (returnedArrayGeometry[0]) {
 			geom = <Geometry> returnedArrayGeometry[1];
 		} else {
@@ -1766,14 +1752,22 @@ class AWDParser extends ParserBase
 		var name:string = this.parseVarStr();
 		var parentName:string = "Root (TopLevel)";
 		var data_id:number = this._newBlockBytes.readUnsignedInt();
-		var geom:Geometry;
-		var returnedArrayGeometry:Array<any> = this.getAssetByID(data_id, [Geometry.assetType])
-
+		var geom:Geometry;;
+		var prefab:PrefabBase;
+		var returnedArrayGeometry:Array<any> = this.getAssetByID(data_id, [Geometry.assetType]);
+		var isPrefab:boolean=false;
 		if (returnedArrayGeometry[0]) {
 			geom = <Geometry> returnedArrayGeometry[1];
 		} else {
-			this._blocks[blockID].addError("Could not find a Geometry for this Mesh. A empty Geometry is created!");
-			geom = new Geometry();
+			var returnedArrayGeometry2:Array<any> = this.getAssetByID(data_id, [PrimitivePrefabBase.assetType]);
+			if (returnedArrayGeometry2[0]) {
+				isPrefab=true;
+				prefab=<PrefabBase>returnedArrayGeometry2[1];
+			}
+			else{
+				this._blocks[blockID].addError("Could not find a Geometry or prefab for this Mesh " + data_id + ". A empty Geometry is created!");
+				geom = new Geometry();
+			}
 		}
 
 		this._blocks[blockID].geoID = data_id;
@@ -1792,16 +1786,19 @@ class AWDParser extends ParserBase
 			if ((!returnedArrayMaterial[0]) && (mat_id > 0)) {
 				this._blocks[blockID].addError("Could not find Material Nr " + materials_parsed + " (ID = " + mat_id + " ) for this Mesh");
 			}
-
 			var m:MethodMaterial = <MethodMaterial> returnedArrayMaterial[1];
-
 			materials.push(m);
 			materialNames.push(m.name);
-
 			materials_parsed++;
 		}
 
-		var mesh:Mesh = new Mesh(geom, null);
+		var mesh:Mesh;
+		if(isPrefab){
+			mesh = <Mesh>prefab.getNewObject();
+		}
+		else{
+			mesh = new Mesh(geom, null);
+		}
 		mesh.transform.matrix3D = mtx;
 
 		var returnedArrayParent:Array<any> = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType])
@@ -1842,7 +1839,11 @@ class AWDParser extends ParserBase
 		this._blocks[blockID].data = mesh;
 
 		if (this._debug) {
-			console.log("Parsed a Mesh: Name = '" + name + "' | Parent-Name = " + parentName + "| Geometry-Name = " + geom.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames.toString());
+			if (isPrefab) {
+				console.log("Parsed a Mesh for Prefab: Name = '" + name + "' | Parent-Name = " + parentName + "| Prefab-Name = " + prefab.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames.toString());
+			} else {
+				console.log("Parsed a Mesh for Geometry: Name = '" + name + "' | Parent-Name = " + parentName + "| Geometry-Name = " + geom.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames.toString());
+			}
 		}
 	}
 
@@ -2509,13 +2510,13 @@ class AWDParser extends ParserBase
 		// Ignore for now
 		this.parseProperties(null);
 		this._blocks[blockID].extras = this.parseUserAttributes();
-		this._pPauseAndRetrieveDependencies();
 		this._blocks[blockID].data = asset;
 
 		if (this._debug) {
 			var textureStylesNames:Array<string> = ["external", "embed"]
 			console.log("Start parsing a " + textureStylesNames[type] + " Bitmap for Texture");
 		}
+		this._pPauseAndRetrieveDependencies();
 
 	}
 
@@ -2543,8 +2544,7 @@ class AWDParser extends ParserBase
 				data_len = this._newBlockBytes.readUnsignedInt();
 				var url:string;
 				url = this._newBlockBytes.readUTFBytes(data_len);
-
-				this._pAddDependency(this._cur_block_id.toString() + "#" + i, new URLRequest(url), false, null, true);
+				this._pAddDependency(this._cur_block_id.toString(), new URLRequest(url), false, null, true, i);
 			} else {
 
 				data_len = this._newBlockBytes.readUnsignedInt();
@@ -2553,7 +2553,7 @@ class AWDParser extends ParserBase
 
 				this._newBlockBytes.readBytes(data, 0, data_len);
 
-				this._pAddDependency(this._cur_block_id.toString() + "#" + i, null, false, ParserUtils.byteArrayToImage(data), true);
+				this._pAddDependency(this._cur_block_id.toString(), null, false, ParserUtils.byteArrayToImage(data), true, i);
 			}
 		}
 
@@ -3487,9 +3487,9 @@ class AWDParser extends ParserBase
 			if (this._blocks[assetID]) {
 				if (this._blocks[assetID].data) {
 					while (typeCnt < assetTypesToGet.length) {
-
+						//console.log("check if asset is of type = "+assetTypesToGet[typeCnt]);
 						var iasset:IAsset = <IAsset> this._blocks[assetID].data;
-
+						//console.log("asset is of type = "+iasset.assetType);
 						if (iasset.assetType == assetTypesToGet[typeCnt]) {
 							//if the right assetType was found
 							if ((assetTypesToGet[typeCnt] == SingleCubeTexture.assetType)) {
@@ -3515,14 +3515,12 @@ class AWDParser extends ParserBase
 						//if ((assetTypesToGet[typeCnt] == Geometry.assetType) && (IAsset(_blocks[assetID].data).assetType == Mesh.assetType)) {
 						if ((assetTypesToGet[typeCnt] == Geometry.assetType) && (iasset.assetType == Mesh.assetType)) {
 
-							var mesh:Mesh = <Mesh> this._blocks[assetID].data
-
+							var mesh:Mesh = <Mesh> this._blocks[assetID].data;
 							returnArray.push(true);
 							returnArray.push(mesh.geometry);
 							return returnArray;
 
 						}
-
 						typeCnt++;
 					}
 				}
@@ -3640,40 +3638,6 @@ class AWDParser extends ParserBase
 
 export = AWDParser;
 
-class AWDBlock
-{
-	public id:number;
-	public name:string;
-	public data:any;
-	public len:any;
-	public geoID:number;
-	public extras:Object;
-	public bytes:ByteArray;
-	public errorMessages:Array<string>;
-	public uvsForVertexAnimation:Array<Array<number>>;
-
-	constructor()
-	{
-	}
-
-	public dispose()
-	{
-
-		this.id = null;
-		this.bytes = null;
-		this.errorMessages = null;
-		this.uvsForVertexAnimation = null;
-
-	}
-
-	public addError(errorMsg:string):void
-	{
-		if (!this.errorMessages)
-			this.errorMessages = new Array<string>();
-
-		this.errorMessages.push(errorMsg);
-	}
-}
 
 class AWDProperties
 {

@@ -121,16 +121,17 @@ class AWD3Parser extends ParserBase
 			}
 			else if(this_block.type==44){
 				// todo: implement parsing of Audio block data
-				/*asset = <Single2DTexture> resourceDependency.assets[0];
-				this_block.data = asset; // Store finished asset
-				// Finalize texture asset to dispatch texture event, which was
-				// previously suppressed while the dependency was loaded.
-				this._pFinalizeAsset(<IAsset> asset, this_block.name);
-
+				/*
+				 var audio_asset:AudioAsset = <AudioAsset> resourceDependency.assets[0];
+				 this_block.data = audio_asset; // Store finished asset
+				 // Finalize texture asset to dispatch texture event, which was
+				 // previously suppressed while the dependency was loaded.
+				 this._pFinalizeAsset(<IAsset> audio_asset, this_block.name);
+				 */
 				if (this._debug) {
-					console.log("Successfully loaded Bitmap for texture");
-					console.log("Parsed texture: Name = " + this_block.name);
-				}*/
+					console.log("Successfully loaded Sound into AudioAsset");
+					console.log("Loaded Sound: Name = " + this_block.name);
+				}
 			}
 			else if(this_block.type==83){
 				this_block.loaded_dependencies[resourceDependency.sub_id]= resourceDependency.assets[0];
