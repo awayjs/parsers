@@ -1507,7 +1507,7 @@ var MovieClipAWDParser = (function (_super) {
             if (length_code > 0) {
                 // TODO: Script should probably not be attached to keyframes?
                 var frame_code = this.awd_file_data.newBlockBytes.readUTFBytes(length_code);
-                frame.addConstructCommand(new ExecuteScriptCommand(frame_code));
+                frame.addPostConstructCommand(new ExecuteScriptCommand(frame_code));
             }
             //traceString += commandString;
             //trace("length_code = "+length_code+" frame_code = "+frame_code);
@@ -3573,17 +3573,15 @@ var AWDParser = (function (_super) {
                 }
             }
             else if (this_block.type == 44) {
-                // todo: implement parsing of Audio block data
-                /*
-                var audio_asset:AudioAsset = <AudioAsset> resourceDependency.assets[0];
+                var audio_asset = resourceDependency.assets[0];
                 this_block.data = audio_asset; // Store finished asset
                 // Finalize texture asset to dispatch texture event, which was
                 // previously suppressed while the dependency was loaded.
-                this._pFinalizeAsset(<IAsset> audio_asset, this_block.name);
-                */
+                console.log("Parsing audio " + this_block.name);
+                this._pFinalizeAsset(audio_asset, this_block.name);
                 if (this._debug) {
-                    console.log("Successfully loaded Sound into AudioAsset");
-                    console.log("Loaded Sound: Name = " + this_block.name);
+                    console.log("Successfully loaded Sound into WaveAudio");
+                    console.log("Loaded audio: Name = " + this_block.name);
                 }
             }
             else if (this_block.type == 83) {
@@ -4236,7 +4234,7 @@ var AWDParser = (function (_super) {
             var url;
             url = this._newBlockBytes.readUTFBytes(data_len);
             // todo parser needs to be able to handle mp3 and wav files if we trigger the loading of external ressource
-            //this._pAddDependency(this._cur_block_id.toString(), new URLRequest(url), false, null, true);
+            this._pAddDependency(this._cur_block_id.toString(), new URLRequest(url), false, null, true);
             console.log("Audio url = " + url);
         }
         else {
@@ -4245,6 +4243,9 @@ var AWDParser = (function (_super) {
             var data;
             data = new ByteArray();
             this._newBlockBytes.readBytes(data, 0, data_len);
+            // todo parse sound from bytes
+            // this._pAddDependency(this._cur_block_id.toString(), null, false, ParserUtils.by(data), true);
+            this._pAddDependency(this._cur_block_id.toString(), null, false, data, true);
         }
         // Ignore for now
         this.parseProperties(null);

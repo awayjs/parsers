@@ -5,6 +5,7 @@ import Geometry							= require("awayjs-core/lib/data/Geometry");
 import SubGeometryBase					= require("awayjs-core/lib/data/SubGeometryBase");
 import CurveSubGeometry					= require("awayjs-core/lib/data/CurveSubGeometry");
 import TriangleSubGeometry				= require("awayjs-core/lib/data/TriangleSubGeometry");
+import WaveAudio						= require("awayjs-core/lib/data/WaveAudio");
 import ColorTransform					= require("awayjs-core/lib/geom/ColorTransform");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
@@ -264,17 +265,16 @@ class AWDParser extends ParserBase
 				}
 			}
 			else if(this_block.type==44){
-				// todo: implement parsing of Audio block data
-				/*
-				var audio_asset:AudioAsset = <AudioAsset> resourceDependency.assets[0];
+				var audio_asset:WaveAudio = <WaveAudio> resourceDependency.assets[0];
 				this_block.data = audio_asset; // Store finished asset
 				// Finalize texture asset to dispatch texture event, which was
 				// previously suppressed while the dependency was loaded.
+				console.log("Parsing audio " + this_block.name);
 				this._pFinalizeAsset(<IAsset> audio_asset, this_block.name);
-				*/
+
 				if (this._debug) {
-					console.log("Successfully loaded Sound into AudioAsset");
-					console.log("Loaded Sound: Name = " + this_block.name);
+					console.log("Successfully loaded Sound into WaveAudio");
+					console.log("Loaded audio: Name = " + this_block.name);
 				}
 			}
 			else if(this_block.type==83){
@@ -1113,7 +1113,7 @@ class AWDParser extends ParserBase
 			var url:string;
 			url = this._newBlockBytes.readUTFBytes(data_len);
 			// todo parser needs to be able to handle mp3 and wav files if we trigger the loading of external ressource
-			//this._pAddDependency(this._cur_block_id.toString(), new URLRequest(url), false, null, true);
+			this._pAddDependency(this._cur_block_id.toString(), new URLRequest(url), false, null, true);
 			console.log("Audio url = "+url);
 
 		} else {
@@ -1126,7 +1126,7 @@ class AWDParser extends ParserBase
 
 			// todo parse sound from bytes
 			// this._pAddDependency(this._cur_block_id.toString(), null, false, ParserUtils.by(data), true);
-			//this._pAddDependency(this._cur_block_id.toString(), null, false, data, true);
+			this._pAddDependency(this._cur_block_id.toString(), null, false, data, true);
 
 		}
 
@@ -1137,7 +1137,7 @@ class AWDParser extends ParserBase
 		//this._blocks[blockID].data = asset;todo
 
 		if (this._debug) {
-			var textureStylesNames:Array<string> = ["external", "embed"]
+			var textureStylesNames:Array<string> = ["external", "embed"];
 			console.log("Start parsing a " + textureStylesNames[type] + " Audio file");
 		}
 	}

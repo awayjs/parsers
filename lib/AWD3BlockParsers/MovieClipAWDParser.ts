@@ -296,7 +296,7 @@ class MovieClipAWDParser extends AWDBlockParserBase
 			if (length_code > 0) {
 				// TODO: Script should probably not be attached to keyframes?
 				var frame_code = this.awd_file_data.newBlockBytes.readUTFBytes(length_code);
-				frame.addConstructCommand(new ExecuteScriptCommand(frame_code));
+				frame.addPostConstructCommand(new ExecuteScriptCommand(frame_code));
 				//traceString += "\nframe-code = " + frame_code;
 			}
 			//traceString += commandString;
