@@ -1,3 +1,4 @@
+import AttributesBuffer					= require("awayjs-core/lib/attributes/AttributesBuffer");
 import Geometry							= require("awayjs-core/lib/data/Geometry");
 import TriangleSubGeometry				= require("awayjs-core/lib/data/TriangleSubGeometry");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
@@ -346,7 +347,7 @@ class MD5MeshParser extends ParserBase
 		var weight:JointData;
 		var bindPose:Matrix3D;
 		var pos:Vector3D;
-		var subGeom:TriangleSubGeometry = new TriangleSubGeometry(true);
+		var subGeom:TriangleSubGeometry = new TriangleSubGeometry(new AttributesBuffer());
 		var uvs:Array<number> = new Array<number>(len*2);
 		var vertices:Array<number> = new Array<number>(len*3);
 		var jointIndices:Array<number> = new Array<number>(len*this._maxJointCount);
@@ -389,14 +390,14 @@ class MD5MeshParser extends ParserBase
 		}
 
 		subGeom.jointsPerVertex = this._maxJointCount;
-		subGeom.updateIndices(indices);
-		subGeom.updatePositions(vertices);
-		subGeom.updateUVs(uvs);
-		subGeom.updateJointIndices(jointIndices);
-		subGeom.updateJointWeights(jointWeights);
+		subGeom.setIndices(indices);
+		subGeom.setPositions(vertices);
+		subGeom.setUVs(uvs);
+		subGeom.setJointIndices(jointIndices);
+		subGeom.setJointWeights(jointWeights);
 		// cause explicit updates
-		subGeom.vertexNormals;
-		subGeom.vertexTangents;
+		subGeom.setNormals(null);
+		subGeom.setTangents(null);
 		// turn auto updates off because they may be animated and set explicitly
 		subGeom.autoDeriveTangents = false;
 		subGeom.autoDeriveNormals = false;

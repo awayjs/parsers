@@ -1,3 +1,4 @@
+import AttributesBuffer					= require("awayjs-core/lib/attributes/AttributesBuffer");
 import BitmapImage2D					= require("awayjs-core/lib/data/BitmapImage2D");
 import TriangleSubGeometry				= require("awayjs-core/lib/data/TriangleSubGeometry");
 import Geometry							= require("awayjs-core/lib/data/Geometry");
@@ -407,12 +408,12 @@ class OBJParser extends ParserBase
 			}
 		}
 		if (vertices.length > 0) {
-			sub = new TriangleSubGeometry(true);
+			sub = new TriangleSubGeometry(new AttributesBuffer());
 			sub.autoDeriveNormals = normals.length? false : true;
-			sub.updateIndices(indices);
-			sub.updatePositions(vertices);
-			sub.updateVertexNormals(normals);
-			sub.updateUVs(uvs);
+			sub.setIndices(indices);
+			sub.setPositions(vertices);
+			sub.setNormals(normals);
+			sub.setUVs(uvs);
 
 			geometry.addSubGeometry(sub);
 		}

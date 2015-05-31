@@ -1,3 +1,4 @@
+import AttributesBuffer					= require("awayjs-core/lib/attributes/AttributesBuffer");
 import BitmapImage2D					= require("awayjs-core/lib/data/BitmapImage2D");
 import Geometry							= require("awayjs-core/lib/data/Geometry");
 import TriangleSubGeometry				= require("awayjs-core/lib/data/TriangleSubGeometry");
@@ -554,10 +555,10 @@ class Max3DSParser extends ParserBase
 
 			// Construct sub-geometries (potentially splitting buffers)
 			// and add them to geometry.
-			sub = new TriangleSubGeometry(true);
-			sub.updateIndices(obj.indices);
-			sub.updatePositions(obj.verts);
-			sub.updateUVs(obj.uvs);
+			sub = new TriangleSubGeometry(new AttributesBuffer());
+			sub.setIndices(obj.indices);
+			sub.setPositions(obj.verts);
+			sub.setUVs(obj.uvs);
 
 			geom.addSubGeometry(sub);
 

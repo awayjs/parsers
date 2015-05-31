@@ -18,7 +18,7 @@ class AWDBlock
 	public extras:Object;
 	public bytes:ByteArray;
 	public errorMessages:Array<string>;
-	public uvsForVertexAnimation:Array<Array<number>>;
+	public uvsForVertexAnimation:Array<Float32Array>;
 
 	constructor(this_id:number, this_type:number)
 	{

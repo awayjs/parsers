@@ -1,3 +1,4 @@
+import AttributesBuffer					= require("awayjs-core/lib/attributes/AttributesBuffer");
 import BitmapImage2D					= require("awayjs-core/lib/data/BitmapImage2D");
 import Geometry							= require("awayjs-core/lib/data/Geometry");
 import TriangleSubGeometry				= require("awayjs-core/lib/data/TriangleSubGeometry");
@@ -440,7 +441,7 @@ class MD2Parser extends ParserBase
 				fvertices[k++] = tvertices[this._vertIndices[j]*3 + 1];
 			}
 
-			subGeom = new TriangleSubGeometry(true);
+			subGeom = new TriangleSubGeometry(new AttributesBuffer());
 
 			if (this._firstSubGeom == null)
 				this._firstSubGeom = subGeom;
@@ -448,11 +449,13 @@ class MD2Parser extends ParserBase
 			geometry = new Geometry();
 			geometry.addSubGeometry(subGeom);
 
-			subGeom.updateIndices(this._indices);
-			subGeom.updatePositions(fvertices);
-			subGeom.updateUVs(this._finalUV);
-			subGeom.vertexNormals;
-			subGeom.vertexTangents;
+			subGeom.setIndices(this._indices);
+			subGeom.setPositions(fvertices);
+			subGeom.setUVs(this._finalUV);
+			// cause explicit updates
+			subGeom.setNormals(null);
+			subGeom.setTangents(null);
+			// turn auto updates off because they may be animated and set explicitly
 			subGeom.autoDeriveNormals = false;
 			subGeom.autoDeriveTangents = false;
 

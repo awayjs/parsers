@@ -1,10 +1,10 @@
-
-import EventDispatcher			= require("awayjs-core/lib/events/EventDispatcher");
-import ByteArray				= require("awayjs-core/lib/utils/ByteArray");
-import AbstractMethodError		= require("awayjs-core/lib/errors/AbstractMethodError");
-import IAsset					= require("awayjs-core/lib/library/IAsset");
-import AWDBlockParserBase		= require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-import AWDProperties			= require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
+import AttributesBuffer					= require("awayjs-core/lib/attributes/AttributesBuffer");
+import EventDispatcher					= require("awayjs-core/lib/events/EventDispatcher");
+import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
+import AbstractMethodError				= require("awayjs-core/lib/errors/AbstractMethodError");
+import IAsset							= require("awayjs-core/lib/library/IAsset");
+import AWDBlockParserBase				= require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+import AWDProperties					= require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
 
 import Geometry							= require("awayjs-core/lib/data/Geometry");
 import SubGeometryBase					= require("awayjs-core/lib/data/SubGeometryBase");
@@ -143,17 +143,17 @@ class GeometryAWDParser extends AWDBlockParserBase
 
 			this.awd_file_data.parseUserAttributes(); // Ignore sub-mesh attributes for now
 			if(is_curve_geom){
-				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(true);
-				curve_sub_geom.updateIndices(indices);
-				curve_sub_geom.updatePositions(positions);
-				curve_sub_geom.updateCurves(curveData);
-				curve_sub_geom.updateUVs(uvs);
+				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(new AttributesBuffer());
+				curve_sub_geom.setIndices(indices);
+				curve_sub_geom.setPositions(positions);
+				curve_sub_geom.setCurves(curveData);
+				curve_sub_geom.setUVs(uvs);
 				geom.addSubGeometry(curve_sub_geom);
 				if (this.awd_file_data.debug)
 					console.log("Parsed a CurveSubGeometry");
 			}
 			else {
-				var triangle_sub_geom = new TriangleSubGeometry(true);
+				var triangle_sub_geom = new TriangleSubGeometry(new AttributesBuffer());
 				if (weights)
 					triangle_sub_geom.jointsPerVertex = weights.length / (verts.length / 3);
 				if (normals)
@@ -164,13 +164,13 @@ class GeometryAWDParser extends AWDBlockParserBase
 				if (true) {
 					triangle_sub_geom.autoDeriveTangents = true;
 				}
-				triangle_sub_geom.updateIndices(indices);
-				triangle_sub_geom.updatePositions(verts);
-				triangle_sub_geom.updateVertexNormals(normals);
-				triangle_sub_geom.updateUVs(uvs);
-				triangle_sub_geom.updateVertexTangents(null);
-				triangle_sub_geom.updateJointWeights(weights);
-				triangle_sub_geom.updateJointIndices(w_indices);
+				triangle_sub_geom.setIndices(indices);
+				triangle_sub_geom.setPositions(verts);
+				triangle_sub_geom.setNormals(normals);
+				triangle_sub_geom.setUVs(uvs);
+				triangle_sub_geom.setTangents(null);
+				triangle_sub_geom.setJointWeights(weights);
+				triangle_sub_geom.setJointIndices(w_indices);
 
 				var scaleU:number = subProps.get(1, 1);
 				var scaleV:number = subProps.get(2, 1);

@@ -1,13 +1,14 @@
-import EventDispatcher			= require("awayjs-core/lib/events/EventDispatcher");
-import ByteArray				= require("awayjs-core/lib/utils/ByteArray");
-import AbstractMethodError		= require("awayjs-core/lib/errors/AbstractMethodError");
-import IAsset					= require("awayjs-core/lib/library/IAsset");
-import AWDBlockParserBase		= require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-import AWDProperties			= require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
-import AWD3Utils				= require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+import AttributesBuffer					= require("awayjs-core/lib/attributes/AttributesBuffer");
+import EventDispatcher					= require("awayjs-core/lib/events/EventDispatcher");
+import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
+import AbstractMethodError				= require("awayjs-core/lib/errors/AbstractMethodError");
+import IAsset							= require("awayjs-core/lib/library/IAsset");
+import AWDBlockParserBase				= require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+import AWDProperties					= require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
+import AWD3Utils						= require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
 
-import Font							= require("awayjs-display/lib/text/Font");
-import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTable");
+import Font								= require("awayjs-display/lib/text/Font");
+import TesselatedFontTable				= require("awayjs-display/lib/text/TesselatedFontTable");
 import SubGeometryBase					= require("awayjs-core/lib/data/SubGeometryBase");
 import CurveSubGeometry					= require("awayjs-core/lib/data/CurveSubGeometry");
 
@@ -88,11 +89,11 @@ class TesselatedFontAWDParser extends AWDBlockParserBase
 					}
 				}
 				//this.awd_file_data.parseProperties(null);// no attributes for font-table subgeos
-				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(true);
-				curve_sub_geom.updateIndices(indices);
-				curve_sub_geom.updatePositions(positions);
-				curve_sub_geom.updateCurves(curveData);
-				curve_sub_geom.updateUVs(uvs);
+				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(new AttributesBuffer());
+				curve_sub_geom.setIndices(indices);
+				curve_sub_geom.setPositions(positions);
+				curve_sub_geom.setCurves(curveData);
+				curve_sub_geom.setUVs(uvs);
 				new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
 			}
 			//console.log("Parsed a font-table");

@@ -1,3 +1,5 @@
+import AttributesBuffer					= require("awayjs-core/lib/attributes/AttributesBuffer");
+import Short3Attributes					= require("awayjs-core/lib/attributes/Short3Attributes");
 import BitmapImage2D					= require("awayjs-core/lib/data/BitmapImage2D");
 import BitmapImageCube					= require("awayjs-core/lib/data/BitmapImageCube");
 import BlendMode						= require("awayjs-core/lib/data/BlendMode");
@@ -828,11 +830,11 @@ class AWDParser extends ParserBase
 					}
 				}
 				//this.parseProperties(null);// no attributes for font-table subgeos
-				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(true);
-				curve_sub_geom.updateIndices(indices);
-				curve_sub_geom.updatePositions(positions);
-				curve_sub_geom.updateCurves(curveData);
-				curve_sub_geom.updateUVs(uvs);
+				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(new AttributesBuffer());
+				curve_sub_geom.setIndices(indices);
+				curve_sub_geom.setPositions(positions);
+				curve_sub_geom.setCurves(curveData);
+				curve_sub_geom.setUVs(uvs);
 				new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
 			}
 			//console.log("Parsed a font-table");
@@ -1547,17 +1549,17 @@ class AWDParser extends ParserBase
 
 			this.parseUserAttributes(); // Ignore sub-mesh attributes for now
 			if(is_curve_geom){
-				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(true);
-				curve_sub_geom.updateIndices(indices);
-				curve_sub_geom.updatePositions(positions);
-				curve_sub_geom.updateCurves(curveData);
-				curve_sub_geom.updateUVs(uvs);
+				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(new AttributesBuffer());
+				curve_sub_geom.setIndices(indices);
+				curve_sub_geom.setPositions(positions);
+				curve_sub_geom.setCurves(curveData);
+				curve_sub_geom.setUVs(uvs);
 				geom.addSubGeometry(curve_sub_geom);
 				if (this._debug)
 					console.log("Parsed a CurveSubGeometry");
 			}
 			else {
-				var triangle_sub_geom = new TriangleSubGeometry(true);
+				var triangle_sub_geom = new TriangleSubGeometry(new AttributesBuffer());
 				if (weights)
 					triangle_sub_geom.jointsPerVertex = weights.length / (verts.length / 3);
 				if (normals)
@@ -1568,13 +1570,13 @@ class AWDParser extends ParserBase
 				if (true) {
 					triangle_sub_geom.autoDeriveTangents = true;
 				}
-				triangle_sub_geom.updateIndices(indices);
-				triangle_sub_geom.updatePositions(verts);
-				triangle_sub_geom.updateVertexNormals(normals);
-				triangle_sub_geom.updateUVs(uvs);
-				triangle_sub_geom.updateVertexTangents(null);
-				triangle_sub_geom.updateJointWeights(weights);
-				triangle_sub_geom.updateJointIndices(w_indices);
+				triangle_sub_geom.setIndices(indices);
+				triangle_sub_geom.setPositions(verts);
+				triangle_sub_geom.setNormals(normals);
+				triangle_sub_geom.setUVs(uvs);
+				triangle_sub_geom.setTangents(null);
+				triangle_sub_geom.setJointWeights(weights);
+				triangle_sub_geom.setJointIndices(w_indices);
 
 				var scaleU:number = subProps.get(1, 1);
 				var scaleV:number = subProps.get(2, 1);
@@ -2887,7 +2889,7 @@ class AWDParser extends ParserBase
 		var subGeom:TriangleSubGeometry;
 		var idx:number /*int*/ = 0;
 		var clip:VertexClipNode = new VertexClipNode();
-		var indices:Array<number> /*uint*/;
+		var indices:Short3Attributes;
 		var verts:Array<number>;
 		var num_Streams:number /*int*/ = 0;
 		var streamsParsed:number /*int*/ = 0;
@@ -2901,7 +2903,7 @@ class AWDParser extends ParserBase
 			this._blocks[blockID].addError("Could not find the target-Geometry-Object " + geoAdress + " ) for this VertexClipNode");
 			return;
 		}
-		var uvs:Array<Array<number>> = this.getUVForVertexAnimation(geoAdress);
+		var uvs:Array<Float32Array> = this.getUVForVertexAnimation(geoAdress);
 		if (!poseOnly)
 			num_frames = this._newBlockBytes.readUnsignedShort();
 
@@ -2939,12 +2941,12 @@ class AWDParser extends ParserBase
 							verts[idx++] = y;
 							verts[idx++] = z;
 						}
-						subGeom = new TriangleSubGeometry(true);
-						subGeom.updateIndices(indices);
-						subGeom.updatePositions(verts);
-						subGeom.updateUVs(uvs[subMeshParsed]);
-						subGeom.updateVertexNormals(null);
-						subGeom.updateVertexTangents(null);
+						subGeom = new TriangleSubGeometry(new AttributesBuffer());
+						subGeom.setIndices(indices);
+						subGeom.setPositions(verts);
+						subGeom.setUVs(uvs[subMeshParsed]);
+						subGeom.setNormals(null);
+						subGeom.setTangents(null);
 						subGeom.autoDeriveNormals = false;
 						subGeom.autoDeriveTangents = false;
 						subMeshParsed++;
@@ -3439,7 +3441,7 @@ class AWDParser extends ParserBase
 
 	}
 	// Helper - functions
-	private getUVForVertexAnimation(meshID:number /*uint*/):Array<Array<number>>
+	private getUVForVertexAnimation(meshID:number /*uint*/):Array<Float32Array>
 	{
 		if (this._blocks[meshID].data instanceof Mesh)
 			meshID = this._blocks[meshID].geoID;
@@ -3447,26 +3449,11 @@ class AWDParser extends ParserBase
 			return this._blocks[meshID].uvsForVertexAnimation;
 		var geometry:Geometry = (<Geometry> this._blocks[meshID].data);
 		var geoCnt:number /*int*/ = 0;
-		var ud:Array<number>;
-		var uStride:number /*uint*/;
-		var uOffs:number /*uint*/;
-		var numPoints:number /*uint*/;
-		var i:number /*int*/;
-		var newUvs:Array<number>;
 		var sub_geom:TriangleSubGeometry;
-		this._blocks[meshID].uvsForVertexAnimation = new Array<Array<number>>();
+		this._blocks[meshID].uvsForVertexAnimation = new Array<Float32Array>();
 		while (geoCnt < geometry.subGeometries.length) {
-			newUvs = new Array<number>();
 			sub_geom = <TriangleSubGeometry> geometry.subGeometries[geoCnt];
-			numPoints = sub_geom.numVertices;
-			ud = sub_geom.uvs;
-			uStride = sub_geom.getStride(TriangleSubGeometry.UV_DATA);
-			uOffs = sub_geom.getOffset(TriangleSubGeometry.UV_DATA);
-			for (i = 0; i < numPoints; i++) {
-				newUvs.push(ud[uOffs + i*uStride + 0]);
-				newUvs.push(ud[uOffs + i*uStride + 1]);
-			}
-			this._blocks[meshID].uvsForVertexAnimation.push(newUvs);
+			this._blocks[meshID].uvsForVertexAnimation.push(sub_geom.uvs.get(sub_geom.numVertices));
 			geoCnt++;
 		}
 		return this._blocks[meshID].uvsForVertexAnimation;

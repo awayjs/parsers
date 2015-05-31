@@ -413,7 +413,7 @@ class AWD3FileData
 	}
 
 	// Helper - functions
-	public getUVForVertexAnimation(meshID:number /*uint*/):Array<Array<number>>
+	public getUVForVertexAnimation(meshID:number /*uint*/):Array<Float32Array>
 	{
 		if (this._blocks[meshID].data instanceof Mesh)
 			meshID = this._blocks[meshID].geoID;
@@ -421,26 +421,11 @@ class AWD3FileData
 			return this._blocks[meshID].uvsForVertexAnimation;
 		var geometry:Geometry = (<Geometry> this._blocks[meshID].data);
 		var geoCnt:number /*int*/ = 0;
-		var ud:Array<number>;
-		var uStride:number /*uint*/;
-		var uOffs:number /*uint*/;
-		var numPoints:number /*uint*/;
-		var i:number /*int*/;
-		var newUvs:Array<number>;
 		var sub_geom:TriangleSubGeometry;
-		this._blocks[meshID].uvsForVertexAnimation = new Array<Array<number>>();
+		this._blocks[meshID].uvsForVertexAnimation = new Array<Float32Array>();
 		while (geoCnt < geometry.subGeometries.length) {
-			newUvs = new Array<number>();
 			sub_geom = <TriangleSubGeometry> geometry.subGeometries[geoCnt];
-			numPoints = sub_geom.numVertices;
-			ud = sub_geom.uvs;
-			uStride = sub_geom.getStride(TriangleSubGeometry.UV_DATA);
-			uOffs = sub_geom.getOffset(TriangleSubGeometry.UV_DATA);
-			for (i = 0; i < numPoints; i++) {
-				newUvs.push(ud[uOffs + i*uStride + 0]);
-				newUvs.push(ud[uOffs + i*uStride + 1]);
-			}
-			this._blocks[meshID].uvsForVertexAnimation.push(newUvs);
+			this._blocks[meshID].uvsForVertexAnimation.push(sub_geom.uvs.get(sub_geom.numVertices));
 			geoCnt++;
 		}
 		return this._blocks[meshID].uvsForVertexAnimation;

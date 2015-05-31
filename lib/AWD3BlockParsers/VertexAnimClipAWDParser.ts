@@ -1,11 +1,12 @@
-
-import EventDispatcher			= require("awayjs-core/lib/events/EventDispatcher");
-import ByteArray				= require("awayjs-core/lib/utils/ByteArray");
-import AbstractMethodError		= require("awayjs-core/lib/errors/AbstractMethodError");
-import IAsset					= require("awayjs-core/lib/library/IAsset");
-import AWDBlockParserBase		= require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-import AWDProperties			= require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
-import AWD3Utils				= require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+import AttributesBuffer					= require("awayjs-core/lib/attributes/AttributesBuffer");
+import Short3Attributes					= require("awayjs-core/lib/attributes/Short3Attributes");
+import EventDispatcher					= require("awayjs-core/lib/events/EventDispatcher");
+import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
+import AbstractMethodError				= require("awayjs-core/lib/errors/AbstractMethodError");
+import IAsset							= require("awayjs-core/lib/library/IAsset");
+import AWDBlockParserBase				= require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+import AWDProperties					= require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
+import AWD3Utils						= require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
 
 import TriangleSubGeometry				= require("awayjs-core/lib/data/TriangleSubGeometry");
 import VertexClipNode					= require("awayjs-renderergl/lib/animators/nodes/VertexClipNode");
@@ -38,7 +39,7 @@ class VertexAnimClipAWDParser extends AWDBlockParserBase
 		var geometry:Geometry;
 		var subGeom:TriangleSubGeometry;
 		var idx:number /*int*/ = 0;
-		var indices:Array<number> /*uint*/;
+		var indices:Short3Attributes;
 		var verts:Array<number>;
 		var num_Streams:number /*int*/ = 0;
 		var streamsParsed:number /*int*/ = 0;
@@ -53,7 +54,7 @@ class VertexAnimClipAWDParser extends AWDBlockParserBase
 			//this.awd_file_data._blocks[blockID].addError("Could not find the target-Geometry-Object " + geoAdress + " ) for this.awd_file_data VertexClipNode");
 			return;
 		}
-		var uvs:Array<Array<number>> = this.awd_file_data.getUVForVertexAnimation(geoAdress);
+		var uvs:Array<Float32Array> = this.awd_file_data.getUVForVertexAnimation(geoAdress);
 		if (!poseOnly)
 			num_frames = this.awd_file_data.newBlockBytes.readUnsignedShort();
 
@@ -84,19 +85,19 @@ class VertexAnimClipAWDParser extends AWDBlockParserBase
 						verts = new Array<number>();
 						idx = 0;
 						while (this.awd_file_data.newBlockBytes.position < str_end) {
-							x = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo)
-							y = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo)
-							z = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo)
+							x = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo);
+							y = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo);
+							z = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo);
 							verts[idx++] = x;
 							verts[idx++] = y;
 							verts[idx++] = z;
 						}
-						subGeom = new TriangleSubGeometry(true);
-						subGeom.updateIndices(indices);
-						subGeom.updatePositions(verts);
-						subGeom.updateUVs(uvs[subMeshParsed]);
-						subGeom.updateVertexNormals(null);
-						subGeom.updateVertexTangents(null);
+						subGeom = new TriangleSubGeometry(new AttributesBuffer());
+						subGeom.setIndices(indices);
+						subGeom.setPositions(verts);
+						subGeom.setUVs(uvs[subMeshParsed]);
+						subGeom.setNormals(null);
+						subGeom.setTangents(null);
 						subGeom.autoDeriveNormals = false;
 						subGeom.autoDeriveTangents = false;
 						subMeshParsed++;
