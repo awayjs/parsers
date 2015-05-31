@@ -41,7 +41,6 @@ class ObjChiefTestDay
 	private terrain:Mesh;
 
 	private spartanFlag:boolean = false;
-	private terrainObjFlag:boolean = false;
 
 	constructor()
 	{
@@ -124,9 +123,9 @@ class ObjChiefTestDay
 						this.spartanFlag = true;
 						this.meshes.push(mesh);
 					} else if (event.url =='assets/terrain.obj') {
-						this.terrainObjFlag = true;
 						this.terrain = <Mesh> d;
 						this.terrain.y = 98;
+						this.terrain.geometry.scaleUV(20, 20);
 						this.view.scene.addChild(this.terrain);
 					}
 
@@ -144,10 +143,8 @@ class ObjChiefTestDay
 			}
 		}
 
-		if (this.terrainObjFlag && this.terrainMaterial) {
+		if (this.terrain && this.terrainMaterial)
 			this.terrain.material = this.terrainMaterial;
-			this.terrain.geometry.scaleUV(20, 20);
-		}
 
 		if (this.mat && this.spartanFlag)
 			for (var c:number = 0; c < this.meshes.length; c++)
