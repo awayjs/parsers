@@ -423,7 +423,7 @@ declare module "awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData" {
 	    parseUserAttributes(): Object;
 	    parseProperties(expected: Object): AWDProperties;
 	    private parseAttrValue(type, len);
-	    getUVForVertexAnimation(meshID: number): Array<Array<number>>;
+	    getUVForVertexAnimation(meshID: number): Array<Float32Array>;
 	    parseVarStr(): string;
 	    getBlockByID(assetID: number): AWDBlock;
 	    getAssetByID(assetID: number): IAsset;
@@ -517,7 +517,7 @@ declare module "awayjs-parsers/lib/AWD3ParserUtils/AWDBlock" {
 	    extras: Object;
 	    bytes: ByteArray;
 	    errorMessages: Array<string>;
-	    uvsForVertexAnimation: Array<Array<number>>;
+	    uvsForVertexAnimation: Array<Float32Array>;
 	    constructor(this_id: number, this_type: number);
 	    dispose(): void;
 	    addError(errorMsg: string): void;
@@ -1178,60 +1178,6 @@ declare module "awayjs-parsers/lib/Max3DSParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/Parsers" {
-	/**
-	 *
-	 */
-	class Parsers {
-	    /**
-	     * A list of all parsers that come bundled with Away3D. Use this to quickly
-	     * enable support for all bundled parsers to the file format auto-detection
-	     * feature, using any of the enableParsers() methods on loaders, e.g.:
-	     *
-	     * <code>AssetLibrary.enableParsers(Parsers.ALL_BUNDLED);</code>
-	     *
-	     * Beware however that this requires all parser classes to be included in the
-	     * SWF file, which will add 50-100 kb to the file. When only a limited set of
-	     * file formats are used, SWF file size can be saved by adding the parsers
-	     * individually using AssetLibrary.enableParser()
-	     *
-	     * A third way is to specify a parser for each loaded file, thereby bypassing
-	     * the auto-detection mechanisms altogether, while at the same time allowing
-	     * any properties that are unique to that parser to be set for that load.
-	     *
-	     * The bundled parsers are:
-	     *
-	     * <ul>
-	     * <li>AC3D (.ac)</li>
-	     * <li>Away Data version 1 ASCII and version 2 binary (.awd). AWD1 BSP unsupported</li>
-	     * <li>3DMax (.3ds)</li>
-	     * <li>DXF (.dxf)</li>
-	     * <li>Quake 2 MD2 models (.md2)</li>
-	     * <li>Doom 3 MD5 animation clips (.md5anim)</li>
-	     * <li>Doom 3 MD5 meshes (.md5mesh)</li>
-	     * <li>Wavefront OBJ (.obj)</li>
-	     * <li>Collada (.dae)</li>
-	     * <li>Images (.jpg, .png)</li>
-	     * </ul>
-	     *
-	     * @see away.library.AssetLibrary.enableParser
-	     */
-	    static ALL_BUNDLED: Array<Object>;
-	    /**
-	     * Short-hand function to enable all bundled parsers for auto-detection. In practice,
-	     * this is the same as invoking enableParsers(Parsers.ALL_BUNDLED) on any of the
-	     * loader classes SingleFileLoader, AssetLoader, AssetLibrary or Loader3D.
-	     *
-	     * See notes about file size in the documentation for the ALL_BUNDLED constant.
-	     *
-	     * @see away.parsers.Parsers.ALL_BUNDLED
-	     */
-	    static enableAllBundled(): void;
-	}
-	export = Parsers;
-	
-}
-
 declare module "awayjs-parsers/lib/OBJParser" {
 	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 	import ResourceDependency = require("awayjs-core/lib/parsers/ResourceDependency");
@@ -1360,6 +1306,60 @@ declare module "awayjs-parsers/lib/OBJParser" {
 	    private applyMaterials();
 	}
 	export = OBJParser;
+	
+}
+
+declare module "awayjs-parsers/lib/Parsers" {
+	/**
+	 *
+	 */
+	class Parsers {
+	    /**
+	     * A list of all parsers that come bundled with Away3D. Use this to quickly
+	     * enable support for all bundled parsers to the file format auto-detection
+	     * feature, using any of the enableParsers() methods on loaders, e.g.:
+	     *
+	     * <code>AssetLibrary.enableParsers(Parsers.ALL_BUNDLED);</code>
+	     *
+	     * Beware however that this requires all parser classes to be included in the
+	     * SWF file, which will add 50-100 kb to the file. When only a limited set of
+	     * file formats are used, SWF file size can be saved by adding the parsers
+	     * individually using AssetLibrary.enableParser()
+	     *
+	     * A third way is to specify a parser for each loaded file, thereby bypassing
+	     * the auto-detection mechanisms altogether, while at the same time allowing
+	     * any properties that are unique to that parser to be set for that load.
+	     *
+	     * The bundled parsers are:
+	     *
+	     * <ul>
+	     * <li>AC3D (.ac)</li>
+	     * <li>Away Data version 1 ASCII and version 2 binary (.awd). AWD1 BSP unsupported</li>
+	     * <li>3DMax (.3ds)</li>
+	     * <li>DXF (.dxf)</li>
+	     * <li>Quake 2 MD2 models (.md2)</li>
+	     * <li>Doom 3 MD5 animation clips (.md5anim)</li>
+	     * <li>Doom 3 MD5 meshes (.md5mesh)</li>
+	     * <li>Wavefront OBJ (.obj)</li>
+	     * <li>Collada (.dae)</li>
+	     * <li>Images (.jpg, .png)</li>
+	     * </ul>
+	     *
+	     * @see away.library.AssetLibrary.enableParser
+	     */
+	    static ALL_BUNDLED: Array<Object>;
+	    /**
+	     * Short-hand function to enable all bundled parsers for auto-detection. In practice,
+	     * this is the same as invoking enableParsers(Parsers.ALL_BUNDLED) on any of the
+	     * loader classes SingleFileLoader, AssetLoader, AssetLibrary or Loader3D.
+	     *
+	     * See notes about file size in the documentation for the ALL_BUNDLED constant.
+	     *
+	     * @see away.parsers.Parsers.ALL_BUNDLED
+	     */
+	    static enableAllBundled(): void;
+	}
+	export = Parsers;
 	
 }
 

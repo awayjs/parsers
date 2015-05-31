@@ -474,6 +474,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 var Geometry = require("awayjs-core/lib/data/Geometry");
 var CurveSubGeometry = require("awayjs-core/lib/data/CurveSubGeometry");
@@ -583,17 +584,17 @@ var GeometryAWDParser = (function (_super) {
             }
             this.awd_file_data.parseUserAttributes(); // Ignore sub-mesh attributes for now
             if (is_curve_geom) {
-                var curve_sub_geom = new CurveSubGeometry(true);
-                curve_sub_geom.updateIndices(indices);
-                curve_sub_geom.updatePositions(positions);
-                curve_sub_geom.updateCurves(curveData);
-                curve_sub_geom.updateUVs(uvs);
+                var curve_sub_geom = new CurveSubGeometry(new AttributesBuffer());
+                curve_sub_geom.setIndices(indices);
+                curve_sub_geom.setPositions(positions);
+                curve_sub_geom.setCurves(curveData);
+                curve_sub_geom.setUVs(uvs);
                 geom.addSubGeometry(curve_sub_geom);
                 if (this.awd_file_data.debug)
                     console.log("Parsed a CurveSubGeometry");
             }
             else {
-                var triangle_sub_geom = new TriangleSubGeometry(true);
+                var triangle_sub_geom = new TriangleSubGeometry(new AttributesBuffer());
                 if (weights)
                     triangle_sub_geom.jointsPerVertex = weights.length / (verts.length / 3);
                 if (normals)
@@ -604,13 +605,13 @@ var GeometryAWDParser = (function (_super) {
                 if (true) {
                     triangle_sub_geom.autoDeriveTangents = true;
                 }
-                triangle_sub_geom.updateIndices(indices);
-                triangle_sub_geom.updatePositions(verts);
-                triangle_sub_geom.updateVertexNormals(normals);
-                triangle_sub_geom.updateUVs(uvs);
-                triangle_sub_geom.updateVertexTangents(null);
-                triangle_sub_geom.updateJointWeights(weights);
-                triangle_sub_geom.updateJointIndices(w_indices);
+                triangle_sub_geom.setIndices(indices);
+                triangle_sub_geom.setPositions(verts);
+                triangle_sub_geom.setNormals(normals);
+                triangle_sub_geom.setUVs(uvs);
+                triangle_sub_geom.setTangents(null);
+                triangle_sub_geom.setJointWeights(weights);
+                triangle_sub_geom.setJointIndices(w_indices);
                 var scaleU = subProps.get(1, 1);
                 var scaleV = subProps.get(2, 1);
                 var setSubUVs = false; //this should remain false atm, because in AwayBuilder the uv is only scaled by the geometry
@@ -641,7 +642,7 @@ var GeometryAWDParser = (function (_super) {
 })(AWDBlockParserBase);
 module.exports = GeometryAWDParser;
 
-},{"awayjs-core/lib/data/CurveSubGeometry":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase"}],"awayjs-parsers/lib/AWD3BlockParsers/LightAWDParser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/data/CurveSubGeometry":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase"}],"awayjs-parsers/lib/AWD3BlockParsers/LightAWDParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -2043,6 +2044,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 var Font = require("awayjs-display/lib/text/Font");
 var CurveSubGeometry = require("awayjs-core/lib/data/CurveSubGeometry");
@@ -2104,11 +2106,11 @@ var TesselatedFontAWDParser = (function (_super) {
                     }
                 }
                 //this.awd_file_data.parseProperties(null);// no attributes for font-table subgeos
-                var curve_sub_geom = new CurveSubGeometry(true);
-                curve_sub_geom.updateIndices(indices);
-                curve_sub_geom.updatePositions(positions);
-                curve_sub_geom.updateCurves(curveData);
-                curve_sub_geom.updateUVs(uvs);
+                var curve_sub_geom = new CurveSubGeometry(new AttributesBuffer());
+                curve_sub_geom.setIndices(indices);
+                curve_sub_geom.setPositions(positions);
+                curve_sub_geom.setCurves(curveData);
+                curve_sub_geom.setUVs(uvs);
                 new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
             }
         }
@@ -2124,7 +2126,7 @@ var TesselatedFontAWDParser = (function (_super) {
 })(AWDBlockParserBase);
 module.exports = TesselatedFontAWDParser;
 
-},{"awayjs-core/lib/data/CurveSubGeometry":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase"}],"awayjs-parsers/lib/AWD3BlockParsers/TextfieldAWDParser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/data/CurveSubGeometry":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase"}],"awayjs-parsers/lib/AWD3BlockParsers/TextfieldAWDParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -2290,6 +2292,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
 var TriangleSubGeometry = require("awayjs-core/lib/data/TriangleSubGeometry");
@@ -2318,7 +2321,7 @@ var VertexAnimClipAWDParser = (function (_super) {
         var geometry;
         var subGeom;
         var idx = 0;
-        var indices /*uint*/;
+        var indices;
         var verts;
         var num_Streams = 0;
         var streamsParsed = 0;
@@ -2368,12 +2371,12 @@ var VertexAnimClipAWDParser = (function (_super) {
                             verts[idx++] = y;
                             verts[idx++] = z;
                         }
-                        subGeom = new TriangleSubGeometry(true);
-                        subGeom.updateIndices(indices);
-                        subGeom.updatePositions(verts);
-                        subGeom.updateUVs(uvs[subMeshParsed]);
-                        subGeom.updateVertexNormals(null);
-                        subGeom.updateVertexTangents(null);
+                        subGeom = new TriangleSubGeometry(new AttributesBuffer());
+                        subGeom.setIndices(indices);
+                        subGeom.setPositions(verts);
+                        subGeom.setUVs(uvs[subMeshParsed]);
+                        subGeom.setNormals(null);
+                        subGeom.setTangents(null);
                         subGeom.autoDeriveNormals = false;
                         subGeom.autoDeriveTangents = false;
                         subMeshParsed++;
@@ -2396,7 +2399,7 @@ var VertexAnimClipAWDParser = (function (_super) {
 })(AWDBlockParserBase);
 module.exports = VertexAnimClipAWDParser;
 
-},{"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils","awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/AWD3BlockParsers/VertexAnimationSetAWDParser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils","awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/AWD3BlockParsers/VertexAnimationSetAWDParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -2465,7 +2468,6 @@ module.exports = VertexAnimationSetAWDParser;
 },{"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils","awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData":[function(require,module,exports){
 var BitmapImageCube = require("awayjs-core/lib/data/BitmapImageCube");
 var BlendMode = require("awayjs-core/lib/data/BlendMode");
-var TriangleSubGeometry = require("awayjs-core/lib/data/TriangleSubGeometry");
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
@@ -2804,26 +2806,11 @@ var AWD3FileData = (function () {
             return this._blocks[meshID].uvsForVertexAnimation;
         var geometry = this._blocks[meshID].data;
         var geoCnt = 0;
-        var ud;
-        var uStride /*uint*/;
-        var uOffs /*uint*/;
-        var numPoints /*uint*/;
-        var i /*int*/;
-        var newUvs;
         var sub_geom;
         this._blocks[meshID].uvsForVertexAnimation = new Array();
         while (geoCnt < geometry.subGeometries.length) {
-            newUvs = new Array();
             sub_geom = geometry.subGeometries[geoCnt];
-            numPoints = sub_geom.numVertices;
-            ud = sub_geom.uvs;
-            uStride = sub_geom.getStride(TriangleSubGeometry.UV_DATA);
-            uOffs = sub_geom.getOffset(TriangleSubGeometry.UV_DATA);
-            for (i = 0; i < numPoints; i++) {
-                newUvs.push(ud[uOffs + i * uStride + 0]);
-                newUvs.push(ud[uOffs + i * uStride + 1]);
-            }
-            this._blocks[meshID].uvsForVertexAnimation.push(newUvs);
+            this._blocks[meshID].uvsForVertexAnimation.push(sub_geom.uvs.get(sub_geom.numVertices));
             geoCnt++;
         }
         return this._blocks[meshID].uvsForVertexAnimation;
@@ -2921,7 +2908,7 @@ var AWD3FileData = (function () {
 })();
 module.exports = AWD3FileData;
 
-},{"awayjs-core/lib/data/BitmapImageCube":undefined,"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils","awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-parsers/lib/AWD3ParserUtils/AWDProperties":"awayjs-parsers/lib/AWD3ParserUtils/AWDProperties"}],"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":[function(require,module,exports){
+},{"awayjs-core/lib/data/BitmapImageCube":undefined,"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils","awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-parsers/lib/AWD3ParserUtils/AWDProperties":"awayjs-parsers/lib/AWD3ParserUtils/AWDProperties"}],"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":[function(require,module,exports){
 var AWD3Utils = (function () {
     function AWD3Utils() {
     }
@@ -3393,6 +3380,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 var BitmapImageCube = require("awayjs-core/lib/data/BitmapImageCube");
 var BlendMode = require("awayjs-core/lib/data/BlendMode");
 var Geometry = require("awayjs-core/lib/data/Geometry");
@@ -3995,11 +3983,11 @@ var AWDParser = (function (_super) {
                     }
                 }
                 //this.parseProperties(null);// no attributes for font-table subgeos
-                var curve_sub_geom = new CurveSubGeometry(true);
-                curve_sub_geom.updateIndices(indices);
-                curve_sub_geom.updatePositions(positions);
-                curve_sub_geom.updateCurves(curveData);
-                curve_sub_geom.updateUVs(uvs);
+                var curve_sub_geom = new CurveSubGeometry(new AttributesBuffer());
+                curve_sub_geom.setIndices(indices);
+                curve_sub_geom.setPositions(positions);
+                curve_sub_geom.setCurves(curveData);
+                curve_sub_geom.setUVs(uvs);
                 new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
             }
         }
@@ -4601,17 +4589,17 @@ var AWDParser = (function (_super) {
             }
             this.parseUserAttributes(); // Ignore sub-mesh attributes for now
             if (is_curve_geom) {
-                var curve_sub_geom = new CurveSubGeometry(true);
-                curve_sub_geom.updateIndices(indices);
-                curve_sub_geom.updatePositions(positions);
-                curve_sub_geom.updateCurves(curveData);
-                curve_sub_geom.updateUVs(uvs);
+                var curve_sub_geom = new CurveSubGeometry(new AttributesBuffer());
+                curve_sub_geom.setIndices(indices);
+                curve_sub_geom.setPositions(positions);
+                curve_sub_geom.setCurves(curveData);
+                curve_sub_geom.setUVs(uvs);
                 geom.addSubGeometry(curve_sub_geom);
                 if (this._debug)
                     console.log("Parsed a CurveSubGeometry");
             }
             else {
-                var triangle_sub_geom = new TriangleSubGeometry(true);
+                var triangle_sub_geom = new TriangleSubGeometry(new AttributesBuffer());
                 if (weights)
                     triangle_sub_geom.jointsPerVertex = weights.length / (verts.length / 3);
                 if (normals)
@@ -4622,13 +4610,13 @@ var AWDParser = (function (_super) {
                 if (true) {
                     triangle_sub_geom.autoDeriveTangents = true;
                 }
-                triangle_sub_geom.updateIndices(indices);
-                triangle_sub_geom.updatePositions(verts);
-                triangle_sub_geom.updateVertexNormals(normals);
-                triangle_sub_geom.updateUVs(uvs);
-                triangle_sub_geom.updateVertexTangents(null);
-                triangle_sub_geom.updateJointWeights(weights);
-                triangle_sub_geom.updateJointIndices(w_indices);
+                triangle_sub_geom.setIndices(indices);
+                triangle_sub_geom.setPositions(verts);
+                triangle_sub_geom.setNormals(normals);
+                triangle_sub_geom.setUVs(uvs);
+                triangle_sub_geom.setTangents(null);
+                triangle_sub_geom.setJointWeights(weights);
+                triangle_sub_geom.setJointIndices(w_indices);
                 var scaleU = subProps.get(1, 1);
                 var scaleV = subProps.get(2, 1);
                 var setSubUVs = false; //this should remain false atm, because in AwayBuilder the uv is only scaled by the geometry
@@ -5673,7 +5661,7 @@ var AWDParser = (function (_super) {
         var subGeom;
         var idx = 0;
         var clip = new VertexClipNode();
-        var indices /*uint*/;
+        var indices;
         var verts;
         var num_Streams = 0;
         var streamsParsed = 0;
@@ -5722,12 +5710,12 @@ var AWDParser = (function (_super) {
                             verts[idx++] = y;
                             verts[idx++] = z;
                         }
-                        subGeom = new TriangleSubGeometry(true);
-                        subGeom.updateIndices(indices);
-                        subGeom.updatePositions(verts);
-                        subGeom.updateUVs(uvs[subMeshParsed]);
-                        subGeom.updateVertexNormals(null);
-                        subGeom.updateVertexTangents(null);
+                        subGeom = new TriangleSubGeometry(new AttributesBuffer());
+                        subGeom.setIndices(indices);
+                        subGeom.setPositions(verts);
+                        subGeom.setUVs(uvs[subMeshParsed]);
+                        subGeom.setNormals(null);
+                        subGeom.setTangents(null);
                         subGeom.autoDeriveNormals = false;
                         subGeom.autoDeriveTangents = false;
                         subMeshParsed++;
@@ -6126,26 +6114,11 @@ var AWDParser = (function (_super) {
             return this._blocks[meshID].uvsForVertexAnimation;
         var geometry = this._blocks[meshID].data;
         var geoCnt = 0;
-        var ud;
-        var uStride /*uint*/;
-        var uOffs /*uint*/;
-        var numPoints /*uint*/;
-        var i /*int*/;
-        var newUvs;
         var sub_geom;
         this._blocks[meshID].uvsForVertexAnimation = new Array();
         while (geoCnt < geometry.subGeometries.length) {
-            newUvs = new Array();
             sub_geom = geometry.subGeometries[geoCnt];
-            numPoints = sub_geom.numVertices;
-            ud = sub_geom.uvs;
-            uStride = sub_geom.getStride(TriangleSubGeometry.UV_DATA);
-            uOffs = sub_geom.getOffset(TriangleSubGeometry.UV_DATA);
-            for (i = 0; i < numPoints; i++) {
-                newUvs.push(ud[uOffs + i * uStride + 0]);
-                newUvs.push(ud[uOffs + i * uStride + 1]);
-            }
-            this._blocks[meshID].uvsForVertexAnimation.push(newUvs);
+            this._blocks[meshID].uvsForVertexAnimation.push(sub_geom.uvs.get(sub_geom.numVertices));
             geoCnt++;
         }
         return this._blocks[meshID].uvsForVertexAnimation;
@@ -6353,13 +6326,14 @@ var BitFlags = (function () {
 })();
 module.exports = AWDParser;
 
-},{"awayjs-core/lib/data/BitmapImageCube":undefined,"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/data/CurveSubGeometry":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/animators/nodes/AnimationNodeBase":undefined,"awayjs-display/lib/base/LightBase":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Billboard":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/entities/TextField":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-display/lib/materials/lightpickers/LightPickerBase":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-display/lib/text/TextFormat":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectMethodBase":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowMapMethodBase":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-player/lib/timeline/TimelineKeyFrame":undefined,"awayjs-player/lib/timeline/commands/AddChildAtDepthCommand":undefined,"awayjs-player/lib/timeline/commands/ApplyAS2DepthsCommand":undefined,"awayjs-player/lib/timeline/commands/ExecuteScriptCommand":undefined,"awayjs-player/lib/timeline/commands/RemoveChildrenAtDepthCommand":undefined,"awayjs-player/lib/timeline/commands/SetInstanceNameCommand":undefined,"awayjs-player/lib/timeline/commands/SetMaskCommand":undefined,"awayjs-player/lib/timeline/commands/UpdatePropertyCommand":undefined,"awayjs-renderergl/lib/animators/AnimationSetBase":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/data/BitmapImageCube":undefined,"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/data/CurveSubGeometry":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/animators/nodes/AnimationNodeBase":undefined,"awayjs-display/lib/base/LightBase":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Billboard":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/entities/TextField":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-display/lib/materials/lightpickers/LightPickerBase":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-display/lib/text/TextFormat":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectMethodBase":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowMapMethodBase":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-player/lib/timeline/TimelineKeyFrame":undefined,"awayjs-player/lib/timeline/commands/AddChildAtDepthCommand":undefined,"awayjs-player/lib/timeline/commands/ApplyAS2DepthsCommand":undefined,"awayjs-player/lib/timeline/commands/ExecuteScriptCommand":undefined,"awayjs-player/lib/timeline/commands/RemoveChildrenAtDepthCommand":undefined,"awayjs-player/lib/timeline/commands/SetInstanceNameCommand":undefined,"awayjs-player/lib/timeline/commands/SetMaskCommand":undefined,"awayjs-player/lib/timeline/commands/UpdatePropertyCommand":undefined,"awayjs-renderergl/lib/animators/AnimationSetBase":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 var Geometry = require("awayjs-core/lib/data/Geometry");
 var TriangleSubGeometry = require("awayjs-core/lib/data/TriangleSubGeometry");
 var URLLoaderDataFormat = require("awayjs-core/lib/net/URLLoaderDataFormat");
@@ -6689,16 +6663,18 @@ var MD2Parser = (function (_super) {
                 fvertices[k++] = tvertices[this._vertIndices[j] * 3 + 2];
                 fvertices[k++] = tvertices[this._vertIndices[j] * 3 + 1];
             }
-            subGeom = new TriangleSubGeometry(true);
+            subGeom = new TriangleSubGeometry(new AttributesBuffer());
             if (this._firstSubGeom == null)
                 this._firstSubGeom = subGeom;
             geometry = new Geometry();
             geometry.addSubGeometry(subGeom);
-            subGeom.updateIndices(this._indices);
-            subGeom.updatePositions(fvertices);
-            subGeom.updateUVs(this._finalUV);
-            subGeom.vertexNormals;
-            subGeom.vertexTangents;
+            subGeom.setIndices(this._indices);
+            subGeom.setPositions(fvertices);
+            subGeom.setUVs(this._finalUV);
+            // cause explicit updates
+            subGeom.setNormals(null);
+            subGeom.setTangents(null);
+            // turn auto updates off because they may be animated and set explicitly
             subGeom.autoDeriveNormals = false;
             subGeom.autoDeriveTangents = false;
             var clip = this._clipNodes[name];
@@ -6744,7 +6720,7 @@ var MD2Parser = (function (_super) {
 })(ParserBase);
 module.exports = MD2Parser;
 
-},{"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD5AnimParser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD5AnimParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -7271,6 +7247,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 var Geometry = require("awayjs-core/lib/data/Geometry");
 var TriangleSubGeometry = require("awayjs-core/lib/data/TriangleSubGeometry");
 var Quaternion = require("awayjs-core/lib/geom/Quaternion");
@@ -7530,7 +7507,7 @@ var MD5MeshParser = (function (_super) {
         var weight;
         var bindPose;
         var pos;
-        var subGeom = new TriangleSubGeometry(true);
+        var subGeom = new TriangleSubGeometry(new AttributesBuffer());
         var uvs = new Array(len * 2);
         var vertices = new Array(len * 3);
         var jointIndices = new Array(len * this._maxJointCount);
@@ -7567,14 +7544,14 @@ var MD5MeshParser = (function (_super) {
             uvs[v1] = vertex.t;
         }
         subGeom.jointsPerVertex = this._maxJointCount;
-        subGeom.updateIndices(indices);
-        subGeom.updatePositions(vertices);
-        subGeom.updateUVs(uvs);
-        subGeom.updateJointIndices(jointIndices);
-        subGeom.updateJointWeights(jointWeights);
+        subGeom.setIndices(indices);
+        subGeom.setPositions(vertices);
+        subGeom.setUVs(uvs);
+        subGeom.setJointIndices(jointIndices);
+        subGeom.setJointWeights(jointWeights);
         // cause explicit updates
-        subGeom.vertexNormals;
-        subGeom.vertexTangents;
+        subGeom.setNormals(null);
+        subGeom.setTangents(null);
         // turn auto updates off because they may be animated and set explicitly
         subGeom.autoDeriveTangents = false;
         subGeom.autoDeriveNormals = false;
@@ -7813,13 +7790,14 @@ var MeshData = (function () {
 })();
 module.exports = MD5MeshParser;
 
-},{"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/geom/Quaternion":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined}],"awayjs-parsers/lib/Max3DSParser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/geom/Quaternion":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined}],"awayjs-parsers/lib/Max3DSParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 var BitmapImage2D = require("awayjs-core/lib/data/BitmapImage2D");
 var Geometry = require("awayjs-core/lib/data/Geometry");
 var TriangleSubGeometry = require("awayjs-core/lib/data/TriangleSubGeometry");
@@ -8233,10 +8211,10 @@ var Max3DSParser = (function (_super) {
             geom = new Geometry();
             // Construct sub-geometries (potentially splitting buffers)
             // and add them to geometry.
-            sub = new TriangleSubGeometry(true);
-            sub.updateIndices(obj.indices);
-            sub.updatePositions(obj.verts);
-            sub.updateUVs(obj.uvs);
+            sub = new TriangleSubGeometry(new AttributesBuffer());
+            sub.setIndices(obj.indices);
+            sub.setPositions(obj.verts);
+            sub.setUVs(obj.uvs);
             geom.addSubGeometry(sub);
             if (obj.materials.length > 0) {
                 var mname;
@@ -8500,13 +8478,14 @@ var VertexVO = (function () {
 })();
 module.exports = Max3DSParser;
 
-},{"awayjs-core/lib/data/BitmapImage2D":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined}],"awayjs-parsers/lib/OBJParser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/data/BitmapImage2D":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined}],"awayjs-parsers/lib/OBJParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 var BitmapImage2D = require("awayjs-core/lib/data/BitmapImage2D");
 var TriangleSubGeometry = require("awayjs-core/lib/data/TriangleSubGeometry");
 var Geometry = require("awayjs-core/lib/data/Geometry");
@@ -8799,12 +8778,12 @@ var OBJParser = (function (_super) {
             }
         }
         if (vertices.length > 0) {
-            sub = new TriangleSubGeometry(true);
+            sub = new TriangleSubGeometry(new AttributesBuffer());
             sub.autoDeriveNormals = normals.length ? false : true;
-            sub.updateIndices(indices);
-            sub.updatePositions(vertices);
-            sub.updateVertexNormals(normals);
-            sub.updateUVs(uvs);
+            sub.setIndices(indices);
+            sub.setPositions(vertices);
+            sub.setNormals(normals);
+            sub.setUVs(uvs);
             geometry.addSubGeometry(sub);
         }
     };
@@ -9412,7 +9391,7 @@ var Vertex = (function () {
 })();
 module.exports = OBJParser;
 
-},{"awayjs-core/lib/data/BitmapImage2D":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/SpecularBasicMethod":undefined}],"awayjs-parsers/lib/Parsers":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/data/BitmapImage2D":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/SpecularBasicMethod":undefined}],"awayjs-parsers/lib/Parsers":[function(require,module,exports){
 var AssetLoader = require("awayjs-core/lib/library/AssetLoader");
 var AWDParser = require("awayjs-parsers/lib/AWDParser");
 var Max3DSParser = require("awayjs-parsers/lib/Max3DSParser");
