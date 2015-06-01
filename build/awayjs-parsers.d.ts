@@ -55,16 +55,6 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/BillboardAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/CameraAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class CameraAWD3Parser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = CameraAWD3Parser;
-	
-}
-
 declare module "awayjs-parsers/lib/AWD3BlockParsers/BlockNameSpaceAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 	class BlockNameSpaceAWDParser extends AWDBlockParserBase {
@@ -75,6 +65,16 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/BlockNameSpaceAWDParser" {
 	
 }
 
+declare module "awayjs-parsers/lib/AWD3BlockParsers/CameraAWDParser" {
+	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+	class CameraAWD3Parser extends AWDBlockParserBase {
+	    constructor();
+	    parseFromBytes(): void;
+	}
+	export = CameraAWD3Parser;
+	
+}
+
 declare module "awayjs-parsers/lib/AWD3BlockParsers/CommandAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 	class CommandAWDParser extends AWDBlockParserBase {
@@ -82,16 +82,6 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/CommandAWDParser" {
 	    parseFromBytes(): void;
 	}
 	export = CommandAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/LightAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class LightAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = LightAWDParser;
 	
 }
 
@@ -112,6 +102,16 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/GeometryAWDParser" {
 	    parseFromBytes(): void;
 	}
 	export = GeometryAWDParser;
+	
+}
+
+declare module "awayjs-parsers/lib/AWD3BlockParsers/LightAWDParser" {
+	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+	class LightAWDParser extends AWDBlockParserBase {
+	    constructor();
+	    parseFromBytes(): void;
+	}
+	export = LightAWDParser;
 	
 }
 
