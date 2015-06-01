@@ -1,5 +1,7 @@
 import AttributesBuffer					= require("awayjs-core/lib/attributes/AttributesBuffer");
 import Short3Attributes					= require("awayjs-core/lib/attributes/Short3Attributes");
+import Float3Attributes					= require("awayjs-core/lib/attributes/Float3Attributes");
+import Float2Attributes					= require("awayjs-core/lib/attributes/Float2Attributes");
 import BitmapImage2D					= require("awayjs-core/lib/data/BitmapImage2D");
 import BitmapImageCube					= require("awayjs-core/lib/data/BitmapImageCube");
 import BlendMode						= require("awayjs-core/lib/data/BlendMode");
@@ -804,37 +806,24 @@ class AWDParser extends ParserBase
 							indices[idx++] = this._newBlockBytes.readUnsignedShort();
 						}
 					} else if (str_type == 10) {// combined vertex2D stream 5 x float32
-						var idx_pos:number = 0;
-						var idx_curves:number = 0;
-						var idx_uvs:number = 0;
 
-						var positions:Array<number> = new Array<number>();
-						var curveData:Array<number> = new Array<number>();
-						var uvs:Array<number> = new Array<number>();
-
-						while (this._newBlockBytes.position < str_end) {
-
-							positions[idx_pos++] = this.readNumber(this._accuracyGeo);// x
-							positions[idx_pos++] = this.readNumber(this._accuracyGeo);// y
-							positions[idx_pos++] = this.readNumber(this._accuracyGeo);// type
-
-							curveData[idx_curves++] = this.readNumber(this._accuracyGeo);// curve value 1
-							curveData[idx_curves++] = this.readNumber(this._accuracyGeo);// curve value 2
-
-							uvs[idx_uvs++] = this.readNumber(this._accuracyGeo);// curve value 1
-							uvs[idx_uvs++] = this.readNumber(this._accuracyGeo);// curve value 1
-						}
+						var curveData:ByteArray = new ByteArray();
+						this._newBlockBytes.readBytes(curveData, 0, str_len);
 					}
 					else {
 						this._newBlockBytes.position = str_end;
 					}
 				}
 				//this.parseProperties(null);// no attributes for font-table subgeos
-				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(new AttributesBuffer());
+
+				var vertexBuffer:AttributesBuffer = new AttributesBuffer(28, str_len/28);
+				vertexBuffer.bufferView = new Uint8Array(<ArrayBuffer> curveData.arraybytes);
+
+				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(vertexBuffer);
 				curve_sub_geom.setIndices(indices);
-				curve_sub_geom.setPositions(positions);
-				curve_sub_geom.setCurves(curveData);
-				curve_sub_geom.setUVs(uvs);
+				curve_sub_geom.setPositions(new Float3Attributes(vertexBuffer));
+				curve_sub_geom.setCurves(new Float2Attributes(vertexBuffer));
+				curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
 				new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
 			}
 			//console.log("Parsed a font-table");
@@ -1206,7 +1195,9 @@ class AWDParser extends ParserBase
 				}
 			}
 		}
-		console.log("Parsed "+num_potential_childs+" potential childs. They will be used by "+num_all_display_instances+" instances.");
+
+		if (this._debug)
+			console.log("Parsed "+num_potential_childs+" potential childs. They will be used by "+num_all_display_instances+" instances.");
 
 		// register list of potential sounds
 		// a potential child can be reused on a timeline (added / removed / added)
@@ -1520,26 +1511,9 @@ class AWDParser extends ParserBase
 					this._newBlockBytes.position = str_end;
 				} else if (str_type == 10) {// combined vertex2D stream 5 x float32
 					is_curve_geom=true;
-					var idx_pos:number = 0;
-					var idx_curves:number = 0;
-					var idx_uvs:number = 0;
 
-					var positions:Array<number> = new Array<number>();
-					var curveData:Array<number> = new Array<number>();
-					var uvs:Array<number> = new Array<number>();
-
-					while (this._newBlockBytes.position < str_end) {
-
-						positions[idx_pos++] = this.readNumber(this._accuracyGeo);// x
-						positions[idx_pos++] = this.readNumber(this._accuracyGeo);// y
-						positions[idx_pos++] =  this.readNumber(this._accuracyGeo);// type
-
-						curveData[idx_curves++] = this.readNumber(this._accuracyGeo);// curve value 1
-						curveData[idx_curves++] = this.readNumber(this._accuracyGeo);// curve value 2
-
-						uvs[idx_uvs++] = this.readNumber(this._accuracyGeo);// curve value 1
-						uvs[idx_uvs++] = this.readNumber(this._accuracyGeo);// curve value 1
-					}
+					var curveData:ByteArray = new ByteArray();
+					this._newBlockBytes.readBytes(curveData, 0, str_len);
 				}
 				else {
 					this._newBlockBytes.position = str_end;
@@ -1549,11 +1523,14 @@ class AWDParser extends ParserBase
 
 			this.parseUserAttributes(); // Ignore sub-mesh attributes for now
 			if(is_curve_geom){
-				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(new AttributesBuffer());
+				var vertexBuffer:AttributesBuffer = new AttributesBuffer(28, str_len/28);
+				vertexBuffer.bufferView = new Uint8Array(<ArrayBuffer> curveData.arraybytes);
+
+				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(vertexBuffer);
 				curve_sub_geom.setIndices(indices);
-				curve_sub_geom.setPositions(positions);
-				curve_sub_geom.setCurves(curveData);
-				curve_sub_geom.setUVs(uvs);
+				curve_sub_geom.setPositions(new Float3Attributes(vertexBuffer));
+				curve_sub_geom.setCurves(new Float2Attributes(vertexBuffer));
+				curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
 				geom.addSubGeometry(curve_sub_geom);
 				if (this._debug)
 					console.log("Parsed a CurveSubGeometry");
