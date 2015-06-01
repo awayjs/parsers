@@ -1,7 +1,5 @@
 import AttributesBuffer					= require("awayjs-core/lib/attributes/AttributesBuffer");
 import BitmapImage2D					= require("awayjs-core/lib/data/BitmapImage2D");
-import Geometry							= require("awayjs-core/lib/data/Geometry");
-import TriangleSubGeometry				= require("awayjs-core/lib/data/TriangleSubGeometry");
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
 import URLLoaderDataFormat				= require("awayjs-core/lib/net/URLLoaderDataFormat");
 import URLRequest						= require("awayjs-core/lib/net/URLRequest");
@@ -10,6 +8,8 @@ import ParserUtils						= require("awayjs-core/lib/parsers/ParserUtils");
 import ResourceDependency				= require("awayjs-core/lib/parsers/ResourceDependency");
 import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
 
+import Geometry							= require("awayjs-display/lib/base/Geometry");
+import TriangleSubGeometry				= require("awayjs-display/lib/base/TriangleSubGeometry");
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import DisplayObject					= require("awayjs-display/lib/base/DisplayObject");
 import Camera							= require("awayjs-display/lib/entities/Camera");

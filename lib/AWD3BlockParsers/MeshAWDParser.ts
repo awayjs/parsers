@@ -15,7 +15,7 @@ import Mesh								= require("awayjs-display/lib/entities/Mesh");
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import DisplayObject					= require("awayjs-display/lib/base/DisplayObject");
 import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
-import Geometry							= require("awayjs-core/lib/data/Geometry");
+import Geometry							= require("awayjs-display/lib/base/Geometry");
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
 import AWD3Utils			= require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
 

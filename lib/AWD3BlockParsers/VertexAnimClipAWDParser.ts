@@ -8,9 +8,10 @@ import AWDBlockParserBase				= require("awayjs-parsers/lib/AWD3BlockParsers/AWDB
 import AWDProperties					= require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
 import AWD3Utils						= require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
 
-import TriangleSubGeometry				= require("awayjs-core/lib/data/TriangleSubGeometry");
 import VertexClipNode					= require("awayjs-renderergl/lib/animators/nodes/VertexClipNode");
-import Geometry							= require("awayjs-core/lib/data/Geometry");
+
+import TriangleSubGeometry				= require("awayjs-display/lib/base/TriangleSubGeometry");
+import Geometry							= require("awayjs-display/lib/base/Geometry");
 
 class VertexAnimClipAWDParser extends AWDBlockParserBase
 {

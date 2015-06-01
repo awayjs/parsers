@@ -9,8 +9,8 @@ import AWD3Utils						= require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
 
 import Font								= require("awayjs-display/lib/text/Font");
 import TesselatedFontTable				= require("awayjs-display/lib/text/TesselatedFontTable");
-import SubGeometryBase					= require("awayjs-core/lib/data/SubGeometryBase");
-import CurveSubGeometry					= require("awayjs-core/lib/data/CurveSubGeometry");
+import SubGeometryBase					= require("awayjs-display/lib/base/SubGeometryBase");
+import CurveSubGeometry					= require("awayjs-display/lib/base/CurveSubGeometry");
 
 class TesselatedFontAWDParser extends AWDBlockParserBase
 {

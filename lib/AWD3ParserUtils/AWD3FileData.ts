@@ -1,8 +1,6 @@
 import BitmapImage2D					= require("awayjs-core/lib/data/BitmapImage2D");
 import BitmapImageCube					= require("awayjs-core/lib/data/BitmapImageCube");
 import BlendMode						= require("awayjs-core/lib/data/BlendMode");
-import Geometry							= require("awayjs-core/lib/data/Geometry");
-import TriangleSubGeometry				= require("awayjs-core/lib/data/TriangleSubGeometry");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
 import URLLoaderDataFormat				= require("awayjs-core/lib/net/URLLoaderDataFormat");
@@ -13,6 +11,8 @@ import ParserUtils						= require("awayjs-core/lib/parsers/ParserUtils");
 import ResourceDependency				= require("awayjs-core/lib/parsers/ResourceDependency");
 import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
 
+import Geometry							= require("awayjs-display/lib/base/Geometry");
+import TriangleSubGeometry				= require("awayjs-display/lib/base/TriangleSubGeometry");
 import DisplayObject					= require("awayjs-display/lib/base/DisplayObject");
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
@@ -25,9 +25,8 @@ import MethodMaterial					= require("awayjs-methodmaterials/lib/MethodMaterial")
 
 import AWDBitFlags						= require("awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags");
 import AWDProperties					= require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
-
-import AWDBlock			= require("awayjs-parsers/lib/AWD3ParserUtils/AWDBlock");
-import AWD3Utils			= require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+import AWDBlock							= require("awayjs-parsers/lib/AWD3ParserUtils/AWDBlock");
+import AWD3Utils						= require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
 
 
 

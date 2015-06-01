@@ -1,7 +1,5 @@
 import AttributesBuffer					= require("awayjs-core/lib/attributes/AttributesBuffer");
 import BitmapImage2D					= require("awayjs-core/lib/data/BitmapImage2D");
-import TriangleSubGeometry				= require("awayjs-core/lib/data/TriangleSubGeometry");
-import Geometry							= require("awayjs-core/lib/data/Geometry");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
 import Quaternion						= require("awayjs-core/lib/geom/Quaternion");
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
@@ -12,6 +10,8 @@ import ParserBase						= require("awayjs-core/lib/parsers/ParserBase");
 import ParserUtils						= require("awayjs-core/lib/parsers/ParserUtils");
 import ResourceDependency				= require("awayjs-core/lib/parsers/ResourceDependency");
 
+import TriangleSubGeometry				= require("awayjs-display/lib/base/TriangleSubGeometry");
+import Geometry							= require("awayjs-display/lib/base/Geometry");
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import Mesh								= require("awayjs-display/lib/entities/Mesh");
 import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");

@@ -6,10 +6,10 @@ import IAsset							= require("awayjs-core/lib/library/IAsset");
 import AWDBlockParserBase				= require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 import AWDProperties					= require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
 
-import Geometry							= require("awayjs-core/lib/data/Geometry");
-import SubGeometryBase					= require("awayjs-core/lib/data/SubGeometryBase");
-import CurveSubGeometry					= require("awayjs-core/lib/data/CurveSubGeometry");
-import TriangleSubGeometry				= require("awayjs-core/lib/data/TriangleSubGeometry");
+import Geometry							= require("awayjs-display/lib/base/Geometry");
+import SubGeometryBase					= require("awayjs-display/lib/base/SubGeometryBase");
+import CurveSubGeometry					= require("awayjs-display/lib/base/CurveSubGeometry");
+import TriangleSubGeometry				= require("awayjs-display/lib/base/TriangleSubGeometry");
 
 class GeometryAWDParser extends AWDBlockParserBase
 {

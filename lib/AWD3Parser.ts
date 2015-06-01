@@ -1,5 +1,6 @@
 import BlendMode						= require("awayjs-core/lib/data/BlendMode");
-import TriangleSubGeometry				= require("awayjs-core/lib/data/TriangleSubGeometry");
+import BitmapImage2D					= require("awayjs-core/lib/data/BitmapImage2D");
+import BitmapImageCube					= require("awayjs-core/lib/data/BitmapImageCube");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
 import URLLoaderDataFormat				= require("awayjs-core/lib/net/URLLoaderDataFormat");
@@ -8,12 +9,10 @@ import IAsset							= require("awayjs-core/lib/library/IAsset");
 import ParserBase						= require("awayjs-core/lib/parsers/ParserBase");
 import ParserUtils						= require("awayjs-core/lib/parsers/ParserUtils");
 import ResourceDependency				= require("awayjs-core/lib/parsers/ResourceDependency");
-
-import BitmapImage2D					= require("awayjs-core/lib/data/BitmapImage2D");
-import BitmapImageCube					= require("awayjs-core/lib/data/BitmapImageCube");
 import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
-import Geometry							= require("awayjs-core/lib/data/Geometry");
 
+import Geometry							= require("awayjs-display/lib/base/Geometry");
+import TriangleSubGeometry				= require("awayjs-display/lib/base/TriangleSubGeometry");
 import DisplayObject					= require("awayjs-display/lib/base/DisplayObject");
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import SingleCubeTexture				= require("awayjs-display/lib/textures/SingleCubeTexture");
