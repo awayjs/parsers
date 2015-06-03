@@ -3567,7 +3567,7 @@ var AWDParser = (function (_super) {
                 this_block.data = audio_asset; // Store finished asset
                 // Finalize texture asset to dispatch texture event, which was
                 // previously suppressed while the dependency was loaded.
-                console.log("Parsing audio " + this_block.name);
+                //console.log("Parsing audio " + this_block.name);
                 this._pFinalizeAsset(audio_asset, this_block.name);
                 if (this._debug) {
                     console.log("Successfully loaded Sound into WaveAudio");
