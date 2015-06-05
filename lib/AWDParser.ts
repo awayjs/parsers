@@ -107,6 +107,8 @@ import AS2SceneGraphFactory 		= require("awayjs-player/lib/factories/AS2SceneGra
 import MovieClip 					= require("awayjs-player/lib/display/MovieClip");
 import TimelineKeyFrame 			= require("awayjs-player/lib/timeline/TimelineKeyFrame");
 import AddChildCommand 				= require("awayjs-player/lib/timeline/commands/AddChildCommand");
+import SetButtonCommand 				= require("awayjs-player/lib/timeline/commands/SetButtonCommand");
+
 import AddChildAtDepthCommand		= require("awayjs-player/lib/timeline/commands/AddChildAtDepthCommand");
 import ApplyAS2DepthsCommand		= require("awayjs-player/lib/timeline/commands/ApplyAS2DepthsCommand");
 import ExecuteScriptCommand 		= require("awayjs-player/lib/timeline/commands/ExecuteScriptCommand");
@@ -1280,19 +1282,25 @@ class AWDParser extends ParserBase
 
 					case 2:// add a of object by child-id at specific depth
 					case 3:// update a object by child-id
+					case 6:// add a of button_instance
 						objectID = this._newBlockBytes.readUnsignedShort();
 						//console.log("add / update objectID ", objectID);
-						if (commandType == 2) {
+						if (commandType != 3) {
 							hasDepthChanges=true;
 							target_depth = this._newBlockBytes.readShort();
 							//console.log("target_depth ", target_depth);
                             var potChild = timeLineContainer.getPotentialChildPrototype(objectID);
 							if (potChild != undefined) {
 								frame.addConstructCommand(new AddChildAtDepthCommand(objectID, target_depth));
-								// if the object is a tetfield, we set the textfield-name as instancename
-                                if(potChild.isAsset(TextField)) {
-                                    frame.addConstructCommand(new SetInstanceNameCommand(objectID, potChild.name));
-                                }
+								if(commandType==6) {
+									frame.addConstructCommand(new SetButtonCommand(objectID));
+								}
+								else {
+									// if the object is a tetfield, we set the textfield-name as instancename
+									if (potChild.isAsset(TextField)) {
+										frame.addConstructCommand(new SetInstanceNameCommand(objectID, potChild.name));
+									}
+								}
 							}
 							else{
 								console.log("ERROR: could not find the objectID ", objectID);
