@@ -130,7 +130,7 @@ import AWDBlock							= require("awayjs-parsers/lib/AWD3ParserUtils/AWDBlock");
 class AWDParser extends ParserBase
 {
 	//set to "true" to have some console.logs in the Console
-	private _debug:boolean = true;
+	private _debug:boolean = false;
 	private _byteData:ByteArray;
 	private _startedParsing:boolean = false;
 	private _cur_block_id:number;
@@ -478,10 +478,10 @@ class AWDParser extends ParserBase
 		var type:number;
 		var flags:number;
 		var len:number;
-///*
+/*
 		var start_timeing = 0;
 		start_timeing = performance.now();
-//*/
+*/
 		this._cur_block_id = this._body.readUnsignedInt();
 
 		ns = this._body.readUnsignedByte();
@@ -750,7 +750,7 @@ class AWDParser extends ParserBase
 
 		this._body.position = blockEndAll;
 		this._newBlockBytes = null;
-//*
+/*
 		var end_timing = performance.now();
 		var time_delta = end_timing - start_timeing;
 		this._time_all+=time_delta;
@@ -779,7 +779,7 @@ class AWDParser extends ParserBase
 			this._time_meshes+=time_delta;
 		}
 		console.log("Parsed block of type: "+type +" in "+time_delta+" ms | parsing total: "+this._time_all+" | geoms: "+this._time_geom+" | timelines: "+this._time_timeline+" | fonts: "+this._time_fonts+" | sounds: "+this._time_sounds+" | mats: "+this._time_materials+" | textures: "+this._time_textures+" | meshes: "+this._time_meshes);
-//*/
+*/
 
 
 	}
