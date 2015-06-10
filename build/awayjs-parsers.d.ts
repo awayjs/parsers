@@ -75,16 +75,6 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/CameraAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/DisplayObjectContainerAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class DisplayObjectContainerAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = DisplayObjectContainerAWDParser;
-	
-}
-
 declare module "awayjs-parsers/lib/AWD3BlockParsers/CommandAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 	class CommandAWDParser extends AWDBlockParserBase {
@@ -92,6 +82,16 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/CommandAWDParser" {
 	    parseFromBytes(): void;
 	}
 	export = CommandAWDParser;
+	
+}
+
+declare module "awayjs-parsers/lib/AWD3BlockParsers/DisplayObjectContainerAWDParser" {
+	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+	class DisplayObjectContainerAWDParser extends AWDBlockParserBase {
+	    constructor();
+	    parseFromBytes(): void;
+	}
+	export = DisplayObjectContainerAWDParser;
 	
 }
 
@@ -596,6 +596,11 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private _time_geom;
 	    private _time_timeline;
 	    private _time_fonts;
+	    private _time_textfields;
+	    private _time_sounds;
+	    private _time_textures;
+	    private _time_materials;
+	    private _time_meshes;
 	    /**
 	     * Creates a new AWD3Parserutils object.
 	     * @param uri The url or id of the data or file to be parsed.
