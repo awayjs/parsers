@@ -3490,7 +3490,7 @@ var AWDParser = (function (_super) {
     function AWDParser() {
         _super.call(this, URLLoaderDataFormat.ARRAY_BUFFER);
         //set to "true" to have some console.logs in the Console
-        this._debug = true;
+        this._debug = false;
         this._startedParsing = false;
         this._texture_users = {};
         this._parsed_header = false;
@@ -3697,10 +3697,10 @@ var AWDParser = (function (_super) {
         var type;
         var flags;
         var len;
-        ///*
-        var start_timeing = 0;
-        start_timeing = performance.now();
-        //*/
+        /*
+                var start_timeing = 0;
+                start_timeing = performance.now();
+        */
         this._cur_block_id = this._body.readUnsignedInt();
         ns = this._body.readUnsignedByte();
         type = this._body.readUnsignedByte();
@@ -3917,36 +3917,36 @@ var AWDParser = (function (_super) {
         }
         this._body.position = blockEndAll;
         this._newBlockBytes = null;
-        //*
-        var end_timing = performance.now();
-        var time_delta = end_timing - start_timeing;
-        this._time_all += time_delta;
-        if (type == 1) {
-            this._time_geom += time_delta;
-        }
-        else if (type == 133) {
-            this._time_timeline += time_delta;
-        }
-        else if (type == 135) {
-            this._time_fonts += time_delta;
-        }
-        else if (type == 134) {
-            this._time_textfields += time_delta;
-        }
-        else if (type == 44) {
-            this._time_sounds += time_delta;
-        }
-        else if (type == 82) {
-            this._time_materials += time_delta;
-        }
-        else if (type == 81) {
-            this._time_textures += time_delta;
-        }
-        else if (type == 24) {
-            this._time_meshes += time_delta;
-        }
-        console.log("Parsed block of type: " + type + " in " + time_delta + " ms | parsing total: " + this._time_all + " | geoms: " + this._time_geom + " | timelines: " + this._time_timeline + " | fonts: " + this._time_fonts + " | sounds: " + this._time_sounds + " | mats: " + this._time_materials + " | textures: " + this._time_textures + " | meshes: " + this._time_meshes);
-        //*/
+        /*
+                var end_timing = performance.now();
+                var time_delta = end_timing - start_timeing;
+                this._time_all+=time_delta;
+                if(type==1){
+                    this._time_geom+=time_delta;
+                }
+                else if(type==133){
+                    this._time_timeline+=time_delta;
+                }
+                else if(type==135){
+                    this._time_fonts+=time_delta;
+                }
+                else if(type==134){
+                    this._time_textfields+=time_delta;
+                }
+                else if(type==44){
+                    this._time_sounds+=time_delta;
+                }
+                else if(type==82){
+                    this._time_materials+=time_delta;
+                }
+                else if(type==81){
+                    this._time_textures+=time_delta;
+                }
+                else if(type==24){
+                    this._time_meshes+=time_delta;
+                }
+                console.log("Parsed block of type: "+type +" in "+time_delta+" ms | parsing total: "+this._time_all+" | geoms: "+this._time_geom+" | timelines: "+this._time_timeline+" | fonts: "+this._time_fonts+" | sounds: "+this._time_sounds+" | mats: "+this._time_materials+" | textures: "+this._time_textures+" | meshes: "+this._time_meshes);
+        */
     };
     //--Parser Blocks---------------------------------------------------------------------------
     AWDParser.prototype.parseTesselatedFont = function (blockID) {
