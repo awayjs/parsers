@@ -478,10 +478,10 @@ class AWDParser extends ParserBase
 		var type:number;
 		var flags:number;
 		var len:number;
-
+///*
 		var start_timeing = 0;
 		start_timeing = performance.now();
-
+//*/
 		this._cur_block_id = this._body.readUnsignedInt();
 
 		ns = this._body.readUnsignedByte();
@@ -750,7 +750,7 @@ class AWDParser extends ParserBase
 
 		this._body.position = blockEndAll;
 		this._newBlockBytes = null;
-
+//*
 		var end_timing = performance.now();
 		var time_delta = end_timing - start_timeing;
 		this._time_all+=time_delta;
@@ -778,9 +778,9 @@ class AWDParser extends ParserBase
 		else if(type==24){
 			this._time_meshes+=time_delta;
 		}
-		console.log("Parsed block of type: "+type +" in "+time_delta+" ms | parsing total: "+this._time_all+" | geoms: "+this._time_geom+" | timelines: "+this._time_timeline+" | fonts: "+this._time_fonts);
+		console.log("Parsed block of type: "+type +" in "+time_delta+" ms | parsing total: "+this._time_all+" | geoms: "+this._time_geom+" | timelines: "+this._time_timeline+" | fonts: "+this._time_fonts+" | sounds: "+this._time_sounds+" | mats: "+this._time_materials+" | textures: "+this._time_textures+" | meshes: "+this._time_meshes);
+//*/
 
-		console.log("Parsed block of type: "+type +" in "+time_delta+" ms | sounbds: "+this._time_sounds+" | mats: "+this._time_materials+" | textures: "+this._time_textures+" | meshes: "+this._time_meshes);
 
 	}
 
@@ -846,8 +846,6 @@ class AWDParser extends ParserBase
 
 				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(vertexBuffer);
 				curve_sub_geom.setIndices(indices);
-				curve_sub_geom.setPositions(new Float3Attributes(vertexBuffer));
-				curve_sub_geom.setCurves(new Float2Attributes(vertexBuffer));
 				curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
 				new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
 			}
@@ -1559,8 +1557,6 @@ class AWDParser extends ParserBase
 
 				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(vertexBuffer);
 				curve_sub_geom.setIndices(indices);
-				curve_sub_geom.setPositions(new Float3Attributes(vertexBuffer));
-				curve_sub_geom.setCurves(new Float2Attributes(vertexBuffer));
 				curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
 				geom.addSubGeometry(curve_sub_geom);
 				if (this._debug)
