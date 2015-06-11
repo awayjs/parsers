@@ -10,6 +10,7 @@ import AWD3Utils				= require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
 
 import TextFormat					= require("awayjs-display/lib/text/TextFormat");
 import TextFieldType				= require("awayjs-display/lib/text/TextFieldType");
+import View			= require("awayjs-display/lib/containers/View");
 
 import AS2SceneGraphFactory 		= require("awayjs-player/lib/factories/AS2SceneGraphFactory");
 
@@ -17,10 +18,10 @@ class TextfieldAWDParser extends AWDBlockParserBase
 {
 
 	private factory:AS2SceneGraphFactory;
-	constructor()
+	constructor(view:View = null)
 	{
 		super();
-		this.factory = new AS2SceneGraphFactory();
+		this.factory = new AS2SceneGraphFactory(view);
 	}
 
 

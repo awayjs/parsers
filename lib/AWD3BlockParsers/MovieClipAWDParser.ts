@@ -25,6 +25,7 @@ import SetMaskCommand 		        = require("awayjs-player/lib/timeline/commands/S
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
 
 import TextField					= require("awayjs-display/lib/entities/TextField");
+import View			= require("awayjs-display/lib/containers/View");
 
 import AS2SceneGraphFactory 		= require("awayjs-player/lib/factories/AS2SceneGraphFactory");
 
@@ -32,10 +33,10 @@ class MovieClipAWDParser extends AWDBlockParserBase
 {
 
 	private factory:AS2SceneGraphFactory;
-	constructor()
+	constructor(view:View = null)
 	{
 		super();
-		this.factory = new AS2SceneGraphFactory();
+		this.factory = new AS2SceneGraphFactory(view);
 	}
 
 

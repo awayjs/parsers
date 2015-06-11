@@ -23,6 +23,7 @@ import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
 
 import AnimationNodeBase				= require("awayjs-display/lib/animators/nodes/AnimationNodeBase");
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
+import View								= require("awayjs-display/lib/containers/View");
 import DisplayObject					= require("awayjs-display/lib/base/DisplayObject");
 import LightBase						= require("awayjs-display/lib/base/LightBase");
 import Geometry							= require("awayjs-display/lib/base/Geometry");
@@ -129,6 +130,8 @@ import AWDBlock							= require("awayjs-parsers/lib/AWD3ParserUtils/AWDBlock");
  */
 class AWDParser extends ParserBase
 {
+	private _view:View;
+
 	//set to "true" to have some console.logs in the Console
 	private _debug:boolean = false;
 	private _byteData:ByteArray;
@@ -199,10 +202,11 @@ class AWDParser extends ParserBase
 	 * @param uri The url or id of the data or file to be parsed.
 	 * @param extra The holder for extra contextual data that the parser might need.
 	 */
-	constructor()
+	constructor(view:View = null)
 	{
 		super(URLLoaderDataFormat.ARRAY_BUFFER);
 
+		this._view = view;
 		this._blocks = new Array<AWDBlock>();
 		this._blocks[0] = new AWDBlock(0,255);
 		this._blocks[0].data = null; // Zero address means null in AWD
@@ -571,7 +575,7 @@ class AWDParser extends ParserBase
 
 		if ((this._version[0] == 3) && (this._version[1] == 0)) {
 			// probably should contain some info about the type of animation
-			var factory = new AS2SceneGraphFactory();
+			var factory = new AS2SceneGraphFactory(this._view);
 
 			switch (type) {
 				case 24:
