@@ -849,7 +849,7 @@ class AWDParser extends ParserBase
 				vertexBuffer.bufferView = new Uint8Array(<ArrayBuffer> curveData.arraybytes);
 
 				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(vertexBuffer);
-				curve_sub_geom.setIndices(indices);
+				//curve_sub_geom.setIndices(indices);
 				curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
 				new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
 			}
@@ -1560,7 +1560,7 @@ class AWDParser extends ParserBase
 				vertexBuffer.bufferView = new Uint8Array(<ArrayBuffer> curveData.arraybytes);
 
 				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(vertexBuffer);
-				curve_sub_geom.setIndices(indices);
+				//curve_sub_geom.setIndices(indices);
 				curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
 				geom.addSubGeometry(curve_sub_geom);
 				if (this._debug)
