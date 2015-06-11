@@ -3397,9 +3397,7 @@ var PerspectiveProjection = require("awayjs-core/lib/projections/PerspectiveProj
 var OrthographicProjection = require("awayjs-core/lib/projections/OrthographicProjection");
 var OrthographicOffCenterProjection = require("awayjs-core/lib/projections/OrthographicOffCenterProjection");
 var ByteArray = require("awayjs-core/lib/utils/ByteArray");
-var AnimationNodeBase = require("awayjs-display/lib/animators/nodes/AnimationNodeBase");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-var LightBase = require("awayjs-display/lib/base/LightBase");
 var Geometry = require("awayjs-display/lib/base/Geometry");
 var CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
 var TriangleSubGeometry = require("awayjs-display/lib/base/TriangleSubGeometry");
@@ -3411,12 +3409,10 @@ var TextField = require("awayjs-display/lib/entities/TextField");
 var Billboard = require("awayjs-display/lib/entities/Billboard");
 var Skybox = require("awayjs-display/lib/entities/Skybox");
 var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
-var LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 var StaticLightPicker = require("awayjs-display/lib/materials/lightpickers/StaticLightPicker");
 var CubeMapShadowMapper = require("awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper");
 var DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
 var PrefabBase = require("awayjs-display/lib/prefabs/PrefabBase");
-var PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 var PrimitiveCapsulePrefab = require("awayjs-display/lib/prefabs/PrimitiveCapsulePrefab");
 var PrimitiveConePrefab = require("awayjs-display/lib/prefabs/PrimitiveConePrefab");
 var PrimitiveCubePrefab = require("awayjs-display/lib/prefabs/PrimitiveCubePrefab");
@@ -3426,7 +3422,6 @@ var PrimitiveSpherePrefab = require("awayjs-display/lib/prefabs/PrimitiveSphereP
 var PrimitiveTorusPrefab = require("awayjs-display/lib/prefabs/PrimitiveTorusPrefab");
 var SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
 var Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
-var AnimationSetBase = require("awayjs-renderergl/lib/animators/AnimationSetBase");
 var VertexAnimationSet = require("awayjs-renderergl/lib/animators/VertexAnimationSet");
 var VertexAnimator = require("awayjs-renderergl/lib/animators/VertexAnimator");
 var SkeletonAnimationSet = require("awayjs-renderergl/lib/animators/SkeletonAnimationSet");
@@ -3452,12 +3447,10 @@ var EffectEnvMapMethod = require("awayjs-methodmaterials/lib/methods/EffectEnvMa
 var EffectFogMethod = require("awayjs-methodmaterials/lib/methods/EffectFogMethod");
 var EffectFresnelEnvMapMethod = require("awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod");
 var EffectLightMapMethod = require("awayjs-methodmaterials/lib/methods/EffectLightMapMethod");
-var EffectMethodBase = require("awayjs-methodmaterials/lib/methods/EffectMethodBase");
 var EffectRimLightMethod = require("awayjs-methodmaterials/lib/methods/EffectRimLightMethod");
 var NormalSimpleWaterMethod = require("awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod");
 var ShadowDitheredMethod = require("awayjs-methodmaterials/lib/methods/ShadowDitheredMethod");
 var ShadowFilteredMethod = require("awayjs-methodmaterials/lib/methods/ShadowFilteredMethod");
-var ShadowMapMethodBase = require("awayjs-methodmaterials/lib/methods/ShadowMapMethodBase");
 var SpecularFresnelMethod = require("awayjs-methodmaterials/lib/methods/SpecularFresnelMethod");
 var ShadowHardMethod = require("awayjs-methodmaterials/lib/methods/ShadowHardMethod");
 var SpecularAnisotropicMethod = require("awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod");
@@ -4017,19 +4010,8 @@ var AWDParser = (function (_super) {
         var name = this.parseVarStr();
         this._blocks[blockID].name = name;
         //console.log("this._blocks[blockID].name  '" + this._blocks[blockID].name );
-        var font_id = this._newBlockBytes.readUnsignedInt();
-        //console.log("font_id  '" + font_id);
+        var font = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
         var font_style_name = this.parseVarStr();
-        //console.log("font_style_name  '" + font_style_name);
-        var returnArrayFont = this.getAssetByID(font_id, [Font.assetType]);
-        var font;
-        if (returnArrayFont[0]) {
-            font = returnArrayFont[1];
-        }
-        else {
-            this._blocks[blockID].addError("Could not find a Font for this TextFormat. A empty Font is created!");
-            font = new Font();
-        }
         var newTextFormat = new TextFormat();
         newTextFormat.font_name = font.name;
         var font_table = font.get_font_table(font_style_name);
@@ -4037,17 +4019,7 @@ var AWDParser = (function (_super) {
             newTextFormat.font_style = font_style_name;
             newTextFormat.font_table = font_table;
         }
-        var data_id = this._newBlockBytes.readUnsignedInt();
-        //console.log("mat  '" + data_id);
-        var mat;
-        var returnedArrayMaterial = this.getAssetByID(data_id, [MethodMaterial.assetType, BasicMaterial.assetType]);
-        if (returnedArrayMaterial[0]) {
-            mat = returnedArrayMaterial[1];
-        }
-        else {
-            this._blocks[blockID].addError("Could not find a Material for this TextFormat. Default Material will be used!");
-            mat = new BasicMaterial();
-        }
+        var mat = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
         mat.bothSides = true;
         var num_uv_values = this._newBlockBytes.readUnsignedByte();
         //console.log("num_uv_values  '" + num_uv_values);
@@ -4100,22 +4072,10 @@ var AWDParser = (function (_super) {
         newTextField.height = this._newBlockBytes.readFloat();
         var num_paragraphs = this._newBlockBytes.readUnsignedInt();
         var complete_text = "";
-        //console.log("num_paragraphs  '" + num_paragraphs);
-        var text_format;
         for (var paracnt = 0; paracnt < num_paragraphs; paracnt++) {
             var num_textruns = this._newBlockBytes.readUnsignedInt();
             for (var textrun_cnt = 0; textrun_cnt < num_textruns; textrun_cnt++) {
-                var format_id = this._newBlockBytes.readUnsignedInt();
-                //console.log("format_id  '" + format_id);
-                var textFormatArray = this.getAssetByID(format_id, [TextFormat.assetType]);
-                if (textFormatArray[0]) {
-                    text_format = textFormatArray[1];
-                }
-                else {
-                    this._blocks[blockID].addError("Could not find a Material for this Billboard. A empty material is created!");
-                    text_format = new TextFormat();
-                }
-                //console.log("text_format  '" + text_format.name);
+                var text_format = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
                 var txt_length = this._newBlockBytes.readUnsignedInt();
                 //console.log("txt_length  '" + txt_length);
                 if (txt_length > 0) {
@@ -4148,16 +4108,7 @@ var AWDParser = (function (_super) {
     // Block ID = 25
     AWDParser.prototype.parseBillBoardLibraryBlock = function (blockID) {
         var name = this.parseVarStr();
-        var data_id = this._newBlockBytes.readUnsignedInt();
-        var mat;
-        var returnedArrayMaterial = this.getAssetByID(data_id, [MethodMaterial.assetType, BasicMaterial.assetType]);
-        if (returnedArrayMaterial[0]) {
-            mat = returnedArrayMaterial[1];
-        }
-        else {
-            this._blocks[blockID].addError("Could not find a Material for this Billboard. A empty material is created!");
-            mat = new BasicMaterial();
-        }
+        var mat = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
         mat.bothSides = true;
         var billboard = new Billboard(mat);
         // todo: optional matrix etc can be put in properties.
@@ -4175,15 +4126,7 @@ var AWDParser = (function (_super) {
         var materials_parsed;
         var name = this.parseVarStr();
         var data_id = this._newBlockBytes.readUnsignedInt();
-        var geom;
-        var returnedArrayGeometry = this.getAssetByID(data_id, [Geometry.assetType]);
-        if (returnedArrayGeometry[0]) {
-            geom = returnedArrayGeometry[1];
-        }
-        else {
-            this._blocks[blockID].addError("Could not find a Geometry for this Mesh. A empty Geometry is created!");
-            geom = new Geometry();
-        }
+        var geom = this._blocks[data_id].data;
         this._blocks[blockID].geoID = data_id;
         var materials = new Array();
         num_materials = this._newBlockBytes.readUnsignedShort();
@@ -4191,13 +4134,7 @@ var AWDParser = (function (_super) {
         materials_parsed = 0;
         var returnedArrayMaterial;
         while (materials_parsed < num_materials) {
-            var mat_id;
-            mat_id = this._newBlockBytes.readUnsignedInt();
-            returnedArrayMaterial = this.getAssetByID(mat_id, [MethodMaterial.assetType, BasicMaterial.assetType]);
-            if ((!returnedArrayMaterial[0]) && (mat_id > 0)) {
-                this._blocks[blockID].addError("Could not find Material Nr " + materials_parsed + " (ID = " + mat_id + " ) for this Mesh");
-            }
-            var m = returnedArrayMaterial[1];
+            var m = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
             //m.preserveAlpha = true;
             m.alphaBlending = true;
             m.useColorTransform = true;
@@ -4599,7 +4536,6 @@ var AWDParser = (function (_super) {
                 var vertexBuffer = new AttributesBuffer(28, str_len / 28);
                 vertexBuffer.bufferView = new Uint8Array(curveData.arraybytes);
                 var curve_sub_geom = new CurveSubGeometry(vertexBuffer);
-                //curve_sub_geom.setIndices(indices);
                 curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
                 geom.addSubGeometry(curve_sub_geom);
                 if (this._debug)
@@ -4647,9 +4583,8 @@ var AWDParser = (function (_super) {
         this.parseUserAttributes();
         this._pFinalizeAsset(geom, name);
         this._blocks[blockID].data = geom;
-        if (this._debug) {
+        if (this._debug)
             console.log("Parsed a TriangleGeometry: Name = " + name);
-        }
     };
     //Block ID = 11
     AWDParser.prototype.parsePrimitves = function (blockID) {
@@ -4704,32 +4639,25 @@ var AWDParser = (function (_super) {
         this._pFinalizeAsset(prefab, name);
         this._blocks[blockID].data = prefab;
         if (this._debug) {
-            if ((primType < 0) || (primType > 7)) {
+            if ((primType < 0) || (primType > 7))
                 primType = 0;
-            }
             console.log("Parsed a Primivite: Name = " + name + "| type = " + primitiveTypes[primType]);
         }
     };
     // Block ID = 22
     AWDParser.prototype.parseContainer = function (blockID) {
         var name;
-        var par_id;
         var mtx;
         var ctr;
-        var parent;
-        par_id = this._newBlockBytes.readUnsignedInt();
+        var parent = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
         mtx = this.parseMatrix3D();
         name = this.parseVarStr();
         var parentName = "Root (TopLevel)";
         ctr = new DisplayObjectContainer();
         ctr.transform.matrix3D = mtx;
-        var returnedArray = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType]);
-        if (returnedArray[0]) {
-            var obj = returnedArray[1].addChild(ctr);
-            parentName = returnedArray[1].name;
-        }
-        else if (par_id > 0) {
-            this._blocks[blockID].addError("Could not find a parent for this ObjectContainer3D");
+        if (parent) {
+            parent.addChild(ctr);
+            parentName = parent.name;
         }
         else {
             //add to the content property
@@ -4747,73 +4675,45 @@ var AWDParser = (function (_super) {
         ctr.extra = this.parseUserAttributes();
         this._pFinalizeAsset(ctr, name);
         this._blocks[blockID].data = ctr;
-        if (this._debug) {
+        if (this._debug)
             console.log("Parsed a Container: Name = '" + name + "' | Parent-Name = " + parentName);
-        }
     };
     // Block ID = 23
     AWDParser.prototype.parseMeshInstance = function (blockID) {
+        var parent = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
         var num_materials;
         var materials_parsed;
-        var parent;
-        var par_id = this._newBlockBytes.readUnsignedInt();
         var mtx = this.parseMatrix3D();
         var name = this.parseVarStr();
-        var parentName = "Root (TopLevel)";
         var data_id = this._newBlockBytes.readUnsignedInt();
+        var asset = this._blocks[data_id].data;
         var geom;
-        ;
         var prefab;
-        var returnedArrayGeometry = this.getAssetByID(data_id, [Geometry.assetType]);
         var isPrefab = false;
-        if (returnedArrayGeometry[0]) {
-            geom = returnedArrayGeometry[1];
+        if (asset.isAsset(Geometry)) {
+            geom = asset;
         }
         else {
-            var returnedArrayGeometry2 = this.getAssetByID(data_id, [PrimitivePrefabBase.assetType]);
-            if (returnedArrayGeometry2[0]) {
-                isPrefab = true;
-                prefab = returnedArrayGeometry2[1];
-            }
-            else {
-                this._blocks[blockID].addError("Could not find a Geometry or prefab for this Mesh " + data_id + ". A empty Geometry is created!");
-                geom = new Geometry();
-            }
+            isPrefab = true;
+            prefab = asset;
         }
         this._blocks[blockID].geoID = data_id;
         var materials = new Array();
         num_materials = this._newBlockBytes.readUnsignedShort();
         var materialNames = new Array();
         materials_parsed = 0;
-        var returnedArrayMaterial;
         while (materials_parsed < num_materials) {
-            var mat_id;
-            mat_id = this._newBlockBytes.readUnsignedInt();
-            returnedArrayMaterial = this.getAssetByID(mat_id, [MethodMaterial.assetType, BasicMaterial.assetType]);
-            if ((!returnedArrayMaterial[0]) && (mat_id > 0)) {
-                this._blocks[blockID].addError("Could not find Material Nr " + materials_parsed + " (ID = " + mat_id + " ) for this Mesh");
-            }
-            var m = returnedArrayMaterial[1];
+            var m = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
             materials.push(m);
             materialNames.push(m.name);
             materials_parsed++;
         }
-        var mesh;
-        if (isPrefab) {
-            mesh = prefab.getNewObject();
-        }
-        else {
-            mesh = new Mesh(geom, null);
-        }
+        var mesh = isPrefab ? prefab.getNewObject() : new Mesh(geom, null);
         mesh.transform.matrix3D = mtx;
-        var returnedArrayParent = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType]);
-        if (returnedArrayParent[0]) {
-            var objC = returnedArrayParent[1];
-            objC.addChild(mesh);
-            parentName = objC.name;
-        }
-        else if (par_id > 0) {
-            this._blocks[blockID].addError("Could not find a parent for this Mesh");
+        var parentName = "Root (TopLevel)";
+        if (parent) {
+            parent.addChild(mesh);
+            parentName = parent.name;
         }
         else {
             //add to the content property
@@ -4823,10 +4723,8 @@ var AWDParser = (function (_super) {
             mesh.material = materials[0];
         }
         else if (materials.length > 1) {
-            var i;
-            for (i = 0; i < mesh.subMeshes.length; i++) {
+            for (var i = 0; i < mesh.subMeshes.length; i++)
                 mesh.subMeshes[i].material = materials[Math.min(materials.length - 1, i)];
-            }
         }
         if ((this._version[0] == 2) && (this._version[1] == 1)) {
             var props = this.parseProperties({ 1: this._matrixNrType, 2: this._matrixNrType, 3: this._matrixNrType, 4: AWDParser.UINT8, 5: AWDParser.BOOL });
@@ -4851,29 +4749,25 @@ var AWDParser = (function (_super) {
     //Block ID 31
     AWDParser.prototype.parseSkyboxInstance = function (blockID) {
         var name = this.parseVarStr();
-        var cubeTexAddr = this._newBlockBytes.readUnsignedInt();
-        var returnedArrayCubeTex = this.getAssetByID(cubeTexAddr, [SingleCubeTexture.assetType]);
-        if ((!returnedArrayCubeTex[0]) && (cubeTexAddr != 0))
-            this._blocks[blockID].addError("Could not find the Cubetexture (ID = " + cubeTexAddr + " ) for this Skybox");
-        var asset = new Skybox(returnedArrayCubeTex[1]);
+        var cubeTex = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+        var asset = new Skybox(cubeTex);
         this.parseProperties(null);
         asset.extra = this.parseUserAttributes();
         this._pFinalizeAsset(asset, name);
         this._blocks[blockID].data = asset;
         if (this._debug)
-            console.log("Parsed a Skybox: Name = '" + name + "' | CubeTexture-Name = " + returnedArrayCubeTex[1].name);
+            console.log("Parsed a Skybox: Name = '" + name + "' | CubeTexture-Name = " + cubeTex.name);
     };
     //Block ID = 41
     AWDParser.prototype.parseLight = function (blockID) {
         var light;
         var newShadowMapper;
-        var par_id = this._newBlockBytes.readUnsignedInt();
+        var parent = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
         var mtx = this.parseMatrix3D();
         var name = this.parseVarStr();
         var lightType = this._newBlockBytes.readUnsignedByte();
         var props = this.parseProperties({ 1: this._propsNrType, 2: this._propsNrType, 3: AWDParser.COLOR, 4: this._propsNrType, 5: this._propsNrType, 6: AWDParser.BOOL, 7: AWDParser.COLOR, 8: this._propsNrType, 9: AWDParser.UINT8, 10: AWDParser.UINT8, 11: this._propsNrType, 12: AWDParser.UINT16, 21: this._matrixNrType, 22: this._matrixNrType, 23: this._matrixNrType });
         var shadowMapperType = props.get(9, 0);
-        var parentName = "Root (TopLevel)";
         var lightTypes = ["Unsupported LightType", "PointLight", "DirectionalLight"];
         var shadowMapperTypes = ["No ShadowMapper", "DirectionalShadowMapper", "NearDirectionalShadowMapper", "CascadeShadowMapper", "CubeMapShadowMapper"];
         if (lightType == 1) {
@@ -4915,15 +4809,10 @@ var AWDParser = (function (_super) {
             light.shadowMapper = newShadowMapper;
             light.castsShadows = true;
         }
-        if (par_id != 0) {
-            var returnedArrayParent = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType]);
-            if (returnedArrayParent[0]) {
-                returnedArrayParent[1].addChild(light);
-                parentName = returnedArrayParent[1].name;
-            }
-            else {
-                this._blocks[blockID].addError("Could not find a parent for this Light");
-            }
+        var parentName = "Root (TopLevel)";
+        if (parent) {
+            parent.addChild(light);
+            parentName = parent.name;
         }
         else {
             //add to the content property
@@ -4937,10 +4826,9 @@ var AWDParser = (function (_super) {
     };
     //Block ID = 43
     AWDParser.prototype.parseCamera = function (blockID) {
-        var par_id = this._newBlockBytes.readUnsignedInt();
+        var parent = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
         var mtx = this.parseMatrix3D();
         var name = this.parseVarStr();
-        var parentName = "Root (TopLevel)";
         var projection;
         this._newBlockBytes.readUnsignedByte(); //set as active camera
         this._newBlockBytes.readShort(); //lengthof lenses - not used yet
@@ -4962,14 +4850,10 @@ var AWDParser = (function (_super) {
         }
         var camera = new Camera(projection);
         camera.transform.matrix3D = mtx;
-        var returnedArrayParent = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType]);
-        if (returnedArrayParent[0]) {
-            var objC = returnedArrayParent[1];
-            objC.addChild(camera);
-            parentName = objC.name;
-        }
-        else if (par_id > 0) {
-            this._blocks[blockID].addError("Could not find a parent for this Camera");
+        var parentName = "Root (TopLevel)";
+        if (parent) {
+            parent.addChild(camera);
+            parentName = parent.name;
         }
         else {
             //add to the content property
@@ -4990,20 +4874,11 @@ var AWDParser = (function (_super) {
         var name = this.parseVarStr();
         var numLights = this._newBlockBytes.readUnsignedShort();
         var lightsArray = new Array();
-        var k = 0;
-        var lightID = 0;
-        var returnedArrayLight;
         var lightsArrayNames = new Array();
-        for (k = 0; k < numLights; k++) {
-            lightID = this._newBlockBytes.readUnsignedInt();
-            returnedArrayLight = this.getAssetByID(lightID, [LightBase.assetType]);
-            if (returnedArrayLight[0]) {
-                lightsArray.push(returnedArrayLight[1]);
-                lightsArrayNames.push(returnedArrayLight[1].name);
-            }
-            else {
-                this._blocks[blockID].addError("Could not find a Light Nr " + k + " (ID = " + lightID + " ) for this LightPicker");
-            }
+        for (var k = 0; k < numLights; k++) {
+            var light = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+            lightsArray.push(light);
+            lightsArrayNames.push(light.name);
         }
         if (lightsArray.length == 0) {
             this._blocks[blockID].addError("Could not create this LightPicker, cause no Light was found.");
@@ -5061,19 +4936,16 @@ var AWDParser = (function (_super) {
             }
         }
         else if (type === 2) {
-            var tex_addr = props.get(2, 0);
-            returnedArray = this.getAssetByID(tex_addr, [Single2DTexture.assetType]);
-            if ((!returnedArray[0]) && (tex_addr > 0))
-                this._blocks[blockID].addError("Could not find the DiffsueTexture (ID = " + tex_addr + " ) for this Material");
-            mat = new MethodMaterial(returnedArray[1]);
+            var texture = this._blocks[props.get(2, 0)].data;
+            mat = new MethodMaterial(texture);
             if (this.materialMode < 2) {
                 mat.alphaBlending = props.get(11, false);
                 mat.alpha = props.get(10, 1.0);
-                debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + name + "' | Texture-Name = " + mat.name;
+                debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + name + "'" + (texture ? " | Texture-Name = " + texture.name : "");
             }
             else {
                 mat.mode = MethodMaterialMode.MULTI_PASS;
-                debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "' | Texture-Name = " + mat.name;
+                debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "'" + (texture ? " | Texture-Name = " + texture.name : "");
             }
         }
         mat.extra = attributes;
@@ -5088,9 +4960,9 @@ var AWDParser = (function (_super) {
     // Block ID = 81 AWD2.1
     AWDParser.prototype.parseMaterial_v1 = function (blockID) {
         var mat;
+        var diffuseTexture;
         var normalTexture;
         var specTexture;
-        var returnedArray;
         var name = this.parseVarStr();
         var type = this._newBlockBytes.readUnsignedByte();
         var num_methods = this._newBlockBytes.readUnsignedByte();
@@ -5121,70 +4993,40 @@ var AWDParser = (function (_super) {
                     }
                 }
                 else if (type == 2) {
-                    var tex_addr = props.get(2, 0); //TODO temporarily swapped so that diffuse texture goes to ambient
-                    returnedArray = this.getAssetByID(tex_addr, [Single2DTexture.assetType]);
-                    if ((!returnedArray[0]) && (tex_addr > 0))
-                        this._blocks[blockID].addError("Could not find the AmbientTexture (ID = " + tex_addr + " ) for this MethodMaterial");
-                    var texture = returnedArray[1];
+                    var texture = this._blocks[props.get(2, 0)].data;
                     mat = new MethodMaterial(texture);
                     if (spezialType == 1) {
                         mat.mode = MethodMaterialMode.MULTI_PASS;
-                        debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "' | Texture-Name = " + texture.name;
+                        debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "'" + (texture ? " | Texture-Name = " + texture.name : "");
                     }
                     else {
                         mat.alpha = props.get(10, 1.0);
                         mat.alphaBlending = props.get(11, false);
-                        debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + name + "' | Texture-Name = " + texture.name;
+                        debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + name + "'" + (texture ? " | Texture-Name = " + texture.name : "");
                     }
                 }
-                var diffuseTexture;
-                var diffuseTex_addr = props.get(17, 0);
-                returnedArray = this.getAssetByID(diffuseTex_addr, [Single2DTexture.assetType]);
-                if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
-                    this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
-                }
-                if (returnedArray[0])
-                    diffuseTexture = returnedArray[1];
-                if (diffuseTexture) {
-                    mat.diffuseTexture = diffuseTexture;
-                    debugString += " | DiffuseTexture-Name = " + diffuseTexture.name;
-                }
-                var normalTex_addr = props.get(3, 0);
-                returnedArray = this.getAssetByID(normalTex_addr, [Single2DTexture.assetType]);
-                if ((!returnedArray[0]) && (normalTex_addr != 0)) {
-                    this._blocks[blockID].addError("Could not find the NormalTexture (ID = " + normalTex_addr + " ) for this MethodMaterial");
-                }
-                if (returnedArray[0]) {
-                    normalTexture = returnedArray[1];
-                    debugString += " | NormalTexture-Name = " + normalTexture.name;
-                }
-                var specTex_addr = props.get(21, 0);
-                returnedArray = this.getAssetByID(specTex_addr, [Single2DTexture.assetType]);
-                if ((!returnedArray[0]) && (specTex_addr != 0)) {
-                    this._blocks[blockID].addError("Could not find the SpecularTexture (ID = " + specTex_addr + " ) for this MethodMaterial");
-                }
-                if (returnedArray[0]) {
-                    specTexture = returnedArray[1];
-                    debugString += " | SpecularTexture-Name = " + specTexture.name;
-                }
-                var lightPickerAddr = props.get(22, 0);
-                returnedArray = this.getAssetByID(lightPickerAddr, [LightPickerBase.assetType]);
-                if ((!returnedArray[0]) && (lightPickerAddr)) {
-                    this._blocks[blockID].addError("Could not find the LightPicker (ID = " + lightPickerAddr + " ) for this MethodMaterial");
-                }
-                else {
-                    mat.lightPicker = returnedArray[1];
-                }
+                diffuseTexture = this._blocks[props.get(17, 0)].data;
+                normalTexture = this._blocks[props.get(3, 0)].data;
+                specTexture = this._blocks[props.get(21, 0)].data;
+                mat.lightPicker = this._blocks[props.get(22, 0)].data;
                 mat.smooth = props.get(5, true);
                 mat.mipmap = props.get(6, true);
                 mat.bothSides = props.get(7, false);
                 mat.alphaPremultiplied = props.get(8, false);
                 mat.blendMode = this.blendModeDic[props.get(9, 0)];
                 mat.repeat = props.get(13, false);
-                if (normalTexture)
+                if (diffuseTexture) {
+                    mat.diffuseTexture = diffuseTexture;
+                    debugString += " | DiffuseTexture-Name = " + diffuseTexture.name;
+                }
+                if (normalTexture) {
                     mat.normalMap = normalTexture;
-                if (specTexture)
+                    debugString += " | NormalTexture-Name = " + normalTexture.name;
+                }
+                if (specTexture) {
                     mat.specularMap = specTexture;
+                    debugString += " | SpecularTexture-Name = " + specTexture.name;
+                }
                 mat.alphaThreshold = props.get(12, 0.0);
                 mat.ambient = props.get(15, 1.0);
                 mat.diffuseColor = props.get(16, 0xffffff);
@@ -5192,7 +5034,6 @@ var AWDParser = (function (_super) {
                 mat.gloss = props.get(19, 50);
                 mat.specularColor = props.get(20, 0xffffff);
                 var methods_parsed = 0;
-                var targetID;
                 while (methods_parsed < num_methods) {
                     var method_type;
                     method_type = this._newBlockBytes.readUnsignedShort();
@@ -5217,59 +5058,38 @@ var AWDParser = (function (_super) {
                     });
                     switch (method_type) {
                         case 999:
-                            targetID = props.get(1, 0);
-                            returnedArray = this.getAssetByID(targetID, [EffectMethodBase.assetType]);
-                            if (!returnedArray[0]) {
-                                this._blocks[blockID].addError("Could not find the EffectMethod (ID = " + targetID + " ) for this Material");
-                            }
-                            else {
-                                mat.addEffectMethod(returnedArray[1]);
-                                debugString += " | EffectMethod-Name = " + returnedArray[1].name;
-                            }
+                            var effectMethod = this._blocks[props.get(1, 0)].data;
+                            mat.addEffectMethod(effectMethod);
+                            debugString += " | EffectMethod-Name = " + effectMethod.name;
                             break;
                         case 998:
-                            targetID = props.get(1, 0);
-                            returnedArray = this.getAssetByID(targetID, [ShadowMapMethodBase.assetType]);
-                            if (!returnedArray[0]) {
-                                this._blocks[blockID].addError("Could not find the ShadowMethod (ID = " + targetID + " ) for this Material");
-                            }
-                            else {
-                                mat.shadowMethod = returnedArray[1];
-                                debugString += " | ShadowMethod-Name = " + returnedArray[1].name;
-                            }
+                            var shadowMapMethod = this._blocks[props.get(1, 0)].data;
+                            mat.shadowMethod = shadowMapMethod;
+                            debugString += " | ShadowMethod-Name = " + shadowMapMethod.name;
                             break;
                         case 1:
-                            targetID = props.get(1, 0);
-                            returnedArray = this.getAssetByID(targetID, [SingleCubeTexture.assetType]);
-                            if (!returnedArray[0])
-                                this._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this EnvMapAmbientMethodMaterial");
+                            var cubeTexture = this._blocks[props.get(1, 0)].data;
                             mat.ambientMethod = new AmbientEnvMapMethod();
-                            mat.texture = returnedArray[1];
-                            debugString += " | AmbientEnvMapMethod | EnvMap-Name =" + returnedArray[1].name;
+                            mat.texture = cubeTexture;
+                            debugString += " | AmbientEnvMapMethod | EnvMap-Name =" + cubeTexture.name;
                             break;
                         case 51:
                             mat.diffuseMethod = new DiffuseDepthMethod();
                             debugString += " | DiffuseDepthMethod";
                             break;
                         case 52:
-                            targetID = props.get(1, 0);
-                            returnedArray = this.getAssetByID(targetID, [Single2DTexture.assetType]);
-                            if (!returnedArray[0])
-                                this._blocks[blockID].addError("Could not find the GradientDiffuseTexture (ID = " + targetID + " ) for this GradientDiffuseMethod");
-                            mat.diffuseMethod = new DiffuseGradientMethod(returnedArray[1]);
-                            debugString += " | DiffuseGradientMethod | GradientDiffuseTexture-Name =" + returnedArray[1].name;
+                            var texture = this._blocks[props.get(1, 0)].data;
+                            mat.diffuseMethod = new DiffuseGradientMethod(texture);
+                            debugString += " | DiffuseGradientMethod | GradientDiffuseTexture-Name =" + texture.name;
                             break;
                         case 53:
                             mat.diffuseMethod = new DiffuseWrapMethod(props.get(101, 5));
                             debugString += " | DiffuseWrapMethod";
                             break;
                         case 54:
-                            targetID = props.get(1, 0);
-                            returnedArray = this.getAssetByID(targetID, [Single2DTexture.assetType]);
-                            if (!returnedArray[0])
-                                this._blocks[blockID].addError("Could not find the LightMap (ID = " + targetID + " ) for this LightMapDiffuseMethod");
-                            mat.diffuseMethod = new DiffuseLightMapMethod(returnedArray[1], this.blendModeDic[props.get(401, 10)], false, mat.diffuseMethod);
-                            debugString += " | DiffuseLightMapMethod | LightMapTexture-Name =" + returnedArray[1].name;
+                            var texture = this._blocks[props.get(1, 0)].data;
+                            mat.diffuseMethod = new DiffuseLightMapMethod(texture, this.blendModeDic[props.get(401, 10)], false, mat.diffuseMethod);
+                            debugString += " | DiffuseLightMapMethod | LightMapTexture-Name =" + texture.name;
                             break;
                         case 55:
                             mat.diffuseMethod = new DiffuseCelMethod(props.get(401, 3), mat.diffuseMethod);
@@ -5300,15 +5120,10 @@ var AWDParser = (function (_super) {
                         case 151:
                             break;
                         case 152:
-                            targetID = props.get(1, 0);
-                            returnedArray = this.getAssetByID(targetID, [Single2DTexture.assetType]);
-                            if (!returnedArray[0])
-                                this._blocks[blockID].addError("Could not find the SecoundNormalMap (ID = " + targetID + " ) for this SimpleWaterNormalMethod");
-                            if (!mat.normalMap)
-                                this._blocks[blockID].addError("Could not find a normal Map on this Material to use with this SimpleWaterNormalMethod");
-                            mat.normalMap = returnedArray[1];
-                            mat.normalMethod = new NormalSimpleWaterMethod(mat.normalMap, returnedArray[1]);
-                            debugString += " | NormalSimpleWaterMethod | Second-NormalTexture-Name = " + returnedArray[1].name;
+                            var texture = this._blocks[props.get(1, 0)].data;
+                            mat.normalMap = texture;
+                            mat.normalMethod = new NormalSimpleWaterMethod(mat.normalMap, texture);
+                            debugString += " | NormalSimpleWaterMethod | Second-NormalTexture-Name = " + texture.name;
                             break;
                     }
                     this.parseUserAttributes();
@@ -5320,18 +5135,8 @@ var AWDParser = (function (_super) {
             // if this is a basic material, we create it, finalize it, assign it to block-cache and return and return.
             var color = props.get(1, 0xcccccc);
             debugString += color;
-            var diffuseTexture;
-            var diffuseTex_addr = props.get(2, 0);
-            returnedArray = this.getAssetByID(diffuseTex_addr, [Single2DTexture.assetType]);
-            if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
-                this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
-                diffuseTexture = DefaultMaterialManager.getDefaultTexture();
-            }
-            if (returnedArray[0])
-                diffuseTexture = returnedArray[1];
+            var diffuseTexture = this._blocks[props.get(2, 0)].data;
             var basic_mat = new BasicMaterial(diffuseTexture);
-            //debugString+= " alpha = "+props.get(10, 1.0)+" ";
-            debugString += " texture = " + diffuseTex_addr + " ";
             basic_mat.bothSides = true;
             basic_mat.preserveAlpha = true;
             basic_mat.alphaBlending = true;
@@ -5438,56 +5243,33 @@ var AWDParser = (function (_super) {
     };
     //Block ID = 92
     AWDParser.prototype.parseShadowMethodBlock = function (blockID) {
-        var type;
-        var data_len;
-        var asset;
-        var shadowLightID;
         this._blocks[blockID].name = this.parseVarStr();
-        shadowLightID = this._newBlockBytes.readUnsignedInt();
-        var returnedArray = this.getAssetByID(shadowLightID, [LightBase.assetType]);
-        if (!returnedArray[0]) {
-            this._blocks[blockID].addError("Could not find the TargetLight (ID = " + shadowLightID + " ) for this ShadowMethod - ShadowMethod not created");
-            return;
-        }
-        asset = this.parseShadowMethodList(returnedArray[1], blockID);
+        var light = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+        var asset = this.parseShadowMethodList(light, blockID);
         if (!asset)
             return;
         this.parseUserAttributes(); // Ignore for now
         this._pFinalizeAsset(asset, this._blocks[blockID].name);
         this._blocks[blockID].data = asset;
-        if (this._debug) {
-            console.log("Parsed a ShadowMapMethodMethod: Name = " + asset.name + " | Type = " + asset + " | Light-Name = ", returnedArray[1].name);
-        }
+        if (this._debug)
+            console.log("Parsed a ShadowMapMethodMethod: Name = " + asset.name + " | Type = " + asset + " | Light-Name = ", light.name);
     };
     //Block ID = 253
     AWDParser.prototype.parseCommand = function (blockID) {
         var hasBlocks = (this._newBlockBytes.readUnsignedByte() == 1);
-        var par_id = this._newBlockBytes.readUnsignedInt();
+        var parentObject = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+        var targetObject;
         var mtx = this.parseMatrix3D();
         var name = this.parseVarStr();
-        var parentObject;
-        var targetObject;
-        var returnedArray = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType]);
-        if (returnedArray[0]) {
-            parentObject = returnedArray[1];
-        }
         var numCommands = this._newBlockBytes.readShort();
         var typeCommand = this._newBlockBytes.readShort();
         var props = this.parseProperties({ 1: AWDParser.BADDR });
         switch (typeCommand) {
             case 1:
-                var targetID = props.get(1, 0);
-                //var returnedArrayTarget:Array<any> = this.getAssetByID(targetID, [LightBase.assetType, TextureProjector.assetType]); //for no only light is requested!!!!
-                var returnedArrayTarget = this.getAssetByID(targetID, [LightBase.assetType]); //for no only light is requested!!!!
-                if ((!returnedArrayTarget[0]) && (targetID != 0)) {
-                    this._blocks[blockID].addError("Could not find the light (ID = " + targetID + " ( for this CommandBock!");
-                    return;
-                }
-                targetObject = returnedArrayTarget[1];
-                if (parentObject) {
-                    parentObject.addChild(targetObject);
-                }
+                targetObject = this._blocks[props.get(1, 0)].data;
                 targetObject.transform.matrix3D = mtx;
+                if (parentObject)
+                    parentObject.addChild(targetObject);
                 break;
         }
         if (targetObject) {
@@ -5528,13 +5310,7 @@ var AWDParser = (function (_super) {
         var returnedArray;
         switch (methodType) {
             case 1002:
-                targetID = props.get(1, 0);
-                returnedArray = this.getAssetByID(targetID, [ShadowMapMethodBase.assetType]);
-                if (!returnedArray[0]) {
-                    this._blocks[blockID].addError("Could not find the ShadowBaseMethod (ID = " + targetID + " ) for this ShadowNearMethod - ShadowMethod not created");
-                    return shadowMethod;
-                }
-                shadowMethod = new ShadowNearMethod(returnedArray[1]);
+                shadowMethod = new ShadowNearMethod(this._blocks[props.get(1, 0)].data);
                 break;
             case 1101:
                 shadowMethod = new ShadowFilteredMethod(light);
@@ -5631,13 +5407,8 @@ var AWDParser = (function (_super) {
         var frames_parsed = 0;
         var returnedArray;
         while (frames_parsed < num_frames) {
-            pose_addr = this._newBlockBytes.readUnsignedInt();
+            clip.addFrame(this._blocks[this._newBlockBytes.readUnsignedInt()].data, frame_dur);
             frame_dur = this._newBlockBytes.readUnsignedShort();
-            returnedArray = this.getAssetByID(pose_addr, [SkeletonPose.assetType]);
-            if (!returnedArray[0])
-                this._blocks[blockID].addError("Could not find the SkeletonPose Frame # " + frames_parsed + " (ID = " + pose_addr + " ) for this SkeletonClipNode");
-            else
-                clip.addFrame(this._blocks[pose_addr].data, frame_dur);
             frames_parsed++;
         }
         if (clip.frames.length == 0) {
@@ -5676,13 +5447,9 @@ var AWDParser = (function (_super) {
         var props;
         var thisGeo;
         var name = this.parseVarStr();
-        var geoAdress = this._newBlockBytes.readUnsignedInt();
-        var returnedArray = this.getAssetByID(geoAdress, [Geometry.assetType]);
-        if (!returnedArray[0]) {
-            this._blocks[blockID].addError("Could not find the target-Geometry-Object " + geoAdress + " ) for this VertexClipNode");
-            return;
-        }
-        var uvs = this.getUVForVertexAnimation(geoAdress);
+        var geo_id = this._newBlockBytes.readUnsignedInt();
+        var geometry = this._blocks[geo_id].data;
+        var uvs = this.getUVForVertexAnimation(geo_id);
         if (!poseOnly)
             num_frames = this._newBlockBytes.readUnsignedShort();
         num_submeshes = this._newBlockBytes.readUnsignedShort();
@@ -5706,7 +5473,7 @@ var AWDParser = (function (_super) {
                 str_end = this._newBlockBytes.position + str_len;
                 while (streamsParsed < num_Streams) {
                     if (streamtypes[streamsParsed] == 1) {
-                        indices = returnedArray[1].subGeometries[subMeshParsed].indices;
+                        indices = geometry.subGeometries[subMeshParsed].indices;
                         verts = new Array();
                         idx = 0;
                         while (this._newBlockBytes.position < str_end) {
@@ -5740,29 +5507,23 @@ var AWDParser = (function (_super) {
         this._pFinalizeAsset(clip, name);
         this._blocks[blockID].data = clip;
         if (this._debug)
-            console.log("Parsed a VertexClipNode: Name = " + clip.name + " | Target-Geometry-Name = " + returnedArray[1].name + " | Number of Frames = " + clip.frames.length);
+            console.log("Parsed a VertexClipNode: Name = " + clip.name + " | Target-Geometry-Name = " + geometry.name + " | Number of Frames = " + clip.frames.length);
     };
     //BlockID 113
     AWDParser.prototype.parseVertexAnimationSet = function (blockID /*uint*/) {
-        var poseBlockAdress; /*int*/
-        var outputString = "";
         var name = this.parseVarStr();
         var num_frames = this._newBlockBytes.readUnsignedShort();
         var props = this.parseProperties({ 1: AWDParser.UINT16 });
         var frames_parsed = 0;
         var skeletonFrames = new Array();
         var vertexFrames = new Array();
+        var clipNode;
         while (frames_parsed < num_frames) {
-            poseBlockAdress = this._newBlockBytes.readUnsignedInt();
-            var returnedArray = this.getAssetByID(poseBlockAdress, [AnimationNodeBase.assetType]);
-            if (!returnedArray[0])
-                this._blocks[blockID].addError("Could not find the AnimationClipNode Nr " + frames_parsed + " ( " + poseBlockAdress + " ) for this AnimationSet");
-            else {
-                if (returnedArray[1] instanceof VertexClipNode)
-                    vertexFrames.push(returnedArray[1]);
-                if (returnedArray[1] instanceof SkeletonClipNode)
-                    skeletonFrames.push(returnedArray[1]);
-            }
+            clipNode = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+            if (clipNode instanceof VertexClipNode)
+                vertexFrames.push(clipNode);
+            else if (clipNode instanceof SkeletonClipNode)
+                skeletonFrames.push(clipNode);
             frames_parsed++;
         }
         if ((vertexFrames.length == 0) && (skeletonFrames.length == 0)) {
@@ -5780,7 +5541,6 @@ var AWDParser = (function (_super) {
                 console.log("Parsed a VertexAnimationSet: Name = " + name + " | Animations = " + newVertexAnimationSet.animations.length + " | Animation-Names = " + newVertexAnimationSet.animationNames.toString());
         }
         else if (skeletonFrames.length > 0) {
-            returnedArray = this.getAssetByID(poseBlockAdress, [AnimationNodeBase.assetType]);
             var newSkeletonAnimationSet = new SkeletonAnimationSet(props.get(1, 4)); //props.get(1,4));
             for (var i = 0; i < skeletonFrames.length; i++)
                 newSkeletonAnimationSet.addAnimation(skeletonFrames[i]);
@@ -5792,45 +5552,21 @@ var AWDParser = (function (_super) {
     };
     //BlockID 122
     AWDParser.prototype.parseAnimatorSet = function (blockID /*uint*/) {
-        var targetMesh;
-        var animSetBlockAdress; /*int*/
-        var targetAnimationSet;
-        var outputString = "";
         var name = this.parseVarStr();
         var type = this._newBlockBytes.readUnsignedShort();
         var props = this.parseProperties({ 1: AWDParser.BADDR });
-        animSetBlockAdress = this._newBlockBytes.readUnsignedInt();
+        var targetAnimationSet = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+        var targetMeshes = new Array();
         var targetMeshLength = this._newBlockBytes.readUnsignedShort();
-        var meshAdresses = new Array() /*uint*/;
         for (var i = 0; i < targetMeshLength; i++)
-            meshAdresses.push(this._newBlockBytes.readUnsignedInt());
+            targetMeshes.push(this._blocks[this._newBlockBytes.readUnsignedInt()].data);
         var activeState = this._newBlockBytes.readUnsignedShort();
         var autoplay = (this._newBlockBytes.readUnsignedByte() == 1);
         this.parseUserAttributes();
         this.parseUserAttributes();
-        var returnedArray;
-        var targetMeshes = new Array();
-        for (i = 0; i < meshAdresses.length; i++) {
-            returnedArray = this.getAssetByID(meshAdresses[i], [Mesh.assetType]);
-            if (returnedArray[0])
-                targetMeshes.push(returnedArray[1]);
-        }
-        returnedArray = this.getAssetByID(animSetBlockAdress, [AnimationSetBase.assetType]);
-        if (!returnedArray[0]) {
-            this._blocks[blockID].addError("Could not find the AnimationSet ( " + animSetBlockAdress + " ) for this Animator");
-            ;
-            return;
-        }
-        targetAnimationSet = returnedArray[1];
         var thisAnimator;
-        if (type == 1) {
-            returnedArray = this.getAssetByID(props.get(1, 0), [Skeleton.assetType]);
-            if (!returnedArray[0]) {
-                this._blocks[blockID].addError("Could not find the Skeleton ( " + props.get(1, 0) + " ) for this Animator");
-                return;
-            }
-            thisAnimator = new SkeletonAnimator(targetAnimationSet, returnedArray[1]);
-        }
+        if (type == 1)
+            thisAnimator = new SkeletonAnimator(targetAnimationSet, this._blocks[props.get(1, 0)].data);
         else if (type == 2)
             thisAnimator = new VertexAnimator(targetAnimationSet);
         this._pFinalizeAsset(thisAnimator, name);
@@ -5838,7 +5574,7 @@ var AWDParser = (function (_super) {
         for (i = 0; i < targetMeshes.length; i++) {
             if (type == 1)
                 targetMeshes[i].animator = thisAnimator;
-            if (type == 2)
+            else if (type == 2)
                 targetMeshes[i].animator = thisAnimator;
         }
         if (this._debug)
@@ -5849,8 +5585,6 @@ var AWDParser = (function (_super) {
         var methodType = this._newBlockBytes.readUnsignedShort();
         var effectMethodReturn;
         var props = this.parseProperties({ 1: AWDParser.BADDR, 2: AWDParser.BADDR, 3: AWDParser.BADDR, 101: this._propsNrType, 102: this._propsNrType, 103: this._propsNrType, 104: this._propsNrType, 105: this._propsNrType, 106: this._propsNrType, 107: this._propsNrType, 201: AWDParser.UINT32, 202: AWDParser.UINT32, 301: AWDParser.UINT16, 302: AWDParser.UINT16, 401: AWDParser.UINT8, 402: AWDParser.UINT8, 601: AWDParser.COLOR, 602: AWDParser.COLOR, 701: AWDParser.BOOL, 702: AWDParser.BOOL });
-        var targetID;
-        var returnedArray;
         switch (methodType) {
             case 401:
                 effectMethodReturn = new EffectColorMatrixMethod(props.get(101, new Array(0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)));
@@ -5861,42 +5595,22 @@ var AWDParser = (function (_super) {
                 effectMethodReturn.colorTransform = new ColorTransform(props.get(102, 1), props.get(103, 1), props.get(104, 1), props.get(101, 1), ((offCol >> 16) & 0xFF), ((offCol >> 8) & 0xFF), (offCol & 0xFF), ((offCol >> 24) & 0xFF));
                 break;
             case 403:
-                targetID = props.get(1, 0);
-                console.log('ENV MAP', targetID);
-                returnedArray = this.getAssetByID(targetID, [SingleCubeTexture.assetType]);
-                if (!returnedArray[0])
-                    this._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this EnvMapMethod");
-                effectMethodReturn = new EffectEnvMapMethod(returnedArray[1], props.get(101, 1));
-                targetID = props.get(2, 0);
+                effectMethodReturn = new EffectEnvMapMethod(this._blocks[props.get(1, 0)].data, props.get(101, 1));
+                var targetID = props.get(2, 0);
                 if (targetID > 0) {
-                    returnedArray = this.getAssetByID(targetID, [Single2DTexture.assetType]);
-                    if (!returnedArray[0])
-                        this._blocks[blockID].addError("Could not find the Mask-texture (ID = " + targetID + " ) for this EnvMapMethod");
                 }
                 break;
             case 404:
-                targetID = props.get(1, 0);
-                returnedArray = this.getAssetByID(targetID, [Single2DTexture.assetType]);
-                if (!returnedArray[0])
-                    this._blocks[blockID].addError("Could not find the LightMap (ID = " + targetID + " ) for this LightMapMethod");
-                effectMethodReturn = new EffectLightMapMethod(returnedArray[1], this.blendModeDic[props.get(401, 10)]); //usesecondaryUV not set
+                effectMethodReturn = new EffectLightMapMethod(this._blocks[props.get(1, 0)].data, this.blendModeDic[props.get(401, 10)]); //usesecondaryUV not set
                 break;
             case 406:
                 effectMethodReturn = new EffectRimLightMethod(props.get(601, 0xffffff), props.get(101, 0.4), props.get(101, 2)); //blendMode
                 break;
             case 407:
-                targetID = props.get(1, 0);
-                returnedArray = this.getAssetByID(targetID, [Single2DTexture.assetType]);
-                if (!returnedArray[0])
-                    this._blocks[blockID].addError("Could not find the Alpha-texture (ID = " + targetID + " ) for this AlphaMaskMethod");
-                effectMethodReturn = new EffectAlphaMaskMethod(returnedArray[1], props.get(701, false));
+                effectMethodReturn = new EffectAlphaMaskMethod(this._blocks[props.get(1, 0)].data, props.get(701, false));
                 break;
             case 410:
-                targetID = props.get(1, 0);
-                returnedArray = this.getAssetByID(targetID, [SingleCubeTexture.assetType]);
-                if (!returnedArray[0])
-                    this._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this FresnelEnvMapMethod");
-                effectMethodReturn = new EffectFresnelEnvMapMethod(returnedArray[1], props.get(101, 1));
+                effectMethodReturn = new EffectFresnelEnvMapMethod(this._blocks[props.get(1, 0)].data, props.get(101, 1));
                 break;
             case 411:
                 effectMethodReturn = new EffectFogMethod(props.get(101, 0), props.get(102, 1000), props.get(601, 0x808080));
@@ -6131,57 +5845,7 @@ var AWDParser = (function (_super) {
         return this._blocks[meshID].uvsForVertexAnimation;
     };
     AWDParser.prototype.parseVarStr = function () {
-        var len = this._newBlockBytes.readUnsignedShort();
-        return this._newBlockBytes.readUTFBytes(len);
-    };
-    AWDParser.prototype.getAssetByID = function (assetID, assetTypesToGet) {
-        var returnArray = new Array();
-        var typeCnt = 0;
-        if (assetID > 0) {
-            if (this._blocks[assetID]) {
-                if (this._blocks[assetID].data) {
-                    while (typeCnt < assetTypesToGet.length) {
-                        //console.log("check if asset is of type = "+assetTypesToGet[typeCnt]);
-                        var iasset = this._blocks[assetID].data;
-                        //console.log("asset is of type = "+iasset.assetType);
-                        if (iasset.assetType == assetTypesToGet[typeCnt]) {
-                            //if the right assetType was found
-                            if ((assetTypesToGet[typeCnt] == SingleCubeTexture.assetType)) {
-                                if (this._blocks[assetID].data instanceof SingleCubeTexture) {
-                                    returnArray.push(true);
-                                    returnArray.push(this._blocks[assetID].data);
-                                    return returnArray;
-                                }
-                            }
-                            if ((assetTypesToGet[typeCnt] == Single2DTexture.assetType)) {
-                                if (this._blocks[assetID].data instanceof Single2DTexture) {
-                                    returnArray.push(true);
-                                    returnArray.push(this._blocks[assetID].data);
-                                    return returnArray;
-                                }
-                            }
-                            else {
-                                returnArray.push(true);
-                                returnArray.push(this._blocks[assetID].data);
-                                return returnArray;
-                            }
-                        }
-                        //if ((assetTypesToGet[typeCnt] == Geometry.assetType) && (IAsset(_blocks[assetID].data).assetType == Mesh.assetType)) {
-                        if ((assetTypesToGet[typeCnt] == Geometry.assetType) && (iasset.assetType == Mesh.assetType)) {
-                            var mesh = this._blocks[assetID].data;
-                            returnArray.push(true);
-                            returnArray.push(mesh.geometry);
-                            return returnArray;
-                        }
-                        typeCnt++;
-                    }
-                }
-            }
-        }
-        // if the has not returned anything yet, the asset is not found, or the found asset is not the right type.
-        returnArray.push(false);
-        returnArray.push(this.getDefaultAsset(assetTypesToGet[0]));
-        return returnArray;
+        return this._newBlockBytes.readUTFBytes(this._newBlockBytes.readUnsignedShort());
     };
     AWDParser.prototype.getDefaultAsset = function (assetType) {
         switch (true) {
@@ -6333,7 +5997,7 @@ var BitFlags = (function () {
 })();
 module.exports = AWDParser;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/data/BitmapImageCube":undefined,"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/animators/nodes/AnimationNodeBase":undefined,"awayjs-display/lib/base/CurveSubGeometry":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/LightBase":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Billboard":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/entities/TextField":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-display/lib/materials/lightpickers/LightPickerBase":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-display/lib/text/TextFormat":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectMethodBase":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowMapMethodBase":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-player/lib/timeline/TimelineKeyFrame":undefined,"awayjs-player/lib/timeline/commands/AddChildAtDepthCommand":undefined,"awayjs-player/lib/timeline/commands/ApplyAS2DepthsCommand":undefined,"awayjs-player/lib/timeline/commands/ExecuteScriptCommand":undefined,"awayjs-player/lib/timeline/commands/RemoveChildrenAtDepthCommand":undefined,"awayjs-player/lib/timeline/commands/SetButtonCommand":undefined,"awayjs-player/lib/timeline/commands/SetInstanceNameCommand":undefined,"awayjs-player/lib/timeline/commands/SetMaskCommand":undefined,"awayjs-player/lib/timeline/commands/UpdatePropertyCommand":undefined,"awayjs-renderergl/lib/animators/AnimationSetBase":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/data/BitmapImageCube":undefined,"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/CurveSubGeometry":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Billboard":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/entities/TextField":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-display/lib/text/TextFormat":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-player/lib/timeline/TimelineKeyFrame":undefined,"awayjs-player/lib/timeline/commands/AddChildAtDepthCommand":undefined,"awayjs-player/lib/timeline/commands/ApplyAS2DepthsCommand":undefined,"awayjs-player/lib/timeline/commands/ExecuteScriptCommand":undefined,"awayjs-player/lib/timeline/commands/RemoveChildrenAtDepthCommand":undefined,"awayjs-player/lib/timeline/commands/SetButtonCommand":undefined,"awayjs-player/lib/timeline/commands/SetInstanceNameCommand":undefined,"awayjs-player/lib/timeline/commands/SetMaskCommand":undefined,"awayjs-player/lib/timeline/commands/UpdatePropertyCommand":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }

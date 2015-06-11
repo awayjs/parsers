@@ -682,7 +682,6 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private parseHeader();
 	    private getUVForVertexAnimation(meshID);
 	    private parseVarStr();
-	    private getAssetByID(assetID, assetTypesToGet);
 	    private getDefaultAsset(assetType);
 	    getDefaultCubeTexture(): IAsset;
 	    private readNumber(precision?);
