@@ -157,9 +157,10 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/MetadataAWDParser" {
 
 declare module "awayjs-parsers/lib/AWD3BlockParsers/MovieClipAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+	import View = require("awayjs-display/lib/containers/View");
 	class MovieClipAWDParser extends AWDBlockParserBase {
 	    private factory;
-	    constructor();
+	    constructor(view?: View);
 	    parseFromBytes(): void;
 	}
 	export = MovieClipAWDParser;
@@ -270,9 +271,10 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/TesselatedFontAWDParser" {
 
 declare module "awayjs-parsers/lib/AWD3BlockParsers/TextfieldAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+	import View = require("awayjs-display/lib/containers/View");
 	class TextfieldAWDParser extends AWDBlockParserBase {
 	    private factory;
-	    constructor();
+	    constructor(view?: View);
 	    parseFromBytes(): void;
 	}
 	export = TextfieldAWDParser;
@@ -539,10 +541,12 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 	import ResourceDependency = require("awayjs-core/lib/parsers/ResourceDependency");
+	import View = require("awayjs-display/lib/containers/View");
 	/**
 	 * AWDParser provides a parser for the AWD data type.
 	 */
 	class AWDParser extends ParserBase {
+	    private _view;
 	    private _debug;
 	    private _byteData;
 	    private _startedParsing;
@@ -606,7 +610,7 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	     * @param uri The url or id of the data or file to be parsed.
 	     * @param extra The holder for extra contextual data that the parser might need.
 	     */
-	    constructor();
+	    constructor(view?: View);
 	    /**
 	     * Indicates whether or not a given file extension is supported by the parser.
 	     * @param extension The file extension of a potential file to be parsed.

@@ -1281,9 +1281,10 @@ var TextField = require("awayjs-display/lib/entities/TextField");
 var AS2SceneGraphFactory = require("awayjs-player/lib/factories/AS2SceneGraphFactory");
 var MovieClipAWDParser = (function (_super) {
     __extends(MovieClipAWDParser, _super);
-    function MovieClipAWDParser() {
+    function MovieClipAWDParser(view) {
+        if (view === void 0) { view = null; }
         _super.call(this);
-        this.factory = new AS2SceneGraphFactory();
+        this.factory = new AS2SceneGraphFactory(view);
     }
     MovieClipAWDParser.prototype.parseFromBytes = function () {
         var i;
@@ -2139,9 +2140,10 @@ var TextFormat = require("awayjs-display/lib/text/TextFormat");
 var AS2SceneGraphFactory = require("awayjs-player/lib/factories/AS2SceneGraphFactory");
 var TextfieldAWDParser = (function (_super) {
     __extends(TextfieldAWDParser, _super);
-    function TextfieldAWDParser() {
+    function TextfieldAWDParser(view) {
+        if (view === void 0) { view = null; }
         _super.call(this);
-        this.factory = new AS2SceneGraphFactory();
+        this.factory = new AS2SceneGraphFactory(view);
     }
     TextfieldAWDParser.prototype.parseFromBytes = function () {
         var newTextField = this.factory.createTextField();
@@ -3487,7 +3489,8 @@ var AWDParser = (function (_super) {
      * @param uri The url or id of the data or file to be parsed.
      * @param extra The holder for extra contextual data that the parser might need.
      */
-    function AWDParser() {
+    function AWDParser(view) {
+        if (view === void 0) { view = null; }
         _super.call(this, URLLoaderDataFormat.ARRAY_BUFFER);
         //set to "true" to have some console.logs in the Console
         this._debug = false;
@@ -3503,6 +3506,7 @@ var AWDParser = (function (_super) {
         this._time_textures = 0;
         this._time_materials = 0;
         this._time_meshes = 0;
+        this._view = view;
         this._blocks = new Array();
         this._blocks[0] = new AWDBlock(0, 255);
         this._blocks[0].data = null; // Zero address means null in AWD
@@ -3756,7 +3760,7 @@ var AWDParser = (function (_super) {
         this._blocks[this._cur_block_id] = block;
         if ((this._version[0] == 3) && (this._version[1] == 0)) {
             // probably should contain some info about the type of animation
-            var factory = new AS2SceneGraphFactory();
+            var factory = new AS2SceneGraphFactory(this._view);
             switch (type) {
                 case 24:
                     this.parseMeshLibraryBlock(this._cur_block_id);
