@@ -70,6 +70,7 @@ import SkeletonPose						= require("awayjs-renderergl/lib/animators/data/Skeleto
 import SkeletonJoint					= require("awayjs-renderergl/lib/animators/data/SkeletonJoint");
 import SkeletonClipNode					= require("awayjs-renderergl/lib/animators/nodes/SkeletonClipNode");
 import VertexClipNode					= require("awayjs-renderergl/lib/animators/nodes/VertexClipNode");
+import AnimationClipNodeBase			= require("awayjs-renderergl/lib/animators/nodes/AnimationClipNodeBase");
 
 import MethodMaterialMode				= require("awayjs-methodmaterials/lib/MethodMaterialMode");
 import MethodMaterial					= require("awayjs-methodmaterials/lib/MethodMaterial");
@@ -871,18 +872,9 @@ class AWDParser extends ParserBase
 		var name:string = this.parseVarStr();
 		this._blocks[blockID].name = name;
 		//console.log("this._blocks[blockID].name  '" + this._blocks[blockID].name );
-		var font_id:number = this._newBlockBytes.readUnsignedInt();
-		//console.log("font_id  '" + font_id);
+		var font:Font = <Font> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 		var font_style_name:string = this.parseVarStr();
-		//console.log("font_style_name  '" + font_style_name);
-		var returnArrayFont:Array<any> = this.getAssetByID(font_id, [Font.assetType]);
-		var font:Font;
-		if (returnArrayFont[0]) {
-			font = <Font> returnArrayFont[1];
-		} else {
-			this._blocks[blockID].addError("Could not find a Font for this TextFormat. A empty Font is created!");
-			font = new Font();
-		}
+
 		var newTextFormat:TextFormat = new TextFormat();
 		newTextFormat.font_name = font.name;
 		var font_table:TesselatedFontTable = font.get_font_table(font_style_name);
@@ -891,17 +883,7 @@ class AWDParser extends ParserBase
 			newTextFormat.font_table = font_table;
 		}
 
-		var data_id:number = this._newBlockBytes.readUnsignedInt();
-		//console.log("mat  '" + data_id);
-		var mat:BasicMaterial;
-		var returnedArrayMaterial:Array<any> = this.getAssetByID(data_id, [MethodMaterial.assetType, BasicMaterial.assetType]);
-
-		if (returnedArrayMaterial[0]) {
-			mat = <BasicMaterial> returnedArrayMaterial[1];
-		} else {
-			this._blocks[blockID].addError("Could not find a Material for this TextFormat. Default Material will be used!");
-			mat = new BasicMaterial();
-		}
+		var mat:BasicMaterial = <BasicMaterial> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 		mat.bothSides=true;
 
 		var num_uv_values:number = this._newBlockBytes.readUnsignedByte();
@@ -944,16 +926,14 @@ class AWDParser extends ParserBase
 		//console.log("name  '" + name);
         var newTextField = factory.createTextField();
 		var text_field_type:number=this._newBlockBytes.readUnsignedByte();
+
 		if(text_field_type==0) {
 			newTextField.type = "static";
-		}
-		else if(text_field_type==1) {
+		} else if(text_field_type==1) {
 			newTextField.type = "dynamic";
-		}
-		else if(text_field_type==2) {
+		} else if(text_field_type==2) {
 			newTextField.type = "input";
-		}
-		else if(text_field_type==3) {
+		} else if(text_field_type==3) {
 			newTextField.type ="input";
 			newTextField.displayAsPassword=true;
 		}
@@ -963,23 +943,12 @@ class AWDParser extends ParserBase
 		var num_paragraphs:number = this._newBlockBytes.readUnsignedInt();
 		var complete_text:string = "";
 		//console.log("num_paragraphs  '" + num_paragraphs);
-		var text_format:TextFormat;
 		for(var paracnt:number=0; paracnt<num_paragraphs; paracnt++){
 
 			var num_textruns:number = this._newBlockBytes.readUnsignedInt();
 			//console.log("num_textruns  '" + num_textruns);
 			for(var textrun_cnt:number=0; textrun_cnt<num_textruns; textrun_cnt++) {
-
-				var format_id:number = this._newBlockBytes.readUnsignedInt();
-				//console.log("format_id  '" + format_id);
-				var textFormatArray:Array<any> = this.getAssetByID(format_id, [TextFormat.assetType]);
-				if (textFormatArray[0]) {
-					text_format = <TextFormat> textFormatArray[1];
-				} else {
-					this._blocks[blockID].addError("Could not find a Material for this Billboard. A empty material is created!");
-					text_format = new TextFormat();
-				}
-				//console.log("text_format  '" + text_format.name);
+				var text_format:TextFormat = <TextFormat> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 				var txt_length = this._newBlockBytes.readUnsignedInt();
 				//console.log("txt_length  '" + txt_length);
 				if (txt_length > 0) {
@@ -1020,17 +989,7 @@ class AWDParser extends ParserBase
 	private parseBillBoardLibraryBlock(blockID:number):void {
 
 		var name:string = this.parseVarStr();
-
-		var data_id:number = this._newBlockBytes.readUnsignedInt();
-		var mat:BasicMaterial;
-		var returnedArrayMaterial:Array<any> = this.getAssetByID(data_id, [MethodMaterial.assetType, BasicMaterial.assetType]);
-
-		if (returnedArrayMaterial[0]) {
-			mat = <BasicMaterial> returnedArrayMaterial[1];
-		} else {
-			this._blocks[blockID].addError("Could not find a Material for this Billboard. A empty material is created!");
-			mat = new BasicMaterial();
-		}
+		var mat:BasicMaterial = <BasicMaterial> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 		mat.bothSides=true;
 		var billboard:Billboard = new Billboard(mat);
 
@@ -1054,16 +1013,9 @@ class AWDParser extends ParserBase
 		var name:string = this.parseVarStr();
 
 		var data_id:number = this._newBlockBytes.readUnsignedInt();
-		var geom:Geometry;
-		var returnedArrayGeometry:Array<any> = this.getAssetByID(data_id, [Geometry.assetType]);
-		if (returnedArrayGeometry[0]) {
-			geom = <Geometry> returnedArrayGeometry[1];
-		} else {
-			this._blocks[blockID].addError("Could not find a Geometry for this Mesh. A empty Geometry is created!");
-			geom = new Geometry();
-		}
-
+		var geom:Geometry = <Geometry> this._blocks[data_id].data;
 		this._blocks[blockID].geoID = data_id;
+
 		var materials:Array<MethodMaterial> = new Array<MethodMaterial>();
 		num_materials = this._newBlockBytes.readUnsignedShort();
 
@@ -1073,14 +1025,7 @@ class AWDParser extends ParserBase
 		var returnedArrayMaterial:Array<any>;
 
 		while (materials_parsed < num_materials) {
-			var mat_id:number;
-			mat_id = this._newBlockBytes.readUnsignedInt();
-			returnedArrayMaterial = this.getAssetByID(mat_id, [MethodMaterial.assetType, BasicMaterial.assetType])
-			if ((!returnedArrayMaterial[0]) && (mat_id > 0)) {
-				this._blocks[blockID].addError("Could not find Material Nr " + materials_parsed + " (ID = " + mat_id + " ) for this Mesh");
-			}
-
-			var m:MethodMaterial = <MethodMaterial> returnedArrayMaterial[1];
+			var m:MethodMaterial = <MethodMaterial> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 			//m.preserveAlpha = true;
 			m.alphaBlending = true;
 			m.useColorTransform = true;
@@ -1445,6 +1390,7 @@ class AWDParser extends ParserBase
 		this._blocks[blockID].data = timeLineContainer;
 		this.parseProperties(null);
 		this.parseUserAttributes();
+
 		if (this._debug)
 			console.log("Parsed a TIMELINE: Name = " + name + "| isScene = " + isScene + "| sceneID = " + sceneID + "| numFrames = " + numFrames);
 	}
@@ -1560,7 +1506,6 @@ class AWDParser extends ParserBase
 				vertexBuffer.bufferView = new Uint8Array(<ArrayBuffer> curveData.arraybytes);
 
 				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(vertexBuffer);
-				//curve_sub_geom.setIndices(indices);
 				curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
 				geom.addSubGeometry(curve_sub_geom);
 				if (this._debug)
@@ -1615,10 +1560,8 @@ class AWDParser extends ParserBase
 		this._pFinalizeAsset(<IAsset> geom, name);
 		this._blocks[blockID].data = geom;
 
-		if (this._debug) {
+		if (this._debug)
 			console.log("Parsed a TriangleGeometry: Name = " + name);
-		}
-
 	}
 
 
@@ -1694,9 +1637,9 @@ class AWDParser extends ParserBase
 		this._blocks[blockID].data = prefab;
 
 		if (this._debug) {
-			if ((primType < 0) || (primType > 7)) {
+			if ((primType < 0) || (primType > 7))
 				primType = 0;
-			}
+
 			console.log("Parsed a Primivite: Name = " + name + "| type = " + primitiveTypes[primType]);
 		}
 	}
@@ -1705,12 +1648,10 @@ class AWDParser extends ParserBase
 	private parseContainer(blockID:number):void
 	{
 		var name:string;
-		var par_id:number;
 		var mtx:Matrix3D;
 		var ctr:DisplayObjectContainer;
-		var parent:DisplayObjectContainer;
+		var parent:DisplayObjectContainer = <DisplayObjectContainer> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 
-		par_id = this._newBlockBytes.readUnsignedInt();
 		mtx = this.parseMatrix3D();
 		name = this.parseVarStr();
 
@@ -1718,13 +1659,9 @@ class AWDParser extends ParserBase
 		ctr = new DisplayObjectContainer();
 		ctr.transform.matrix3D = mtx;
 
-		var returnedArray:Array<any> = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType]);
-
-		if (returnedArray[0]) {
-			var obj:DisplayObject = (<DisplayObjectContainer> returnedArray[1]).addChild(ctr);
-			parentName = (<DisplayObjectContainer> returnedArray[1]).name;
-		} else if (par_id > 0) {
-			this._blocks[ blockID ].addError("Could not find a parent for this ObjectContainer3D");
+		if (parent) {
+			parent.addChild(ctr);
+			parentName = parent.name;
 		} else {
 			//add to the content property
 			(<DisplayObjectContainer> this._pContent).addChild(ctr);
@@ -1746,38 +1683,29 @@ class AWDParser extends ParserBase
 		this._pFinalizeAsset(<IAsset> ctr, name);
 		this._blocks[blockID].data = ctr;
 
-		if (this._debug) {
+		if (this._debug)
 			console.log("Parsed a Container: Name = '" + name + "' | Parent-Name = " + parentName);
-		}
 	}
 
 	// Block ID = 23
 	private parseMeshInstance(blockID:number):void
 	{
+		var parent:DisplayObjectContainer = <DisplayObjectContainer> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 		var num_materials:number;
 		var materials_parsed:number;
-		var parent:DisplayObjectContainer;
-		var par_id:number = this._newBlockBytes.readUnsignedInt();
 		var mtx:Matrix3D = this.parseMatrix3D();
 		var name:string = this.parseVarStr();
-		var parentName:string = "Root (TopLevel)";
+
 		var data_id:number = this._newBlockBytes.readUnsignedInt();
-		var geom:Geometry;;
+		var asset:IAsset = <IAsset> this._blocks[data_id].data;
+		var geom:Geometry;
 		var prefab:PrefabBase;
-		var returnedArrayGeometry:Array<any> = this.getAssetByID(data_id, [Geometry.assetType]);
 		var isPrefab:boolean=false;
-		if (returnedArrayGeometry[0]) {
-			geom = <Geometry> returnedArrayGeometry[1];
+		if (asset.isAsset(Geometry)) {
+			geom = <Geometry> asset;
 		} else {
-			var returnedArrayGeometry2:Array<any> = this.getAssetByID(data_id, [PrimitivePrefabBase.assetType]);
-			if (returnedArrayGeometry2[0]) {
-				isPrefab=true;
-				prefab=<PrefabBase>returnedArrayGeometry2[1];
-			}
-			else{
-				this._blocks[blockID].addError("Could not find a Geometry or prefab for this Mesh " + data_id + ". A empty Geometry is created!");
-				geom = new Geometry();
-			}
+			isPrefab = true;
+			prefab = <PrefabBase> asset;
 		}
 
 		this._blocks[blockID].geoID = data_id;
@@ -1787,38 +1715,20 @@ class AWDParser extends ParserBase
 		var materialNames:Array<string> = new Array<string>();
 		materials_parsed = 0;
 
-		var returnedArrayMaterial:Array<any>;
-
 		while (materials_parsed < num_materials) {
-			var mat_id:number;
-			mat_id = this._newBlockBytes.readUnsignedInt();
-			returnedArrayMaterial = this.getAssetByID(mat_id, [MethodMaterial.assetType, BasicMaterial.assetType])
-			if ((!returnedArrayMaterial[0]) && (mat_id > 0)) {
-				this._blocks[blockID].addError("Could not find Material Nr " + materials_parsed + " (ID = " + mat_id + " ) for this Mesh");
-			}
-			var m:MethodMaterial = <MethodMaterial> returnedArrayMaterial[1];
+			var m:MethodMaterial = <MethodMaterial> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 			materials.push(m);
 			materialNames.push(m.name);
 			materials_parsed++;
 		}
 
-		var mesh:Mesh;
-		if(isPrefab){
-			mesh = <Mesh>prefab.getNewObject();
-		}
-		else{
-			mesh = new Mesh(geom, null);
-		}
+		var mesh:Mesh = isPrefab? <Mesh> prefab.getNewObject() : new Mesh(geom, null);
 		mesh.transform.matrix3D = mtx;
 
-		var returnedArrayParent:Array<any> = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType])
-
-		if (returnedArrayParent[0]) {
-			var objC:DisplayObjectContainer = <DisplayObjectContainer> returnedArrayParent[1];
-			objC.addChild(mesh);
-			parentName = objC.name;
-		} else if (par_id > 0) {
-			this._blocks[blockID].addError("Could not find a parent for this Mesh");
+		var parentName:string = "Root (TopLevel)";
+		if (parent) {
+			parent.addChild(mesh);
+			parentName = parent.name;
 		} else {
 			//add to the content property
 			(<DisplayObjectContainer> this._pContent).addChild(mesh);
@@ -1827,13 +1737,10 @@ class AWDParser extends ParserBase
 		if (materials.length >= 1 && mesh.subMeshes.length == 1) {
 			mesh.material = materials[0];
 		} else if (materials.length > 1) {
-			var i:number;
-
 			// Assign each sub-mesh in the mesh a material from the list. If more sub-meshes
 			// than materials, repeat the last material for all remaining sub-meshes.
-			for (i = 0; i < mesh.subMeshes.length; i++) {
+			for (var i:number = 0; i < mesh.subMeshes.length; i++)
 				mesh.subMeshes[i].material = materials[Math.min(materials.length - 1, i)];
-			}
 		}
 		if ((this._version[0] == 2) && (this._version[1] == 1)) {
 			var props:AWDProperties = this.parseProperties({1:this._matrixNrType, 2:this._matrixNrType, 3:this._matrixNrType, 4:AWDParser.UINT8, 5:AWDParser.BOOL});
@@ -1862,19 +1769,15 @@ class AWDParser extends ParserBase
 	private parseSkyboxInstance(blockID:number):void
 	{
 		var name:string = this.parseVarStr();
-		var cubeTexAddr:number = this._newBlockBytes.readUnsignedInt();
+		var cubeTex:SingleCubeTexture = <SingleCubeTexture> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+		var asset:Skybox = new Skybox(cubeTex);
 
-		var returnedArrayCubeTex:Array<any> = this.getAssetByID(cubeTexAddr, [SingleCubeTexture.assetType]);
-		if ((!returnedArrayCubeTex[0]) && (cubeTexAddr != 0))
-			this._blocks[blockID].addError("Could not find the Cubetexture (ID = " + cubeTexAddr + " ) for this Skybox");
-		var asset:Skybox = new Skybox(<SingleCubeTexture> returnedArrayCubeTex[1]);
-
-		this.parseProperties(null)
+		this.parseProperties(null);
 		asset.extra = this.parseUserAttributes();
 		this._pFinalizeAsset(asset, name);
 		this._blocks[blockID].data = asset;
 		if (this._debug)
-			console.log("Parsed a Skybox: Name = '" + name + "' | CubeTexture-Name = " + (<SingleCubeTexture> returnedArrayCubeTex[1]).name);
+			console.log("Parsed a Skybox: Name = '" + name + "' | CubeTexture-Name = " + cubeTex.name);
 
 	}
 
@@ -1884,13 +1787,12 @@ class AWDParser extends ParserBase
 		var light:LightBase;
 		var newShadowMapper:ShadowMapperBase;
 
-		var par_id:number = this._newBlockBytes.readUnsignedInt();
+		var parent:DisplayObjectContainer = <DisplayObjectContainer> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 		var mtx:Matrix3D = this.parseMatrix3D();
 		var name:string = this.parseVarStr();
 		var lightType:number = this._newBlockBytes.readUnsignedByte();
 		var props:AWDProperties = this.parseProperties({1:this._propsNrType, 2:this._propsNrType, 3:AWDParser.COLOR, 4:this._propsNrType, 5:this._propsNrType, 6:AWDParser.BOOL, 7:AWDParser.COLOR, 8:this._propsNrType, 9:AWDParser.UINT8, 10:AWDParser.UINT8, 11:this._propsNrType, 12:AWDParser.UINT16, 21:this._matrixNrType, 22:this._matrixNrType, 23:this._matrixNrType});
 		var shadowMapperType:number = props.get(9, 0);
-		var parentName:string = "Root (TopLevel)";
 		var lightTypes:Array<string> = ["Unsupported LightType", "PointLight", "DirectionalLight"];
 		var shadowMapperTypes:Array<string> = ["No ShadowMapper", "DirectionalShadowMapper", "NearDirectionalShadowMapper", "CascadeShadowMapper", "CubeMapShadowMapper"];
 
@@ -1949,16 +1851,10 @@ class AWDParser extends ParserBase
 			light.castsShadows = true;
 		}
 
-		if (par_id != 0) {
-
-			var returnedArrayParent:Array<any> = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType])
-
-			if (returnedArrayParent[0]) {
-				(<DisplayObjectContainer> returnedArrayParent[1]).addChild(light);
-				parentName = (<DisplayObjectContainer> returnedArrayParent[1]).name;
-			} else {
-				this._blocks[blockID].addError("Could not find a parent for this Light");
-			}
+		var parentName:string = "Root (TopLevel)";
+		if (parent) {
+			parent.addChild(light);
+			parentName = parent.name;
 		} else {
 			//add to the content property
 			(<DisplayObjectContainer> this._pContent).addChild(light);
@@ -1979,10 +1875,9 @@ class AWDParser extends ParserBase
 	private parseCamera(blockID:number):void
 	{
 
-		var par_id:number = this._newBlockBytes.readUnsignedInt();
+		var parent:DisplayObjectContainer = <DisplayObjectContainer> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 		var mtx:Matrix3D = this.parseMatrix3D();
 		var name:string = this.parseVarStr();
-		var parentName:string = "Root (TopLevel)";
 		var projection:ProjectionBase;
 
 		this._newBlockBytes.readUnsignedByte(); //set as active camera
@@ -2009,17 +1904,10 @@ class AWDParser extends ParserBase
 		var camera:Camera = new Camera(projection);
 		camera.transform.matrix3D = mtx;
 
-		var returnedArrayParent:Array<any> = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType])
-
-		if (returnedArrayParent[0]) {
-
-			var objC:DisplayObjectContainer = <DisplayObjectContainer> returnedArrayParent[1];
-			objC.addChild(camera);
-
-			parentName = objC.name;
-
-		} else if (par_id > 0) {
-			this._blocks[blockID].addError("Could not find a parent for this Camera");
+		var parentName:string = "Root (TopLevel)";
+		if (parent) {
+			parent.addChild(camera);
+			parentName = parent.name;
 		} else {
 			//add to the content property
 			(<DisplayObjectContainer> this._pContent).addChild(camera);
@@ -2046,23 +1934,13 @@ class AWDParser extends ParserBase
 		var name:string = this.parseVarStr();
 		var numLights:number = this._newBlockBytes.readUnsignedShort();
 		var lightsArray:Array<LightBase> = new Array<LightBase>();
-		var k:number = 0;
-		var lightID:number = 0;
 
-		var returnedArrayLight:Array<any>;
 		var lightsArrayNames:Array<string> = new Array<string>();
 
-		for (k = 0; k < numLights; k++) {
-			lightID = this._newBlockBytes.readUnsignedInt();
-			returnedArrayLight = this.getAssetByID(lightID, [LightBase.assetType])
-
-			if (returnedArrayLight[0]) {
-				lightsArray.push(<LightBase> returnedArrayLight[1]);
-				lightsArrayNames.push(( <LightBase> returnedArrayLight[1]).name);
-
-			} else {
-				this._blocks[blockID].addError("Could not find a Light Nr " + k + " (ID = " + lightID + " ) for this LightPicker");
-			}
+		for (var k:number = 0; k < numLights; k++) {
+			var light:LightBase = <LightBase> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+			lightsArray.push(light);
+			lightsArrayNames.push(light.name);
 		}
 
 		if (lightsArray.length == 0) {
@@ -2128,22 +2006,17 @@ class AWDParser extends ParserBase
 				mat.mode = MethodMaterialMode.MULTI_PASS;
 			}
 		} else if (type === 2) {
-			var tex_addr:number = props.get(2, 0);
+			var texture:Single2DTexture = <Single2DTexture> this._blocks[props.get(2, 0)].data;
 
-			returnedArray = this.getAssetByID(tex_addr, [Single2DTexture.assetType]);
-
-			if ((!returnedArray[0]) && (tex_addr > 0))
-				this._blocks[blockID].addError("Could not find the DiffsueTexture (ID = " + tex_addr + " ) for this Material");
-
-			mat = new MethodMaterial(<TextureBase> returnedArray[1]);
+			mat = new MethodMaterial(texture);
 
 			if (this.materialMode < 2) {
 				mat.alphaBlending = props.get(11, false);
 				mat.alpha = props.get(10, 1.0);
-				debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + name + "' | Texture-Name = " + mat.name;
+				debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + name + "'" + (texture? " | Texture-Name = " + texture.name : "");
 			} else {
 				mat.mode = MethodMaterialMode.MULTI_PASS;
-				debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "' | Texture-Name = " + mat.name;
+				debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "'" + (texture? " | Texture-Name = " + texture.name : "");
 			}
 		}
 
@@ -2163,9 +2036,9 @@ class AWDParser extends ParserBase
 	private parseMaterial_v1(blockID:number):void
 	{
 		var mat:MethodMaterial;
+		var diffuseTexture:Single2DTexture;
 		var normalTexture:TextureBase;
 		var specTexture:TextureBase;
-		var returnedArray:Array<any>;
 
 		var name:string = this.parseVarStr();
 		var type:number = this._newBlockBytes.readUnsignedByte();
@@ -2202,79 +2075,26 @@ class AWDParser extends ParserBase
 					}
 
 				} else if (type == 2) {// texture material
-					var tex_addr:number = props.get(2, 0);//TODO temporarily swapped so that diffuse texture goes to ambient
-					returnedArray = this.getAssetByID(tex_addr, [Single2DTexture.assetType]);
-
-					if ((!returnedArray[0]) && (tex_addr > 0))
-						this._blocks[blockID].addError("Could not find the AmbientTexture (ID = " + tex_addr + " ) for this MethodMaterial");
-
-					var texture:Single2DTexture = returnedArray[1];
+					var texture:Single2DTexture = <Single2DTexture> this._blocks[props.get(2, 0)].data;
 
 					mat = new MethodMaterial(texture);
 
 					if (spezialType == 1) {// MultiPassMaterial
 						mat.mode = MethodMaterialMode.MULTI_PASS;
 
-						debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "' | Texture-Name = " + texture.name;
+						debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "'" + (texture? " | Texture-Name = " + texture.name : "");
 					} else {//	SinglePassMaterial
 						mat.alpha = props.get(10, 1.0);
 						mat.alphaBlending = props.get(11, false);
 
-						debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + name + "' | Texture-Name = " + texture.name;
+						debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + name + "'" + (texture? " | Texture-Name = " + texture.name : "");
 					}
 				}
 
-				var diffuseTexture:Single2DTexture;
-				var diffuseTex_addr:number = props.get(17, 0);
-
-				returnedArray = this.getAssetByID(diffuseTex_addr, [Single2DTexture.assetType]);
-
-				if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
-					this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
-				}
-
-				if (returnedArray[0])
-					diffuseTexture = returnedArray[1];
-
-				if (diffuseTexture) {
-					mat.diffuseTexture = diffuseTexture;
-					debugString += " | DiffuseTexture-Name = " + diffuseTexture.name;
-				}
-
-				var normalTex_addr:number = props.get(3, 0);
-
-				returnedArray = this.getAssetByID(normalTex_addr, [Single2DTexture.assetType]);
-
-				if ((!returnedArray[0]) && (normalTex_addr != 0)) {
-					this._blocks[blockID].addError("Could not find the NormalTexture (ID = " + normalTex_addr + " ) for this MethodMaterial");
-				}
-
-				if (returnedArray[0]) {
-					normalTexture = returnedArray[1];
-					debugString += " | NormalTexture-Name = " + normalTexture.name;
-				}
-
-				var specTex_addr:number = props.get(21, 0);
-				returnedArray = this.getAssetByID(specTex_addr, [Single2DTexture.assetType]);
-
-				if ((!returnedArray[0]) && (specTex_addr != 0)) {
-					this._blocks[blockID].addError("Could not find the SpecularTexture (ID = " + specTex_addr + " ) for this MethodMaterial");
-				}
-				if (returnedArray[0]) {
-					specTexture = returnedArray[1];
-					debugString += " | SpecularTexture-Name = " + specTexture.name;
-				}
-
-				var lightPickerAddr:number = props.get(22, 0);
-				returnedArray = this.getAssetByID(lightPickerAddr, [LightPickerBase.assetType])
-
-				if ((!returnedArray[0]) && (lightPickerAddr)) {
-					this._blocks[blockID].addError("Could not find the LightPicker (ID = " + lightPickerAddr + " ) for this MethodMaterial");
-				} else {
-					mat.lightPicker = <LightPickerBase> returnedArray[1];
-					//debugString+=" | Lightpicker-Name = "+LightPickerBase(returnedArray[1]).name;
-				}
-
+				diffuseTexture = <Single2DTexture> this._blocks[props.get(17, 0)].data;
+				normalTexture = <TextureBase> this._blocks[props.get(3, 0)].data;
+				specTexture = <TextureBase> this._blocks[props.get(21, 0)].data;
+				mat.lightPicker = <LightPickerBase> this._blocks[props.get(22, 0)].data;
 				mat.smooth = props.get(5, true);
 				mat.mipmap = props.get(6, true);
 				mat.bothSides = props.get(7, false);
@@ -2282,11 +2102,20 @@ class AWDParser extends ParserBase
 				mat.blendMode = this.blendModeDic[props.get(9, 0)];
 				mat.repeat = props.get(13, false);
 
-				if (normalTexture)
-					mat.normalMap = normalTexture;
+				if (diffuseTexture) {
+					mat.diffuseTexture = diffuseTexture;
+					debugString += " | DiffuseTexture-Name = " + diffuseTexture.name;
+				}
 
-				if (specTexture)
+				if (normalTexture) {
+					mat.normalMap = normalTexture;
+					debugString += " | NormalTexture-Name = " + normalTexture.name;
+				}
+
+				if (specTexture) {
 					mat.specularMap = specTexture;
+					debugString += " | SpecularTexture-Name = " + specTexture.name;
+				}
 
 				mat.alphaThreshold = props.get(12, 0.0);
 				mat.ambient = props.get(15, 1.0);
@@ -2296,7 +2125,6 @@ class AWDParser extends ParserBase
 				mat.specularColor = props.get(20, 0xffffff);
 
 				var methods_parsed:number = 0;
-				var targetID:number;
 
 				while (methods_parsed < num_methods) {
 					var method_type:number;
@@ -2324,42 +2152,25 @@ class AWDParser extends ParserBase
 
 					switch (method_type) {
 						case 999: //wrapper-Methods that will load a previous parsed EffektMethod returned
-
-							targetID = props.get(1, 0);
-							returnedArray = this.getAssetByID(targetID, [EffectMethodBase.assetType]);
-
-							if (!returnedArray[0]) {
-								this._blocks[blockID].addError("Could not find the EffectMethod (ID = " + targetID + " ) for this Material");
-							} else {
-								mat.addEffectMethod(returnedArray[1]);
-
-								debugString += " | EffectMethod-Name = " + (<EffectMethodBase> returnedArray[1]).name;
-							}
+							var effectMethod:EffectMethodBase = <EffectMethodBase> this._blocks[props.get(1, 0)].data;
+							mat.addEffectMethod(effectMethod);
+							debugString += " | EffectMethod-Name = " + effectMethod.name;
 
 							break;
 
 						case 998: //wrapper-Methods that will load a previous parsed ShadowMapMethod
-
-							targetID = props.get(1, 0);
-							returnedArray = this.getAssetByID(targetID, [ShadowMapMethodBase.assetType]);
-
-							if (!returnedArray[0]) {
-								this._blocks[blockID].addError("Could not find the ShadowMethod (ID = " + targetID + " ) for this Material");
-							} else {
-								mat.shadowMethod = returnedArray[1];
-								debugString += " | ShadowMethod-Name = " + (<ShadowMethodBase> returnedArray[1]).name;
-							}
+							var shadowMapMethod:ShadowMapMethodBase = <ShadowMapMethodBase> this._blocks[props.get(1, 0)].data;
+							mat.shadowMethod = shadowMapMethod;
+							debugString += " | ShadowMethod-Name = " + shadowMapMethod.name;
 
 							break;
 
 						case 1: //EnvMapAmbientMethod
-							targetID = props.get(1, 0);
-							returnedArray = this.getAssetByID(targetID, [SingleCubeTexture.assetType]);
-							if (!returnedArray[0])
-								this._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this EnvMapAmbientMethodMaterial");
+							var cubeTexture:SingleCubeTexture = <SingleCubeTexture> this._blocks[props.get(1, 0)].data;
 							mat.ambientMethod = new AmbientEnvMapMethod();
-							mat.texture = returnedArray[1];
-							debugString += " | AmbientEnvMapMethod | EnvMap-Name =" + (<SingleCubeTexture> returnedArray[1]).name;
+							mat.texture = cubeTexture;
+							debugString += " | AmbientEnvMapMethod | EnvMap-Name =" + cubeTexture.name;
+
 							break;
 
 						case 51: //DepthDiffuseMethod
@@ -2367,24 +2178,18 @@ class AWDParser extends ParserBase
 							debugString += " | DiffuseDepthMethod";
 							break;
 						case 52: //GradientDiffuseMethod
-							targetID = props.get(1, 0);
-							returnedArray = this.getAssetByID(targetID, [Single2DTexture.assetType]);
-							if (!returnedArray[0])
-								this._blocks[blockID].addError("Could not find the GradientDiffuseTexture (ID = " + targetID + " ) for this GradientDiffuseMethod");
-							mat.diffuseMethod = new DiffuseGradientMethod(returnedArray[1]);
-							debugString += " | DiffuseGradientMethod | GradientDiffuseTexture-Name =" + (<TextureBase> returnedArray[1]).name;
+							var texture:Single2DTexture = <Single2DTexture> this._blocks[props.get(1, 0)].data;
+							mat.diffuseMethod = new DiffuseGradientMethod(texture);
+							debugString += " | DiffuseGradientMethod | GradientDiffuseTexture-Name =" + texture.name;
 							break;
 						case 53: //WrapDiffuseMethod
 							mat.diffuseMethod = new DiffuseWrapMethod(props.get(101, 5));
 							debugString += " | DiffuseWrapMethod";
 							break;
 						case 54: //LightMapDiffuseMethod
-							targetID = props.get(1, 0);
-							returnedArray = this.getAssetByID(targetID, [Single2DTexture.assetType]);
-							if (!returnedArray[0])
-								this._blocks[blockID].addError("Could not find the LightMap (ID = " + targetID + " ) for this LightMapDiffuseMethod");
-							mat.diffuseMethod = new DiffuseLightMapMethod(returnedArray[1], this.blendModeDic[props.get(401, 10)], false, mat.diffuseMethod);
-							debugString += " | DiffuseLightMapMethod | LightMapTexture-Name =" + (<TextureBase> returnedArray[1]).name;
+							var texture:Single2DTexture = <Single2DTexture> this._blocks[props.get(1, 0)].data;
+							mat.diffuseMethod = new DiffuseLightMapMethod(texture, this.blendModeDic[props.get(401, 10)], false, mat.diffuseMethod);
+							debugString += " | DiffuseLightMapMethod | LightMapTexture-Name =" + texture.name;
 							break;
 						case 55: //CelDiffuseMethod
 							mat.diffuseMethod = new DiffuseCelMethod(props.get(401, 3), mat.diffuseMethod);
@@ -2421,16 +2226,10 @@ class AWDParser extends ParserBase
 						case 151://HeightMapNormalMethod - thios is not implemented for now, but might appear later
 							break;
 						case 152: //SimpleWaterNormalMethod
-							targetID = props.get(1, 0);
-							returnedArray = this.getAssetByID(targetID, [Single2DTexture.assetType]);
-							if (!returnedArray[0])
-								this._blocks[blockID].addError("Could not find the SecoundNormalMap (ID = " + targetID + " ) for this SimpleWaterNormalMethod");
-							if (!mat.normalMap)
-								this._blocks[blockID].addError("Could not find a normal Map on this Material to use with this SimpleWaterNormalMethod");
-
-							mat.normalMap = returnedArray[1];
-							mat.normalMethod = new NormalSimpleWaterMethod(mat.normalMap, returnedArray[1]);
-							debugString += " | NormalSimpleWaterMethod | Second-NormalTexture-Name = " + (<TextureBase> returnedArray[1]).name;
+							var texture:Single2DTexture = <Single2DTexture> this._blocks[props.get(1, 0)].data;
+							mat.normalMap = texture;
+							mat.normalMethod = new NormalSimpleWaterMethod(mat.normalMap, texture);
+							debugString += " | NormalSimpleWaterMethod | Second-NormalTexture-Name = " + texture.name;
 							break;
 					}
 					this.parseUserAttributes();
@@ -2444,21 +2243,8 @@ class AWDParser extends ParserBase
 			var color:number = props.get(1, 0xcccccc);
 			debugString+=color;
 		
-			var diffuseTexture:Single2DTexture;
-			var diffuseTex_addr:number = props.get(2, 0);
-		
-			returnedArray = this.getAssetByID(diffuseTex_addr, [Single2DTexture.assetType]);
-		
-			if ((!returnedArray[0]) && (diffuseTex_addr != 0)) {
-				this._blocks[blockID].addError("Could not find the DiffuseTexture (ID = " + diffuseTex_addr + " ) for this MethodMaterial");
-				diffuseTexture = DefaultMaterialManager.getDefaultTexture();
-			}
-		
-			if (returnedArray[0])
-				diffuseTexture = returnedArray[1];
+			var diffuseTexture:Single2DTexture = <Single2DTexture> this._blocks[props.get(2, 0)].data;
 			var basic_mat:BasicMaterial = new BasicMaterial(diffuseTexture);
-			//debugString+= " alpha = "+props.get(10, 1.0)+" ";
-			debugString+= " texture = "+diffuseTex_addr+" ";
 			basic_mat.bothSides = true;
 			basic_mat.preserveAlpha = true;
 			basic_mat.alphaBlending = true;
@@ -2599,21 +2385,9 @@ class AWDParser extends ParserBase
 	//Block ID = 92
 	private parseShadowMethodBlock(blockID:number):void
 	{
-		var type:number;
-		var data_len:number;
-		var asset:ShadowMethodBase;
-		var shadowLightID:number;
 		this._blocks[blockID].name = this.parseVarStr();
-
-		shadowLightID = this._newBlockBytes.readUnsignedInt();
-		var returnedArray:Array<any> = this.getAssetByID(shadowLightID, [LightBase.assetType]);
-
-		if (!returnedArray[0]) {
-			this._blocks[blockID].addError("Could not find the TargetLight (ID = " + shadowLightID + " ) for this ShadowMethod - ShadowMethod not created");
-			return;
-		}
-
-		asset = this.parseShadowMethodList(<LightBase> returnedArray[1], blockID);
+		var light:LightBase = <LightBase> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+		var asset:ShadowMethodBase = this.parseShadowMethodList(light, blockID);
 
 		if (!asset)
 			return;
@@ -2622,9 +2396,8 @@ class AWDParser extends ParserBase
 		this._pFinalizeAsset(<IAsset> asset, this._blocks[blockID].name);
 		this._blocks[blockID].data = asset;
 
-		if (this._debug) {
-			console.log("Parsed a ShadowMapMethodMethod: Name = " + asset.name + " | Type = " + asset + " | Light-Name = ", ( <LightBase> returnedArray[1] ).name);
-		}
+		if (this._debug)
+			console.log("Parsed a ShadowMapMethodMethod: Name = " + asset.name + " | Type = " + asset + " | Light-Name = ", light.name);
 	}
 
 
@@ -2632,18 +2405,10 @@ class AWDParser extends ParserBase
 	private parseCommand(blockID:number):void
 	{
 		var hasBlocks:boolean = ( this._newBlockBytes.readUnsignedByte() == 1 );
-		var par_id:number = this._newBlockBytes.readUnsignedInt();
+		var parentObject:DisplayObjectContainer = <DisplayObjectContainer> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+		var targetObject:DisplayObjectContainer;
 		var mtx:Matrix3D = this.parseMatrix3D();
 		var name:string = this.parseVarStr();
-
-		var parentObject:DisplayObjectContainer;
-		var targetObject:DisplayObjectContainer;
-
-		var returnedArray:Array<any> = this.getAssetByID(par_id, [DisplayObjectContainer.assetType, LightBase.assetType, Mesh.assetType]);
-
-		if (returnedArray[0]) {
-			parentObject = <DisplayObjectContainer> returnedArray[1];
-		}
 
 		var numCommands:number = this._newBlockBytes.readShort();
 		var typeCommand:number = this._newBlockBytes.readShort();
@@ -2652,23 +2417,11 @@ class AWDParser extends ParserBase
 
 		switch (typeCommand) {
 			case 1:
-
-				var targetID:number = props.get(1, 0);
-				//var returnedArrayTarget:Array<any> = this.getAssetByID(targetID, [LightBase.assetType, TextureProjector.assetType]); //for no only light is requested!!!!
-				var returnedArrayTarget:Array<any> = this.getAssetByID(targetID, [LightBase.assetType]); //for no only light is requested!!!!
-
-				if ((!returnedArrayTarget[0]) && (targetID != 0)) {
-					this._blocks[blockID].addError("Could not find the light (ID = " + targetID + " ( for this CommandBock!");
-					return;
-				}
-
-				targetObject = returnedArrayTarget[1];
-
-				if (parentObject) {
-					parentObject.addChild(targetObject);
-				}
-
+				targetObject = this._blocks[props.get(1, 0)].data;
 				targetObject.transform.matrix3D = mtx;
+
+				if (parentObject)
+					parentObject.addChild(targetObject);
 
 				break;
 		}
@@ -2678,9 +2431,9 @@ class AWDParser extends ParserBase
 
 			targetObject.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
 			targetObject.extra = this.parseUserAttributes();
-
 		}
-		this._blocks[blockID].data = targetObject
+
+		this._blocks[blockID].data = targetObject;
 
 		if (this._debug) {
 			console.log("Parsed a CommandBlock: Name = '" + name);
@@ -2734,24 +2487,15 @@ class AWDParser extends ParserBase
 			//					shadowMethod = new CascadeShadowMapMethod(returnedArray[1]);
 			//					break;
 			case 1002: //ShadowNearMethod
-				targetID = props.get(1, 0);
-				returnedArray = this.getAssetByID(targetID, [ShadowMapMethodBase.assetType]);
-				if (!returnedArray[0]) {
-					this._blocks[blockID].addError("Could not find the ShadowBaseMethod (ID = " + targetID + " ) for this ShadowNearMethod - ShadowMethod not created");
-					return shadowMethod;
-				}
-				shadowMethod = new ShadowNearMethod(<ShadowMethodBase> returnedArray[1]);
+				shadowMethod = new ShadowNearMethod(<ShadowMethodBase> this._blocks[props.get(1, 0)].data);
 				break;
 			case 1101: //ShadowFilteredMethod
-
 				shadowMethod = new ShadowFilteredMethod(<DirectionalLight> light);
 				(<ShadowFilteredMethod> shadowMethod).alpha = props.get(101, 1);
 				(<ShadowFilteredMethod> shadowMethod).epsilon = props.get(102, 0.002);
 				break;
 
 			case 1102: //ShadowDitheredMethod
-
-
 				shadowMethod = new ShadowDitheredMethod(<DirectionalLight> light, <number> props.get(201, 5));
 				(<ShadowDitheredMethod> shadowMethod).alpha = props.get(101, 1);
 				(<ShadowDitheredMethod> shadowMethod).epsilon = props.get(102, 0.002);
@@ -2759,7 +2503,6 @@ class AWDParser extends ParserBase
 
 				break;
 			case 1103: //ShadowSoftMethod
-
 				shadowMethod = new ShadowSoftMethod(<DirectionalLight> light, <number> props.get(201, 5));
 				(<ShadowSoftMethod> shadowMethod).alpha = props.get(101, 1);
 				(<ShadowSoftMethod> shadowMethod).epsilon = props.get(102, 0.002);
@@ -2859,13 +2602,8 @@ class AWDParser extends ParserBase
 		var frames_parsed:number /*uint*/ = 0;
 		var returnedArray:Array<any>;
 		while (frames_parsed < num_frames) {
-			pose_addr = this._newBlockBytes.readUnsignedInt();
+			clip.addFrame(<SkeletonPose> this._blocks[this._newBlockBytes.readUnsignedInt()].data, frame_dur);
 			frame_dur = this._newBlockBytes.readUnsignedShort();
-			returnedArray = this.getAssetByID(pose_addr, [SkeletonPose.assetType]);
-			if (!returnedArray[0])
-				this._blocks[blockID].addError("Could not find the SkeletonPose Frame # " + frames_parsed + " (ID = " + pose_addr + " ) for this SkeletonClipNode");
-			else
-				clip.addFrame(<SkeletonPose> this._blocks[pose_addr].data, frame_dur);
 			frames_parsed++;
 		}
 		if (clip.frames.length == 0) {
@@ -2905,13 +2643,10 @@ class AWDParser extends ParserBase
 		var props:AWDProperties;
 		var thisGeo:Geometry;
 		var name:string = this.parseVarStr();
-		var geoAdress:number /*int*/ = this._newBlockBytes.readUnsignedInt();
-		var returnedArray:Array<any> = this.getAssetByID(geoAdress, [Geometry.assetType]);
-		if (!returnedArray[0]) {
-			this._blocks[blockID].addError("Could not find the target-Geometry-Object " + geoAdress + " ) for this VertexClipNode");
-			return;
-		}
-		var uvs:Array<Float32Array> = this.getUVForVertexAnimation(geoAdress);
+		var geo_id:number /*int*/ = this._newBlockBytes.readUnsignedInt();
+		var geometry:Geometry = <Geometry> this._blocks[geo_id].data;
+
+		var uvs:Array<Float32Array> = this.getUVForVertexAnimation(geo_id);
 		if (!poseOnly)
 			num_frames = this._newBlockBytes.readUnsignedShort();
 
@@ -2938,13 +2673,13 @@ class AWDParser extends ParserBase
 				str_end = this._newBlockBytes.position + str_len;
 				while (streamsParsed < num_Streams) {
 					if (streamtypes[streamsParsed] == 1) {
-						indices = (<Geometry> returnedArray[1]).subGeometries[subMeshParsed].indices;
+						indices = geometry.subGeometries[subMeshParsed].indices;
 						verts = new Array<number>();
 						idx = 0;
 						while (this._newBlockBytes.position < str_end) {
-							x = this.readNumber(this._accuracyGeo)
-							y = this.readNumber(this._accuracyGeo)
-							z = this.readNumber(this._accuracyGeo)
+							x = this.readNumber(this._accuracyGeo);
+							y = this.readNumber(this._accuracyGeo);
+							z = this.readNumber(this._accuracyGeo);
 							verts[idx++] = x;
 							verts[idx++] = y;
 							verts[idx++] = z;
@@ -2972,31 +2707,25 @@ class AWDParser extends ParserBase
 
 		this._blocks[blockID].data = clip;
 		if (this._debug)
-			console.log("Parsed a VertexClipNode: Name = " + clip.name + " | Target-Geometry-Name = " + (<Geometry> returnedArray[1]).name + " | Number of Frames = " + clip.frames.length);
+			console.log("Parsed a VertexClipNode: Name = " + clip.name + " | Target-Geometry-Name = " + geometry.name + " | Number of Frames = " + clip.frames.length);
 	}
 
 	//BlockID 113
 	private parseVertexAnimationSet(blockID:number /*uint*/):void
 	{
-		var poseBlockAdress:number /*int*/
-		var outputString:string = "";
 		var name:string = this.parseVarStr();
 		var num_frames:number /*uint*/ = this._newBlockBytes.readUnsignedShort();
 		var props:AWDProperties = this.parseProperties({1:AWDParser.UINT16});
 		var frames_parsed:number /*uint*/ = 0;
 		var skeletonFrames:Array<SkeletonClipNode> = new Array<SkeletonClipNode>();
 		var vertexFrames:Array<VertexClipNode> = new Array<VertexClipNode>();
+		var clipNode:AnimationClipNodeBase;
 		while (frames_parsed < num_frames) {
-			poseBlockAdress = this._newBlockBytes.readUnsignedInt();
-			var returnedArray:Array<any> = this.getAssetByID(poseBlockAdress, [AnimationNodeBase.assetType]);
-			if (!returnedArray[0])
-				this._blocks[blockID].addError("Could not find the AnimationClipNode Nr " + frames_parsed + " ( " + poseBlockAdress + " ) for this AnimationSet");
-			else {
-				if (returnedArray[1] instanceof VertexClipNode)
-					vertexFrames.push(returnedArray[1])
-				if (returnedArray[1] instanceof SkeletonClipNode)
-					skeletonFrames.push(returnedArray[1])
-			}
+			clipNode = <AnimationClipNodeBase> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+			if (clipNode instanceof VertexClipNode)
+				vertexFrames.push(<VertexClipNode> clipNode);
+			else if (clipNode instanceof SkeletonClipNode)
+				skeletonFrames.push(<SkeletonClipNode> clipNode);
 			frames_parsed++;
 		}
 		if ((vertexFrames.length == 0) && (skeletonFrames.length == 0)) {
@@ -3014,7 +2743,6 @@ class AWDParser extends ParserBase
 				console.log("Parsed a VertexAnimationSet: Name = " + name + " | Animations = " + newVertexAnimationSet.animations.length + " | Animation-Names = " + newVertexAnimationSet.animationNames.toString());
 
 		} else if (skeletonFrames.length > 0) {
-			returnedArray = this.getAssetByID(poseBlockAdress, [AnimationNodeBase.assetType]);
 			var newSkeletonAnimationSet:SkeletonAnimationSet = new SkeletonAnimationSet(props.get(1, 4)); //props.get(1,4));
 			for (var i:number /*int*/ = 0; i < skeletonFrames.length; i++)
 				newSkeletonAnimationSet.addAnimation(skeletonFrames[i]);
@@ -3029,62 +2757,37 @@ class AWDParser extends ParserBase
 	//BlockID 122
 	private parseAnimatorSet(blockID:number /*uint*/):void
 	{
-		var targetMesh:Mesh;
-		var animSetBlockAdress:number /*int*/
-		var targetAnimationSet:AnimationSetBase;
-		var outputString:string = "";
 		var name:string = this.parseVarStr();
-		var type:number /*uint*/ = this._newBlockBytes.readUnsignedShort();
-
+		var type:number = this._newBlockBytes.readUnsignedShort();
 		var props:AWDProperties = this.parseProperties({1:AWDParser.BADDR});
+		var targetAnimationSet:AnimationSetBase = <AnimationSetBase> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 
-		animSetBlockAdress = this._newBlockBytes.readUnsignedInt();
+		var targetMeshes:Array<Mesh> = new Array<Mesh>();
 		var targetMeshLength:number /*uint*/ = this._newBlockBytes.readUnsignedShort();
-		var meshAdresses:Array<number> /*uint*/ = new Array<number>() /*uint*/;
 		for (var i:number /*int*/ = 0; i < targetMeshLength; i++)
-			meshAdresses.push(this._newBlockBytes.readUnsignedInt());
+			targetMeshes.push(<Mesh> this._blocks[this._newBlockBytes.readUnsignedInt()].data);
 
 		var activeState:number /*uint*/ = this._newBlockBytes.readUnsignedShort();
 		var autoplay:boolean = ( this._newBlockBytes.readUnsignedByte() == 1 );
 		this.parseUserAttributes();
 		this.parseUserAttributes();
 
-		var returnedArray:Array<any>;
-		var targetMeshes:Array<Mesh> = new Array<Mesh>();
-
-		for (i = 0; i < meshAdresses.length; i++) {
-			returnedArray = this.getAssetByID(meshAdresses[i], [Mesh.assetType]);
-			if (returnedArray[0])
-				targetMeshes.push(<Mesh> returnedArray[1]);
-		}
-		returnedArray = this.getAssetByID(animSetBlockAdress, [AnimationSetBase.assetType]);
-		if (!returnedArray[0]) {
-			this._blocks[blockID].addError("Could not find the AnimationSet ( " + animSetBlockAdress + " ) for this Animator");;
-			return
-		}
-		targetAnimationSet = <AnimationSetBase> returnedArray[1];
 		var thisAnimator:AnimatorBase;
-		if (type == 1) {
-
-			returnedArray = this.getAssetByID(props.get(1, 0), [Skeleton.assetType]);
-			if (!returnedArray[0]) {
-				this._blocks[blockID].addError("Could not find the Skeleton ( " + props.get(1, 0) + " ) for this Animator");
-				return
-			}
-			thisAnimator = new SkeletonAnimator(<SkeletonAnimationSet> targetAnimationSet, <Skeleton> returnedArray[1]);
-
-		} else if (type == 2)
+		if (type == 1)
+			thisAnimator = new SkeletonAnimator(<SkeletonAnimationSet> targetAnimationSet, <Skeleton> this._blocks[props.get(1, 0)].data);
+		else if (type == 2)
 			thisAnimator = new VertexAnimator(<VertexAnimationSet> targetAnimationSet);
 
 		this._pFinalizeAsset(thisAnimator, name);
 		this._blocks[blockID].data = thisAnimator;
+
 		for (i = 0; i < targetMeshes.length; i++) {
 			if (type == 1)
 				targetMeshes[i].animator = (<SkeletonAnimator> thisAnimator);
-			if (type == 2)
+			else if (type == 2)
 				targetMeshes[i].animator = (<VertexAnimator> thisAnimator);
-
 		}
+
 		if (this._debug)
 			console.log("Parsed a Animator: Name = " + name);
 	}
@@ -3092,13 +2795,10 @@ class AWDParser extends ParserBase
 	// this functions reads and creates a EffectMethod
 	private parseSharedMethodList(blockID:number):EffectMethodBase
 	{
-
 		var methodType:number = this._newBlockBytes.readUnsignedShort();
 		var effectMethodReturn:EffectMethodBase;
 
 		var props:AWDProperties = this.parseProperties({1:AWDParser.BADDR, 2:AWDParser.BADDR, 3:AWDParser.BADDR, 101:this._propsNrType, 102:this._propsNrType, 103:this._propsNrType, 104:this._propsNrType, 105:this._propsNrType, 106:this._propsNrType, 107:this._propsNrType, 201:AWDParser.UINT32, 202:AWDParser.UINT32, 301:AWDParser.UINT16, 302:AWDParser.UINT16, 401:AWDParser.UINT8, 402:AWDParser.UINT8, 601:AWDParser.COLOR, 602:AWDParser.COLOR, 701:AWDParser.BOOL, 702:AWDParser.BOOL});
-		var targetID:number;
-		var returnedArray:Array<any>;
 
 		switch (methodType) {
 			// Effect Methods
@@ -3111,31 +2811,15 @@ class AWDParser extends ParserBase
 				(<EffectColorTransformMethod> effectMethodReturn).colorTransform = new ColorTransform(props.get(102, 1), props.get(103, 1), props.get(104, 1), props.get(101, 1), ((offCol >> 16) & 0xFF), ((offCol >> 8) & 0xFF), (offCol & 0xFF), ((offCol >> 24) & 0xFF));
 				break;
 			case 403: //EnvMap
-
-				targetID = props.get(1, 0);
-				console.log('ENV MAP', targetID);
-
-
-				returnedArray = this.getAssetByID(targetID, [ SingleCubeTexture.assetType ]);
-				if (!returnedArray[0])
-					this._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this EnvMapMethod");
-				effectMethodReturn = new EffectEnvMapMethod(<SingleCubeTexture> returnedArray[1], <number> props.get(101, 1));
-				targetID = props.get(2, 0);
+				effectMethodReturn = new EffectEnvMapMethod(<SingleCubeTexture> this._blocks[props.get(1, 0)].data, <number> props.get(101, 1));
+				var targetID:number = props.get(2, 0);
 				if (targetID > 0) {
-					returnedArray = this.getAssetByID(targetID, [Single2DTexture.assetType]);
-					if (!returnedArray[0])
-						this._blocks[blockID].addError("Could not find the Mask-texture (ID = " + targetID + " ) for this EnvMapMethod");
-
 					// Todo: test mask with EnvMapMethod
-					//(<EnvMapMethod> effectMethodReturn).mask = <TextureBase> returnedArray[1];
+					//(<EnvMapMethod> effectMethodReturn).mask = <TextureBase> this._blocks[targetID].data;
 				}
 				break;
 			case 404: //LightMapMethod
-				targetID = props.get(1, 0);
-				returnedArray = this.getAssetByID(targetID, [Single2DTexture.assetType]);
-				if (!returnedArray[0])
-					this._blocks[blockID].addError("Could not find the LightMap (ID = " + targetID + " ) for this LightMapMethod");
-				effectMethodReturn = new EffectLightMapMethod(returnedArray[1], this.blendModeDic[props.get(401, 10)]); //usesecondaryUV not set
+				effectMethodReturn = new EffectLightMapMethod(this._blocks[props.get(1, 0)].data, this.blendModeDic[props.get(401, 10)]); //usesecondaryUV not set
 				break;
 			//				case 405: //ProjectiveTextureMethod
 			//					targetID = props.get(1, 0);
@@ -3148,11 +2832,7 @@ class AWDParser extends ParserBase
 				effectMethodReturn = new EffectRimLightMethod(props.get(601, 0xffffff), props.get(101, 0.4), props.get(101, 2)); //blendMode
 				break;
 			case 407: //AlphaMaskMethod
-				targetID = props.get(1, 0);
-				returnedArray = this.getAssetByID(targetID, [Single2DTexture.assetType]);
-				if (!returnedArray[0])
-					this._blocks[blockID].addError("Could not find the Alpha-texture (ID = " + targetID + " ) for this AlphaMaskMethod");
-				effectMethodReturn = new EffectAlphaMaskMethod(returnedArray[1], props.get(701, false));
+				effectMethodReturn = new EffectAlphaMaskMethod(this._blocks[props.get(1, 0)].data, props.get(701, false));
 				break;
 			//				case 408: //RefractionEnvMapMethod
 			//					targetID = props.get(1, 0);
@@ -3166,11 +2846,7 @@ class AWDParser extends ParserBase
 			//					effectMethodReturn = new OutlineMethod(props.get(601, 0x00000000), props.get(101, 1), props.get(701, true), props.get(702, false));
 			//					break;
 			case 410: //FresnelEnvMapMethod
-				targetID = props.get(1, 0);
-				returnedArray = this.getAssetByID(targetID, [SingleCubeTexture.assetType]);
-				if (!returnedArray[0])
-					this._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this FresnelEnvMapMethod");
-				effectMethodReturn = new EffectFresnelEnvMapMethod(returnedArray[1], props.get(101, 1));
+				effectMethodReturn = new EffectFresnelEnvMapMethod(this._blocks[props.get(1, 0)].data, props.get(101, 1));
 				break;
 			case 411: //FogMethod
 				effectMethodReturn = new EffectFogMethod(props.get(101, 0), props.get(102, 1000), props.get(601, 0x808080));
@@ -3469,63 +3145,9 @@ class AWDParser extends ParserBase
 
 	private parseVarStr():string
 	{
-
-		var len:number = this._newBlockBytes.readUnsignedShort();
-		return this._newBlockBytes.readUTFBytes(len);
+		return this._newBlockBytes.readUTFBytes(this._newBlockBytes.readUnsignedShort());
 	}
 
-	private getAssetByID(assetID:number, assetTypesToGet:Array<string>):Array<any>
-	{
-		var returnArray:Array<any> = new Array<any>();
-		var typeCnt:number = 0;
-		if (assetID > 0) {
-			if (this._blocks[assetID]) {
-				if (this._blocks[assetID].data) {
-					while (typeCnt < assetTypesToGet.length) {
-						//console.log("check if asset is of type = "+assetTypesToGet[typeCnt]);
-						var iasset:IAsset = <IAsset> this._blocks[assetID].data;
-						//console.log("asset is of type = "+iasset.assetType);
-						if (iasset.assetType == assetTypesToGet[typeCnt]) {
-							//if the right assetType was found
-							if ((assetTypesToGet[typeCnt] == SingleCubeTexture.assetType)) {
-								if (this._blocks[assetID].data instanceof SingleCubeTexture) {
-									returnArray.push(true);
-									returnArray.push(this._blocks[assetID].data);
-									return returnArray;
-								}
-							}
-							if ((assetTypesToGet[typeCnt] == Single2DTexture.assetType)) {
-								if (this._blocks[assetID].data instanceof Single2DTexture) {
-									returnArray.push(true);
-									returnArray.push(this._blocks[assetID].data);
-									return returnArray;
-								}
-							} else {
-								returnArray.push(true);
-								returnArray.push(this._blocks[assetID].data);
-								return returnArray;
-
-							}
-						}
-						//if ((assetTypesToGet[typeCnt] == Geometry.assetType) && (IAsset(_blocks[assetID].data).assetType == Mesh.assetType)) {
-						if ((assetTypesToGet[typeCnt] == Geometry.assetType) && (iasset.assetType == Mesh.assetType)) {
-
-							var mesh:Mesh = <Mesh> this._blocks[assetID].data;
-							returnArray.push(true);
-							returnArray.push(mesh.geometry);
-							return returnArray;
-
-						}
-						typeCnt++;
-					}
-				}
-			}
-		}
-		// if the has not returned anything yet, the asset is not found, or the found asset is not the right type.
-		returnArray.push(false);
-		returnArray.push(this.getDefaultAsset(assetTypesToGet[0]));
-		return returnArray;
-	}
 	private getDefaultAsset(assetType:string):IAsset
 	{
 		switch (true) {
