@@ -3638,9 +3638,8 @@ var AWDParser = (function (_super) {
             this._parsed_header = true;
         }
         if (this._body) {
-            while (this._body.getBytesAvailable() > 0 && !this.parsingPaused) {
+            while (this._body.getBytesAvailable() > 0 && !this.parsingPaused)
                 this.parseNextBlock();
-            }
             //----------------------------------------------------------------------------
             // Return complete status
             if (this._body.getBytesAvailable() == 0) {
@@ -3876,88 +3875,63 @@ var AWDParser = (function (_super) {
                     break;
             }
         }
-        var msgCnt = 0;
-        if (this._newBlockBytes.position == blockEndBlock) {
-            if (this._debug) {
-                if (block.errorMessages) {
-                    while (msgCnt < block.errorMessages.length) {
-                        console.log("        (!) Error: " + block.errorMessages[msgCnt] + " (!)");
-                        msgCnt++;
-                    }
-                }
-                console.log("\n");
-            }
-        }
-        else {
-            if (this._debug) {
-                console.log("  (!)(!)(!) Error while reading AWDBlock ID " + this._cur_block_id + " = skip to next block");
-                if (block.errorMessages) {
-                    while (msgCnt < block.errorMessages.length) {
-                        console.log("        (!) Error: " + block.errorMessages[msgCnt] + " (!)");
-                        msgCnt++;
-                    }
-                }
-            }
-        }
         this._body.position = blockEndAll;
         this._newBlockBytes = null;
-        //*
         if (this._debug) {
+            if (this._newBlockBytes.position != blockEndBlock)
+                console.log("  (!)(!)(!) Error while reading AWDBlock ID " + this._cur_block_id + " = skip to next block");
+            if (block.errorMessages) {
+                var len = block.errorMessages.length;
+                for (var msgCnt = 0; msgCnt < len; msgCnt++)
+                    console.log("        (!) Error: " + block.errorMessages[msgCnt] + " (!)");
+            }
+            console.log("\n");
             var end_timing = performance.now();
             var time_delta = end_timing - start_timeing;
             this._time_all += time_delta;
-            if (type == 1) {
+            if (type == 1)
                 this._time_geom += time_delta;
-            }
-            else if (type == 133) {
+            else if (type == 133)
                 this._time_timeline += time_delta;
-            }
-            else if (type == 135) {
+            else if (type == 135)
                 this._time_fonts += time_delta;
-            }
-            else if (type == 134) {
+            else if (type == 134)
                 this._time_textfields += time_delta;
-            }
-            else if (type == 44) {
+            else if (type == 44)
                 this._time_sounds += time_delta;
-            }
-            else if (type == 82) {
+            else if (type == 82)
                 this._time_materials += time_delta;
-            }
-            else if (type == 81) {
+            else if (type == 81)
                 this._time_textures += time_delta;
-            }
-            else if (type == 24) {
+            else if (type == 24)
                 this._time_meshes += time_delta;
-            }
             console.log("Parsed block of type: " + type + " in " + time_delta + " ms | parsing total: " + this._time_all + " | geoms: " + this._time_geom + " | timelines: " + this._time_timeline + " | fonts: " + this._time_fonts + " | sounds: " + this._time_sounds + " | mats: " + this._time_materials + " | textures: " + this._time_textures + " | meshes: " + this._time_meshes);
         }
-        //*/
     };
     //--Parser Blocks---------------------------------------------------------------------------
     AWDParser.prototype.parseTesselatedFont = function (blockID) {
         var name = this.parseVarStr();
         this._blocks[blockID].name = name;
-        //console.log("Font name = "+this._blocks[blockID].name);
         var font_style_cnt = this._newBlockBytes.readUnsignedInt();
-        //console.log("Font font_style_cnt = "+font_style_cnt);
+        var font_style_char_cnt;
+        var font_style_name;
+        var new_font_style;
         var new_font = new Font();
+        var font_style_char;
+        var sm_len;
+        var sm_end;
+        var str_ftype, str_type, str_len, str_end;
         for (var i = 0; i < font_style_cnt; ++i) {
-            var font_style_name = this.parseVarStr();
-            //console.log("Font font_style_name = "+font_style_name);
-            var new_font_style = new_font.get_font_table(font_style_name);
+            font_style_name = this.parseVarStr();
+            new_font_style = new_font.get_font_table(font_style_name);
             new_font_style.set_font_em_size(this._newBlockBytes.readUnsignedInt());
-            //console.log("Font new_font_style.font_em_size = "+new_font_style.get_font_em_size);
-            var font_style_char_cnt = this._newBlockBytes.readUnsignedInt();
-            for (var i = 0; i < font_style_char_cnt; ++i) {
-                var font_style_char = this._newBlockBytes.readUnsignedInt();
-                //console.log("Font font_style_char = "+font_style_char);
+            font_style_char_cnt = this._newBlockBytes.readUnsignedInt();
+            for (var j = 0; j < font_style_char_cnt; ++j) {
                 // todo: this is basically a simplified version of the subgeom-parsing done in parseTriangleGeometry. Make a parseSubGeom() instead (?)
-                var sm_len = this._newBlockBytes.readUnsignedInt();
-                var sm_end = this._newBlockBytes.position + sm_len;
+                font_style_char = this._newBlockBytes.readUnsignedInt();
+                sm_len = this._newBlockBytes.readUnsignedInt();
+                sm_end = this._newBlockBytes.position + sm_len;
                 while (this._newBlockBytes.position < sm_end) {
-                    var idx = 0;
-                    var str_ftype, str_type, str_len, str_end;
                     // Type, field type, length
                     str_type = this._newBlockBytes.readUnsignedByte();
                     str_ftype = this._newBlockBytes.readUnsignedByte();
@@ -3965,9 +3939,8 @@ var AWDParser = (function (_super) {
                     str_end = this._newBlockBytes.position + str_len;
                     if (str_type == 2) {
                         var indices = new Array();
-                        while (this._newBlockBytes.position < str_end) {
-                            indices[idx++] = this._newBlockBytes.readUnsignedShort();
-                        }
+                        for (var idx = 0; this._newBlockBytes.position < str_end; idx++)
+                            indices[idx] = this._newBlockBytes.readUnsignedShort();
                     }
                     else if (str_type == 10) {
                         var curveData = new ByteArray(str_len);
@@ -3977,16 +3950,13 @@ var AWDParser = (function (_super) {
                         this._newBlockBytes.position = str_end;
                     }
                 }
-                //this.parseProperties(null);// no attributes for font-table subgeos
                 var vertexBuffer = new AttributesBuffer(28, str_len / 28);
                 vertexBuffer.bufferView = new Uint8Array(curveData.arraybytes);
                 var curve_sub_geom = new CurveSubGeometry(vertexBuffer);
-                //curve_sub_geom.setIndices(indices);
                 curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
                 new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
             }
         }
-        //console.log("Parsed a font");
         this.parseProperties(null);
         this.parseUserAttributes();
         this._pFinalizeAsset(new_font, name);
@@ -3997,7 +3967,6 @@ var AWDParser = (function (_super) {
     AWDParser.prototype.parseTextFormat = function (blockID) {
         var name = this.parseVarStr();
         this._blocks[blockID].name = name;
-        //console.log("this._blocks[blockID].name  '" + this._blocks[blockID].name );
         var font = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
         var font_style_name = this.parseVarStr();
         var newTextFormat = new TextFormat();
@@ -4010,12 +3979,9 @@ var AWDParser = (function (_super) {
         var mat = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
         mat.bothSides = true;
         var num_uv_values = this._newBlockBytes.readUnsignedByte();
-        //console.log("num_uv_values  '" + num_uv_values);
         var uv_values = [];
-        for (var uvcnt = 0; uvcnt < num_uv_values; uvcnt++) {
-            var uv_value = this._newBlockBytes.readFloat();
-            uv_values.push(uv_value);
-        }
+        for (var uvcnt = 0; uvcnt < num_uv_values; uvcnt++)
+            uv_values[uvcnt] = this._newBlockBytes.readFloat();
         newTextFormat.uv_values = uv_values;
         var format_props = this.parseProperties({ 1: AWDParser.UINT16, 2: AWDParser.UINT16, 3: AWDParser.UINT8, 4: AWDParser.UINT8, 5: AWDParser.UINT8, 6: AWDParser.UINT8, 7: AWDParser.UINT16, 8: AWDParser.UINT16, 9: AWDParser.UINT16, 10: AWDParser.UINT16 });
         newTextFormat.size = format_props.get(1, 12);
@@ -4107,33 +4073,27 @@ var AWDParser = (function (_super) {
     };
     // Block ID = 24
     AWDParser.prototype.parseMeshLibraryBlock = function (blockID) {
-        var num_materials;
-        var materials_parsed;
         var name = this.parseVarStr();
         var data_id = this._newBlockBytes.readUnsignedInt();
         var geom = this._blocks[data_id].data;
         this._blocks[blockID].geoID = data_id;
+        var num_materials = this._newBlockBytes.readUnsignedShort();
         var materials = new Array();
-        num_materials = this._newBlockBytes.readUnsignedShort();
         var materialNames = new Array();
-        materials_parsed = 0;
-        var returnedArrayMaterial;
-        while (materials_parsed < num_materials) {
+        for (var materials_parsed = 0; materials_parsed < num_materials; materials_parsed++) {
             var m = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
             //m.preserveAlpha = true;
             m.alphaBlending = true;
             m.useColorTransform = true;
-            materials.push(m);
-            materialNames.push(m.name);
-            materials_parsed++;
+            materials[materials_parsed] = m;
+            materialNames[materials_parsed] = m.name;
         }
         var mesh = new Mesh(geom, null);
         if (materials.length >= 1 && mesh.subMeshes.length == 1) {
             mesh.material = materials[0];
         }
         else if (materials.length > 1) {
-            var i;
-            for (i = 0; i < mesh.subMeshes.length; i++)
+            for (var i = 0; i < mesh.subMeshes.length; i++)
                 mesh.subMeshes[i].material = materials[Math.min(materials.length - 1, i)];
         }
         this.parseProperties(null);
@@ -4148,7 +4108,6 @@ var AWDParser = (function (_super) {
         this._blocks[blockID].name = this.parseVarStr();
         var type = this._newBlockBytes.readUnsignedByte();
         var data_len;
-        //this._texture_users[this._cur_block_id.toString()] = [];
         // External
         if (type == 0) {
             data_len = this._newBlockBytes.readUnsignedInt();
@@ -4179,12 +4138,12 @@ var AWDParser = (function (_super) {
     AWDParser.prototype.parseTimeLine = function (blockID, factory) {
         var i;
         var j;
+        var cmd_asset;
         var timeLineContainer = factory.createMovieClip();
         var name = this.parseVarStr();
         var isScene = !!this._newBlockBytes.readUnsignedByte();
         var sceneID = this._newBlockBytes.readUnsignedByte();
         timeLineContainer.fps = this._newBlockBytes.readFloat();
-        var num_all_display_instances = 0;
         // register list of potential childs
         // a potential child can be reused on a timeline (added / removed / added)
         // However, for each potential child, we need to register the max-number of instances that a frame contains
@@ -4195,7 +4154,7 @@ var AWDParser = (function (_super) {
         // hence we need to be careful to register all objects in correct order.
         var num_potential_childs = this._newBlockBytes.readUnsignedShort();
         for (i = 0; i < num_potential_childs; i++) {
-            var cmd_asset = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+            cmd_asset = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
             if (cmd_asset != null) {
                 timeLineContainer.registerPotentialChild(cmd_asset);
             }
@@ -4205,11 +4164,10 @@ var AWDParser = (function (_super) {
                 console.log("ERROR when collecting objects for timeline");
             }
         }
-        num_all_display_instances += num_potential_childs;
+        var num_all_display_instances = num_potential_childs;
         var num_potential_childs_multi_instanced = this._newBlockBytes.readUnsignedShort();
-        num_potential_childs += num_potential_childs_multi_instanced;
         for (i = 0; i < num_potential_childs_multi_instanced; i++) {
-            var cmd_asset = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+            cmd_asset = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
             var num_instances = this._newBlockBytes.readUnsignedShort();
             num_all_display_instances += num_instances;
             if (cmd_asset != null) {
@@ -4225,12 +4183,12 @@ var AWDParser = (function (_super) {
             }
         }
         if (this._debug)
-            console.log("Parsed " + num_potential_childs + " potential childs. They will be used by " + num_all_display_instances + " instances.");
+            console.log("Parsed " + (num_potential_childs + num_potential_childs_multi_instanced) + " potential childs. They will be used by " + num_all_display_instances + " instances.");
         // register list of potential sounds
         // a potential child can be reused on a timeline (added / removed / added)
         var num_potential_sounds = this._newBlockBytes.readUnsignedShort();
         for (i = 0; i < num_potential_sounds; i++) {
-            var cmd_asset = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+            cmd_asset = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
             if (cmd_asset != null) {
                 //todo: register sound objects on movieclip
                 console.log("ERROR when collecting objects for timeline");
@@ -4238,8 +4196,6 @@ var AWDParser = (function (_super) {
             else {
             }
         }
-        //console.log("Parsed "+num_potential_sounds+" potential sounds");
-        var numFrames = this._newBlockBytes.readUnsignedShort();
         //console.log("numFrames "+numFrames);
         // var previousTimeLine:TimeLineFrame;
         // var fill_props:AWDProperties = this.parseProperties({1:AWD3Parserutils.UINT32});// { 1:UINT32, 6:AWDSTRING }  ); //; , 2:UINT32, 3:UINT32, 5:BOOL } );
@@ -4253,6 +4209,7 @@ var AWDParser = (function (_super) {
         var commandType;
         var frame;
         var hasDepthChanges;
+        var numFrames = this._newBlockBytes.readUnsignedShort();
         for (i = 0; i < numFrames; i++) {
             var commandCount = 0;
             // todo: remove the ms_per_frame to set the duration in frames
@@ -4359,7 +4316,7 @@ var AWDParser = (function (_super) {
                             var mask_id_nums = this._newBlockBytes.readUnsignedShort();
                             var mask_ids = new Array();
                             for (var mi_cnt = 0; mi_cnt < mask_id_nums; mi_cnt++)
-                                mask_ids.push(this._newBlockBytes.readShort());
+                                mask_ids[mi_cnt] = this._newBlockBytes.readShort();
                             if (mask_ids.length > 0) {
                                 // TODO: this object is used as mask
                                 if ((mask_ids.length == 1) && (mask_ids[0] == -1))
@@ -4392,10 +4349,10 @@ var AWDParser = (function (_super) {
             this._newBlockBytes.readUnsignedInt(); // user attributes - skip for now
             timeLineContainer.addFrame(frame);
         }
-        this._pFinalizeAsset(timeLineContainer, name);
-        this._blocks[blockID].data = timeLineContainer;
         this.parseProperties(null);
         this.parseUserAttributes();
+        this._pFinalizeAsset(timeLineContainer, name);
+        this._blocks[blockID].data = timeLineContainer;
         if (this._debug)
             console.log("Parsed a TIMELINE: Name = " + name + "| isScene = " + isScene + "| sceneID = " + sceneID + "| numFrames = " + numFrames);
     };
@@ -4409,11 +4366,8 @@ var AWDParser = (function (_super) {
         var props = this.parseProperties({ 1: this._geoNrType, 2: this._geoNrType });
         var geoScaleU = props.get(1, 1);
         var geoScaleV = props.get(2, 1);
-        // Loop through sub meshes
-        var subs_parsed = 0;
-        while (subs_parsed < num_subs) {
+        for (var subs_parsed = 0; subs_parsed < num_subs; subs_parsed++) {
             var is_curve_geom = false;
-            var i;
             var sm_len, sm_end;
             var w_indices;
             var weights;
@@ -4442,33 +4396,28 @@ var AWDParser = (function (_super) {
                 }
                 else if (str_type == 2) {
                     var indices = new Array();
-                    while (this._newBlockBytes.position < str_end) {
+                    while (this._newBlockBytes.position < str_end)
                         indices[idx++] = this._newBlockBytes.readUnsignedShort();
-                    }
                 }
                 else if (str_type == 3) {
                     var uvs = new Array();
-                    while (this._newBlockBytes.position < str_end) {
+                    while (this._newBlockBytes.position < str_end)
                         uvs[idx++] = this.readNumber(this._accuracyGeo);
-                    }
                 }
                 else if (str_type == 4) {
                     var normals = new Array();
-                    while (this._newBlockBytes.position < str_end) {
+                    while (this._newBlockBytes.position < str_end)
                         normals[idx++] = this.readNumber(this._accuracyGeo);
-                    }
                 }
                 else if (str_type == 6) {
                     w_indices = Array();
-                    while (this._newBlockBytes.position < str_end) {
+                    while (this._newBlockBytes.position < str_end)
                         w_indices[idx++] = this._newBlockBytes.readUnsignedShort() * 3;
-                    }
                 }
                 else if (str_type == 7) {
                     weights = new Array();
-                    while (this._newBlockBytes.position < str_end) {
+                    while (this._newBlockBytes.position < str_end)
                         weights[idx++] = this.readNumber(this._accuracyGeo);
-                    }
                 }
                 else if (str_type == 8) {
                     this._newBlockBytes.position = str_end;
@@ -4503,10 +4452,7 @@ var AWDParser = (function (_super) {
                     triangle_sub_geom.autoDeriveNormals = false;
                 if (uvs)
                     triangle_sub_geom.autoDeriveUVs = false;
-                //triangle_sub_geom.autoDeriveNormals = false;
-                if (true) {
-                    triangle_sub_geom.autoDeriveTangents = true;
-                }
+                triangle_sub_geom.autoDeriveTangents = true;
                 triangle_sub_geom.setIndices(indices);
                 triangle_sub_geom.setPositions(verts);
                 triangle_sub_geom.setNormals(normals);
@@ -4528,9 +4474,6 @@ var AWDParser = (function (_super) {
                 if (this._debug)
                     console.log("Parsed a TriangleSubGeometry");
             }
-            // TODO: Somehow map in-sub to out-sub indices to enable look-up
-            // when creating meshes (and their material assignments.)
-            subs_parsed++;
         }
         if ((geoScaleU != 1) || (geoScaleV != 1))
             geom.scaleUV(geoScaleU, geoScaleV);
@@ -4635,8 +4578,6 @@ var AWDParser = (function (_super) {
     // Block ID = 23
     AWDParser.prototype.parseMeshInstance = function (blockID) {
         var parent = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
-        var num_materials;
-        var materials_parsed;
         var mtx = this.parseMatrix3D();
         var name = this.parseVarStr();
         var data_id = this._newBlockBytes.readUnsignedInt();
@@ -4652,15 +4593,13 @@ var AWDParser = (function (_super) {
             prefab = asset;
         }
         this._blocks[blockID].geoID = data_id;
+        var num_materials = this._newBlockBytes.readUnsignedShort();
         var materials = new Array();
-        num_materials = this._newBlockBytes.readUnsignedShort();
         var materialNames = new Array();
-        materials_parsed = 0;
-        while (materials_parsed < num_materials) {
+        for (var materials_parsed = 0; materials_parsed < num_materials; materials_parsed++) {
             var m = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
-            materials.push(m);
-            materialNames.push(m.name);
-            materials_parsed++;
+            materials[materials_parsed] = m;
+            materialNames[materials_parsed] = m.name;
         }
         var mesh = isPrefab ? prefab.getNewObject() : new Mesh(geom, null);
         mesh.transform.matrix3D = mtx;
@@ -4692,12 +4631,10 @@ var AWDParser = (function (_super) {
         this._pFinalizeAsset(mesh, name);
         this._blocks[blockID].data = mesh;
         if (this._debug) {
-            if (isPrefab) {
+            if (isPrefab)
                 console.log("Parsed a Mesh for Prefab: Name = '" + name + "' | Parent-Name = " + parentName + "| Prefab-Name = " + prefab.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames.toString());
-            }
-            else {
+            else
                 console.log("Parsed a Mesh for Geometry: Name = '" + name + "' | Parent-Name = " + parentName + "| Geometry-Name = " + geom.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames.toString());
-            }
         }
     };
     //Block ID 31
@@ -4751,14 +4688,12 @@ var AWDParser = (function (_super) {
         // if a shadowMapper has been created, adjust the depthMapSize if needed, assign to light and set castShadows to true
         if (newShadowMapper) {
             if (newShadowMapper instanceof CubeMapShadowMapper) {
-                if (props.get(10, 1) != 1) {
+                if (props.get(10, 1) != 1)
                     newShadowMapper.depthMapSize = this._depthSizeDic[props.get(10, 1)];
-                }
             }
             else {
-                if (props.get(10, 2) != 2) {
+                if (props.get(10, 2) != 2)
                     newShadowMapper.depthMapSize = this._depthSizeDic[props.get(10, 2)];
-                }
             }
             light.shadowMapper = newShadowMapper;
             light.castsShadows = true;
@@ -4854,7 +4789,6 @@ var AWDParser = (function (_super) {
         var type;
         var props;
         var mat;
-        var attributes;
         var finalize;
         var num_methods;
         var methods_parsed;
@@ -4874,11 +4808,9 @@ var AWDParser = (function (_super) {
             methods_parsed += 1;
         }
         var debugString = "";
-        attributes = this.parseUserAttributes();
         if (type === 1) {
             debugString += "Parsed a ColorMaterial(SinglePass): Name = '" + name + "' | ";
-            var color;
-            color = props.get(1, 0xffffff);
+            var color = props.get(1, 0xffffff);
             if (this.materialMode < 2) {
                 mat = new MethodMaterial(color, props.get(10, 1.0));
             }
@@ -4900,7 +4832,7 @@ var AWDParser = (function (_super) {
                 debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "'" + (texture ? " | Texture-Name = " + texture.name : "");
             }
         }
-        mat.extra = attributes;
+        mat.extra = this.parseUserAttributes();
         mat.alphaThreshold = props.get(12, 0.0);
         mat.repeat = props.get(13, false);
         this._pFinalizeAsset(mat, name);
@@ -4984,8 +4916,7 @@ var AWDParser = (function (_super) {
                 mat.specular = props.get(18, 1.0);
                 mat.gloss = props.get(19, 50);
                 mat.specularColor = props.get(20, 0xffffff);
-                var methods_parsed = 0;
-                while (methods_parsed < num_methods) {
+                for (var methods_parsed = 0; methods_parsed < num_methods; methods_parsed++) {
                     var method_type;
                     method_type = this._newBlockBytes.readUnsignedShort();
                     props = this.parseProperties({
@@ -5078,7 +5009,6 @@ var AWDParser = (function (_super) {
                             break;
                     }
                     this.parseUserAttributes();
-                    methods_parsed += 1;
                 }
             }
         }
@@ -5283,8 +5213,7 @@ var AWDParser = (function (_super) {
         var num_joints = this._newBlockBytes.readUnsignedShort();
         var skeleton = new Skeleton();
         this.parseProperties(null); // Discard properties for now
-        var joints_parsed = 0;
-        while (joints_parsed < num_joints) {
+        for (var joints_parsed = 0; joints_parsed < num_joints; joints_parsed++) {
             var joint;
             var ibp;
             // Ignore joint id
@@ -5298,7 +5227,6 @@ var AWDParser = (function (_super) {
             this.parseProperties(null);
             this.parseUserAttributes();
             skeleton.joints.push(joint);
-            joints_parsed++;
         }
         // Discard attributes for now
         this.parseUserAttributes();
@@ -5313,8 +5241,7 @@ var AWDParser = (function (_super) {
         var num_joints = this._newBlockBytes.readUnsignedShort();
         this.parseProperties(null); // Ignore properties for now
         var pose = new SkeletonPose();
-        var joints_parsed = 0;
-        while (joints_parsed < num_joints) {
+        for (var joints_parsed = 0; joints_parsed < num_joints; joints_parsed++) {
             var joint_pose;
             var has_transform /*uint*/;
             joint_pose = new JointPose();
@@ -5326,7 +5253,6 @@ var AWDParser = (function (_super) {
                 joint_pose.translation.copyFrom(mtx.position);
                 pose.jointPoses[joints_parsed] = joint_pose;
             }
-            joints_parsed++;
         }
         // Skip attributes for now
         this.parseUserAttributes();
@@ -5338,17 +5264,15 @@ var AWDParser = (function (_super) {
     //blockID 103
     AWDParser.prototype.parseSkeletonAnimation = function (blockID /*uint*/) {
         var frame_dur;
-        var pose_addr /*uint*/;
+        var pose_id;
         var name = this.parseVarStr();
         var clip = new SkeletonClipNode();
         var num_frames = this._newBlockBytes.readUnsignedShort();
         this.parseProperties(null); // Ignore properties for now
-        var frames_parsed = 0;
-        var returnedArray;
-        while (frames_parsed < num_frames) {
-            clip.addFrame(this._blocks[this._newBlockBytes.readUnsignedInt()].data, frame_dur);
+        for (var frames_parsed = 0; frames_parsed < num_frames; frames_parsed++) {
+            pose_id = this._newBlockBytes.readUnsignedInt();
             frame_dur = this._newBlockBytes.readUnsignedShort();
-            frames_parsed++;
+            clip.addFrame(this._blocks[pose_id].data, frame_dur);
         }
         if (clip.frames.length == 0) {
             this._blocks[blockID].addError("Could not this SkeletonClipNode, because no Frames where set.");
@@ -5364,45 +5288,33 @@ var AWDParser = (function (_super) {
     //Block ID = 111 /  Block ID = 112
     AWDParser.prototype.parseMeshPoseAnimation = function (blockID /*uint*/, poseOnly) {
         if (poseOnly === void 0) { poseOnly = false; }
-        var num_frames = 1;
-        var num_submeshes /*uint*/;
-        var frames_parsed /*uint*/;
         var subMeshParsed /*uint*/;
-        var frame_dur;
         var x;
         var y;
         var z;
         var str_len;
         var str_end;
-        var geometry;
         var subGeom;
         var idx = 0;
         var clip = new VertexClipNode();
         var indices;
         var verts;
-        var num_Streams = 0;
-        var streamsParsed = 0;
         var streamtypes = new Array() /*int*/;
         var props;
-        var thisGeo;
         var name = this.parseVarStr();
         var geo_id = this._newBlockBytes.readUnsignedInt();
         var geometry = this._blocks[geo_id].data;
         var uvs = this.getUVForVertexAnimation(geo_id);
-        if (!poseOnly)
-            num_frames = this._newBlockBytes.readUnsignedShort();
-        num_submeshes = this._newBlockBytes.readUnsignedShort();
-        num_Streams = this._newBlockBytes.readUnsignedShort();
-        streamsParsed = 0;
-        while (streamsParsed < num_Streams) {
+        var num_frames = (!poseOnly) ? this._newBlockBytes.readUnsignedShort() : 1;
+        var num_submeshes = this._newBlockBytes.readUnsignedShort();
+        var num_Streams = this._newBlockBytes.readUnsignedShort();
+        for (var streamsParsed = 0; streamsParsed < num_Streams; streamsParsed++)
             streamtypes.push(this._newBlockBytes.readUnsignedShort());
-            streamsParsed++;
-        }
         props = this.parseProperties({ 1: AWDParser.BOOL, 2: AWDParser.BOOL });
         clip.looping = props.get(1, true);
         clip.stitchFinalFrame = props.get(2, false);
-        frames_parsed = 0;
-        while (frames_parsed < num_frames) {
+        var frame_dur;
+        for (var frames_parsed = 0; frames_parsed < num_frames; frames_parsed++) {
             frame_dur = this._newBlockBytes.readUnsignedShort();
             geometry = new Geometry();
             subMeshParsed = 0;
@@ -5440,7 +5352,6 @@ var AWDParser = (function (_super) {
                 }
             }
             clip.addFrame(geometry, frame_dur);
-            frames_parsed++;
         }
         this.parseUserAttributes();
         this._pFinalizeAsset(clip, name);
@@ -5453,17 +5364,15 @@ var AWDParser = (function (_super) {
         var name = this.parseVarStr();
         var num_frames = this._newBlockBytes.readUnsignedShort();
         var props = this.parseProperties({ 1: AWDParser.UINT16 });
-        var frames_parsed = 0;
         var skeletonFrames = new Array();
         var vertexFrames = new Array();
         var clipNode;
-        while (frames_parsed < num_frames) {
+        for (var frames_parsed = 0; frames_parsed < num_frames; frames_parsed++) {
             clipNode = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
             if (clipNode instanceof VertexClipNode)
                 vertexFrames.push(clipNode);
             else if (clipNode instanceof SkeletonClipNode)
                 skeletonFrames.push(clipNode);
-            frames_parsed++;
         }
         if ((vertexFrames.length == 0) && (skeletonFrames.length == 0)) {
             this._blocks[blockID].addError("Could not create this AnimationSet, because it contains no animations");
@@ -5559,15 +5468,11 @@ var AWDParser = (function (_super) {
         return effectMethodReturn;
     };
     AWDParser.prototype.parseUserAttributes = function () {
-        var attributes;
-        var list_len;
-        var attibuteCnt;
-        list_len = this._newBlockBytes.readUnsignedInt();
+        var list_len = this._newBlockBytes.readUnsignedInt();
         if (list_len > 0) {
-            var list_end;
-            attributes = {};
-            list_end = this._newBlockBytes.position + list_len;
-            while (this._newBlockBytes.position < list_end) {
+            var list_end = this._newBlockBytes.position + list_len;
+            var attributes = {};
+            for (var attibuteCnt = 0; this._newBlockBytes.position < list_end; attibuteCnt++) {
                 var ns_id;
                 var attr_key;
                 var attr_type;
@@ -5619,7 +5524,6 @@ var AWDParser = (function (_super) {
                         break;
                 }
                 attributes[attr_key] = attr_val;
-                attibuteCnt += 1;
                 if (this._debug)
                     console.log("attribute = name: " + attr_key + "  / value = " + attr_val);
             }
@@ -5627,17 +5531,14 @@ var AWDParser = (function (_super) {
         return attributes;
     };
     AWDParser.prototype.parseProperties = function (expected) {
-        var list_end;
-        var list_len;
-        var propertyCnt = 0;
+        var list_len = this._newBlockBytes.readUnsignedInt();
         var props = new AWDProperties();
-        list_len = this._newBlockBytes.readUnsignedInt();
-        list_end = this._newBlockBytes.position + list_len;
+        var list_end = this._newBlockBytes.position + list_len;
         if (expected) {
-            while (this._newBlockBytes.position < list_end) {
-                var len;
-                var key;
-                var type;
+            var len;
+            var key;
+            var type;
+            for (var propertyCnt = 0; this._newBlockBytes.position < list_end; propertyCnt++) {
                 key = this._newBlockBytes.readUnsignedShort();
                 len = this._newBlockBytes.readUnsignedInt();
                 if ((this._newBlockBytes.position + len) > list_end) {
@@ -5645,14 +5546,13 @@ var AWDParser = (function (_super) {
                     this._newBlockBytes.position = list_end;
                     return props;
                 }
-                if (expected.hasOwnProperty(key.toString())) {
+                if (expected[key]) {
                     type = expected[key];
                     props.set(key, this.parseAttrValue(type, len));
                 }
                 else {
                     this._newBlockBytes.position += len;
                 }
-                propertyCnt += 1;
             }
         }
         else {
@@ -5714,26 +5614,20 @@ var AWDParser = (function (_super) {
         }
         if (elem_len < len) {
             var list = [];
-            var num_read = 0;
             var num_elems = len / elem_len;
-            while (num_read < num_elems) {
-                list.push(read_func.apply(this._body)); // list.push(read_func());
-                num_read++;
-            }
+            for (var num_read = 0; num_read < num_elems; num_read++)
+                list[num_read] = read_func.call(this._newBlockBytes);
             return list;
         }
         else {
-            var val = read_func.apply(this._body); //read_func();
-            return val;
+            return read_func.call(this._newBlockBytes);
         }
     };
     AWDParser.prototype.parseHeader = function () {
-        var flags;
-        var body_len;
         this._byteData.position = 3; // Skip magic string and parse version
         this._version[0] = this._byteData.readUnsignedByte();
         this._version[1] = this._byteData.readUnsignedByte();
-        flags = this._byteData.readUnsignedShort(); // Parse bit flags
+        var flags = this._byteData.readUnsignedShort(); // Parse bit flags
         this._streaming = BitFlags.test(flags, BitFlags.FLAG1);
         if ((this._version[0] == 2) && (this._version[1] == 1)) {
             this._accuracyMatrix = BitFlags.test(flags, BitFlags.FLAG2);
@@ -5743,27 +5637,23 @@ var AWDParser = (function (_super) {
         // if we set _accuracyOnBlocks, the precision-values are read from each block-header.
         // set storagePrecision types
         this._geoNrType = AWDParser.FLOAT32;
-        if (this._accuracyGeo) {
+        if (this._accuracyGeo)
             this._geoNrType = AWDParser.FLOAT64;
-        }
         this._matrixNrType = AWDParser.FLOAT32;
-        if (this._accuracyMatrix) {
+        if (this._accuracyMatrix)
             this._matrixNrType = AWDParser.FLOAT64;
-        }
         this._propsNrType = AWDParser.FLOAT32;
-        if (this._accuracyProps) {
+        if (this._accuracyProps)
             this._propsNrType = AWDParser.FLOAT64;
-        }
         this._compression = this._byteData.readUnsignedByte(); // compression
         if (this._debug) {
             console.log("Import AWDFile of version = " + this._version[0] + " - " + this._version[1]);
             console.log("Global Settings = Compression = " + this._compression + " | Streaming = " + this._streaming + " | Matrix-Precision = " + this._accuracyMatrix + " | Geometry-Precision = " + this._accuracyGeo + " | Properties-Precision = " + this._accuracyProps);
         }
         // Check file integrity
-        body_len = this._byteData.readUnsignedInt();
-        if (!this._streaming && body_len != this._byteData.getBytesAvailable()) {
+        var body_len = this._byteData.readUnsignedInt();
+        if (!this._streaming && body_len != this._byteData.getBytesAvailable())
             this._pDieWithError('AWD2 body length does not match header integrity field');
-        }
     };
     // Helper - functions
     AWDParser.prototype.getUVForVertexAnimation = function (meshID /*uint*/) {
@@ -5772,34 +5662,17 @@ var AWDParser = (function (_super) {
         if (this._blocks[meshID].uvsForVertexAnimation)
             return this._blocks[meshID].uvsForVertexAnimation;
         var geometry = this._blocks[meshID].data;
-        var geoCnt = 0;
         var sub_geom;
-        this._blocks[meshID].uvsForVertexAnimation = new Array();
-        while (geoCnt < geometry.subGeometries.length) {
+        var uvsForVertexAnimation = this._blocks[meshID].uvsForVertexAnimation = new Array();
+        var len = geometry.subGeometries.length;
+        for (var geoCnt = 0; geoCnt < len; geoCnt++) {
             sub_geom = geometry.subGeometries[geoCnt];
-            this._blocks[meshID].uvsForVertexAnimation.push(sub_geom.uvs.get(sub_geom.numVertices));
-            geoCnt++;
+            uvsForVertexAnimation[geoCnt] = sub_geom.uvs.get(sub_geom.numVertices);
         }
         return this._blocks[meshID].uvsForVertexAnimation;
     };
     AWDParser.prototype.parseVarStr = function () {
         return this._newBlockBytes.readUTFBytes(this._newBlockBytes.readUnsignedShort());
-    };
-    AWDParser.prototype.getDefaultAsset = function (assetType) {
-        switch (true) {
-            case (assetType == SingleCubeTexture.assetType):
-                return this.getDefaultCubeTexture();
-                break;
-            case (assetType == Single2DTexture.assetType):
-                return DefaultMaterialManager.getDefaultTexture();
-                break;
-            case (assetType == MethodMaterial.assetType):
-                return DefaultMaterialManager.getDefaultMaterial();
-                break;
-            default:
-                break;
-        }
-        return null;
     };
     AWDParser.prototype.getDefaultCubeTexture = function () {
         if (!this._defaultCubeTexture) {
@@ -5822,11 +5695,9 @@ var AWDParser = (function (_super) {
         return new Matrix3D(this.parseMatrix43RawData());
     };
     AWDParser.prototype.parseMatrix32RawData = function () {
-        var i;
         var mtx_raw = new Array(6);
-        for (i = 0; i < 6; i++) {
+        for (var i = 0; i < 6; i++)
             mtx_raw[i] = this._newBlockBytes.readFloat();
-        }
         return mtx_raw;
     };
     AWDParser.prototype.parseMatrix43RawData = function () {
@@ -5894,15 +5765,13 @@ var AWDProperties = (function () {
     function AWDProperties() {
     }
     AWDProperties.prototype.set = function (key, value) {
-        this[key.toString()] = value;
+        this[key] = value;
     };
     AWDProperties.prototype.get = function (key, fallback) {
-        if (this.hasOwnProperty(key.toString())) {
-            return this[key.toString()];
-        }
-        else {
+        if (this[key])
+            return this[key];
+        else
             return fallback;
-        }
     };
     return AWDProperties;
 })();

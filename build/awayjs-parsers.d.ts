@@ -566,9 +566,7 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private _texture_users;
 	    private _parsed_header;
 	    private _body;
-	    private _defaultTexture;
 	    private _cubeBitmaps;
-	    private _defaultBitmapMaterial;
 	    private _defaultCubeTexture;
 	    static COMPRESSIONMODE_LZMA: string;
 	    static UNCOMPRESSED: number;
@@ -682,7 +680,6 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private parseHeader();
 	    private getUVForVertexAnimation(meshID);
 	    private parseVarStr();
-	    private getDefaultAsset(assetType);
 	    getDefaultCubeTexture(): IAsset;
 	    private readNumber(precision?);
 	    private parseMatrix3D();
