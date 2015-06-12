@@ -194,6 +194,14 @@ class AWDParser extends ParserBase
 	private _time_textures:number=0;
 	private _time_materials:number=0;
 	private _time_meshes:number=0;
+	private _num_geom:number=0;
+	private _num_timeline:number=0;
+	private _num_fonts:number=0;
+	private _num_textfields:number=0;
+	private _num_sounds:number=0;
+	private _num_textures:number=0;
+	private _num_materials:number=0;
+	private _num_meshes:number=0;
 
 
 	/**
@@ -342,7 +350,6 @@ class AWDParser extends ParserBase
 		asset.name = oldName;
 
 		return newName;
-
 	}
 
 	/**
@@ -350,7 +357,6 @@ class AWDParser extends ParserBase
 	 */
 	public _pProceedParsing():boolean
 	{
-
 		if (!this._startedParsing) {
 			this._byteData = this._pGetByteData();//getByteData();
 			this._startedParsing = true;
@@ -369,7 +375,6 @@ class AWDParser extends ParserBase
 			this.parseHeader();
 
 			switch (this._compression) {
-
 				case AWDParser.DEFLATE:
 				case AWDParser.LZMA:
 					this._pDieWithError('Compressed AWD formats not yet supported');
@@ -420,6 +425,17 @@ class AWDParser extends ParserBase
 			// Return complete status
 			if (this._body.getBytesAvailable() == 0) {
 				this.dispose();
+
+				if (this._debug)
+					console.log("Parsing total: "+this._time_all+"ms",
+						" | geoms: "+this._num_geom+", "+this._time_geom+"ms",
+						" | timelines: "+this._num_timeline+", "+this._time_timeline+"ms",
+						" | fonts: "+this._num_fonts+", "+this._time_fonts+"ms",
+						" | sounds: "+this._num_sounds+", "+this._time_sounds+"ms",
+						" | mats: "+this._num_materials+", "+this._time_materials+"ms",
+						" | textures: "+this._num_textures+", "+this._time_textures+"ms",
+						" | meshes: "+this._num_meshes+", "+this._time_meshes);
+
 				return  ParserBase.PARSING_DONE;
 			} else {
 				return  ParserBase.MORE_TO_PARSE;
@@ -451,14 +467,11 @@ class AWDParser extends ParserBase
 
 	private dispose():void
 	{
-
 		for (var c in this._blocks) {
 
 			var b:AWDBlock = <AWDBlock> this._blocks[ c ];
 			b.dispose();
-
 		}
-
 	}
 
 	private parseNextBlock():void
@@ -490,21 +503,18 @@ class AWDParser extends ParserBase
 			this._accuracyProps = BitFlags.test(flags, BitFlags.FLAG3);
 			this._geoNrType = AWDParser.FLOAT32;
 
-			if (this._accuracyGeo) {
+			if (this._accuracyGeo)
 				this._geoNrType = AWDParser.FLOAT64;
-			}
 
 			this._matrixNrType = AWDParser.FLOAT32;
 
-			if (this._accuracyMatrix) {
+			if (this._accuracyMatrix)
 				this._matrixNrType = AWDParser.FLOAT64;
-			}
 
 			this._propsNrType = AWDParser.FLOAT32;
 
-			if (this._accuracyProps) {
+			if (this._accuracyProps)
 				this._propsNrType = AWDParser.FLOAT64;
-			}
 		}
 
 		var blockEndAll:number = this._body.position + len;
@@ -594,8 +604,8 @@ class AWDParser extends ParserBase
 					break;
 			}
 		}
-		if ((this._version[0] > 2)||((this._version[0] >= 2) && (this._version[1] >= 1))) {
 
+		if ((this._version[0] > 2)||((this._version[0] >= 2) && (this._version[1] >= 1))) {
 			switch (type) {
 				case 11:
 					this.parsePrimitves(this._cur_block_id);
@@ -660,12 +670,10 @@ class AWDParser extends ParserBase
 					isParsed = true;
 					break;
 			}
-			//*/
 		}
-		//*
+
 		if (isParsed == false) {
 			switch (type) {
-
 				case 1:
 					this.parseTriangleGeometrieBlock(this._cur_block_id);
 					break;
@@ -708,9 +716,6 @@ class AWDParser extends ParserBase
 			}
 		}
 
-		this._body.position = blockEndAll;
-		this._newBlockBytes = null;
-
 		if (this._debug) {
 			if (this._newBlockBytes.position != blockEndBlock)
 				console.log("  (!)(!)(!) Error while reading AWDBlock ID " + this._cur_block_id + " = skip to next block");
@@ -727,25 +732,35 @@ class AWDParser extends ParserBase
 			var time_delta = end_timing - start_timeing;
 			this._time_all += time_delta;
 
-			if(type==1)
+			if (type == 1) {
 				this._time_geom += time_delta;
-			else if(type==133)
+				this._num_geom++;
+			} else if (type == 133) {
 				this._time_timeline += time_delta;
-			else if(type==135)
+				this._num_timeline++;
+			} else if (type == 135) {
 				this._time_fonts += time_delta;
-			else if(type==134)
+				this._num_fonts++;
+			} else if (type == 134) {
 				this._time_textfields += time_delta;
-			else if(type==44)
+				this._num_textfields++;
+			} else if (type == 44) {
 				this._time_sounds += time_delta;
-			else if(type==82)
-				this._time_materials += time_delta;
-			else if(type==81)
+				this._num_sounds++;
+			} else if (type == 82) {
 				this._time_textures += time_delta;
-			else if(type==24)
+				this._num_textures++;
+			} else if (type == 81) {
+				this._time_materials += time_delta;
+				this._num_materials++;
+			} else if(type==24) {
 				this._time_meshes += time_delta;
-
-			console.log("Parsed block of type: "+type +" in "+time_delta+" ms | parsing total: "+this._time_all+" | geoms: "+this._time_geom+" | timelines: "+this._time_timeline+" | fonts: "+this._time_fonts+" | sounds: "+this._time_sounds+" | mats: "+this._time_materials+" | textures: "+this._time_textures+" | meshes: "+this._time_meshes);
+				this._num_meshes++;
+			}
 		}
+
+		this._body.position = blockEndAll;
+		this._newBlockBytes = null;
 	}
 
 
@@ -1371,11 +1386,9 @@ class AWDParser extends ParserBase
 					is_curve_geom = true;
 					var curveData:ByteArray = new ByteArray(str_len);
 					this._newBlockBytes.readBytes(curveData, 0, str_len);
-				}
-				else {
+				} else {
 					this._newBlockBytes.position = str_end;
 				}
-
 			}
 
 			this.parseUserAttributes(); // Ignore sub-mesh attributes for now
