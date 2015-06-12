@@ -3482,6 +3482,7 @@ var AWDParser = (function (_super) {
         _super.call(this, URLLoaderDataFormat.ARRAY_BUFFER);
         //set to "true" to have some console.logs in the Console
         this._debug = false;
+        this._debugTimers = false;
         this._startedParsing = false;
         this._texture_users = {};
         this._parsed_header = false;
@@ -3652,7 +3653,7 @@ var AWDParser = (function (_super) {
             // Return complete status
             if (this._body.getBytesAvailable() == 0) {
                 this.dispose();
-                if (this._debug)
+                if (this._debugTimers)
                     console.log("Parsing total: " + this._time_all + "ms", " | geoms: " + this._num_geom + ", " + this._time_geom + "ms", " | timelines: " + this._num_timeline + ", " + this._time_timeline + "ms", " | fonts: " + this._num_fonts + ", " + this._time_fonts + "ms", " | sounds: " + this._num_sounds + ", " + this._time_sounds + "ms", " | mats: " + this._num_materials + ", " + this._time_materials + "ms", " | textures: " + this._num_textures + ", " + this._time_textures + "ms", " | meshes: " + this._num_meshes + ", " + this._time_meshes);
                 return ParserBase.PARSING_DONE;
             }
@@ -3692,7 +3693,7 @@ var AWDParser = (function (_super) {
         var len;
         var start_timeing;
         //*
-        if (this._debug)
+        if (this._debugTimers)
             start_timeing = performance.now();
         //*/
         this._cur_block_id = this._body.readUnsignedInt();
@@ -3890,6 +3891,8 @@ var AWDParser = (function (_super) {
                     console.log("        (!) Error: " + block.errorMessages[msgCnt] + " (!)");
             }
             console.log("\n");
+        }
+        if (this._debugTimers) {
             var end_timing = performance.now();
             var time_delta = end_timing - start_timeing;
             this._time_all += time_delta;
