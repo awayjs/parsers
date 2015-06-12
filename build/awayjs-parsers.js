@@ -3494,6 +3494,14 @@ var AWDParser = (function (_super) {
         this._time_textures = 0;
         this._time_materials = 0;
         this._time_meshes = 0;
+        this._num_geom = 0;
+        this._num_timeline = 0;
+        this._num_fonts = 0;
+        this._num_textfields = 0;
+        this._num_sounds = 0;
+        this._num_textures = 0;
+        this._num_materials = 0;
+        this._num_meshes = 0;
         this._view = view;
         this._blocks = new Array();
         this._blocks[0] = new AWDBlock(0, 255);
@@ -3644,6 +3652,8 @@ var AWDParser = (function (_super) {
             // Return complete status
             if (this._body.getBytesAvailable() == 0) {
                 this.dispose();
+                if (this._debug)
+                    console.log("Parsing total: " + this._time_all + "ms", " | geoms: " + this._num_geom + ", " + this._time_geom + "ms", " | timelines: " + this._num_timeline + ", " + this._time_timeline + "ms", " | fonts: " + this._num_fonts + ", " + this._time_fonts + "ms", " | sounds: " + this._num_sounds + ", " + this._time_sounds + "ms", " | mats: " + this._num_materials + ", " + this._time_materials + "ms", " | textures: " + this._num_textures + ", " + this._time_textures + "ms", " | meshes: " + this._num_meshes + ", " + this._time_meshes);
                 return ParserBase.PARSING_DONE;
             }
             else {
@@ -3697,17 +3707,14 @@ var AWDParser = (function (_super) {
             this._accuracyGeo = BitFlags.test(flags, BitFlags.FLAG2);
             this._accuracyProps = BitFlags.test(flags, BitFlags.FLAG3);
             this._geoNrType = AWDParser.FLOAT32;
-            if (this._accuracyGeo) {
+            if (this._accuracyGeo)
                 this._geoNrType = AWDParser.FLOAT64;
-            }
             this._matrixNrType = AWDParser.FLOAT32;
-            if (this._accuracyMatrix) {
+            if (this._accuracyMatrix)
                 this._matrixNrType = AWDParser.FLOAT64;
-            }
             this._propsNrType = AWDParser.FLOAT32;
-            if (this._accuracyProps) {
+            if (this._accuracyProps)
                 this._propsNrType = AWDParser.FLOAT64;
-            }
         }
         var blockEndAll = this._body.position + len;
         if (len > this._body.getBytesAvailable()) {
@@ -3834,7 +3841,6 @@ var AWDParser = (function (_super) {
                     break;
             }
         }
-        //*
         if (isParsed == false) {
             switch (type) {
                 case 1:
@@ -3875,8 +3881,6 @@ var AWDParser = (function (_super) {
                     break;
             }
         }
-        this._body.position = blockEndAll;
-        this._newBlockBytes = null;
         if (this._debug) {
             if (this._newBlockBytes.position != blockEndBlock)
                 console.log("  (!)(!)(!) Error while reading AWDBlock ID " + this._cur_block_id + " = skip to next block");
@@ -3889,24 +3893,41 @@ var AWDParser = (function (_super) {
             var end_timing = performance.now();
             var time_delta = end_timing - start_timeing;
             this._time_all += time_delta;
-            if (type == 1)
+            if (type == 1) {
                 this._time_geom += time_delta;
-            else if (type == 133)
+                this._num_geom++;
+            }
+            else if (type == 133) {
                 this._time_timeline += time_delta;
-            else if (type == 135)
+                this._num_timeline++;
+            }
+            else if (type == 135) {
                 this._time_fonts += time_delta;
-            else if (type == 134)
+                this._num_fonts++;
+            }
+            else if (type == 134) {
                 this._time_textfields += time_delta;
-            else if (type == 44)
+                this._num_textfields++;
+            }
+            else if (type == 44) {
                 this._time_sounds += time_delta;
-            else if (type == 82)
-                this._time_materials += time_delta;
-            else if (type == 81)
+                this._num_sounds++;
+            }
+            else if (type == 82) {
                 this._time_textures += time_delta;
-            else if (type == 24)
+                this._num_textures++;
+            }
+            else if (type == 81) {
+                this._time_materials += time_delta;
+                this._num_materials++;
+            }
+            else if (type == 24) {
                 this._time_meshes += time_delta;
-            console.log("Parsed block of type: " + type + " in " + time_delta + " ms | parsing total: " + this._time_all + " | geoms: " + this._time_geom + " | timelines: " + this._time_timeline + " | fonts: " + this._time_fonts + " | sounds: " + this._time_sounds + " | mats: " + this._time_materials + " | textures: " + this._time_textures + " | meshes: " + this._time_meshes);
+                this._num_meshes++;
+            }
         }
+        this._body.position = blockEndAll;
+        this._newBlockBytes = null;
     };
     //--Parser Blocks---------------------------------------------------------------------------
     AWDParser.prototype.parseTesselatedFont = function (blockID) {

@@ -1,15 +1,3 @@
-declare module "awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase" {
-	import AWD3FileData = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData");
-	class AWDAssetParserBase {
-	    private _awd_file_data;
-	    constructor();
-	    awd_file_data: AWD3FileData;
-	    parseFromBytes(): void;
-	}
-	export = AWDAssetParserBase;
-	
-}
-
 declare module "awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParsers" {
 	import AWDAssetParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 	import AWD3FileData = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData");
@@ -22,6 +10,18 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParsers" {
 	    parseAsset(type: number): boolean;
 	}
 	export = AWDBlockParsers;
+	
+}
+
+declare module "awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase" {
+	import AWD3FileData = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData");
+	class AWDAssetParserBase {
+	    private _awd_file_data;
+	    constructor();
+	    awd_file_data: AWD3FileData;
+	    parseFromBytes(): void;
+	}
+	export = AWDAssetParserBase;
 	
 }
 
@@ -603,6 +603,14 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private _time_textures;
 	    private _time_materials;
 	    private _time_meshes;
+	    private _num_geom;
+	    private _num_timeline;
+	    private _num_fonts;
+	    private _num_textfields;
+	    private _num_sounds;
+	    private _num_textures;
+	    private _num_materials;
+	    private _num_meshes;
 	    /**
 	     * Creates a new AWD3Parserutils object.
 	     * @param uri The url or id of the data or file to be parsed.
