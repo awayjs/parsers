@@ -595,6 +595,7 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    static MTX4x4: number;
 	    private blendModeDic;
 	    private _depthSizeDic;
+	    private start_timeing;
 	    private _time_all;
 	    private _time_geom;
 	    private _time_timeline;
@@ -651,6 +652,7 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    _pStartParsing(frameLimit: number): void;
 	    private dispose();
 	    private parseNextBlock();
+	    private updateTimers(type);
 	    private parseTesselatedFont(blockID);
 	    private parseTextFormat(blockID);
 	    private paresTextField(blockID, factory);
