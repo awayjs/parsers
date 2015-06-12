@@ -153,9 +153,7 @@ class AWDParser extends ParserBase
 	private _texture_users:Object = {};
 	private _parsed_header:boolean = false;
 	private _body:ByteArray;
-	private _defaultTexture:Single2DTexture;     // HTML IMAGE TEXTURE >? !
 	private _cubeBitmaps:Array<BitmapImage2D>;
-	private _defaultBitmapMaterial:MethodMaterial;
 	private _defaultCubeTexture:SingleCubeTexture;
 
 
@@ -415,12 +413,8 @@ class AWDParser extends ParserBase
 		}
 
 		if (this._body) {
-
 			while (this._body.getBytesAvailable() > 0 && !this.parsingPaused) //&& this._pHasTime() )
-			{
 				this.parseNextBlock();
-
-			}
 
 			//----------------------------------------------------------------------------
 			// Return complete status
@@ -444,9 +438,7 @@ class AWDParser extends ParserBase
 			}
 			// Error - most likely _body not set because we do not support compression.
 			return  ParserBase.PARSING_DONE;
-
 		}
-
 	}
 
 	public _pStartParsing(frameLimit:number)
@@ -716,106 +708,76 @@ class AWDParser extends ParserBase
 			}
 		}
 
-
-
-
-		var msgCnt:number = 0;
-		if (this._newBlockBytes.position == blockEndBlock) {
-			if (this._debug) {
-				if (block.errorMessages) {
-					while (msgCnt < block.errorMessages.length) {
-						console.log("        (!) Error: " + block.errorMessages[msgCnt] + " (!)");
-						msgCnt++;
-					}
-				}
-				console.log("\n");
-			}
-		} else {
-			if (this._debug) {
-
-				console.log("  (!)(!)(!) Error while reading AWDBlock ID " + this._cur_block_id + " = skip to next block");
-
-				if (block.errorMessages) {
-					while (msgCnt < block.errorMessages.length) {
-						console.log("        (!) Error: " + block.errorMessages[msgCnt] + " (!)");
-						msgCnt++;
-					}
-				}
-			}
-		}
-
 		this._body.position = blockEndAll;
 		this._newBlockBytes = null;
-//*
+
 		if (this._debug) {
+			if (this._newBlockBytes.position != blockEndBlock)
+				console.log("  (!)(!)(!) Error while reading AWDBlock ID " + this._cur_block_id + " = skip to next block");
+
+			if (block.errorMessages) {
+				var len:number = block.errorMessages.length;
+				for (var msgCnt:number = 0; msgCnt < len; msgCnt++)
+					console.log("        (!) Error: " + block.errorMessages[msgCnt] + " (!)");
+			}
+
+			console.log("\n");
+
 			var end_timing = performance.now();
 			var time_delta = end_timing - start_timeing;
-			this._time_all+=time_delta;
-			if(type==1){
-				this._time_geom+=time_delta;
-			}
-			else if(type==133){
-				this._time_timeline+=time_delta;
-			}
-			else if(type==135){
-				this._time_fonts+=time_delta;
-			}
-			else if(type==134){
-				this._time_textfields+=time_delta;
-			}
-			else if(type==44){
-				this._time_sounds+=time_delta;
-			}
-			else if(type==82){
-				this._time_materials+=time_delta;
-			}
-			else if(type==81){
-				this._time_textures+=time_delta;
-			}
-			else if(type==24){
-				this._time_meshes+=time_delta;
-			}
+			this._time_all += time_delta;
+
+			if(type==1)
+				this._time_geom += time_delta;
+			else if(type==133)
+				this._time_timeline += time_delta;
+			else if(type==135)
+				this._time_fonts += time_delta;
+			else if(type==134)
+				this._time_textfields += time_delta;
+			else if(type==44)
+				this._time_sounds += time_delta;
+			else if(type==82)
+				this._time_materials += time_delta;
+			else if(type==81)
+				this._time_textures += time_delta;
+			else if(type==24)
+				this._time_meshes += time_delta;
+
 			console.log("Parsed block of type: "+type +" in "+time_delta+" ms | parsing total: "+this._time_all+" | geoms: "+this._time_geom+" | timelines: "+this._time_timeline+" | fonts: "+this._time_fonts+" | sounds: "+this._time_sounds+" | mats: "+this._time_materials+" | textures: "+this._time_textures+" | meshes: "+this._time_meshes);
 		}
-//*/
-
-
 	}
 
 
 	//--Parser Blocks---------------------------------------------------------------------------
 
 
-	private parseTesselatedFont(blockID:number):void {
+	private parseTesselatedFont(blockID:number)
+	{
 		var name:string = this.parseVarStr();
 		this._blocks[blockID].name = name;
-		//console.log("Font name = "+this._blocks[blockID].name);
 		var font_style_cnt:number = this._newBlockBytes.readUnsignedInt();
-		//console.log("Font font_style_cnt = "+font_style_cnt);
+		var font_style_char_cnt:number;
+		var font_style_name:string
+		var new_font_style:TesselatedFontTable;
 		var new_font:Font=new Font();
+		var font_style_char:number;
+		var sm_len:number;
+		var sm_end:number;
+		var str_ftype:number, str_type:number, str_len:number, str_end:number;
 		for (var i:number = 0; i < font_style_cnt; ++i) {
-			var font_style_name:string = this.parseVarStr();
-			//console.log("Font font_style_name = "+font_style_name);
-			var new_font_style:TesselatedFontTable=new_font.get_font_table(font_style_name);
+			font_style_name = this.parseVarStr();
+			new_font_style = new_font.get_font_table(font_style_name);
 			new_font_style.set_font_em_size(this._newBlockBytes.readUnsignedInt());
-			//console.log("Font new_font_style.font_em_size = "+new_font_style.get_font_em_size);
-			var font_style_char_cnt:number = this._newBlockBytes.readUnsignedInt();
-			//console.log("Font font_style_char_cnt = "+font_style_char_cnt);
-			for (var i:number = 0; i < font_style_char_cnt; ++i) {
-
-				var font_style_char:number = this._newBlockBytes.readUnsignedInt();
-				//console.log("Font font_style_char = "+font_style_char);
+			font_style_char_cnt = this._newBlockBytes.readUnsignedInt();
+			for (var j:number = 0; j < font_style_char_cnt; ++j) {
 				// todo: this is basically a simplified version of the subgeom-parsing done in parseTriangleGeometry. Make a parseSubGeom() instead (?)
-				var sm_len:number = this._newBlockBytes.readUnsignedInt();
-				var sm_end:number = this._newBlockBytes.position + sm_len;
-				//console.log("Font sm_len = "+sm_len);
+				font_style_char = this._newBlockBytes.readUnsignedInt();
+				sm_len = this._newBlockBytes.readUnsignedInt();
+				sm_end = this._newBlockBytes.position + sm_len;
 
-				//this.parseProperties(null); // no properties for font-table subgeos
 				// Loop through data streams
 				while (this._newBlockBytes.position < sm_end) {
-					var idx:number = 0;
-					var str_ftype:number, str_type:number, str_len:number, str_end:number;
-
 					// Type, field type, length
 					str_type = this._newBlockBytes.readUnsignedByte();
 					str_ftype = this._newBlockBytes.readUnsignedByte();
@@ -824,33 +786,26 @@ class AWDParser extends ParserBase
 
 					if (str_type == 2) {//face indicies positions
 						var indices:Array<number> = new Array<number>();
+						for(var idx:number = 0; this._newBlockBytes.position < str_end; idx++)
+							indices[idx] = this._newBlockBytes.readUnsignedShort();
 
-						while (this._newBlockBytes.position < str_end) {
-							indices[idx++] = this._newBlockBytes.readUnsignedShort();
-						}
 					} else if (str_type == 10) {// combined vertex2D stream 5 x float32
-
 						var curveData:ByteArray = new ByteArray(str_len);
 						this._newBlockBytes.readBytes(curveData, 0, str_len);
-					}
-					else {
+					} else {
 						this._newBlockBytes.position = str_end;
 					}
 				}
-				//this.parseProperties(null);// no attributes for font-table subgeos
 
 				var vertexBuffer:AttributesBuffer = new AttributesBuffer(28, str_len/28);
 				vertexBuffer.bufferView = new Uint8Array(<ArrayBuffer> curveData.arraybytes);
 
 				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(vertexBuffer);
-				//curve_sub_geom.setIndices(indices);
 				curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
 				new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
 			}
-			//console.log("Parsed a font-table");
-
 		}
-		//console.log("Parsed a font");
+
 		this.parseProperties(null);
 		this.parseUserAttributes();
 		this._pFinalizeAsset(<IAsset>new_font, name);
@@ -861,15 +816,17 @@ class AWDParser extends ParserBase
 			console.log("Parsed a font: Name = '" + name);
 	}
 
-	private parseTextFormat(blockID:number):void {
+	private parseTextFormat(blockID:number)
+	{
 		var name:string = this.parseVarStr();
 		this._blocks[blockID].name = name;
-		//console.log("this._blocks[blockID].name  '" + this._blocks[blockID].name );
+
 		var font:Font = <Font> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 		var font_style_name:string = this.parseVarStr();
 
 		var newTextFormat:TextFormat = new TextFormat();
 		newTextFormat.font_name = font.name;
+
 		var font_table:TesselatedFontTable = font.get_font_table(font_style_name);
 		if(font_table!=null){
 			newTextFormat.font_style = font_style_name;
@@ -880,14 +837,11 @@ class AWDParser extends ParserBase
 		mat.bothSides=true;
 
 		var num_uv_values:number = this._newBlockBytes.readUnsignedByte();
-		//console.log("num_uv_values  '" + num_uv_values);
-		var uv_values:Array<number>=[];
-		for(var uvcnt:number=0; uvcnt<num_uv_values; uvcnt++){
-			var uv_value:number=this._newBlockBytes.readFloat();
-			uv_values.push(uv_value);
-			//console.log("uv_value  '" + uv_value);
-		}
-		newTextFormat.uv_values=uv_values;
+		var uv_values:Array<number> = [];
+		for(var uvcnt:number = 0; uvcnt < num_uv_values; uvcnt++)
+			uv_values[uvcnt] = this._newBlockBytes.readFloat();
+
+		newTextFormat.uv_values = uv_values;
 		var format_props:AWDProperties = this.parseProperties({1:AWDParser.UINT16, 2:AWDParser.UINT16, 3:AWDParser.UINT8,4:AWDParser.UINT8,5:AWDParser.UINT8,6:AWDParser.UINT8, 7:AWDParser.UINT16, 8:AWDParser.UINT16, 9:AWDParser.UINT16, 10:AWDParser.UINT16});
 
 		newTextFormat.size = format_props.get(1,12);
@@ -911,7 +865,8 @@ class AWDParser extends ParserBase
 			console.log("Parsed a TextFormat: Name = '" + name + " font: "+font.name);
 	}
 
-	private paresTextField(blockID:number, factory:TimelineSceneGraphFactory):void {
+	private paresTextField(blockID:number, factory:TimelineSceneGraphFactory)
+	{
 		var name:string = this.parseVarStr();
 		this._blocks[blockID].name = name;
 		//console.log("name  '" + name);
@@ -945,7 +900,7 @@ class AWDParser extends ParserBase
 				if (txt_length > 0) {
 					var this_txt:string = this._newBlockBytes.readUTFBytes(txt_length);
 					//newTextField.appendText(this_txt, text_format);
-					complete_text+=this_txt;
+					complete_text += this_txt;
 					//console.log("this_txt  '" + this_txt);
 				}
 			}
@@ -975,7 +930,8 @@ class AWDParser extends ParserBase
 	}
 
 	// Block ID = 25
-	private parseBillBoardLibraryBlock(blockID:number):void {
+	private parseBillBoardLibraryBlock(blockID:number)
+	{
 
 		var name:string = this.parseVarStr();
 		var mat:BasicMaterial = <BasicMaterial> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
@@ -995,48 +951,35 @@ class AWDParser extends ParserBase
 			console.log("Parsed a Library-Billboard: Name = '" + name + "| Material-Name = " + mat.name);
 	}
 	// Block ID = 24
-	private parseMeshLibraryBlock(blockID:number):void {
-		var num_materials:number;
-		var materials_parsed:number;
-
+	private parseMeshLibraryBlock(blockID:number):void
+	{
 		var name:string = this.parseVarStr();
-
 		var data_id:number = this._newBlockBytes.readUnsignedInt();
 		var geom:Geometry = <Geometry> this._blocks[data_id].data;
 		this._blocks[blockID].geoID = data_id;
 
+		var num_materials:number = this._newBlockBytes.readUnsignedShort();
 		var materials:Array<MethodMaterial> = new Array<MethodMaterial>();
-		num_materials = this._newBlockBytes.readUnsignedShort();
-
 		var materialNames:Array<string> = new Array<string>();
-		materials_parsed = 0;
-
-		var returnedArrayMaterial:Array<any>;
-
-		while (materials_parsed < num_materials) {
+		for (var materials_parsed:number = 0; materials_parsed < num_materials; materials_parsed++) {
 			var m:MethodMaterial = <MethodMaterial> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 			//m.preserveAlpha = true;
 			m.alphaBlending = true;
 			m.useColorTransform = true;
-			materials.push(m);
-			materialNames.push(m.name);
-
-			materials_parsed++;
+			materials[materials_parsed] = m;
+			materialNames[materials_parsed] = m.name;
 		}
 
 		var mesh:Mesh = new Mesh(geom, null);
-
-
 		if (materials.length >= 1 && mesh.subMeshes.length == 1) {
 			mesh.material = materials[0];
 		} else if (materials.length > 1) {
-			var i:number;
-
 			// Assign each sub-mesh in the mesh a material from the list. If more sub-meshes
 			// than materials, repeat the last material for all remaining sub-meshes.
-			for (i = 0; i < mesh.subMeshes.length; i++)
+			for (var i:number = 0; i < mesh.subMeshes.length; i++)
 				mesh.subMeshes[i].material = materials[Math.min(materials.length - 1, i)];
 		}
+
 		this.parseProperties(null);
 		mesh.extra = this.parseUserAttributes();
 
@@ -1047,16 +990,15 @@ class AWDParser extends ParserBase
 		if (this._debug)
 			console.log("Parsed a Library-Mesh: Name = '" + name + "| Geometry-Name = " + geom.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames.toString());
 	}
-	private parseAudioBlock(blockID:number, factory:TimelineSceneGraphFactory):void {
 
+	private parseAudioBlock(blockID:number, factory:TimelineSceneGraphFactory)
+	{
 		//var asset:Audio;todo create asset for audio
 
 		this._blocks[blockID].name = this.parseVarStr();
 
 		var type:number = this._newBlockBytes.readUnsignedByte();
 		var data_len:number;
-
-		//this._texture_users[this._cur_block_id.toString()] = [];
 
 		// External
 		if (type == 0) {
@@ -1077,7 +1019,6 @@ class AWDParser extends ParserBase
 			// todo parse sound from bytes
 			// this._pAddDependency(this._cur_block_id.toString(), null, false, ParserUtils.by(data), true);
 			this._pAddDependency(this._cur_block_id.toString(), null, false, data, true);
-
 		}
 
 		// Ignore for now
@@ -1091,17 +1032,16 @@ class AWDParser extends ParserBase
 	}
 
 	//Block ID = 4
-	private parseTimeLine(blockID:number, factory:TimelineSceneGraphFactory):void {
-
+	private parseTimeLine(blockID:number, factory:TimelineSceneGraphFactory)
+	{
 		var i:number;
 		var j:number;
+		var cmd_asset:DisplayObject;
 		var timeLineContainer = factory.createMovieClip();
 		var name = this.parseVarStr();
 		var isScene = !!this._newBlockBytes.readUnsignedByte();
 		var sceneID = this._newBlockBytes.readUnsignedByte();
 		timeLineContainer.fps = this._newBlockBytes.readFloat();
-		var num_all_display_instances:number = 0;
-
 
 		// register list of potential childs
 		// a potential child can be reused on a timeline (added / removed / added)
@@ -1115,7 +1055,7 @@ class AWDParser extends ParserBase
 
 		var num_potential_childs:number = this._newBlockBytes.readUnsignedShort();
 		for (i = 0; i < num_potential_childs; i++) {
-			var cmd_asset:DisplayObject = <DisplayObject> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+			cmd_asset = <DisplayObject> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 			if (cmd_asset != null) {
 				timeLineContainer.registerPotentialChild(cmd_asset);
 			} else {
@@ -1125,18 +1065,17 @@ class AWDParser extends ParserBase
 			}
 		}
 
-		num_all_display_instances += num_potential_childs;
+		var num_all_display_instances:number = num_potential_childs;
+
 		var num_potential_childs_multi_instanced = this._newBlockBytes.readUnsignedShort();
-		num_potential_childs += num_potential_childs_multi_instanced;
 		for (i = 0; i < num_potential_childs_multi_instanced; i++) {
-			var cmd_asset:DisplayObject = <DisplayObject>this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+			cmd_asset = <DisplayObject> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 			var num_instances:number = this._newBlockBytes.readUnsignedShort();
 			num_all_display_instances += num_instances;
 			if (cmd_asset != null) {
 				for (j = 0; j < num_instances; j++)
 					timeLineContainer.registerPotentialChild(cmd_asset);
-			}
-			else{
+			} else {
 				for (j = 0; j < num_instances; j++) {
 					//todo: register a default display object on timeline, so we do not mess up the incremental obj-id
 					//timeLineContainer.registerPotentialChild(cmd_asset);
@@ -1146,25 +1085,21 @@ class AWDParser extends ParserBase
 		}
 
 		if (this._debug)
-			console.log("Parsed " + num_potential_childs + " potential childs. They will be used by " + num_all_display_instances + " instances.");
+			console.log("Parsed " + (num_potential_childs + num_potential_childs_multi_instanced) + " potential childs. They will be used by " + num_all_display_instances + " instances.");
 
 		// register list of potential sounds
 		// a potential child can be reused on a timeline (added / removed / added)
 		var num_potential_sounds = this._newBlockBytes.readUnsignedShort();
 		for (i = 0; i < num_potential_sounds; i++) {
-			var cmd_asset:DisplayObject = <DisplayObject>this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+			cmd_asset = <DisplayObject> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 			if (cmd_asset != null) {
 				//todo: register sound objects on movieclip
 				console.log("ERROR when collecting objects for timeline");
 				//timeLineContainer.registerPotentialChild(cmd_asset);
-			}
-			else{
+			} else {
 				//todo: this is a error that might break complete timeline, because all sound obj-id shift
 			}
 		}
-		//console.log("Parsed "+num_potential_sounds+" potential sounds");
-
-		var numFrames = this._newBlockBytes.readUnsignedShort();
 
 		//console.log("numFrames "+numFrames);
 		// var previousTimeLine:TimeLineFrame;
@@ -1182,6 +1117,7 @@ class AWDParser extends ParserBase
 		var frame:TimelineKeyFrame;
 		var hasDepthChanges:boolean;
 
+		var numFrames:number = this._newBlockBytes.readUnsignedShort();
 		for (i = 0; i < numFrames; i++) {
 			var commandCount:number = 0;
 			// todo: remove the ms_per_frame to set the duration in frames
@@ -1206,7 +1142,6 @@ class AWDParser extends ParserBase
 				// 4 = add / update sound - (not finished)
 
 				switch (commandType) {
-
 					case 1:// remove a number of objects at specific depth
 						number_of_obj = this._newBlockBytes.readUnsignedShort();
 						//console.log("number_of_obj ", number_of_obj);
@@ -1226,13 +1161,13 @@ class AWDParser extends ParserBase
 						objectID = this._newBlockBytes.readUnsignedShort();
 						//console.log("add / update objectID ", objectID);
 						if (commandType != 3) {
-							hasDepthChanges=true;
+							hasDepthChanges = true;
 							target_depth = this._newBlockBytes.readShort();
 							//console.log("target_depth ", target_depth);
                             var potChild = timeLineContainer.getPotentialChildPrototype(objectID);
 							if (potChild != undefined) {
 								frame.frameConstructCommands[commandCount++] = new AddChildAtDepthCommand(objectID, target_depth);
-								if(commandType==6) {
+								if(commandType == 6) {
 									frame.frameConstructCommands[commandCount++] = new SetButtonCommand(objectID);
 								} else if (potChild.isAsset(TextField)) {
 									// if the object is a tetfield, we set the textfield-name as instancename
@@ -1256,7 +1191,7 @@ class AWDParser extends ParserBase
 						 });*/
 						// read display matrix
 						if (BitFlags.test(props_flag, BitFlags.FLAG1)) {
-							var thisMatrix = new Matrix3D();
+							var thisMatrix:Matrix3D = new Matrix3D();
 							if (BitFlags.test(props_flag, BitFlags.FLAG2)) {
 							} else {
 								thisMatrix.rawData[0] = this._newBlockBytes.readFloat();
@@ -1269,7 +1204,7 @@ class AWDParser extends ParserBase
 						}
 						// read colortransforms
 						if (BitFlags.test(props_flag, BitFlags.FLAG3)) {
-							var thisColorTransform = new ColorTransform();
+							var thisColorTransform:ColorTransform = new ColorTransform();
 							if (BitFlags.test(props_flag, BitFlags.FLAG4)) {
 							} else {
 								thisColorTransform.redMultiplier = this._newBlockBytes.readFloat();
@@ -1291,15 +1226,15 @@ class AWDParser extends ParserBase
 							frame.frameConstructCommands[commandCount++] = new UpdatePropertyCommand(objectID, "visible", this._newBlockBytes.readByte());
 						}
 						if (BitFlags.test(props_flag, BitFlags.FLAG7)) {
-							var instanceName = this.parseVarStr();
+							var instanceName:string = this.parseVarStr();
 							if (instanceName.length)
 								frame.frameConstructCommands[commandCount++] = new SetInstanceNameCommand(objectID, instanceName);
 						}
 						if (BitFlags.test(props_flag, BitFlags.FLAG8)) {
-							var mask_id_nums = this._newBlockBytes.readUnsignedShort();
-							var mask_ids = new Array();
-							for (var mi_cnt = 0; mi_cnt < mask_id_nums; mi_cnt++)
-								mask_ids.push(this._newBlockBytes.readShort());
+							var mask_id_nums:number = this._newBlockBytes.readUnsignedShort();
+							var mask_ids:Array<number> = new Array<number>();
+							for (var mi_cnt:number = 0; mi_cnt < mask_id_nums; mi_cnt++)
+								mask_ids[mi_cnt] = this._newBlockBytes.readShort();
 
 							if (mask_ids.length > 0) {
 								// TODO: this object is used as mask
@@ -1346,12 +1281,11 @@ class AWDParser extends ParserBase
 			timeLineContainer.addFrame(frame);
 		}
 
+		this.parseProperties(null);
+		this.parseUserAttributes();
 		this._pFinalizeAsset(<IAsset>timeLineContainer, name);
 
 		this._blocks[blockID].data = timeLineContainer;
-
-		this.parseProperties(null);
-		this.parseUserAttributes();
 
 		if (this._debug)
 			console.log("Parsed a TIMELINE: Name = " + name + "| isScene = " + isScene + "| sceneID = " + sceneID + "| numFrames = " + numFrames);
@@ -1360,7 +1294,6 @@ class AWDParser extends ParserBase
 	//Block ID = 1
 	private parseTriangleGeometrieBlock(blockID:number):void
 	{
-
 		var geom:Geometry = new Geometry();
 
 		// Read name and sub count
@@ -1373,10 +1306,8 @@ class AWDParser extends ParserBase
 		var geoScaleV:number = props.get(2, 1);
 
 		// Loop through sub meshes
-		var subs_parsed:number = 0;
-		while (subs_parsed < num_subs) {
+		for (var subs_parsed:number = 0;  subs_parsed < num_subs; subs_parsed++) {
 			var is_curve_geom:boolean=false;
-			var i:number;
 			var sm_len:number, sm_end:number;
 			var w_indices:Array<number>;
 			var weights:Array<number>;
@@ -1413,46 +1344,31 @@ class AWDParser extends ParserBase
 					}
 				} else if (str_type == 2) {//face indicies positions
 					var indices:Array<number> = new Array<number>();
-
-					while (this._newBlockBytes.position < str_end) {
+					while (this._newBlockBytes.position < str_end)
 						indices[idx++] = this._newBlockBytes.readUnsignedShort();
-					}
 
 				} else if (str_type == 3) {
 					var uvs:Array<number> = new Array<number>();
-					while (this._newBlockBytes.position < str_end) {
+					while (this._newBlockBytes.position < str_end)
 						uvs[idx++] = this.readNumber(this._accuracyGeo);
-
-					}
 				} else if (str_type == 4) {
-
 					var normals:Array<number> = new Array<number>();
-
-					while (this._newBlockBytes.position < str_end) {
+					while (this._newBlockBytes.position < str_end)
 						normals[idx++] = this.readNumber(this._accuracyGeo);
-					}
-
 				} else if (str_type == 6) {
 					w_indices = Array<number>();
-
-					while (this._newBlockBytes.position < str_end) {
+					while (this._newBlockBytes.position < str_end)
 						w_indices[idx++] = this._newBlockBytes.readUnsignedShort()*3;
-					}
-
 				} else if (str_type == 7) {
-
 					weights = new Array<number>();
-
-					while (this._newBlockBytes.position < str_end) {
+					while (this._newBlockBytes.position < str_end)
 						weights[idx++] = this.readNumber(this._accuracyGeo);
-					}
 				} else if (str_type == 8) {// 2d-positions - not used yet.
 					this._newBlockBytes.position = str_end;
 				} else if (str_type == 9) {// combined vertex3D stream 13 x float32
 					this._newBlockBytes.position = str_end;
 				} else if (str_type == 10) {// combined vertex2D stream 5 x float32
-					is_curve_geom=true;
-
+					is_curve_geom = true;
 					var curveData:ByteArray = new ByteArray(str_len);
 					this._newBlockBytes.readBytes(curveData, 0, str_len);
 				}
@@ -1463,6 +1379,7 @@ class AWDParser extends ParserBase
 			}
 
 			this.parseUserAttributes(); // Ignore sub-mesh attributes for now
+
 			if(is_curve_geom){
 				var vertexBuffer:AttributesBuffer = new AttributesBuffer(28, str_len/28);
 				vertexBuffer.bufferView = new Uint8Array(<ArrayBuffer> curveData.arraybytes);
@@ -1472,19 +1389,20 @@ class AWDParser extends ParserBase
 				geom.addSubGeometry(curve_sub_geom);
 				if (this._debug)
 					console.log("Parsed a CurveSubGeometry");
-			}
-			else {
+			} else {
 				var triangle_sub_geom = new TriangleSubGeometry(new AttributesBuffer());
+
 				if (weights)
 					triangle_sub_geom.jointsPerVertex = weights.length / (verts.length / 3);
+
 				if (normals)
 					triangle_sub_geom.autoDeriveNormals = false;
+
 				if (uvs)
 					triangle_sub_geom.autoDeriveUVs = false;
-				//triangle_sub_geom.autoDeriveNormals = false;
-				if (true) {
-					triangle_sub_geom.autoDeriveTangents = true;
-				}
+
+				triangle_sub_geom.autoDeriveTangents = true;
+
 				triangle_sub_geom.setIndices(indices);
 				triangle_sub_geom.setPositions(verts);
 				triangle_sub_geom.setNormals(normals);
@@ -1505,6 +1423,7 @@ class AWDParser extends ParserBase
 
 				if (setSubUVs)
 					triangle_sub_geom.scaleUV(scaleU, scaleV);
+
 				geom.addSubGeometry(triangle_sub_geom);
 				if (this._debug)
 					console.log("Parsed a TriangleSubGeometry");
@@ -1513,9 +1432,8 @@ class AWDParser extends ParserBase
 
 			// TODO: Somehow map in-sub to out-sub indices to enable look-up
 			// when creating meshes (and their material assignments.)
-
-			subs_parsed++;
 		}
+
 		if ((geoScaleU != 1) || (geoScaleV != 1))
 			geom.scaleUV(geoScaleU, geoScaleV);
 		this.parseUserAttributes();
@@ -1544,9 +1462,8 @@ class AWDParser extends ParserBase
 
 		var primitiveTypes:Array<string> = ["Unsupported Type-ID", "PrimitivePlanePrefab", "PrimitiveCubePrefab", "PrimitiveSpherePrefab", "PrimitiveCylinderPrefab", "PrimitivesConePrefab", "PrimitivesCapsulePrefab", "PrimitivesTorusPrefab"]
 
+		// to do, not all properties are set on all primitives
 		switch (primType) {
-			// to do, not all properties are set on all primitives
-
 			case 1:
 				prefab = new PrimitivePlanePrefab(props.get(101, 100), props.get(102, 100), props.get(301, 1), props.get(302, 1), props.get(701, true), props.get(702, false));
 				break;
@@ -1633,9 +1550,7 @@ class AWDParser extends ParserBase
 		if ((this._version[0] == 2) && (this._version[1] == 1)) {
 			var props:AWDProperties = this.parseProperties({1:this._matrixNrType, 2:this._matrixNrType, 3:this._matrixNrType, 4:AWDParser.UINT8});
 			ctr.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
-		}
-		// in other versions we do not read the Container properties
-		else {
+		} else {// in other versions we do not read the Container properties
 			this.parseProperties(null);
 		}
 
@@ -1653,8 +1568,6 @@ class AWDParser extends ParserBase
 	private parseMeshInstance(blockID:number):void
 	{
 		var parent:DisplayObjectContainer = <DisplayObjectContainer> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
-		var num_materials:number;
-		var materials_parsed:number;
 		var mtx:Matrix3D = this.parseMatrix3D();
 		var name:string = this.parseVarStr();
 
@@ -1671,17 +1584,13 @@ class AWDParser extends ParserBase
 		}
 
 		this._blocks[blockID].geoID = data_id;
+		var num_materials:number = this._newBlockBytes.readUnsignedShort();
 		var materials:Array<MethodMaterial> = new Array<MethodMaterial>();
-		num_materials = this._newBlockBytes.readUnsignedShort();
-
 		var materialNames:Array<string> = new Array<string>();
-		materials_parsed = 0;
-
-		while (materials_parsed < num_materials) {
+		for (var materials_parsed:number = 0; materials_parsed < num_materials; materials_parsed++) {
 			var m:MethodMaterial = <MethodMaterial> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
-			materials.push(m);
-			materialNames.push(m.name);
-			materials_parsed++;
+			materials[materials_parsed] = m;
+			materialNames[materials_parsed] = m.name;
 		}
 
 		var mesh:Mesh = isPrefab? <Mesh> prefab.getNewObject() : new Mesh(geom, null);
@@ -1718,11 +1627,10 @@ class AWDParser extends ParserBase
 		this._blocks[blockID].data = mesh;
 
 		if (this._debug) {
-			if (isPrefab) {
+			if (isPrefab)
 				console.log("Parsed a Mesh for Prefab: Name = '" + name + "' | Parent-Name = " + parentName + "| Prefab-Name = " + prefab.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames.toString());
-			} else {
+			else
 				console.log("Parsed a Mesh for Geometry: Name = '" + name + "' | Parent-Name = " + parentName + "| Geometry-Name = " + geom.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames.toString());
-			}
 		}
 	}
 
@@ -1740,7 +1648,6 @@ class AWDParser extends ParserBase
 		this._blocks[blockID].data = asset;
 		if (this._debug)
 			console.log("Parsed a Skybox: Name = '" + name + "' | CubeTexture-Name = " + cubeTex.name);
-
 	}
 
 	//Block ID = 41
@@ -1771,11 +1678,9 @@ class AWDParser extends ParserBase
 			}
 
 			light.transform.matrix3D = mtx;
-
 		}
 
 		if (lightType == 2) {
-
 			light = new DirectionalLight(props.get(21, 0), props.get(22, -1), props.get(23, 1));
 
 			if (shadowMapperType > 0) {
@@ -1789,8 +1694,8 @@ class AWDParser extends ParserBase
 				//   newShadowMapper = new CascadeShadowMapper(props.get(12, 3));
 
 			}
-
 		}
+
 		light.color = props.get(3, 0xffffff);
 		light.specular = props.get(4, 1.0);
 		light.diffuse = props.get(5, 1.0);
@@ -1800,13 +1705,11 @@ class AWDParser extends ParserBase
 		// if a shadowMapper has been created, adjust the depthMapSize if needed, assign to light and set castShadows to true
 		if (newShadowMapper) {
 			if (newShadowMapper instanceof CubeMapShadowMapper) {
-				if (props.get(10, 1) != 1) {
+				if (props.get(10, 1) != 1)
 					newShadowMapper.depthMapSize = this._depthSizeDic[props.get(10, 1)];
-				}
 			} else {
-				if (props.get(10, 2) != 2) {
+				if (props.get(10, 2) != 2)
 					newShadowMapper.depthMapSize = this._depthSizeDic[props.get(10, 2)];
-				}
 			}
 
 			light.shadowMapper = newShadowMapper;
@@ -1823,14 +1726,12 @@ class AWDParser extends ParserBase
 		}
 
 		this.parseUserAttributes();
-
 		this._pFinalizeAsset(< IAsset> light, name);
 
 		this._blocks[blockID].data = light;
 
 		if (this._debug)
 			console.log("Parsed a Light: Name = '" + name + "' | Type = " + lightTypes[lightType] + " | Parent-Name = " + parentName + " | ShadowMapper-Type = " + shadowMapperTypes[shadowMapperType]);
-
 	}
 
 	//Block ID = 43
@@ -1930,7 +1831,6 @@ class AWDParser extends ParserBase
 		var type:number;
 		var props:AWDProperties;
 		var mat:MethodMaterial;
-		var attributes:Object;
 		var finalize:boolean;
 		var num_methods:number;
 		var methods_parsed:number;
@@ -1953,12 +1853,11 @@ class AWDParser extends ParserBase
 			this.parseUserAttributes();
 			methods_parsed += 1;
 		}
+
 		var debugString:string = "";
-		attributes = this.parseUserAttributes();
 		if (type === 1) { // Color material
 			debugString += "Parsed a ColorMaterial(SinglePass): Name = '" + name + "' | ";
-			var color:number;
-			color = props.get(1, 0xffffff);
+			var color:number = props.get(1, 0xffffff);
 			if (this.materialMode < 2) {
 				mat = new MethodMaterial(color, props.get(10, 1.0));
 			} else {
@@ -1980,10 +1879,12 @@ class AWDParser extends ParserBase
 			}
 		}
 
-		mat.extra = attributes;
+		mat.extra = this.parseUserAttributes();
 		mat.alphaThreshold = props.get(12, 0.0);
 		mat.repeat = props.get(13, false);
+
 		this._pFinalizeAsset(<IAsset> mat, name);
+
 		this._blocks[blockID].data = mat;
 
 		if (this._debug)
@@ -2082,9 +1983,7 @@ class AWDParser extends ParserBase
 				mat.gloss = props.get(19, 50);
 				mat.specularColor = props.get(20, 0xffffff);
 
-				var methods_parsed:number = 0;
-
-				while (methods_parsed < num_methods) {
+				for (var methods_parsed:number = 0; methods_parsed < num_methods; methods_parsed++) {
 					var method_type:number;
 					method_type = this._newBlockBytes.readUnsignedShort();
 
@@ -2191,7 +2090,6 @@ class AWDParser extends ParserBase
 							break;
 					}
 					this.parseUserAttributes();
-					methods_parsed += 1;
 				}
 			}
 		}
@@ -2473,8 +2371,7 @@ class AWDParser extends ParserBase
 		var skeleton:Skeleton = new Skeleton();
 		this.parseProperties(null); // Discard properties for now
 
-		var joints_parsed:number /*uint*/ = 0;
-		while (joints_parsed < num_joints) {
+		for (var joints_parsed:number = 0; joints_parsed < num_joints; joints_parsed++) {
 			var joint:SkeletonJoint;
 			var ibp:Matrix3D;
 			// Ignore joint id
@@ -2489,13 +2386,14 @@ class AWDParser extends ParserBase
 			this.parseProperties(null);
 			this.parseUserAttributes();
 			skeleton.joints.push(joint);
-			joints_parsed++;
 		}
 
 		// Discard attributes for now
 		this.parseUserAttributes();
 		this._pFinalizeAsset(skeleton, name);
+
 		this._blocks[blockID].data = skeleton;
+
 		if (this._debug)
 			console.log("Parsed a Skeleton: Name = " + skeleton.name + " | Number of Joints = " + joints_parsed);
 	}
@@ -2509,8 +2407,7 @@ class AWDParser extends ParserBase
 
 		var pose:SkeletonPose = new SkeletonPose();
 
-		var joints_parsed:number /*uint*/ = 0;
-		while (joints_parsed < num_joints) {
+		for (var joints_parsed:number = 0; joints_parsed < num_joints; joints_parsed++) {
 			var joint_pose:JointPose;
 			var has_transform:number /*uint*/;
 			joint_pose = new JointPose();
@@ -2524,11 +2421,12 @@ class AWDParser extends ParserBase
 
 				pose.jointPoses[joints_parsed] = joint_pose;
 			}
-			joints_parsed++;
 		}
+
 		// Skip attributes for now
 		this.parseUserAttributes();
 		this._pFinalizeAsset(pose, name);
+
 		this._blocks[blockID].data = pose;
 
 		if (this._debug)
@@ -2539,18 +2437,16 @@ class AWDParser extends ParserBase
 	private parseSkeletonAnimation(blockID:number /*uint*/):void
 	{
 		var frame_dur:number;
-		var pose_addr:number /*uint*/;
+		var pose_id:number;
 		var name:string = this.parseVarStr();
 		var clip:SkeletonClipNode = new SkeletonClipNode();
 		var num_frames:number /*uint*/ = this._newBlockBytes.readUnsignedShort();
 		this.parseProperties(null); // Ignore properties for now
 
-		var frames_parsed:number /*uint*/ = 0;
-		var returnedArray:Array<any>;
-		while (frames_parsed < num_frames) {
-			clip.addFrame(<SkeletonPose> this._blocks[this._newBlockBytes.readUnsignedInt()].data, frame_dur);
+		for (var frames_parsed:number = 0; frames_parsed < num_frames; frames_parsed++) {
+			pose_id = this._newBlockBytes.readUnsignedInt();
 			frame_dur = this._newBlockBytes.readUnsignedShort();
-			frames_parsed++;
+			clip.addFrame(<SkeletonPose> this._blocks[pose_id].data, frame_dur);
 		}
 		if (clip.frames.length == 0) {
 			this._blocks[blockID].addError("Could not this SkeletonClipNode, because no Frames where set.");
@@ -2568,49 +2464,39 @@ class AWDParser extends ParserBase
 	//Block ID = 111 /  Block ID = 112
 	private parseMeshPoseAnimation(blockID:number /*uint*/, poseOnly:boolean = false):void
 	{
-		var num_frames:number /*uint*/ = 1;
-		var num_submeshes:number /*uint*/;
-		var frames_parsed:number /*uint*/;
 		var subMeshParsed:number /*uint*/;
-		var frame_dur:number;
 		var x:number;
 		var y:number;
 		var z:number;
 		var str_len:number;
 		var str_end:number;
-		var geometry:Geometry;
 		var subGeom:TriangleSubGeometry;
 		var idx:number /*int*/ = 0;
 		var clip:VertexClipNode = new VertexClipNode();
 		var indices:Short3Attributes;
 		var verts:Array<number>;
-		var num_Streams:number /*int*/ = 0;
-		var streamsParsed:number /*int*/ = 0;
 		var streamtypes:Array<number> /*int*/ = new Array<number>() /*int*/;
 		var props:AWDProperties;
-		var thisGeo:Geometry;
 		var name:string = this.parseVarStr();
 		var geo_id:number /*int*/ = this._newBlockBytes.readUnsignedInt();
 		var geometry:Geometry = <Geometry> this._blocks[geo_id].data;
 
 		var uvs:Array<Float32Array> = this.getUVForVertexAnimation(geo_id);
-		if (!poseOnly)
-			num_frames = this._newBlockBytes.readUnsignedShort();
 
-		num_submeshes = this._newBlockBytes.readUnsignedShort();
-		num_Streams = this._newBlockBytes.readUnsignedShort();
-		streamsParsed = 0;
-		while (streamsParsed < num_Streams) {
+		var num_frames:number = (!poseOnly)? this._newBlockBytes.readUnsignedShort() : 1;
+
+		var num_submeshes:number = this._newBlockBytes.readUnsignedShort();
+		var num_Streams:number = this._newBlockBytes.readUnsignedShort();
+		for (var streamsParsed:number = 0; streamsParsed < num_Streams; streamsParsed++)
 			streamtypes.push(this._newBlockBytes.readUnsignedShort());
-			streamsParsed++;
-		}
+
 		props = this.parseProperties({1:AWDParser.BOOL, 2:AWDParser.BOOL});
 
 		clip.looping = props.get(1, true);
 		clip.stitchFinalFrame = props.get(2, false);
 
-		frames_parsed = 0;
-		while (frames_parsed < num_frames) {
+		var frame_dur:number;
+		for (var frames_parsed:number = 0; frames_parsed < num_frames; frames_parsed++) {
 			frame_dur = this._newBlockBytes.readUnsignedShort();
 			geometry = new Geometry();
 			subMeshParsed = 0;
@@ -2647,7 +2533,6 @@ class AWDParser extends ParserBase
 				}
 			}
 			clip.addFrame(geometry, frame_dur);
-			frames_parsed++;
 		}
 		this.parseUserAttributes();
 		this._pFinalizeAsset(clip, name);
@@ -2664,17 +2549,15 @@ class AWDParser extends ParserBase
 		var name:string = this.parseVarStr();
 		var num_frames:number /*uint*/ = this._newBlockBytes.readUnsignedShort();
 		var props:AWDProperties = this.parseProperties({1:AWDParser.UINT16});
-		var frames_parsed:number /*uint*/ = 0;
 		var skeletonFrames:Array<SkeletonClipNode> = new Array<SkeletonClipNode>();
 		var vertexFrames:Array<VertexClipNode> = new Array<VertexClipNode>();
 		var clipNode:AnimationClipNodeBase;
-		while (frames_parsed < num_frames) {
+		for (var frames_parsed:number = 0; frames_parsed < num_frames; frames_parsed++) {
 			clipNode = <AnimationClipNodeBase> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 			if (clipNode instanceof VertexClipNode)
 				vertexFrames.push(<VertexClipNode> clipNode);
 			else if (clipNode instanceof SkeletonClipNode)
 				skeletonFrames.push(<SkeletonClipNode> clipNode);
-			frames_parsed++;
 		}
 
 		if ((vertexFrames.length == 0) && (skeletonFrames.length == 0)) {
@@ -2816,21 +2699,13 @@ class AWDParser extends ParserBase
 
 	private parseUserAttributes():Object
 	{
-		var attributes:Object;
-		var list_len:number;
-		var attibuteCnt:number;
-
-		list_len = this._newBlockBytes.readUnsignedInt();
+		var list_len:number = this._newBlockBytes.readUnsignedInt();
 
 		if (list_len > 0) {
+			var list_end:number = this._newBlockBytes.position + list_len;
+			var attributes:Object = {};
 
-			var list_end:number;
-
-			attributes = {};
-
-			list_end = this._newBlockBytes.position + list_len;
-
-			while (this._newBlockBytes.position < list_end) {
+			for (var attibuteCnt:number = 0; this._newBlockBytes.position < list_end; attibuteCnt++) {
 				var ns_id:number;
 				var attr_key:string;
 				var attr_type:number;
@@ -2886,7 +2761,6 @@ class AWDParser extends ParserBase
 				}
 
 				attributes[attr_key] = attr_val;
-				attibuteCnt += 1;
 
 				if (this._debug)
 					console.log("attribute = name: " + attr_key + "  / value = " + attr_val);
@@ -2898,21 +2772,16 @@ class AWDParser extends ParserBase
 
 	private parseProperties(expected:Object):AWDProperties
 	{
-		var list_end:number;
-		var list_len:number;
-		var propertyCnt:number = 0;
+		var list_len:number = this._newBlockBytes.readUnsignedInt();
 		var props:AWDProperties = new AWDProperties();
-
-		list_len = this._newBlockBytes.readUnsignedInt();
-		list_end = this._newBlockBytes.position + list_len;
+		var list_end:number = this._newBlockBytes.position + list_len;
 
 		if (expected) {
+			var len:number;
+			var key:number;
+			var type:number;
 
-			while (this._newBlockBytes.position < list_end) {
-				var len:number;
-				var key:number;
-				var type:number;
-
+			for (var propertyCnt:number = 0; this._newBlockBytes.position < list_end; propertyCnt++) {
 				key = this._newBlockBytes.readUnsignedShort();
 				len = this._newBlockBytes.readUnsignedInt();
 
@@ -2922,22 +2791,18 @@ class AWDParser extends ParserBase
 					return props;
 				}
 
-				if (expected.hasOwnProperty(key.toString())) {
+				if (expected[key]) {
 					type = expected[key];
 					props.set(key, this.parseAttrValue(type, len));
 				} else {
 					this._newBlockBytes.position += len;
 				}
-
-				propertyCnt += 1;
-
 			}
 		} else {
 			this._newBlockBytes.position = list_end;
 		}
 
 		return props;
-
 	}
 
 	private parseAttrValue(type:number, len:number):any
@@ -2946,7 +2811,6 @@ class AWDParser extends ParserBase
 		var read_func:Function;
 
 		switch (type) {
-
 			case AWDParser.BOOL:
 			case AWDParser.INT8:
 				elem_len = 1;
@@ -3003,38 +2867,29 @@ class AWDParser extends ParserBase
 				elem_len = 8;
 				read_func = this._newBlockBytes.readDouble;
 				break;
-
 		}
 
 		if (elem_len < len) {
 			var list:Array<any> = [];
-			var num_read:number = 0;
 			var num_elems:number = len/elem_len;
 
-			while (num_read < num_elems) {
-				list.push(read_func.apply(this._body)); // list.push(read_func());
-				num_read++;
-			}
+			for (var num_read:number = 0; num_read < num_elems; num_read++)
+				list[num_read] = read_func.call(this._newBlockBytes);
 
 			return list;
 		} else {
-
-			var val:any = read_func.apply(this._body);//read_func();
-			return val;
+			return read_func.call(this._newBlockBytes);
 		}
 	}
 
 	private parseHeader():void
 	{
-		var flags:number;
-		var body_len:number;
-
 		this._byteData.position = 3; // Skip magic string and parse version
 
 		this._version[0] = this._byteData.readUnsignedByte();
 		this._version[1] = this._byteData.readUnsignedByte();
 
-		flags = this._byteData.readUnsignedShort(); // Parse bit flags
+		var flags:number = this._byteData.readUnsignedShort(); // Parse bit flags
 
 		this._streaming = BitFlags.test(flags, BitFlags.FLAG1);
 
@@ -3049,21 +2904,18 @@ class AWDParser extends ParserBase
 		// set storagePrecision types
 		this._geoNrType = AWDParser.FLOAT32;
 
-		if (this._accuracyGeo) {
+		if (this._accuracyGeo)
 			this._geoNrType = AWDParser.FLOAT64;
-		}
 
 		this._matrixNrType = AWDParser.FLOAT32;
 
-		if (this._accuracyMatrix) {
+		if (this._accuracyMatrix)
 			this._matrixNrType = AWDParser.FLOAT64;
-		}
 
 		this._propsNrType = AWDParser.FLOAT32;
 
-		if (this._accuracyProps) {
+		if (this._accuracyProps)
 			this._propsNrType = AWDParser.FLOAT64;
-		}
 
 		this._compression = this._byteData.readUnsignedByte(); // compression
 
@@ -3073,10 +2925,9 @@ class AWDParser extends ParserBase
 		}
 
 		// Check file integrity
-		body_len = this._byteData.readUnsignedInt();
-		if (!this._streaming && body_len != this._byteData.getBytesAvailable()) {
+		var body_len:number = this._byteData.readUnsignedInt();
+		if (!this._streaming && body_len != this._byteData.getBytesAvailable())
 			this._pDieWithError('AWD2 body length does not match header integrity field');
-		}
 
 	}
 	// Helper - functions
@@ -3084,42 +2935,26 @@ class AWDParser extends ParserBase
 	{
 		if (this._blocks[meshID].data instanceof Mesh)
 			meshID = this._blocks[meshID].geoID;
+
 		if (this._blocks[meshID].uvsForVertexAnimation)
 			return this._blocks[meshID].uvsForVertexAnimation;
+
 		var geometry:Geometry = (<Geometry> this._blocks[meshID].data);
-		var geoCnt:number /*int*/ = 0;
 		var sub_geom:TriangleSubGeometry;
-		this._blocks[meshID].uvsForVertexAnimation = new Array<Float32Array>();
-		while (geoCnt < geometry.subGeometries.length) {
+		var uvsForVertexAnimation:Array<Float32Array> = this._blocks[meshID].uvsForVertexAnimation = new Array<Float32Array>();
+
+		var len:number = geometry.subGeometries.length;
+		for (var geoCnt:number= 0; geoCnt < len; geoCnt++) {
 			sub_geom = <TriangleSubGeometry> geometry.subGeometries[geoCnt];
-			this._blocks[meshID].uvsForVertexAnimation.push(sub_geom.uvs.get(sub_geom.numVertices));
-			geoCnt++;
+			uvsForVertexAnimation[geoCnt] = sub_geom.uvs.get(sub_geom.numVertices);
 		}
+
 		return this._blocks[meshID].uvsForVertexAnimation;
 	}
 
 	private parseVarStr():string
 	{
 		return this._newBlockBytes.readUTFBytes(this._newBlockBytes.readUnsignedShort());
-	}
-
-	private getDefaultAsset(assetType:string):IAsset
-	{
-		switch (true) {
-			case (assetType == SingleCubeTexture.assetType):
-				return this.getDefaultCubeTexture();
-				break;
-			case (assetType == Single2DTexture.assetType):
-				return DefaultMaterialManager.getDefaultTexture();
-				break;
-			case (assetType == MethodMaterial.assetType):
-				return DefaultMaterialManager.getDefaultMaterial();
-				break;
-			default:
-				break;
-		}
-
-		return null;
 	}
 
 	public getDefaultCubeTexture():IAsset
@@ -3144,8 +2979,8 @@ class AWDParser extends ParserBase
 	{
 		if (precision)
 			return this._newBlockBytes.readDouble();
-		return this._newBlockBytes.readFloat();
 
+		return this._newBlockBytes.readFloat();
 	}
 
 	private parseMatrix3D():Matrix3D
@@ -3155,11 +2990,10 @@ class AWDParser extends ParserBase
 
 	private parseMatrix32RawData():Array<number>
 	{
-		var i:number;
 		var mtx_raw:Array<number> = new Array<number>(6);
-		for (i = 0; i < 6; i++) {
+
+		for (var i:number = 0; i < 6; i++)
 			mtx_raw[i] = this._newBlockBytes.readFloat();
-		}
 
 		return mtx_raw;
 	}
@@ -3200,12 +3034,10 @@ class AWDParser extends ParserBase
 			mtx_raw[12] = 0;
 			mtx_raw[13] = 0;
 			mtx_raw[14] = 0;
-
 		}
 
 		return mtx_raw;
 	}
-
 }
 
 export = AWDParser;
@@ -3215,16 +3047,15 @@ class AWDProperties
 {
 	public set(key:number, value:any):void
 	{
-		this[ key.toString() ] = value;
+		this[key] = value;
 	}
 
 	public get(key:number, fallback:any):any
 	{
-		if (this.hasOwnProperty(key.toString())) {
-			return this[key.toString()];
-		} else {
+		if (this[key])
+			return this[key];
+		else
 			return fallback;
-		}
 	}
 }
 
