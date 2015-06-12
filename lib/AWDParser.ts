@@ -186,6 +186,7 @@ class AWDParser extends ParserBase
 	private blendModeDic:Array<string>;
 	private _depthSizeDic:Array<number>;
 
+	private start_timeing:number;
 	private _time_all:number=0;
 	private _time_geom:number=0;
 	private _time_timeline:number=0;
@@ -318,6 +319,9 @@ class AWDParser extends ParserBase
 						console.log("Parsed CubeTexture: Name = " + this_block.name);
 				}
 			}
+
+			if (this._debugTimers)
+				this.updateTimers(this_block.type);
 		}
 	}
 
@@ -428,14 +432,14 @@ class AWDParser extends ParserBase
 				this.dispose();
 
 				if (this._debugTimers)
-					console.log("Parsing total: "+this._time_all+"ms",
-						" | geoms: "+this._num_geom+", "+this._time_geom+"ms",
-						" | timelines: "+this._num_timeline+", "+this._time_timeline+"ms",
-						" | fonts: "+this._num_fonts+", "+this._time_fonts+"ms",
-						" | sounds: "+this._num_sounds+", "+this._time_sounds+"ms",
-						" | mats: "+this._num_materials+", "+this._time_materials+"ms",
-						" | textures: "+this._num_textures+", "+this._time_textures+"ms",
-						" | meshes: "+this._num_meshes+", "+this._time_meshes);
+					console.log("Parsing total: "+(this._time_all | 0)+"ms",
+						" | geoms: "+this._num_geom+", "+(this._time_geom | 0)+"ms",
+						" | timelines: "+this._num_timeline+", "+(this._time_timeline | 0)+"ms",
+						" | fonts: "+this._num_fonts+", "+(this._time_fonts | 0)+"ms",
+						" | sounds: "+this._num_sounds+", "+(this._time_sounds | 0)+"ms",
+						" | mats: "+this._num_materials+", "+(this._time_materials | 0)+"ms",
+						" | textures: "+this._num_textures+", "+(this._time_textures | 0)+"ms",
+						" | meshes: "+this._num_meshes+", "+(this._time_meshes | 0)+"ms");
 
 				return  ParserBase.PARSING_DONE;
 			} else {
@@ -483,10 +487,9 @@ class AWDParser extends ParserBase
 		var type:number;
 		var flags:number;
 		var len:number;
-		var start_timeing:number;
 //*
 		if (this._debugTimers)
-			start_timeing = performance.now();
+			this.start_timeing = performance.now();
 //*/
 		this._cur_block_id = this._body.readUnsignedInt();
 
@@ -730,40 +733,44 @@ class AWDParser extends ParserBase
 			console.log("\n");
 		}
 
-		if (this._debugTimers) {
-			var end_timing = performance.now();
-			var time_delta = end_timing - start_timeing;
-			this._time_all += time_delta;
-
-			if (type == 1) {
-				this._time_geom += time_delta;
-				this._num_geom++;
-			} else if (type == 133) {
-				this._time_timeline += time_delta;
-				this._num_timeline++;
-			} else if (type == 135) {
-				this._time_fonts += time_delta;
-				this._num_fonts++;
-			} else if (type == 134) {
-				this._time_textfields += time_delta;
-				this._num_textfields++;
-			} else if (type == 44) {
-				this._time_sounds += time_delta;
-				this._num_sounds++;
-			} else if (type == 82) {
-				this._time_textures += time_delta;
-				this._num_textures++;
-			} else if (type == 81) {
-				this._time_materials += time_delta;
-				this._num_materials++;
-			} else if(type==24) {
-				this._time_meshes += time_delta;
-				this._num_meshes++;
-			}
-		}
+		if (this._debugTimers && !this.parsingPaused)
+			this.updateTimers(type);
 
 		this._body.position = blockEndAll;
 		this._newBlockBytes = null;
+	}
+
+	private updateTimers(type:number)
+	{
+		var end_timing = performance.now();
+		var time_delta = end_timing - this.start_timeing;
+		this._time_all += time_delta;
+
+		if (type == 1) {
+			this._time_geom += time_delta;
+			this._num_geom++;
+		} else if (type == 133) {
+			this._time_timeline += time_delta;
+			this._num_timeline++;
+		} else if (type == 135) {
+			this._time_fonts += time_delta;
+			this._num_fonts++;
+		} else if (type == 134) {
+			this._time_textfields += time_delta;
+			this._num_textfields++;
+		} else if (type == 44) {
+			this._time_sounds += time_delta;
+			this._num_sounds++;
+		} else if (type == 82) {
+			this._time_textures += time_delta;
+			this._num_textures++;
+		} else if (type == 81) {
+			this._time_materials += time_delta;
+			this._num_materials++;
+		} else if(type==24) {
+			this._time_meshes += time_delta;
+			this._num_meshes++;
+		}
 	}
 
 
@@ -1006,7 +1013,7 @@ class AWDParser extends ParserBase
 		this._blocks[blockID].data = mesh;
 
 		if (this._debug)
-			console.log("Parsed a Library-Mesh: Name = '" + name + "| Geometry-Name = " + geom.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames.toString());
+			console.log("Parsed a Library-Mesh: Name = '" + name + "| Geometry-Name = " + geom.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames);
 	}
 
 	private parseAudioBlock(blockID:number, factory:TimelineSceneGraphFactory)
@@ -1644,9 +1651,9 @@ class AWDParser extends ParserBase
 
 		if (this._debug) {
 			if (isPrefab)
-				console.log("Parsed a Mesh for Prefab: Name = '" + name + "' | Parent-Name = " + parentName + "| Prefab-Name = " + prefab.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames.toString());
+				console.log("Parsed a Mesh for Prefab: Name = '" + name + "' | Parent-Name = " + parentName + "| Prefab-Name = " + prefab.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames);
 			else
-				console.log("Parsed a Mesh for Geometry: Name = '" + name + "' | Parent-Name = " + parentName + "| Geometry-Name = " + geom.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames.toString());
+				console.log("Parsed a Mesh for Geometry: Name = '" + name + "' | Parent-Name = " + parentName + "| Geometry-Name = " + geom.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames);
 		}
 	}
 
@@ -1835,7 +1842,7 @@ class AWDParser extends ParserBase
 		this._blocks[blockID].data = lightPick;
 
 		if (this._debug)
-			console.log("Parsed a StaticLightPicker: Name = '" + name + "' | Texture-Name = " + lightsArrayNames.toString());
+			console.log("Parsed a StaticLightPicker: Name = '" + name + "' | Texture-Name = " + lightsArrayNames);
 	}
 
 	//Block ID = 81
@@ -2147,7 +2154,7 @@ class AWDParser extends ParserBase
 
 		var type:number = this._newBlockBytes.readUnsignedByte();
 
-		this._texture_users[this._cur_block_id.toString()] = [];
+		this._texture_users[this._cur_block_id] = [];
 
 		// External
 		if (type == 0) {
@@ -2190,14 +2197,14 @@ class AWDParser extends ParserBase
 		var i:number;
 
 		this._cubeBitmaps = new Array<BitmapImage2D>();
-		this._texture_users[ this._cur_block_id.toString() ] = [];
+		this._texture_users[ this._cur_block_id ] = [];
 
 		var type:number = this._newBlockBytes.readUnsignedByte();
 
 		this._blocks[blockID].name = this.parseVarStr();
 
 		for (i = 0; i < 6; i++) {
-			this._texture_users[this._cur_block_id.toString()] = [];
+			this._texture_users[this._cur_block_id] = [];
 			this._cubeBitmaps.push(null);
 
 			// External
