@@ -1359,7 +1359,7 @@ var MovieClipAWDParser = (function (_super) {
         //console.log("Parsed "+num_potential_sounds+" potential sounds");
         var numFrames = this.awd_file_data.newBlockBytes.readUnsignedShort();
         //console.log("numFrames "+numFrames);
-        var totalDuration;
+        var totalDuration = 0;
         var frameDuration;
         var numLabels;
         var numCommands;
@@ -1369,20 +1369,15 @@ var MovieClipAWDParser = (function (_super) {
         var number_of_obj;
         var commandType;
         var frame;
-        var label;
         var hasDepthChanges;
-        totalDuration = 0;
         for (i = 0; i < numFrames; i++) {
-            frame = new TimelineKeyFrame();
             // todo: remove the ms_per_frame to set the duration in frames
             frameDuration = this.awd_file_data.newBlockBytes.readUnsignedInt() * ms_per_frame;
-            frame.setFrameTime(totalDuration, frameDuration);
+            frame = new TimelineKeyFrame(totalDuration, frameDuration);
             totalDuration += frameDuration;
-            //console.log("duration = " + frameDuration);
             numLabels = this.awd_file_data.newBlockBytes.readUnsignedByte();
-            for (j = 0; j < numLabels; j++) {
+            for (j = 0; j < numLabels; j++)
                 frame.label = this.awd_file_data.parseVarStr();
-            }
             numCommands = this.awd_file_data.newBlockBytes.readUnsignedShort();
             //console.log("numCommands "+numCommands);
             //traceString += "\n      Commands " + numCommands;
@@ -1399,7 +1394,7 @@ var MovieClipAWDParser = (function (_super) {
                             target_depth = this.awd_file_data.newBlockBytes.readShort();
                             remove_depths.push(target_depth);
                         }
-                        frame.addConstructCommand(new RemoveChildrenAtDepthCommand(remove_depths));
+                        frame.frameConstructCommands.push(new RemoveChildrenAtDepthCommand(remove_depths));
                         break;
                     case 2:
                     case 3:
@@ -1411,10 +1406,10 @@ var MovieClipAWDParser = (function (_super) {
                             //console.log("target_depth ", target_depth);
                             var potChild = new_mc.getPotentialChildPrototype(objectID);
                             if (potChild != undefined) {
-                                frame.addConstructCommand(new AddChildAtDepthCommand(objectID, target_depth));
+                                frame.frameConstructCommands.push(new AddChildAtDepthCommand(objectID, target_depth));
                                 // if the object is a tetfield, we set the textfield-name as instancename
                                 if (potChild.isAsset(TextField)) {
-                                    frame.addConstructCommand(new SetInstanceNameCommand(objectID, potChild.name));
+                                    frame.frameConstructCommands.push(new SetInstanceNameCommand(objectID, potChild.name));
                                 }
                             }
                             else {
@@ -1443,7 +1438,7 @@ var MovieClipAWDParser = (function (_super) {
                                 thisMatrix.rawData[5] = this.awd_file_data.newBlockBytes.readFloat();
                                 thisMatrix.position = new Vector3D(this.awd_file_data.newBlockBytes.readFloat(), this.awd_file_data.newBlockBytes.readFloat(), 0);
                             }
-                            frame.addConstructCommand(new UpdatePropertyCommand(objectID, "_iMatrix3D", thisMatrix));
+                            frame.frameConstructCommands.push(new UpdatePropertyCommand(objectID, "_iMatrix3D", thisMatrix));
                         }
                         // read colortransforms
                         if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG3)) {
@@ -1466,12 +1461,12 @@ var MovieClipAWDParser = (function (_super) {
                             var blendmode_string = this.awd_file_data.getBlendModeStringFromEnum(blendmode_int);
                         }
                         if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG6)) {
-                            frame.addConstructCommand(new UpdatePropertyCommand(objectID, "visible", this.awd_file_data.newBlockBytes.readByte()));
+                            frame.frameConstructCommands.push(new UpdatePropertyCommand(objectID, "visible", this.awd_file_data.newBlockBytes.readByte()));
                         }
                         if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG7)) {
                             var instanceName = this.awd_file_data.parseVarStr();
                             if (instanceName.length) {
-                                frame.addConstructCommand(new SetInstanceNameCommand(objectID, instanceName));
+                                frame.frameConstructCommands.push(new SetInstanceNameCommand(objectID, instanceName));
                             }
                         }
                         if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG8)) {
@@ -1483,10 +1478,10 @@ var MovieClipAWDParser = (function (_super) {
                             if (mask_ids.length > 0) {
                                 if ((mask_ids.length == 1) && (mask_ids[0] == -1)) {
                                     // TODO: this.awd_file_data object is used as mask
-                                    frame.addConstructCommand(new UpdatePropertyCommand(objectID, "_iMaskID", objectID));
+                                    frame.frameConstructCommands.push(new UpdatePropertyCommand(objectID, "_iMaskID", objectID));
                                 }
                                 else
-                                    frame.addConstructCommand(new SetMaskCommand(objectID, mask_ids));
+                                    frame.frameConstructCommands.push(new SetMaskCommand(objectID, mask_ids));
                             }
                         }
                         break;
@@ -1502,14 +1497,14 @@ var MovieClipAWDParser = (function (_super) {
             }
             if (hasDepthChanges) {
                 // only want to do this.awd_file_data once after all children's depth values are updated
-                frame.addConstructCommand(new ApplyAS2DepthsCommand());
+                frame.frameConstructCommands.push(new ApplyAS2DepthsCommand());
                 hasDepthChanges = false;
             }
             var length_code = this.awd_file_data.newBlockBytes.readUnsignedInt();
             if (length_code > 0) {
                 // TODO: Script should probably not be attached to keyframes?
                 var frame_code = this.awd_file_data.newBlockBytes.readUTFBytes(length_code);
-                frame.addPostConstructCommand(new ExecuteScriptCommand(frame_code));
+                frame.framePostConstructCommands.push(new ExecuteScriptCommand(frame_code));
             }
             //traceString += commandString;
             //trace("length_code = "+length_code+" frame_code = "+frame_code);
@@ -3559,10 +3554,8 @@ var AWDParser = (function (_super) {
                 // Finalize texture asset to dispatch texture event, which was
                 // previously suppressed while the dependency was loaded.
                 this._pFinalizeAsset(texture_asset, this_block.name);
-                if (this._debug) {
-                    console.log("Successfully loaded Bitmap for texture");
-                    console.log("Parsed texture: Name = " + this_block.name);
-                }
+                if (this._debug)
+                    console.log("Parsed Texture: Name = " + this_block.name);
             }
             else if (this_block.type == 44) {
                 var audio_asset = resourceDependency.assets[0];
@@ -3571,17 +3564,14 @@ var AWDParser = (function (_super) {
                 // previously suppressed while the dependency was loaded.
                 //console.log("Parsing audio " + this_block.name);
                 this._pFinalizeAsset(audio_asset, this_block.name);
-                if (this._debug) {
-                    console.log("Successfully loaded Sound into WaveAudio");
-                    console.log("Loaded audio: Name = " + this_block.name);
-                }
+                if (this._debug)
+                    console.log("Parsed WaveAudio: Name = " + this_block.name);
             }
             else if (this_block.type == 83) {
                 this_block.loaded_dependencies[resourceDependency.sub_id] = resourceDependency.assets[0];
                 this_block.loaded_dependencies_cnt++;
-                if (this._debug) {
+                if (this._debug)
                     console.log("Successfully loaded Bitmap " + resourceDependency.sub_id + " / 6 for Cubetexture");
-                }
                 if (this_block.loaded_dependencies_cnt == 6) {
                     var cube_image_asset = new BitmapImageCube(this_block.loaded_dependencies[0].width);
                     for (var i = 0; i < 6; i++)
@@ -3589,9 +3579,8 @@ var AWDParser = (function (_super) {
                     var cube_tex_asset = new SingleCubeTexture(cube_image_asset);
                     this_block.data = cube_tex_asset; // Store finished asset
                     this._pFinalizeAsset(cube_tex_asset, this_block.name);
-                    if (this._debug) {
+                    if (this._debug)
                         console.log("Parsed CubeTexture: Name = " + this_block.name);
-                    }
                 }
             }
         }
@@ -3666,9 +3655,8 @@ var AWDParser = (function (_super) {
             switch (this._compression) {
                 case AWDParser.DEFLATE:
                 case AWDParser.LZMA:
-                    if (this._debug) {
+                    if (this._debug)
                         console.log("(!) AWDParser Error: Compressed AWD formats not yet supported (!)");
-                    }
                     break;
             }
             // Error - most likely _body not set because we do not support compression.
@@ -3688,16 +3676,16 @@ var AWDParser = (function (_super) {
     };
     AWDParser.prototype.parseNextBlock = function () {
         var block;
-        var assetData;
         var isParsed = false;
         var ns;
         var type;
         var flags;
         var len;
-        /*
-                var start_timeing = 0;
-                start_timeing = performance.now();
-        */
+        var start_timeing;
+        //*
+        if (this._debug)
+            start_timeing = performance.now();
+        //*/
         this._cur_block_id = this._body.readUnsignedInt();
         ns = this._body.readUnsignedByte();
         type = this._body.readUnsignedByte();
@@ -3728,28 +3716,30 @@ var AWDParser = (function (_super) {
             this._body.position += this._body.getBytesAvailable();
             return;
         }
-        this._newBlockBytes = new ByteArray();
-        this._body.readBytes(this._newBlockBytes, 0, len);
         //----------------------------------------------------------------------------
         // Compressed AWD Formats not yet supported
         if (blockCompression) {
             this._pDieWithError('Compressed AWD formats not yet supported');
+            this._newBlockBytes = new ByteArray();
+            this._body.readBytes(this._newBlockBytes, 0, len);
+            this._newBlockBytes.position = 0;
+        }
+        else {
+            this._newBlockBytes = this._body;
         }
         //----------------------------------------------------------------------------
         // LITTLE_ENDIAN - Default for ArrayBuffer / Not implemented in ByteArray
         //----------------------------------------------------------------------------
         //this._newBlockBytes.endian = Endian.LITTLE_ENDIAN;
         //----------------------------------------------------------------------------
-        this._newBlockBytes.position = 0;
         block = new AWDBlock(this._cur_block_id, type);
-        block.len = this._newBlockBytes.position + len;
+        block.len = len;
         var blockEndBlock = this._newBlockBytes.position + len;
         if (blockCompression) {
             this._pDieWithError('Compressed AWD formats not yet supported');
         }
-        if (this._debug) {
+        if (this._debug)
             console.log("AWDBlock:  ID = " + this._cur_block_id + " | TypeID = " + type + " | Compression = " + blockCompression + " | Matrix-Precision = " + this._accuracyMatrix + " | Geometry-Precision = " + this._accuracyGeo + " | Properties-Precision = " + this._accuracyProps);
-        }
         this._blocks[this._cur_block_id] = block;
         if ((this._version[0] == 3) && (this._version[1] == 0)) {
             // probably should contain some info about the type of animation
@@ -3880,9 +3870,8 @@ var AWDParser = (function (_super) {
                     this.parseMetaData(this._cur_block_id);
                     break;
                 default:
-                    if (this._debug) {
+                    if (this._debug)
                         console.log("AWDBlock:   Unknown BlockType  (BlockID = " + this._cur_block_id + ") - Skip " + len + " bytes");
-                    }
                     this._newBlockBytes.position += len;
                     break;
             }
@@ -3896,8 +3885,6 @@ var AWDParser = (function (_super) {
                         msgCnt++;
                     }
                 }
-            }
-            if (this._debug) {
                 console.log("\n");
             }
         }
@@ -3914,36 +3901,38 @@ var AWDParser = (function (_super) {
         }
         this._body.position = blockEndAll;
         this._newBlockBytes = null;
-        /*
-                var end_timing = performance.now();
-                var time_delta = end_timing - start_timeing;
-                this._time_all+=time_delta;
-                if(type==1){
-                    this._time_geom+=time_delta;
-                }
-                else if(type==133){
-                    this._time_timeline+=time_delta;
-                }
-                else if(type==135){
-                    this._time_fonts+=time_delta;
-                }
-                else if(type==134){
-                    this._time_textfields+=time_delta;
-                }
-                else if(type==44){
-                    this._time_sounds+=time_delta;
-                }
-                else if(type==82){
-                    this._time_materials+=time_delta;
-                }
-                else if(type==81){
-                    this._time_textures+=time_delta;
-                }
-                else if(type==24){
-                    this._time_meshes+=time_delta;
-                }
-                console.log("Parsed block of type: "+type +" in "+time_delta+" ms | parsing total: "+this._time_all+" | geoms: "+this._time_geom+" | timelines: "+this._time_timeline+" | fonts: "+this._time_fonts+" | sounds: "+this._time_sounds+" | mats: "+this._time_materials+" | textures: "+this._time_textures+" | meshes: "+this._time_meshes);
-        */
+        //*
+        if (this._debug) {
+            var end_timing = performance.now();
+            var time_delta = end_timing - start_timeing;
+            this._time_all += time_delta;
+            if (type == 1) {
+                this._time_geom += time_delta;
+            }
+            else if (type == 133) {
+                this._time_timeline += time_delta;
+            }
+            else if (type == 135) {
+                this._time_fonts += time_delta;
+            }
+            else if (type == 134) {
+                this._time_textfields += time_delta;
+            }
+            else if (type == 44) {
+                this._time_sounds += time_delta;
+            }
+            else if (type == 82) {
+                this._time_materials += time_delta;
+            }
+            else if (type == 81) {
+                this._time_textures += time_delta;
+            }
+            else if (type == 24) {
+                this._time_meshes += time_delta;
+            }
+            console.log("Parsed block of type: " + type + " in " + time_delta + " ms | parsing total: " + this._time_all + " | geoms: " + this._time_geom + " | timelines: " + this._time_timeline + " | fonts: " + this._time_fonts + " | sounds: " + this._time_sounds + " | mats: " + this._time_materials + " | textures: " + this._time_textures + " | meshes: " + this._time_meshes);
+        }
+        //*/
     };
     //--Parser Blocks---------------------------------------------------------------------------
     AWDParser.prototype.parseTesselatedFont = function (blockID) {
@@ -3981,7 +3970,7 @@ var AWDParser = (function (_super) {
                         }
                     }
                     else if (str_type == 10) {
-                        var curveData = new ByteArray();
+                        var curveData = new ByteArray(str_len);
                         this._newBlockBytes.readBytes(curveData, 0, str_len);
                     }
                     else {
@@ -4002,9 +3991,8 @@ var AWDParser = (function (_super) {
         this.parseUserAttributes();
         this._pFinalizeAsset(new_font, name);
         this._blocks[blockID].data = new_font;
-        if (this._debug) {
+        if (this._debug)
             console.log("Parsed a font: Name = '" + name);
-        }
     };
     AWDParser.prototype.parseTextFormat = function (blockID) {
         var name = this.parseVarStr();
@@ -4045,9 +4033,8 @@ var AWDParser = (function (_super) {
         //newTextFormat.extra =
         this._pFinalizeAsset(newTextFormat, name);
         this._blocks[blockID].data = newTextFormat;
-        if (this._debug) {
+        if (this._debug)
             console.log("Parsed a TextFormat: Name = '" + name + " font: " + font.name);
-        }
     };
     AWDParser.prototype.paresTextField = function (blockID, factory) {
         var name = this.parseVarStr();
@@ -4101,9 +4088,8 @@ var AWDParser = (function (_super) {
         //console.log("Parsed a TextField: Name = '" + name + "| text  = " + complete_text);
         this._pFinalizeAsset(newTextField, name);
         this._blocks[blockID].data = newTextField;
-        if (this._debug) {
+        if (this._debug)
             console.log("Parsed a TextField: Name = '" + name + "| text  = " + complete_text);
-        }
     };
     // Block ID = 25
     AWDParser.prototype.parseBillBoardLibraryBlock = function (blockID) {
@@ -4116,9 +4102,8 @@ var AWDParser = (function (_super) {
         billboard.extra = this.parseUserAttributes();
         this._pFinalizeAsset(billboard, name);
         this._blocks[blockID].data = billboard;
-        if (this._debug) {
+        if (this._debug)
             console.log("Parsed a Library-Billboard: Name = '" + name + "| Material-Name = " + mat.name);
-        }
     };
     // Block ID = 24
     AWDParser.prototype.parseMeshLibraryBlock = function (blockID) {
@@ -4148,17 +4133,15 @@ var AWDParser = (function (_super) {
         }
         else if (materials.length > 1) {
             var i;
-            for (i = 0; i < mesh.subMeshes.length; i++) {
+            for (i = 0; i < mesh.subMeshes.length; i++)
                 mesh.subMeshes[i].material = materials[Math.min(materials.length - 1, i)];
-            }
         }
         this.parseProperties(null);
         mesh.extra = this.parseUserAttributes();
         this._pFinalizeAsset(mesh, name);
         this._blocks[blockID].data = mesh;
-        if (this._debug) {
+        if (this._debug)
             console.log("Parsed a Library-Mesh: Name = '" + name + "| Geometry-Name = " + geom.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames.toString());
-        }
     };
     AWDParser.prototype.parseAudioBlock = function (blockID, factory) {
         //var asset:Audio;todo create asset for audio
@@ -4178,8 +4161,7 @@ var AWDParser = (function (_super) {
         else {
             // todo: exporter does not export embed sounds yet
             data_len = this._newBlockBytes.readUnsignedInt();
-            var data;
-            data = new ByteArray();
+            var data = new ByteArray(data_len);
             this._newBlockBytes.readBytes(data, 0, data_len);
             // todo parse sound from bytes
             // this._pAddDependency(this._cur_block_id.toString(), null, false, ParserUtils.by(data), true);
@@ -4190,25 +4172,18 @@ var AWDParser = (function (_super) {
         this._blocks[blockID].extras = this.parseUserAttributes();
         this._pPauseAndRetrieveDependencies();
         //this._blocks[blockID].data = asset;todo
-        if (this._debug) {
-            var textureStylesNames = ["external", "embed"];
-            console.log("Start parsing a " + textureStylesNames[type] + " Audio file");
-        }
+        if (this._debug)
+            console.log("Start parsing a " + ["external", "embed"][type] + " Audio file");
     };
     //Block ID = 4
     AWDParser.prototype.parseTimeLine = function (blockID, factory) {
         var i;
         var j;
-        var c;
         var timeLineContainer = factory.createMovieClip();
         var name = this.parseVarStr();
         var isScene = !!this._newBlockBytes.readUnsignedByte();
         var sceneID = this._newBlockBytes.readUnsignedByte();
-        var fps = this._newBlockBytes.readFloat();
-        //console.log("fps = "+fps);
-        timeLineContainer.fps = fps;
-        var ms_per_frame = 1000 / fps;
-        var num_instances = 0;
+        timeLineContainer.fps = this._newBlockBytes.readFloat();
         var num_all_display_instances = 0;
         // register list of potential childs
         // a potential child can be reused on a timeline (added / removed / added)
@@ -4220,8 +4195,7 @@ var AWDParser = (function (_super) {
         // hence we need to be careful to register all objects in correct order.
         var num_potential_childs = this._newBlockBytes.readUnsignedShort();
         for (i = 0; i < num_potential_childs; i++) {
-            resourceID = this._newBlockBytes.readUnsignedInt();
-            var cmd_asset = this._blocks[resourceID].data;
+            var cmd_asset = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
             if (cmd_asset != null) {
                 timeLineContainer.registerPotentialChild(cmd_asset);
             }
@@ -4235,14 +4209,12 @@ var AWDParser = (function (_super) {
         var num_potential_childs_multi_instanced = this._newBlockBytes.readUnsignedShort();
         num_potential_childs += num_potential_childs_multi_instanced;
         for (i = 0; i < num_potential_childs_multi_instanced; i++) {
-            resourceID = this._newBlockBytes.readUnsignedInt();
-            num_instances = this._newBlockBytes.readUnsignedShort();
+            var cmd_asset = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+            var num_instances = this._newBlockBytes.readUnsignedShort();
             num_all_display_instances += num_instances;
-            var cmd_asset = this._blocks[resourceID].data;
             if (cmd_asset != null) {
-                for (j = 0; j < num_instances; j++) {
+                for (j = 0; j < num_instances; j++)
                     timeLineContainer.registerPotentialChild(cmd_asset);
-                }
             }
             else {
                 for (j = 0; j < num_instances; j++) {
@@ -4258,8 +4230,7 @@ var AWDParser = (function (_super) {
         // a potential child can be reused on a timeline (added / removed / added)
         var num_potential_sounds = this._newBlockBytes.readUnsignedShort();
         for (i = 0; i < num_potential_sounds; i++) {
-            resourceID = this._newBlockBytes.readUnsignedInt();
-            var cmd_asset = this._blocks[resourceID].data;
+            var cmd_asset = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
             if (cmd_asset != null) {
                 //todo: register sound objects on movieclip
                 console.log("ERROR when collecting objects for timeline");
@@ -4272,34 +4243,26 @@ var AWDParser = (function (_super) {
         //console.log("numFrames "+numFrames);
         // var previousTimeLine:TimeLineFrame;
         // var fill_props:AWDProperties = this.parseProperties({1:AWD3Parserutils.UINT32});// { 1:UINT32, 6:AWDSTRING }  ); //; , 2:UINT32, 3:UINT32, 5:BOOL } );
-        var totalDuration;
+        var totalDuration = 0;
         var frameDuration;
         var numLabels;
         var numCommands;
         var objectID;
         var target_depth;
-        var resourceID;
         var number_of_obj;
         var commandType;
         var frame;
-        var label;
         var hasDepthChanges;
-        totalDuration = 0;
         for (i = 0; i < numFrames; i++) {
-            frame = new TimelineKeyFrame();
+            var commandCount = 0;
             // todo: remove the ms_per_frame to set the duration in frames
             frameDuration = this._newBlockBytes.readUnsignedInt();
-            frame.setFrameTime(totalDuration, frameDuration);
+            frame = new TimelineKeyFrame(totalDuration, frameDuration);
             totalDuration += frameDuration;
-            //console.log("duration = " + frameDuration);
             numLabels = this._newBlockBytes.readUnsignedByte();
-            for (j = 0; j < numLabels; j++) {
-                // TODO: Temporary way to handle labels
+            for (j = 0; j < numLabels; j++)
                 frame.label = this.parseVarStr();
-            }
             numCommands = this._newBlockBytes.readUnsignedShort();
-            //console.log("numCommands "+numCommands);
-            //traceString += "\n      Commands " + numCommands;
             hasDepthChanges = false;
             for (j = 0; j < numCommands; j++) {
                 commandType = this._newBlockBytes.readUnsignedByte();
@@ -4308,12 +4271,12 @@ var AWDParser = (function (_super) {
                         number_of_obj = this._newBlockBytes.readUnsignedShort();
                         //console.log("number_of_obj ", number_of_obj);
                         var remove_depths = new Array();
-                        for (c = 0; c < number_of_obj; c++) {
+                        for (var c = 0; c < number_of_obj; c++) {
                             // Remove Object Command
                             target_depth = this._newBlockBytes.readShort();
                             remove_depths.push(target_depth);
                         }
-                        frame.addConstructCommand(new RemoveChildrenAtDepthCommand(remove_depths));
+                        frame.frameConstructCommands[commandCount++] = new RemoveChildrenAtDepthCommand(remove_depths);
                         break;
                     case 2:
                     case 3:
@@ -4326,15 +4289,13 @@ var AWDParser = (function (_super) {
                             //console.log("target_depth ", target_depth);
                             var potChild = timeLineContainer.getPotentialChildPrototype(objectID);
                             if (potChild != undefined) {
-                                frame.addConstructCommand(new AddChildAtDepthCommand(objectID, target_depth));
+                                frame.frameConstructCommands[commandCount++] = new AddChildAtDepthCommand(objectID, target_depth);
                                 if (commandType == 6) {
-                                    frame.addConstructCommand(new SetButtonCommand(objectID));
+                                    frame.frameConstructCommands[commandCount++] = new SetButtonCommand(objectID);
                                 }
-                                else {
+                                else if (potChild.isAsset(TextField)) {
                                     // if the object is a tetfield, we set the textfield-name as instancename
-                                    if (potChild.isAsset(TextField)) {
-                                        frame.addConstructCommand(new SetInstanceNameCommand(objectID, potChild.name));
-                                    }
+                                    frame.frameConstructCommands[commandCount++] = new SetInstanceNameCommand(objectID, potChild.name);
                                 }
                             }
                             else {
@@ -4363,7 +4324,7 @@ var AWDParser = (function (_super) {
                                 thisMatrix.rawData[5] = this._newBlockBytes.readFloat();
                                 thisMatrix.position = new Vector3D(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0);
                             }
-                            frame.addConstructCommand(new UpdatePropertyCommand(objectID, "_iMatrix3D", thisMatrix));
+                            frame.frameConstructCommands[commandCount++] = new UpdatePropertyCommand(objectID, "_iMatrix3D", thisMatrix);
                         }
                         // read colortransforms
                         if (BitFlags.test(props_flag, BitFlags.FLAG3)) {
@@ -4380,34 +4341,31 @@ var AWDParser = (function (_super) {
                                 thisColorTransform.blueOffset = this._newBlockBytes.readShort();
                                 thisColorTransform.alphaOffset = this._newBlockBytes.readShort();
                             }
-                            frame.addConstructCommand(new UpdatePropertyCommand(objectID, "colorTransform", thisColorTransform));
+                            frame.frameConstructCommands[commandCount++] = new UpdatePropertyCommand(objectID, "colorTransform", thisColorTransform);
                         }
                         if (BitFlags.test(props_flag, BitFlags.FLAG5)) {
                             var blendmode_int = this._newBlockBytes.readUnsignedByte();
                             var blendmode_string = this.blendModeDic[blendmode_int];
                         }
                         if (BitFlags.test(props_flag, BitFlags.FLAG6)) {
-                            frame.addConstructCommand(new UpdatePropertyCommand(objectID, "visible", this._newBlockBytes.readByte()));
+                            frame.frameConstructCommands[commandCount++] = new UpdatePropertyCommand(objectID, "visible", this._newBlockBytes.readByte());
                         }
                         if (BitFlags.test(props_flag, BitFlags.FLAG7)) {
                             var instanceName = this.parseVarStr();
-                            if (instanceName.length) {
-                                frame.addConstructCommand(new SetInstanceNameCommand(objectID, instanceName));
-                            }
+                            if (instanceName.length)
+                                frame.frameConstructCommands[commandCount++] = new SetInstanceNameCommand(objectID, instanceName);
                         }
                         if (BitFlags.test(props_flag, BitFlags.FLAG8)) {
                             var mask_id_nums = this._newBlockBytes.readUnsignedShort();
                             var mask_ids = new Array();
-                            for (var mi_cnt = 0; mi_cnt < mask_id_nums; mi_cnt++) {
+                            for (var mi_cnt = 0; mi_cnt < mask_id_nums; mi_cnt++)
                                 mask_ids.push(this._newBlockBytes.readShort());
-                            }
                             if (mask_ids.length > 0) {
-                                if ((mask_ids.length == 1) && (mask_ids[0] == -1)) {
-                                    // TODO: this object is used as mask
-                                    frame.addConstructCommand(new UpdatePropertyCommand(objectID, "_iMaskID", objectID));
-                                }
+                                // TODO: this object is used as mask
+                                if ((mask_ids.length == 1) && (mask_ids[0] == -1))
+                                    frame.frameConstructCommands[commandCount++] = new UpdatePropertyCommand(objectID, "_iMaskID", objectID);
                                 else
-                                    frame.addConstructCommand(new SetMaskCommand(objectID, mask_ids));
+                                    frame.frameConstructCommands[commandCount++] = new SetMaskCommand(objectID, mask_ids);
                             }
                         }
                         break;
@@ -4415,7 +4373,7 @@ var AWDParser = (function (_super) {
                         // Add Sound Command
                         // TODO: create CommandPropsSound and check which asset to use
                         objectID = this._newBlockBytes.readUnsignedInt();
-                        resourceID = this._newBlockBytes.readUnsignedInt();
+                        this._newBlockBytes.readUnsignedInt();
                         break;
                     default:
                         break;
@@ -4423,19 +4381,15 @@ var AWDParser = (function (_super) {
             }
             if (hasDepthChanges) {
                 // only want to do this once after all children's depth values are updated
-                frame.addConstructCommand(new ApplyAS2DepthsCommand());
+                frame.frameConstructCommands[commandCount++] = new ApplyAS2DepthsCommand();
                 hasDepthChanges = false;
             }
             var length_code = this._newBlockBytes.readUnsignedInt();
             if (length_code > 0) {
                 // TODO: Script should probably not be attached to keyframes?
-                var frame_code = this._newBlockBytes.readUTFBytes(length_code);
-                frame.addPostConstructCommand(new ExecuteScriptCommand(frame_code));
+                frame.framePostConstructCommands.push(new ExecuteScriptCommand(this._newBlockBytes.readUTFBytes(length_code)));
             }
-            //traceString += commandString;
-            //trace("length_code = "+length_code+" frame_code = "+frame_code);
             this._newBlockBytes.readUnsignedInt(); // user attributes - skip for now
-            //console.log(traceString);
             timeLineContainer.addFrame(frame);
         }
         this._pFinalizeAsset(timeLineContainer, name);
@@ -4524,7 +4478,7 @@ var AWDParser = (function (_super) {
                 }
                 else if (str_type == 10) {
                     is_curve_geom = true;
-                    var curveData = new ByteArray();
+                    var curveData = new ByteArray(str_len);
                     this._newBlockBytes.readBytes(curveData, 0, str_len);
                 }
                 else {
@@ -4865,9 +4819,8 @@ var AWDParser = (function (_super) {
         camera.extra = this.parseUserAttributes();
         this._pFinalizeAsset(camera, name);
         this._blocks[blockID].data = camera;
-        if (this._debug) {
+        if (this._debug)
             console.log("Parsed a Camera: Name = '" + name + "' | Projectiontype = " + projection + " | Parent-Name = " + parentName);
-        }
     };
     //Block ID = 51
     AWDParser.prototype.parseLightPicker = function (blockID) {
@@ -4890,9 +4843,8 @@ var AWDParser = (function (_super) {
         this.parseUserAttributes();
         this._pFinalizeAsset(lightPick, name);
         this._blocks[blockID].data = lightPick;
-        if (this._debug) {
+        if (this._debug)
             console.log("Parsed a StaticLightPicker: Name = '" + name + "' | Texture-Name = " + lightsArrayNames.toString());
-        }
     };
     //Block ID = 81
     AWDParser.prototype.parseMaterial = function (blockID) {
@@ -4953,9 +4905,8 @@ var AWDParser = (function (_super) {
         mat.repeat = props.get(13, false);
         this._pFinalizeAsset(mat, name);
         this._blocks[blockID].data = mat;
-        if (this._debug) {
+        if (this._debug)
             console.log(debugString);
-        }
     };
     // Block ID = 81 AWD2.1
     AWDParser.prototype.parseMaterial_v1 = function (blockID) {
@@ -5150,28 +5101,23 @@ var AWDParser = (function (_super) {
         mat.extra = this.parseUserAttributes();
         this._pFinalizeAsset(mat, name);
         this._blocks[blockID].data = mat;
-        if (this._debug) {
+        if (this._debug)
             console.log(debugString);
-        }
     };
     //Block ID = 82
     AWDParser.prototype.parseTexture = function (blockID) {
         var asset;
         this._blocks[blockID].name = this.parseVarStr();
         var type = this._newBlockBytes.readUnsignedByte();
-        var data_len;
         this._texture_users[this._cur_block_id.toString()] = [];
         // External
         if (type == 0) {
-            data_len = this._newBlockBytes.readUnsignedInt();
-            var url;
-            url = this._newBlockBytes.readUTFBytes(data_len);
+            var url = this._newBlockBytes.readUTFBytes(this._newBlockBytes.readUnsignedInt());
             this._pAddDependency(this._cur_block_id.toString(), new URLRequest(url), false, null, true);
         }
         else {
-            data_len = this._newBlockBytes.readUnsignedInt();
-            var data;
-            data = new ByteArray();
+            var data_len = this._newBlockBytes.readUnsignedInt();
+            var data = new ByteArray(data_len);
             this._newBlockBytes.readBytes(data, 0, data_len);
             //
             // AWD3Parserutils - Fix for FireFox Bug: https://bugzilla.mozilla.org/show_bug.cgi?id=715075 .
@@ -5184,11 +5130,9 @@ var AWDParser = (function (_super) {
         this.parseProperties(null);
         this._blocks[blockID].extras = this.parseUserAttributes();
         this._blocks[blockID].data = asset;
-        if (this._debug) {
-            var textureStylesNames = ["external", "embed"];
-            console.log("Start parsing a " + textureStylesNames[type] + " Bitmap for Texture");
-        }
         this._pPauseAndRetrieveDependencies();
+        if (this._debug)
+            console.log("Start parsing a " + ["external", "embed"][type] + " Bitmap for Texture");
     };
     //Block ID = 83
     AWDParser.prototype.parseCubeTexture = function (blockID) {
@@ -5212,8 +5156,7 @@ var AWDParser = (function (_super) {
             }
             else {
                 data_len = this._newBlockBytes.readUnsignedInt();
-                var data;
-                data = new ByteArray();
+                var data = new ByteArray(data_len);
                 this._newBlockBytes.readBytes(data, 0, data_len);
                 this._pAddDependency(this._cur_block_id.toString(), null, false, ParserUtils.byteArrayToImage(data), true, i);
             }
@@ -5223,10 +5166,8 @@ var AWDParser = (function (_super) {
         this._blocks[blockID].extras = this.parseUserAttributes();
         this._pPauseAndRetrieveDependencies();
         this._blocks[blockID].data = asset;
-        if (this._debug) {
-            var textureStylesNames = ["external", "embed"];
-            console.log("Start parsing 6 " + textureStylesNames[type] + " Bitmaps for CubeTexture");
-        }
+        if (this._debug)
+            console.log("Start parsing 6 " + ["external", "embed"][type] + " Bitmaps for CubeTexture");
     };
     //Block ID = 91
     AWDParser.prototype.parseSharedMethodBlock = function (blockID) {
@@ -5237,9 +5178,8 @@ var AWDParser = (function (_super) {
         this._blocks[blockID].data = asset;
         this._pFinalizeAsset(asset, this._blocks[blockID].name);
         this._blocks[blockID].data = asset;
-        if (this._debug) {
+        if (this._debug)
             console.log("Parsed a EffectMethod: Name = " + asset.name + " Type = " + asset);
-        }
     };
     //Block ID = 92
     AWDParser.prototype.parseShadowMethodBlock = function (blockID) {
@@ -5278,9 +5218,8 @@ var AWDParser = (function (_super) {
             targetObject.extra = this.parseUserAttributes();
         }
         this._blocks[blockID].data = targetObject;
-        if (this._debug) {
+        if (this._debug)
             console.log("Parsed a CommandBlock: Name = '" + name);
-        }
     };
     //blockID 255
     AWDParser.prototype.parseMetaData = function (blockID) {
@@ -5538,7 +5477,7 @@ var AWDParser = (function (_super) {
             this._pFinalizeAsset(newVertexAnimationSet, name);
             this._blocks[blockID].data = newVertexAnimationSet;
             if (this._debug)
-                console.log("Parsed a VertexAnimationSet: Name = " + name + " | Animations = " + newVertexAnimationSet.animations.length + " | Animation-Names = " + newVertexAnimationSet.animationNames.toString());
+                console.log("Parsed a VertexAnimationSet: Name = " + name + " | Animations = " + newVertexAnimationSet.animations.length + " | Animation-Names = " + newVertexAnimationSet.animationNames);
         }
         else if (skeletonFrames.length > 0) {
             var newSkeletonAnimationSet = new SkeletonAnimationSet(props.get(1, 4)); //props.get(1,4));
@@ -5547,7 +5486,7 @@ var AWDParser = (function (_super) {
             this._pFinalizeAsset(newSkeletonAnimationSet, name);
             this._blocks[blockID].data = newSkeletonAnimationSet;
             if (this._debug)
-                console.log("Parsed a SkeletonAnimationSet: Name = " + name + " | Animations = " + newSkeletonAnimationSet.animations.length + " | Animation-Names = " + newSkeletonAnimationSet.animationNames.toString());
+                console.log("Parsed a SkeletonAnimationSet: Name = " + name + " | Animations = " + newSkeletonAnimationSet.animations.length + " | Animation-Names = " + newSkeletonAnimationSet.animationNames);
         }
     };
     //BlockID 122
@@ -5679,11 +5618,10 @@ var AWDParser = (function (_super) {
                         this._newBlockBytes.position += attr_len;
                         break;
                 }
-                if (this._debug) {
-                    console.log("attribute = name: " + attr_key + "  / value = " + attr_val);
-                }
                 attributes[attr_key] = attr_val;
                 attibuteCnt += 1;
+                if (this._debug)
+                    console.log("attribute = name: " + attr_key + "  / value = " + attr_val);
             }
         }
         return attributes;
@@ -5779,13 +5717,13 @@ var AWDParser = (function (_super) {
             var num_read = 0;
             var num_elems = len / elem_len;
             while (num_read < num_elems) {
-                list.push(read_func.apply(this._newBlockBytes)); // list.push(read_func());
+                list.push(read_func.apply(this._body)); // list.push(read_func());
                 num_read++;
             }
             return list;
         }
         else {
-            var val = read_func.apply(this._newBlockBytes); //read_func();
+            var val = read_func.apply(this._body); //read_func();
             return val;
         }
     };
