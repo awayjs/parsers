@@ -125,7 +125,7 @@ class MovieClipAWDParser extends AWDBlockParserBase
 
 		//console.log("numFrames "+numFrames);
 
-		var totalDuration:number;
+		var totalDuration:number = 0;
 		var frameDuration:number;
 		var numLabels:number;
 		var numCommands:number;
@@ -135,22 +135,16 @@ class MovieClipAWDParser extends AWDBlockParserBase
 		var number_of_obj:number;
 		var commandType:number;
 		var frame:TimelineKeyFrame;
-		var label:string;
 		var hasDepthChanges:boolean;
-		totalDuration=0;
 		for (i = 0; i < numFrames; i++) {
-			frame = new TimelineKeyFrame();
 			// todo: remove the ms_per_frame to set the duration in frames
 			frameDuration = this.awd_file_data.newBlockBytes.readUnsignedInt()*ms_per_frame;
-			frame.setFrameTime(totalDuration, frameDuration);
+			frame = new TimelineKeyFrame(totalDuration, frameDuration);
 			totalDuration += frameDuration;
-			//console.log("duration = " + frameDuration);
 
 			numLabels = this.awd_file_data.newBlockBytes.readUnsignedByte();
-			for (j = 0; j < numLabels; j++) {
+			for (j = 0; j < numLabels; j++)
 				frame.label = this.awd_file_data.parseVarStr();
-				//console.log("label "+label);
-			}
 
 			numCommands = this.awd_file_data.newBlockBytes.readUnsignedShort();
 			//console.log("numCommands "+numCommands);
@@ -176,7 +170,7 @@ class MovieClipAWDParser extends AWDBlockParserBase
 							remove_depths.push(target_depth);
 							//console.log("\n       - Remove object at depth: " + target_depth);
 						}
-						frame.addConstructCommand(new RemoveChildrenAtDepthCommand(remove_depths));
+						frame.frameConstructCommands.push(new RemoveChildrenAtDepthCommand(remove_depths));
 						break;
 
 					case 2:// add a of object by child-id at specific depth
@@ -189,10 +183,10 @@ class MovieClipAWDParser extends AWDBlockParserBase
 							//console.log("target_depth ", target_depth);
 							var potChild = new_mc.getPotentialChildPrototype(objectID);
 							if (potChild != undefined) {
-								frame.addConstructCommand(new AddChildAtDepthCommand(objectID, target_depth));
+								frame.frameConstructCommands.push(new AddChildAtDepthCommand(objectID, target_depth));
 								// if the object is a tetfield, we set the textfield-name as instancename
 								if(potChild.isAsset(TextField)) {
-									frame.addConstructCommand(new SetInstanceNameCommand(objectID, potChild.name));
+									frame.frameConstructCommands.push(new SetInstanceNameCommand(objectID, potChild.name));
 								}
 							}
 							else{
@@ -221,7 +215,7 @@ class MovieClipAWDParser extends AWDBlockParserBase
 								thisMatrix.rawData[5] = this.awd_file_data.newBlockBytes.readFloat();
 								thisMatrix.position = new Vector3D(this.awd_file_data.newBlockBytes.readFloat(), this.awd_file_data.newBlockBytes.readFloat(), 0);
 							}
-							frame.addConstructCommand(new UpdatePropertyCommand(objectID, "_iMatrix3D", thisMatrix));
+							frame.frameConstructCommands.push(new UpdatePropertyCommand(objectID, "_iMatrix3D", thisMatrix));
 						}
 						// read colortransforms
 						if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG3)) {
@@ -244,12 +238,12 @@ class MovieClipAWDParser extends AWDBlockParserBase
 							var blendmode_string = this.awd_file_data.getBlendModeStringFromEnum(blendmode_int);
 						}
 						if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG6)) {
-							frame.addConstructCommand(new UpdatePropertyCommand(objectID, "visible", this.awd_file_data.newBlockBytes.readByte()));
+							frame.frameConstructCommands.push(new UpdatePropertyCommand(objectID, "visible", this.awd_file_data.newBlockBytes.readByte()));
 						}
 						if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG7)) {
 							var instanceName = this.awd_file_data.parseVarStr();
 							if (instanceName.length) {
-								frame.addConstructCommand(new SetInstanceNameCommand(objectID, instanceName));
+								frame.frameConstructCommands.push(new SetInstanceNameCommand(objectID, instanceName));
 							}
 						}
 						if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG8)) {
@@ -261,10 +255,10 @@ class MovieClipAWDParser extends AWDBlockParserBase
 							if (mask_ids.length > 0) {
 								if ((mask_ids.length == 1) && (mask_ids[0] == -1)) {
 									// TODO: this.awd_file_data object is used as mask
-									frame.addConstructCommand(new UpdatePropertyCommand(objectID, "_iMaskID", objectID));
+									frame.frameConstructCommands.push(new UpdatePropertyCommand(objectID, "_iMaskID", objectID));
 								}
 								else
-									frame.addConstructCommand(new SetMaskCommand(objectID, mask_ids));
+									frame.frameConstructCommands.push(new SetMaskCommand(objectID, mask_ids));
 							}
 						}
 						break;
@@ -289,7 +283,7 @@ class MovieClipAWDParser extends AWDBlockParserBase
 
 			if (hasDepthChanges) {
 				// only want to do this.awd_file_data once after all children's depth values are updated
-				frame.addConstructCommand(new ApplyAS2DepthsCommand());
+				frame.frameConstructCommands.push(new ApplyAS2DepthsCommand());
 				hasDepthChanges = false;
 			}
 
@@ -297,7 +291,7 @@ class MovieClipAWDParser extends AWDBlockParserBase
 			if (length_code > 0) {
 				// TODO: Script should probably not be attached to keyframes?
 				var frame_code = this.awd_file_data.newBlockBytes.readUTFBytes(length_code);
-				frame.addPostConstructCommand(new ExecuteScriptCommand(frame_code));
+				frame.framePostConstructCommands.push(new ExecuteScriptCommand(frame_code));
 				//traceString += "\nframe-code = " + frame_code;
 			}
 			//traceString += commandString;
