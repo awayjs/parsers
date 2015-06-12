@@ -135,6 +135,7 @@ class AWDParser extends ParserBase
 
 	//set to "true" to have some console.logs in the Console
 	private _debug:boolean = false;
+	private _debugTimers:boolean = false;
 	private _byteData:ByteArray;
 	private _startedParsing:boolean = false;
 	private _cur_block_id:number;
@@ -426,7 +427,7 @@ class AWDParser extends ParserBase
 			if (this._body.getBytesAvailable() == 0) {
 				this.dispose();
 
-				if (this._debug)
+				if (this._debugTimers)
 					console.log("Parsing total: "+this._time_all+"ms",
 						" | geoms: "+this._num_geom+", "+this._time_geom+"ms",
 						" | timelines: "+this._num_timeline+", "+this._time_timeline+"ms",
@@ -484,7 +485,7 @@ class AWDParser extends ParserBase
 		var len:number;
 		var start_timeing:number;
 //*
-		if (this._debug)
+		if (this._debugTimers)
 			start_timeing = performance.now();
 //*/
 		this._cur_block_id = this._body.readUnsignedInt();
@@ -727,7 +728,9 @@ class AWDParser extends ParserBase
 			}
 
 			console.log("\n");
+		}
 
+		if (this._debugTimers) {
 			var end_timing = performance.now();
 			var time_delta = end_timing - start_timeing;
 			this._time_all += time_delta;
