@@ -874,7 +874,13 @@ class AWDParser extends ParserBase
 		//newTextFormat.rotated = format_props.get(3,false);
 		newTextFormat.kerning = format_props.get(4,true);
 		//newTextFormat.baseline_shift = format_props.get(5,1);
-		//newTextFormat.align = format_props.get(6,0);
+		var tf_align_int:number = format_props.get(6,0);
+		if(tf_align_int==1){
+			newTextFormat.align="right";
+		}
+		else if(tf_align_int==2){
+			newTextFormat.align="center";
+		}
 		newTextFormat.indent = format_props.get(7,0);
 		newTextFormat.leftMargin = format_props.get(8,0);
 		newTextFormat.rightMargin = format_props.get(9,0);
@@ -908,9 +914,9 @@ class AWDParser extends ParserBase
 			newTextField.type ="input";
 			newTextField.displayAsPassword=true;
 		}
-
-		newTextField.width=this._newBlockBytes.readFloat();
-		newTextField.height=this._newBlockBytes.readFloat();
+		//
+		newTextField.textWidth=Math.abs(this._newBlockBytes.readFloat());
+		newTextField.textHeight=Math.abs(this._newBlockBytes.readFloat());
 		var num_paragraphs:number = this._newBlockBytes.readUnsignedInt();
 		var complete_text:string = "";
 		//console.log("num_paragraphs  '" + num_paragraphs);
