@@ -85,16 +85,6 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/CommandAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/GeometryAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class GeometryAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = GeometryAWDParser;
-	
-}
-
 declare module "awayjs-parsers/lib/AWD3BlockParsers/DisplayObjectContainerAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 	class DisplayObjectContainerAWDParser extends AWDBlockParserBase {
@@ -102,6 +92,16 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/DisplayObjectContainerAWDPar
 	    parseFromBytes(): void;
 	}
 	export = DisplayObjectContainerAWDParser;
+	
+}
+
+declare module "awayjs-parsers/lib/AWD3BlockParsers/GeometryAWDParser" {
+	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+	class GeometryAWDParser extends AWDBlockParserBase {
+	    constructor();
+	    parseFromBytes(): void;
+	}
+	export = GeometryAWDParser;
 	
 }
 
