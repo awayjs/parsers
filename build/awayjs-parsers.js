@@ -3592,7 +3592,7 @@ var AWDParser = (function (_super) {
                         console.log("Parsed CubeTexture: Name = " + this_block.name);
                 }
             }
-            if (this._debugTimers)
+            if (this._debugTimers && !this._isParsing)
                 this.updateTimers(this_block.type);
         }
     };
@@ -4142,7 +4142,6 @@ var AWDParser = (function (_super) {
             url = this._newBlockBytes.readUTFBytes(data_len);
             // todo parser needs to be able to handle mp3 and wav files if we trigger the loading of external ressource
             this._pAddDependency(this._cur_block_id.toString(), new URLRequest(url), false, null, true);
-            console.log("Audio url = " + url);
         }
         else {
             // todo: exporter does not export embed sounds yet
@@ -5995,9 +5994,9 @@ var MD2Parser = (function (_super) {
         return ParserBase.MORE_TO_PARSE;
     };
     MD2Parser.prototype._pStartParsing = function (frameLimit) {
-        _super.prototype._pStartParsing.call(this, frameLimit);
         //create a content object for Loaders
         this._pContent = new DisplayObjectContainer();
+        _super.prototype._pStartParsing.call(this, frameLimit);
     };
     /**
      * Reads in all that MD2 Header data that is declared as private variables.
@@ -6868,9 +6867,9 @@ var MD5MeshParser = (function (_super) {
         return ParserBase.MORE_TO_PARSE;
     };
     MD5MeshParser.prototype._pStartParsing = function (frameLimit) {
-        _super.prototype._pStartParsing.call(this, frameLimit);
         //create a content object for Loaders
         this._pContent = new DisplayObjectContainer();
+        _super.prototype._pStartParsing.call(this, frameLimit);
     };
     MD5MeshParser.prototype.calculateMaxJointCount = function () {
         this._maxJointCount = 0;
@@ -7488,9 +7487,9 @@ var Max3DSParser = (function (_super) {
         }
     };
     Max3DSParser.prototype._pStartParsing = function (frameLimit) {
-        _super.prototype._pStartParsing.call(this, frameLimit);
         //create a content object for Loaders
         this._pContent = new DisplayObjectContainer();
+        _super.prototype._pStartParsing.call(this, frameLimit);
     };
     Max3DSParser.prototype.parseMaterial = function () {
         var mat;
@@ -8155,9 +8154,9 @@ var OBJParser = (function (_super) {
         return ParserBase.MORE_TO_PARSE;
     };
     OBJParser.prototype._pStartParsing = function (frameLimit) {
-        _super.prototype._pStartParsing.call(this, frameLimit);
         //create a content object for Loaders
         this._pContent = new DisplayObjectContainer();
+        _super.prototype._pStartParsing.call(this, frameLimit);
     };
     /**
      * Parses a single line in the OBJ file.
