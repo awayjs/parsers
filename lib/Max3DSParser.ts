@@ -254,10 +254,10 @@ class Max3DSParser extends ParserBase
 
 	public _pStartParsing(frameLimit:number)
 	{
-		super._pStartParsing(frameLimit);
-
 		//create a content object for Loaders
 		this._pContent = new DisplayObjectContainer();
+
+		super._pStartParsing(frameLimit);
 	}
 
 	private parseMaterial():MaterialVO

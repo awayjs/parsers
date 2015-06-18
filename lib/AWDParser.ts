@@ -320,7 +320,7 @@ class AWDParser extends ParserBase
 				}
 			}
 
-			if (this._debugTimers)
+			if (this._debugTimers && !this._isParsing)
 				this.updateTimers(this_block.type);
 		}
 	}
@@ -1032,8 +1032,6 @@ class AWDParser extends ParserBase
 			url = this._newBlockBytes.readUTFBytes(data_len);
 			// todo parser needs to be able to handle mp3 and wav files if we trigger the loading of external ressource
 			this._pAddDependency(this._cur_block_id.toString(), new URLRequest(url), false, null, true);
-			console.log("Audio url = "+url);
-
 		} else {
 			// todo: exporter does not export embed sounds yet
 			data_len = this._newBlockBytes.readUnsignedInt();
@@ -1283,7 +1281,9 @@ class AWDParser extends ParserBase
 
 					default:
 
-						//commandString += "\n       - Unknown Command Type = " + commandType;
+						//commandString += "\n       - Un
+						//
+						// known Command Type = " + commandType;
 						break;
 
 				}
