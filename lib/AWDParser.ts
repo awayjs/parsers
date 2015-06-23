@@ -147,15 +147,10 @@ class AWDParser extends ParserBase
 	private _accuracyMatrix:boolean;
 	private _accuracyGeo:boolean;
 	private _accuracyProps:boolean;
-	private _matrixNrType:number;
-	private _geoNrType:number;
-	private _propsNrType:number;
 	private _streaming:boolean;
 	private _texture_users:Object = {};
 	private _parsed_header:boolean = false;
 	private _body:ByteArray;
-	private _cubeBitmaps:Array<BitmapImage2D>;
-	private _defaultCubeTexture:SingleCubeTexture;
 
 
 	public static COMPRESSIONMODE_LZMA:string = "lzma";
@@ -182,6 +177,10 @@ class AWDParser extends ParserBase
 	public static MTX3x3:number = 45;
 	public static MTX4x3:number = 46;
 	public static MTX4x4:number = 47;
+	public static GEO_NUMBER:number = 48;
+	public static MATRIX_NUMBER:number = 49;
+	public static PROPERTY_NUMBER:number = 50;
+	
 
 	private blendModeDic:Array<string>;
 	private _depthSizeDic:Array<number>;
@@ -448,14 +447,12 @@ class AWDParser extends ParserBase
 		} else {
 
 			switch (this._compression) {
-
 				case AWDParser.DEFLATE:
 				case AWDParser.LZMA:
 					if (this._debug)
 						console.log("(!) AWDParser Error: Compressed AWD formats not yet supported (!)");
 
 					break;
-
 			}
 			// Error - most likely _body not set because we do not support compression.
 			return  ParserBase.PARSING_DONE;
@@ -470,16 +467,15 @@ class AWDParser extends ParserBase
 		super._pStartParsing(frameLimit);
 	}
 
-	private dispose():void
+	private dispose()
 	{
 		for (var c in this._blocks) {
-
-			var b:AWDBlock = <AWDBlock> this._blocks[ c ];
+			var b:AWDBlock = <AWDBlock> this._blocks[c];
 			b.dispose();
 		}
 	}
 
-	private parseNextBlock():void
+	private parseNextBlock()
 	{
 		var block:AWDBlock;
 		var isParsed:boolean = false;
@@ -505,20 +501,6 @@ class AWDParser extends ParserBase
 			this._accuracyMatrix = BitFlags.test(flags, BitFlags.FLAG1);
 			this._accuracyGeo = BitFlags.test(flags, BitFlags.FLAG2);
 			this._accuracyProps = BitFlags.test(flags, BitFlags.FLAG3);
-			this._geoNrType = AWDParser.FLOAT32;
-
-			if (this._accuracyGeo)
-				this._geoNrType = AWDParser.FLOAT64;
-
-			this._matrixNrType = AWDParser.FLOAT32;
-
-			if (this._accuracyMatrix)
-				this._matrixNrType = AWDParser.FLOAT64;
-
-			this._propsNrType = AWDParser.FLOAT32;
-
-			if (this._accuracyProps)
-				this._propsNrType = AWDParser.FLOAT64;
 		}
 
 		var blockEndAll:number = this._body.position + len;
@@ -679,7 +661,7 @@ class AWDParser extends ParserBase
 		if (isParsed == false) {
 			switch (type) {
 				case 1:
-					this.parseTriangleGeometrieBlock(this._cur_block_id);
+					this.parseGeometry(this._cur_block_id);
 					break;
 				case 22:
 					this.parseContainer(this._cur_block_id);
@@ -783,7 +765,7 @@ class AWDParser extends ParserBase
 		this._blocks[blockID].name = name;
 		var font_style_cnt:number = this._newBlockBytes.readUnsignedInt();
 		var font_style_char_cnt:number;
-		var font_style_name:string
+		var font_style_name:string;
 		var new_font_style:TesselatedFontTable;
 		var new_font:Font=new Font();
 		var font_style_char:number;
@@ -796,7 +778,7 @@ class AWDParser extends ParserBase
 			new_font_style.set_font_em_size(this._newBlockBytes.readUnsignedInt());
 			font_style_char_cnt = this._newBlockBytes.readUnsignedInt();
 			for (var j:number = 0; j < font_style_char_cnt; ++j) {
-				// todo: this is basically a simplified version of the subgeom-parsing done in parseTriangleGeometry. Make a parseSubGeom() instead (?)
+				// todo: this is basically a simplified version of the subgeom-parsing done in parseGeometry. Make a parseSubGeom() instead (?)
 				font_style_char = this._newBlockBytes.readUnsignedInt();
 				sm_len = this._newBlockBytes.readUnsignedInt();
 				sm_end = this._newBlockBytes.position + sm_len;
@@ -809,7 +791,7 @@ class AWDParser extends ParserBase
 					str_len = this._newBlockBytes.readUnsignedInt();
 					str_end = this._newBlockBytes.position + str_len;
 
-					if (str_type == 2) {//face indicies positions
+					if (str_type == 2) {//face indices positions
 						var indices:Array<number> = new Array<number>();
 						for(var idx:number = 0; this._newBlockBytes.position < str_end; idx++)
 							indices[idx] = this._newBlockBytes.readUnsignedShort();
@@ -841,6 +823,18 @@ class AWDParser extends ParserBase
 			console.log("Parsed a font: Name = '" + name);
 	}
 
+	private static textFormatProperties:Object = {
+		1:AWDParser.UINT16,
+		2:AWDParser.UINT16,
+		3:AWDParser.UINT8,
+		4:AWDParser.UINT8,
+		5:AWDParser.UINT8,
+		6:AWDParser.UINT8,
+		7:AWDParser.UINT16,
+		8:AWDParser.UINT16,
+		9:AWDParser.UINT16,
+		10:AWDParser.UINT16};
+
 	private parseTextFormat(blockID:number)
 	{
 		var name:string = this.parseVarStr();
@@ -853,13 +847,13 @@ class AWDParser extends ParserBase
 		newTextFormat.font_name = font.name;
 
 		var font_table:TesselatedFontTable = font.get_font_table(font_style_name);
-		if(font_table!=null){
+		if (font_table!=null) {
 			newTextFormat.font_style = font_style_name;
 			newTextFormat.font_table = font_table;
 		}
 
 		var mat:BasicMaterial = <BasicMaterial> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
-		mat.bothSides=true;
+		mat.bothSides = true;
 
 		var num_uv_values:number = this._newBlockBytes.readUnsignedByte();
 		var uv_values:Array<number> = [];
@@ -867,7 +861,7 @@ class AWDParser extends ParserBase
 			uv_values[uvcnt] = this._newBlockBytes.readFloat();
 
 		newTextFormat.uv_values = uv_values;
-		var format_props:AWDProperties = this.parseProperties({1:AWDParser.UINT16, 2:AWDParser.UINT16, 3:AWDParser.UINT8,4:AWDParser.UINT8,5:AWDParser.UINT8,6:AWDParser.UINT8, 7:AWDParser.UINT16, 8:AWDParser.UINT16, 9:AWDParser.UINT16, 10:AWDParser.UINT16});
+		var format_props:AWDProperties = this.parseProperties(AWDParser.textFormatProperties);
 
 		newTextFormat.size = format_props.get(1,12);
 		newTextFormat.letterSpacing = format_props.get(2,0);
@@ -896,27 +890,33 @@ class AWDParser extends ParserBase
 			console.log("Parsed a TextFormat: Name = '" + name + " font: "+font.name);
 	}
 
+	private static textFieldProperties:Object = {
+		1:AWDParser.BOOL,
+		3:AWDParser.BOOL,
+		4:AWDParser.BOOL,
+		5:AWDParser.BOOL,
+		7:AWDParser.UINT8,
+		8:AWDParser.UINT8,
+		9:AWDParser.UINT8};
+
+	private static textFieldTypes:Array<string> = ["static", "dynamic", "input", "input"];
+
+
 	private paresTextField(blockID:number, factory:TimelineSceneGraphFactory)
 	{
 		var name:string = this.parseVarStr();
 		this._blocks[blockID].name = name;
-		//console.log("name  '" + name);
         var newTextField = factory.createTextField();
 		var text_field_type:number=this._newBlockBytes.readUnsignedByte();
 
-		if(text_field_type==0) {
-			newTextField.type = "static";
-		} else if(text_field_type==1) {
-			newTextField.type = "dynamic";
-		} else if(text_field_type==2) {
-			newTextField.type = "input";
-		} else if(text_field_type==3) {
-			newTextField.type ="input";
-			newTextField.displayAsPassword=true;
-		}
+		newTextField.type = AWDParser.textFieldTypes[text_field_type];
+
+		if(text_field_type == 3)
+			newTextField.displayAsPassword = true;
+
 		//
-		newTextField.textWidth=Math.abs(this._newBlockBytes.readFloat());
-		newTextField.textHeight=Math.abs(this._newBlockBytes.readFloat());
+		newTextField.textWidth = Math.abs(this._newBlockBytes.readFloat());
+		newTextField.textHeight = Math.abs(this._newBlockBytes.readFloat());
 		var num_paragraphs:number = this._newBlockBytes.readUnsignedInt();
 		var complete_text:string = "";
 		//console.log("num_paragraphs  '" + num_paragraphs);
@@ -942,7 +942,7 @@ class AWDParser extends ParserBase
 		//newTextField.construct_geometry();
 		// todo: optional matrix etc can be put in properties.
 
-		var props:AWDProperties = this.parseProperties({1:AWDParser.BOOL, 3:AWDParser.BOOL, 4:AWDParser.BOOL, 5:AWDParser.BOOL, 7:AWDParser.UINT8, 8:AWDParser.UINT8, 9:AWDParser.UINT8});
+		var props:AWDProperties = this.parseProperties(AWDParser.textFieldProperties);
 		newTextField.selectable = props.get(1, false);
 		newTextField.border =  props.get(3, false);
 		//newTextField.renderHTML =  props.get(4, false);
@@ -982,7 +982,7 @@ class AWDParser extends ParserBase
 			console.log("Parsed a Library-Billboard: Name = '" + name + "| Material-Name = " + mat.name);
 	}
 	// Block ID = 24
-	private parseMeshLibraryBlock(blockID:number):void
+	private parseMeshLibraryBlock(blockID:number)
 	{
 		var name:string = this.parseVarStr();
 		var data_id:number = this._newBlockBytes.readUnsignedInt();
@@ -993,10 +993,8 @@ class AWDParser extends ParserBase
 		var materials:Array<MethodMaterial> = new Array<MethodMaterial>();
 		var materialNames:Array<string> = new Array<string>();
 		var mat:MethodMaterial;
-		var matId:number;
 		for (var materials_parsed:number = 0; materials_parsed < num_materials; materials_parsed++) {
-			matId = this._newBlockBytes.readUnsignedInt();
-			mat = <MethodMaterial> (matId? this._blocks[matId].data : DefaultMaterialManager.getDefaultMaterial());
+			mat = <MethodMaterial> (this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager.getDefaultMaterial());
 			//mat.preserveAlpha = true;
 			mat.alphaBlending = true;
 			mat.useColorTransform = true;
@@ -1325,8 +1323,16 @@ class AWDParser extends ParserBase
 			console.log("Parsed a TIMELINE: Name = " + name + "| isScene = " + isScene + "| sceneID = " + sceneID + "| numFrames = " + numFrames);
 	}
 
+	private static geometryProperties:Object = {
+		1:AWDParser.GEO_NUMBER,
+		2:AWDParser.GEO_NUMBER};
+
+	private static subGeometryProperties:Object = {
+		1:AWDParser.GEO_NUMBER,
+		2:AWDParser.GEO_NUMBER};
+
 	//Block ID = 1
-	private parseTriangleGeometrieBlock(blockID:number):void
+	private parseGeometry(blockID:number)
 	{
 		var geom:Geometry = new Geometry();
 
@@ -1335,7 +1341,7 @@ class AWDParser extends ParserBase
 		var num_subs:number = this._newBlockBytes.readUnsignedShort();
 
 		// Read optional properties
-		var props:AWDProperties = this.parseProperties({1:this._geoNrType, 2:this._geoNrType});
+		var props:AWDProperties = this.parseProperties(AWDParser.geometryProperties);
 		var geoScaleU:number = props.get(1, 1);
 		var geoScaleV:number = props.get(2, 1);
 
@@ -1349,7 +1355,7 @@ class AWDParser extends ParserBase
 			sm_len = this._newBlockBytes.readUnsignedInt();
 			sm_end = this._newBlockBytes.position + sm_len;
 
-			var subProps:AWDProperties = this.parseProperties({1:this._geoNrType, 2:this._geoNrType});
+			var subProps:AWDProperties = this.parseProperties(AWDParser.subGeometryProperties);
 			// Loop through data streams
 			while (this._newBlockBytes.position < sm_end) {
 				var idx:number = 0;
@@ -1476,9 +1482,24 @@ class AWDParser extends ParserBase
 			console.log("Parsed a TriangleGeometry: Name = " + name);
 	}
 
+	private static primitiveProperties:Object = {
+		101:AWDParser.GEO_NUMBER,
+		102:AWDParser.GEO_NUMBER,
+		103:AWDParser.GEO_NUMBER,
+		110:AWDParser.GEO_NUMBER,
+		111:AWDParser.GEO_NUMBER,
+		301:AWDParser.UINT16,
+		302:AWDParser.UINT16,
+		303:AWDParser.UINT16,
+		701:AWDParser.BOOL,
+		702:AWDParser.BOOL,
+		703:AWDParser.BOOL,
+		704:AWDParser.BOOL};
+
+	private static primitiveTypes:Array<string> = ["Unsupported Type-ID", "PrimitivePlanePrefab", "PrimitiveCubePrefab", "PrimitiveSpherePrefab", "PrimitiveCylinderPrefab", "PrimitivesConePrefab", "PrimitivesCapsulePrefab", "PrimitivesTorusPrefab"];
 
 	//Block ID = 11
-	private parsePrimitves(blockID:number):void
+	private parsePrimitves(blockID:number)
 	{
 		var name:string;
 		var prefab:PrefabBase;
@@ -1490,9 +1511,7 @@ class AWDParser extends ParserBase
 		// Read name and sub count
 		name = this.parseVarStr();
 		primType = this._newBlockBytes.readUnsignedByte();
-		props = this.parseProperties({101:this._geoNrType, 102:this._geoNrType, 103:this._geoNrType, 110:this._geoNrType, 111:this._geoNrType, 301:AWDParser.UINT16, 302:AWDParser.UINT16, 303:AWDParser.UINT16, 701:AWDParser.BOOL, 702:AWDParser.BOOL, 703:AWDParser.BOOL, 704:AWDParser.BOOL});
-
-		var primitiveTypes:Array<string> = ["Unsupported Type-ID", "PrimitivePlanePrefab", "PrimitiveCubePrefab", "PrimitiveSpherePrefab", "PrimitiveCylinderPrefab", "PrimitivesConePrefab", "PrimitivesCapsulePrefab", "PrimitivesTorusPrefab"]
+		props = this.parseProperties(AWDParser.primitiveProperties);
 
 		// to do, not all properties are set on all primitives
 		switch (primType) {
@@ -1551,12 +1570,18 @@ class AWDParser extends ParserBase
 			if ((primType < 0) || (primType > 7))
 				primType = 0;
 
-			console.log("Parsed a Primivite: Name = " + name + "| type = " + primitiveTypes[primType]);
+			console.log("Parsed a Primivite: Name = " + name + "| type = " + AWDParser.primitiveTypes[primType]);
 		}
 	}
 
+	private static containerProperties:Object = {
+		1:AWDParser.MATRIX_NUMBER,
+		2:AWDParser.MATRIX_NUMBER,
+		3:AWDParser.MATRIX_NUMBER,
+		4:AWDParser.UINT8};
+
 	// Block ID = 22
-	private parseContainer(blockID:number):void
+	private parseContainer(blockID:number)
 	{
 		var name:string;
 		var mtx:Matrix3D;
@@ -1580,7 +1605,7 @@ class AWDParser extends ParserBase
 
 		// in AWD version 2.1 we read the Container properties
 		if ((this._version[0] == 2) && (this._version[1] == 1)) {
-			var props:AWDProperties = this.parseProperties({1:this._matrixNrType, 2:this._matrixNrType, 3:this._matrixNrType, 4:AWDParser.UINT8});
+			var props:AWDProperties = this.parseProperties(AWDParser.containerProperties);
 			ctr.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
 		} else {// in other versions we do not read the Container properties
 			this.parseProperties(null);
@@ -1596,8 +1621,15 @@ class AWDParser extends ParserBase
 			console.log("Parsed a Container: Name = '" + name + "' | Parent-Name = " + parentName);
 	}
 
+	private static meshInstanceProperties:Object = {
+		1:AWDParser.MATRIX_NUMBER,
+		2:AWDParser.MATRIX_NUMBER,
+		3:AWDParser.MATRIX_NUMBER,
+		4:AWDParser.UINT8,
+		5:AWDParser.BOOL};
+
 	// Block ID = 23
-	private parseMeshInstance(blockID:number):void
+	private parseMeshInstance(blockID:number)
 	{
 		var parent:DisplayObjectContainer = <DisplayObjectContainer> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 		var mtx:Matrix3D = this.parseMatrix3D();
@@ -1620,10 +1652,8 @@ class AWDParser extends ParserBase
 		var materials:Array<MethodMaterial> = new Array<MethodMaterial>();
 		var materialNames:Array<string> = new Array<string>();
 		var mat:MethodMaterial;
-		var matId:number;
 		for (var materials_parsed:number = 0; materials_parsed < num_materials; materials_parsed++) {
-			matId = this._newBlockBytes.readUnsignedInt();
-			mat = <MethodMaterial> (matId? this._blocks[matId].data : DefaultMaterialManager.getDefaultMaterial());
+			mat = <MethodMaterial> (this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager.getDefaultMaterial());
 			materials[materials_parsed] = mat;
 			materialNames[materials_parsed] = mat.name;
 		}
@@ -1649,8 +1679,8 @@ class AWDParser extends ParserBase
 				mesh.subMeshes[i].material = materials[Math.min(materials.length - 1, i)];
 		}
 		if ((this._version[0] == 2) && (this._version[1] == 1)) {
-			var props:AWDProperties = this.parseProperties({1:this._matrixNrType, 2:this._matrixNrType, 3:this._matrixNrType, 4:AWDParser.UINT8, 5:AWDParser.BOOL});
-			mesh.pivot = new Vector3D(<number>props.get(1, 0), <number>props.get(2, 0), <number> props.get(3, 0));
+			var props:AWDProperties = this.parseProperties(AWDParser.meshInstanceProperties);
+			mesh.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
 			mesh.castsShadows = props.get(5, true);
 		} else {
 			this.parseProperties(null);
@@ -1671,22 +1701,40 @@ class AWDParser extends ParserBase
 
 
 	//Block ID 31
-	private parseSkyboxInstance(blockID:number):void
+	private parseSkyboxInstance(blockID:number)
 	{
 		var name:string = this.parseVarStr();
-		var cubeTex:SingleCubeTexture = <SingleCubeTexture> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
-		var asset:Skybox = new Skybox(cubeTex);
+		var asset:Skybox = new Skybox();
+		var tex:SingleCubeTexture = <SingleCubeTexture> (this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager.getDefaultTexture(asset));
+		asset.cubeMap = tex;
 
 		this.parseProperties(null);
 		asset.extra = this.parseUserAttributes();
 		this._pFinalizeAsset(asset, name);
 		this._blocks[blockID].data = asset;
 		if (this._debug)
-			console.log("Parsed a Skybox: Name = '" + name + "' | CubeTexture-Name = " + cubeTex.name);
+			console.log("Parsed a Skybox: Name = '" + name + "' | CubeTexture-Name = " + tex.name);
 	}
 
+	private static lightProperties:Object = {
+		1:AWDParser.PROPERTY_NUMBER,
+		2:AWDParser.PROPERTY_NUMBER,
+		3:AWDParser.COLOR,
+		4:AWDParser.PROPERTY_NUMBER,
+		5:AWDParser.PROPERTY_NUMBER,
+		6:AWDParser.BOOL,
+		7:AWDParser.COLOR,
+		8:AWDParser.PROPERTY_NUMBER,
+		9:AWDParser.UINT8,
+		10:AWDParser.UINT8,
+		11:AWDParser.PROPERTY_NUMBER,
+		12:AWDParser.UINT16,
+		21:AWDParser.MATRIX_NUMBER,
+		22:AWDParser.MATRIX_NUMBER,
+		23:AWDParser.MATRIX_NUMBER};
+
 	//Block ID = 41
-	private parseLight(blockID:number):void
+	private parseLight(blockID:number)
 	{
 		var light:LightBase;
 		var newShadowMapper:ShadowMapperBase;
@@ -1695,7 +1743,7 @@ class AWDParser extends ParserBase
 		var mtx:Matrix3D = this.parseMatrix3D();
 		var name:string = this.parseVarStr();
 		var lightType:number = this._newBlockBytes.readUnsignedByte();
-		var props:AWDProperties = this.parseProperties({1:this._propsNrType, 2:this._propsNrType, 3:AWDParser.COLOR, 4:this._propsNrType, 5:this._propsNrType, 6:AWDParser.BOOL, 7:AWDParser.COLOR, 8:this._propsNrType, 9:AWDParser.UINT8, 10:AWDParser.UINT8, 11:this._propsNrType, 12:AWDParser.UINT16, 21:this._matrixNrType, 22:this._matrixNrType, 23:this._matrixNrType});
+		var props:AWDProperties = this.parseProperties(AWDParser.lightProperties);
 		var shadowMapperType:number = props.get(9, 0);
 		var lightTypes:Array<string> = ["Unsupported LightType", "PointLight", "DirectionalLight"];
 		var shadowMapperTypes:Array<string> = ["No ShadowMapper", "DirectionalShadowMapper", "NearDirectionalShadowMapper", "CascadeShadowMapper", "CubeMapShadowMapper"];
@@ -1769,10 +1817,21 @@ class AWDParser extends ParserBase
 			console.log("Parsed a Light: Name = '" + name + "' | Type = " + lightTypes[lightType] + " | Parent-Name = " + parentName + " | ShadowMapper-Type = " + shadowMapperTypes[shadowMapperType]);
 	}
 
-	//Block ID = 43
-	private parseCamera(blockID:number):void
-	{
+	private static cameraProperties:Object = {
+		101:AWDParser.PROPERTY_NUMBER,
+		102:AWDParser.PROPERTY_NUMBER,
+		103:AWDParser.PROPERTY_NUMBER,
+		104:AWDParser.PROPERTY_NUMBER};
 
+	private static cameraPivotProperties:Object = {
+		1:AWDParser.MATRIX_NUMBER,
+		2:AWDParser.MATRIX_NUMBER,
+		3:AWDParser.MATRIX_NUMBER,
+		4:AWDParser.UINT8};
+
+	//Block ID = 43
+	private parseCamera(blockID:number)
+	{
 		var parent:DisplayObjectContainer = <DisplayObjectContainer> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 		var mtx:Matrix3D = this.parseMatrix3D();
 		var name:string = this.parseVarStr();
@@ -1782,7 +1841,7 @@ class AWDParser extends ParserBase
 		this._newBlockBytes.readShort(); //lengthof lenses - not used yet
 
 		var projectiontype:number = this._newBlockBytes.readShort();
-		var props:AWDProperties = this.parseProperties({101:this._propsNrType, 102:this._propsNrType, 103:this._propsNrType, 104:this._propsNrType});
+		var props:AWDProperties = this.parseProperties(AWDParser.cameraProperties);
 
 		switch (projectiontype) {
 			case 5001:
@@ -1812,7 +1871,7 @@ class AWDParser extends ParserBase
 		}
 
 		camera.name = name;
-		props = this.parseProperties({1:this._matrixNrType, 2:this._matrixNrType, 3:this._matrixNrType, 4:AWDParser.UINT8});
+		props = this.parseProperties(AWDParser.cameraPivotProperties);
 		camera.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
 		camera.extra = this.parseUserAttributes();
 
@@ -1825,7 +1884,7 @@ class AWDParser extends ParserBase
 	}
 
 	//Block ID = 51
-	private parseLightPicker(blockID:number):void
+	private parseLightPicker(blockID:number)
 	{
 		var name:string = this.parseVarStr();
 		var numLights:number = this._newBlockBytes.readUnsignedShort();
@@ -1857,8 +1916,17 @@ class AWDParser extends ParserBase
 			console.log("Parsed a StaticLightPicker: Name = '" + name + "' | Texture-Name = " + lightsArrayNames);
 	}
 
+	// (1=color, 2=bitmap url, 10=alpha, 11=alpha_blending, 12=alpha_threshold, 13=repeat)
+	private static materialProperties:Object = {
+		1:AWDParser.INT32,
+		2:AWDParser.BADDR,
+		10:AWDParser.PROPERTY_NUMBER,
+		11:AWDParser.BOOL,
+		12:AWDParser.PROPERTY_NUMBER,
+		13:AWDParser.BOOL};
+
 	//Block ID = 81
-	private parseMaterial(blockID:number):void
+	private parseMaterial(blockID:number)
 	{
 		// TODO: not used
 		////blockLength = block.len;
@@ -1876,8 +1944,7 @@ class AWDParser extends ParserBase
 		num_methods = this._newBlockBytes.readUnsignedByte();
 
 		// Read material numerical properties
-		// (1=color, 2=bitmap url, 10=alpha, 11=alpha_blending, 12=alpha_threshold, 13=repeat)
-		props = this.parseProperties({ 1:AWDParser.INT32, 2:AWDParser.BADDR, 10:this._propsNrType, 11:AWDParser.BOOL, 12:this._propsNrType, 13:AWDParser.BOOL});
+		props = this.parseProperties(AWDParser.materialProperties);
 
 		methods_parsed = 0;
 		while (methods_parsed < num_methods) {
@@ -1925,9 +1992,50 @@ class AWDParser extends ParserBase
 		if (this._debug)
 			console.log(debugString);
 	}
+	
+	private static material_v1Properties:Object = {1:AWDParser.UINT32,
+		2:AWDParser.BADDR,
+		3:AWDParser.BADDR,
+		4:AWDParser.UINT8,
+		5:AWDParser.BOOL,
+		6:AWDParser.BOOL,
+		7:AWDParser.BOOL,
+		8:AWDParser.BOOL,
+		9:AWDParser.UINT8,
+		10:AWDParser.PROPERTY_NUMBER,
+		11:AWDParser.BOOL,
+		12:AWDParser.PROPERTY_NUMBER,
+		13:AWDParser.BOOL,
+		15:AWDParser.PROPERTY_NUMBER,
+		16:AWDParser.UINT32,
+		17:AWDParser.BADDR,
+		18:AWDParser.PROPERTY_NUMBER,
+		19:AWDParser.PROPERTY_NUMBER,
+		20:AWDParser.UINT32,
+		21:AWDParser.BADDR,
+		22:AWDParser.BADDR};
+
+	private static method_v1Properties:Object = {
+		1:AWDParser.BADDR,
+		2:AWDParser.BADDR,
+		3:AWDParser.BADDR,
+		101:AWDParser.PROPERTY_NUMBER,
+		102:AWDParser.PROPERTY_NUMBER,
+		103:AWDParser.PROPERTY_NUMBER,
+		201:AWDParser.UINT32,
+		202:AWDParser.UINT32,
+		301:AWDParser.UINT16,
+		302:AWDParser.UINT16,
+		401:AWDParser.UINT8,
+		402:AWDParser.UINT8,
+		601:AWDParser.COLOR,
+		602:AWDParser.COLOR,
+		701:AWDParser.BOOL,
+		702:AWDParser.BOOL,
+		801:AWDParser.MTX4x4};
 
 	// Block ID = 81 AWD2.1
-	private parseMaterial_v1(blockID:number):void
+	private parseMaterial_v1(blockID:number)
 	{
 		var mat:MethodMaterial;
 		var diffuseTexture:Single2DTexture;
@@ -1937,7 +2045,7 @@ class AWDParser extends ParserBase
 		var name:string = this.parseVarStr();
 		var type:number = this._newBlockBytes.readUnsignedByte();
 		var num_methods:number = this._newBlockBytes.readUnsignedByte();
-		var props:AWDProperties = this.parseProperties({1:AWDParser.UINT32, 2:AWDParser.BADDR, 3:AWDParser.BADDR, 4:AWDParser.UINT8, 5:AWDParser.BOOL, 6:AWDParser.BOOL, 7:AWDParser.BOOL, 8:AWDParser.BOOL, 9:AWDParser.UINT8, 10:this._propsNrType, 11:AWDParser.BOOL, 12:this._propsNrType, 13:AWDParser.BOOL, 15:this._propsNrType, 16:AWDParser.UINT32, 17:AWDParser.BADDR, 18:this._propsNrType, 19:this._propsNrType, 20:AWDParser.UINT32, 21:AWDParser.BADDR, 22:AWDParser.BADDR});
+		var props:AWDProperties = this.parseProperties(AWDParser.material_v1Properties);
 		var spezialType:number = props.get(4, 0);
 		var debugString:string = "Parsed Material ";
 
@@ -2022,25 +2130,7 @@ class AWDParser extends ParserBase
 					var method_type:number;
 					method_type = this._newBlockBytes.readUnsignedShort();
 
-					props = this.parseProperties({
-						1: AWDParser.BADDR,
-						2: AWDParser.BADDR,
-						3: AWDParser.BADDR,
-						101: this._propsNrType,
-						102: this._propsNrType,
-						103: this._propsNrType,
-						201: AWDParser.UINT32,
-						202: AWDParser.UINT32,
-						301: AWDParser.UINT16,
-						302: AWDParser.UINT16,
-						401: AWDParser.UINT8,
-						402: AWDParser.UINT8,
-						601: AWDParser.COLOR,
-						602: AWDParser.COLOR,
-						701: AWDParser.BOOL,
-						702: AWDParser.BOOL,
-						801: AWDParser.MTX4x4
-					});
+					props = this.parseProperties(AWDParser.method_v1Properties);
 
 					switch (method_type) {
 						case 999: //wrapper-Methods that will load a previous parsed EffektMethod returned
@@ -2157,7 +2247,7 @@ class AWDParser extends ParserBase
 	}
 
 	//Block ID = 82
-	private parseTexture(blockID:number):void
+	private parseTexture(blockID:number)
 	{
 
 		var asset:TextureBase;
@@ -2201,14 +2291,13 @@ class AWDParser extends ParserBase
 	}
 
 	//Block ID = 83
-	private parseCubeTexture(blockID:number):void
+	private parseCubeTexture(blockID:number)
 	{
 		//blockLength = block.len;
 		var data_len:number;
 		var asset:SingleCubeTexture;
 		var i:number;
 
-		this._cubeBitmaps = new Array<BitmapImage2D>();
 		this._texture_users[ this._cur_block_id ] = [];
 
 		var type:number = this._newBlockBytes.readUnsignedByte();
@@ -2217,7 +2306,6 @@ class AWDParser extends ParserBase
 
 		for (i = 0; i < 6; i++) {
 			this._texture_users[this._cur_block_id] = [];
-			this._cubeBitmaps.push(null);
 
 			// External
 			if (type == 0) {
@@ -2246,7 +2334,7 @@ class AWDParser extends ParserBase
 	}
 
 	//Block ID = 91
-	private parseSharedMethodBlock(blockID:number):void
+	private parseSharedMethodBlock(blockID:number)
 	{
 		var asset:EffectMethodBase;
 
@@ -2262,7 +2350,7 @@ class AWDParser extends ParserBase
 	}
 
 	//Block ID = 92
-	private parseShadowMethodBlock(blockID:number):void
+	private parseShadowMethodBlock(blockID:number)
 	{
 		this._blocks[blockID].name = this.parseVarStr();
 		var light:LightBase = <LightBase> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
@@ -2279,9 +2367,17 @@ class AWDParser extends ParserBase
 			console.log("Parsed a ShadowMapMethodMethod: Name = " + asset.name + " | Type = " + asset + " | Light-Name = ", light.name);
 	}
 
+	private static commandProperties:Object = {
+		1:AWDParser.BADDR};
 
+	private static targetProperties:Object = {
+		1:AWDParser.MATRIX_NUMBER,
+		2:AWDParser.MATRIX_NUMBER,
+		3:AWDParser.MATRIX_NUMBER,
+		4:AWDParser.UINT8};
+	
 	//Block ID = 253
-	private parseCommand(blockID:number):void
+	private parseCommand(blockID:number)
 	{
 		var hasBlocks:boolean = ( this._newBlockBytes.readUnsignedByte() == 1 );
 		var parentObject:DisplayObjectContainer = <DisplayObjectContainer> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
@@ -2292,7 +2388,7 @@ class AWDParser extends ParserBase
 		var numCommands:number = this._newBlockBytes.readShort();
 		var typeCommand:number = this._newBlockBytes.readShort();
 
-		var props:AWDProperties = this.parseProperties({1:AWDParser.BADDR});
+		var props:AWDProperties = this.parseProperties(AWDParser.commandProperties);
 
 		switch (typeCommand) {
 			case 1:
@@ -2306,7 +2402,7 @@ class AWDParser extends ParserBase
 		}
 
 		if (targetObject) {
-			props = this.parseProperties({1:this._matrixNrType, 2:this._matrixNrType, 3:this._matrixNrType, 4:AWDParser.UINT8});
+			props = this.parseProperties(AWDParser.targetProperties);
 
 			targetObject.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
 			targetObject.extra = this.parseUserAttributes();
@@ -2317,11 +2413,18 @@ class AWDParser extends ParserBase
 		if (this._debug)
 			console.log("Parsed a CommandBlock: Name = '" + name);
 	}
+	
+	private static metaDataProperties:Object = {
+		1:AWDParser.UINT32,
+		2:AWDParser.AWDSTRING,
+		3:AWDParser.AWDSTRING,
+		4:AWDParser.AWDSTRING,
+		5:AWDParser.AWDSTRING};
 
 	//blockID 255
-	private parseMetaData(blockID:number):void
+	private parseMetaData(blockID:number)
 	{
-		var props:AWDProperties = this.parseProperties({1:AWDParser.UINT32, 2:AWDParser.AWDSTRING, 3:AWDParser.AWDSTRING, 4:AWDParser.AWDSTRING, 5:AWDParser.AWDSTRING});
+		var props:AWDProperties = this.parseProperties(AWDParser.metaDataProperties);
 
 		if (this._debug) {
 			console.log("Parsed a MetaDataBlock: TimeStamp         = " + props.get(1, 0));
@@ -2333,7 +2436,7 @@ class AWDParser extends ParserBase
 	}
 
 	//blockID 254
-	private parseNameSpace(blockID:number):void
+	private parseNameSpace(blockID:number)
 	{
 		var id:number = this._newBlockBytes.readUnsignedByte();
 		var nameSpaceString:string = this.parseVarStr();
@@ -2344,13 +2447,32 @@ class AWDParser extends ParserBase
 
 	//--Parser UTILS---------------------------------------------------------------------------
 
+	private shadowMethodListProperties:Object = {
+		1:AWDParser.BADDR,
+		2:AWDParser.BADDR,
+		3:AWDParser.BADDR,
+		101:AWDParser.PROPERTY_NUMBER,
+		102:AWDParser.PROPERTY_NUMBER,
+		103:AWDParser.PROPERTY_NUMBER,
+		201:AWDParser.UINT32,
+		202:AWDParser.UINT32,
+		301:AWDParser.UINT16,
+		302:AWDParser.UINT16,
+		401:AWDParser.UINT8,
+		402:AWDParser.UINT8,
+		601:AWDParser.COLOR,
+		602:AWDParser.COLOR,
+		701:AWDParser.BOOL,
+		702:AWDParser.BOOL,
+		801:AWDParser.MTX4x4}
+	
 	// this functions reads and creates a ShadowMethodMethod
 	private parseShadowMethodList(light:LightBase, blockID:number):ShadowMethodBase
 	{
 
 		var methodType:number = this._newBlockBytes.readUnsignedShort();
 		var shadowMethod:ShadowMethodBase;
-		var props:AWDProperties = this.parseProperties({1:AWDParser.BADDR, 2:AWDParser.BADDR, 3:AWDParser.BADDR, 101:this._propsNrType, 102:this._propsNrType, 103:this._propsNrType, 201:AWDParser.UINT32, 202:AWDParser.UINT32, 301:AWDParser.UINT16, 302:AWDParser.UINT16, 401:AWDParser.UINT8, 402:AWDParser.UINT8, 601:AWDParser.COLOR, 602:AWDParser.COLOR, 701:AWDParser.BOOL, 702:AWDParser.BOOL, 801:AWDParser.MTX4x4});
+		var props:AWDProperties = this.parseProperties(this.shadowMethodListProperties);
 
 		var targetID:number;
 		var returnedArray:Array<any>
@@ -2399,7 +2521,7 @@ class AWDParser extends ParserBase
 	}
 
 	//Block ID 101
-	private parseSkeleton(blockID:number /*uint*/):void
+	private parseSkeleton(blockID:number /*uint*/)
 	{
 		var name:string = this.parseVarStr();
 		var num_joints:number /*uint*/ = this._newBlockBytes.readUnsignedShort();
@@ -2434,7 +2556,7 @@ class AWDParser extends ParserBase
 	}
 
 	//Block ID = 102
-	private parseSkeletonPose(blockID:number /*uint*/):void
+	private parseSkeletonPose(blockID:number /*uint*/)
 	{
 		var name:string = this.parseVarStr();
 		var num_joints:number /*uint*/ = this._newBlockBytes.readUnsignedShort();
@@ -2469,7 +2591,7 @@ class AWDParser extends ParserBase
 	}
 
 	//blockID 103
-	private parseSkeletonAnimation(blockID:number /*uint*/):void
+	private parseSkeletonAnimation(blockID:number /*uint*/)
 	{
 		var frame_dur:number;
 		var pose_id:number;
@@ -2495,9 +2617,13 @@ class AWDParser extends ParserBase
 		if (this._debug)
 			console.log("Parsed a SkeletonClipNode: Name = " + clip.name + " | Number of Frames = " + clip.frames.length);
 	}
+	
+	private meshPoseAnimationProperties:Object = {
+		1:AWDParser.BOOL,
+		2:AWDParser.BOOL};
 
 	//Block ID = 111 /  Block ID = 112
-	private parseMeshPoseAnimation(blockID:number /*uint*/, poseOnly:boolean = false):void
+	private parseMeshPoseAnimation(blockID:number /*uint*/, poseOnly:boolean = false)
 	{
 		var subMeshParsed:number /*uint*/;
 		var x:number;
@@ -2525,7 +2651,7 @@ class AWDParser extends ParserBase
 		for (var streamsParsed:number = 0; streamsParsed < num_Streams; streamsParsed++)
 			streamtypes.push(this._newBlockBytes.readUnsignedShort());
 
-		props = this.parseProperties({1:AWDParser.BOOL, 2:AWDParser.BOOL});
+		props = this.parseProperties(this.meshPoseAnimationProperties);
 
 		clip.looping = props.get(1, true);
 		clip.stitchFinalFrame = props.get(2, false);
@@ -2578,12 +2704,15 @@ class AWDParser extends ParserBase
 			console.log("Parsed a VertexClipNode: Name = " + clip.name + " | Target-Geometry-Name = " + geometry.name + " | Number of Frames = " + clip.frames.length);
 	}
 
+	private static vertexAnimationSetProperties:Object = {
+		1:AWDParser.UINT16};
+	
 	//BlockID 113
-	private parseVertexAnimationSet(blockID:number /*uint*/):void
+	private parseVertexAnimationSet(blockID:number /*uint*/)
 	{
 		var name:string = this.parseVarStr();
 		var num_frames:number /*uint*/ = this._newBlockBytes.readUnsignedShort();
-		var props:AWDProperties = this.parseProperties({1:AWDParser.UINT16});
+		var props:AWDProperties = this.parseProperties(AWDParser.vertexAnimationSetProperties);
 		var skeletonFrames:Array<SkeletonClipNode> = new Array<SkeletonClipNode>();
 		var vertexFrames:Array<VertexClipNode> = new Array<VertexClipNode>();
 		var clipNode:AnimationClipNodeBase;
@@ -2628,12 +2757,14 @@ class AWDParser extends ParserBase
 		}
 	}
 
+	private static animatorSetProperties:Object = {1:AWDParser.BADDR};
+	
 	//BlockID 122
-	private parseAnimatorSet(blockID:number /*uint*/):void
+	private parseAnimatorSet(blockID:number /*uint*/)
 	{
 		var name:string = this.parseVarStr();
 		var type:number = this._newBlockBytes.readUnsignedShort();
-		var props:AWDProperties = this.parseProperties({1:AWDParser.BADDR});
+		var props:AWDProperties = this.parseProperties(AWDParser.animatorSetProperties);
 		var targetAnimationSet:AnimationSetBase = <AnimationSetBase> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 
 		var targetMeshes:Array<Mesh> = new Array<Mesh>();
@@ -2666,13 +2797,35 @@ class AWDParser extends ParserBase
 			console.log("Parsed a Animator: Name = " + name);
 	}
 
+	private sharedMethodListProperties:Object = {
+		1:AWDParser.BADDR,
+		2:AWDParser.BADDR,
+		3:AWDParser.BADDR,
+		101:AWDParser.PROPERTY_NUMBER,
+		102:AWDParser.PROPERTY_NUMBER,
+		103:AWDParser.PROPERTY_NUMBER,
+		104:AWDParser.PROPERTY_NUMBER,
+		105:AWDParser.PROPERTY_NUMBER,
+		106:AWDParser.PROPERTY_NUMBER,
+		107:AWDParser.PROPERTY_NUMBER,
+		201:AWDParser.UINT32,
+		202:AWDParser.UINT32,
+		301:AWDParser.UINT16,
+		302:AWDParser.UINT16,
+		401:AWDParser.UINT8,
+		402:AWDParser.UINT8,
+		601:AWDParser.COLOR,
+		602:AWDParser.COLOR,
+		701:AWDParser.BOOL,
+		702:AWDParser.BOOL};
+
 	// this functions reads and creates a EffectMethod
 	private parseSharedMethodList(blockID:number):EffectMethodBase
 	{
 		var methodType:number = this._newBlockBytes.readUnsignedShort();
 		var effectMethodReturn:EffectMethodBase;
 
-		var props:AWDProperties = this.parseProperties({1:AWDParser.BADDR, 2:AWDParser.BADDR, 3:AWDParser.BADDR, 101:this._propsNrType, 102:this._propsNrType, 103:this._propsNrType, 104:this._propsNrType, 105:this._propsNrType, 106:this._propsNrType, 107:this._propsNrType, 201:AWDParser.UINT32, 202:AWDParser.UINT32, 301:AWDParser.UINT16, 302:AWDParser.UINT16, 401:AWDParser.UINT8, 402:AWDParser.UINT8, 601:AWDParser.COLOR, 602:AWDParser.COLOR, 701:AWDParser.BOOL, 702:AWDParser.BOOL});
+		var props:AWDProperties = this.parseProperties(this.sharedMethodListProperties);
 
 		switch (methodType) {
 			// Effect Methods
@@ -2844,6 +2997,7 @@ class AWDParser extends ParserBase
 	{
 		var elem_len:number;
 		var read_func:Function;
+		var accuracy:boolean;
 
 		switch (type) {
 			case AWDParser.BOOL:
@@ -2902,6 +3056,20 @@ class AWDParser extends ParserBase
 				elem_len = 8;
 				read_func = this._newBlockBytes.readDouble;
 				break;
+			case AWDParser.GEO_NUMBER:
+				accuracy = this._accuracyGeo;
+			case AWDParser.MATRIX_NUMBER:
+				accuracy = this._accuracyMatrix;
+			case AWDParser.PROPERTY_NUMBER:
+				accuracy = this._accuracyProps;
+			default:
+				if (accuracy) {
+					elem_len = 8;
+					read_func = this._newBlockBytes.readDouble;
+				} else {
+					elem_len = 4;
+					read_func = this._newBlockBytes.readFloat;
+				}
 		}
 
 		if (elem_len < len) {
@@ -2917,7 +3085,7 @@ class AWDParser extends ParserBase
 		}
 	}
 
-	private parseHeader():void
+	private parseHeader()
 	{
 		this._byteData.position = 3; // Skip magic string and parse version
 
@@ -2928,29 +3096,12 @@ class AWDParser extends ParserBase
 
 		this._streaming = BitFlags.test(flags, BitFlags.FLAG1);
 
+		// if we set _accuracyOnBlocks, the precision-values are read from each block-header.
 		if ((this._version[0] == 2) && (this._version[1] == 1)) {
 			this._accuracyMatrix = BitFlags.test(flags, BitFlags.FLAG2);
 			this._accuracyGeo = BitFlags.test(flags, BitFlags.FLAG3);
 			this._accuracyProps = BitFlags.test(flags, BitFlags.FLAG4);
 		}
-
-		// if we set _accuracyOnBlocks, the precision-values are read from each block-header.
-
-		// set storagePrecision types
-		this._geoNrType = AWDParser.FLOAT32;
-
-		if (this._accuracyGeo)
-			this._geoNrType = AWDParser.FLOAT64;
-
-		this._matrixNrType = AWDParser.FLOAT32;
-
-		if (this._accuracyMatrix)
-			this._matrixNrType = AWDParser.FLOAT64;
-
-		this._propsNrType = AWDParser.FLOAT32;
-
-		if (this._accuracyProps)
-			this._propsNrType = AWDParser.FLOAT64;
 
 		this._compression = this._byteData.readUnsignedByte(); // compression
 
@@ -2990,24 +3141,6 @@ class AWDParser extends ParserBase
 	private parseVarStr():string
 	{
 		return this._newBlockBytes.readUTFBytes(this._newBlockBytes.readUnsignedShort());
-	}
-
-	public getDefaultCubeTexture():IAsset
-	{
-		if (!this._defaultCubeTexture) {
-			var defaultBitmap:BitmapImage2D = DefaultMaterialManager.createCheckeredBitmapImage2D();
-
-			var bitmapImageCube = new BitmapImageCube(defaultBitmap.width);
-
-			for (var i:number = 0; i < 6; i++)
-				bitmapImageCube.draw(i, defaultBitmap);
-
-
-			this._defaultCubeTexture = new SingleCubeTexture(bitmapImageCube);
-			this._defaultCubeTexture.name = "defaultCubeTexture";
-		}
-
-		return <IAsset> this._defaultCubeTexture;
 	}
 
 	private readNumber(precision:boolean = false):number
@@ -3080,17 +3213,14 @@ export = AWDParser;
 
 class AWDProperties
 {
-	public set(key:number, value:any):void
+	public set(key:number, value:any)
 	{
 		this[key] = value;
 	}
 
 	public get(key:number, fallback:any):any
 	{
-		if (this[key])
-			return this[key];
-		else
-			return fallback;
+		return (this[key] || fallback);
 	}
 }
 
