@@ -1,15 +1,3 @@
-declare module "awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase" {
-	import AWD3FileData = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData");
-	class AWDAssetParserBase {
-	    private _awd_file_data;
-	    constructor();
-	    awd_file_data: AWD3FileData;
-	    parseFromBytes(): void;
-	}
-	export = AWDAssetParserBase;
-	
-}
-
 declare module "awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParsers" {
 	import AWDAssetParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 	import AWD3FileData = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData");
@@ -22,6 +10,18 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParsers" {
 	    parseAsset(type: number): boolean;
 	}
 	export = AWDBlockParsers;
+	
+}
+
+declare module "awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase" {
+	import AWD3FileData = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData");
+	class AWDAssetParserBase {
+	    private _awd_file_data;
+	    constructor();
+	    awd_file_data: AWD3FileData;
+	    parseFromBytes(): void;
+	}
+	export = AWDAssetParserBase;
 	
 }
 

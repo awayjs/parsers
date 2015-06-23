@@ -3676,9 +3676,9 @@ var AWDParser = (function (_super) {
         }
     };
     AWDParser.prototype._pStartParsing = function (frameLimit) {
-        _super.prototype._pStartParsing.call(this, frameLimit);
         //create a content object for Loaders
         this._pContent = new DisplayObjectContainer();
+        _super.prototype._pStartParsing.call(this, frameLimit);
     };
     AWDParser.prototype.dispose = function () {
         for (var c in this._blocks) {
