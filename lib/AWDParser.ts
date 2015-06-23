@@ -992,13 +992,16 @@ class AWDParser extends ParserBase
 		var num_materials:number = this._newBlockBytes.readUnsignedShort();
 		var materials:Array<MethodMaterial> = new Array<MethodMaterial>();
 		var materialNames:Array<string> = new Array<string>();
+		var mat:MethodMaterial;
+		var matId:number;
 		for (var materials_parsed:number = 0; materials_parsed < num_materials; materials_parsed++) {
-			var m:MethodMaterial = <MethodMaterial> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
-			//m.preserveAlpha = true;
-			m.alphaBlending = true;
-			m.useColorTransform = true;
-			materials[materials_parsed] = m;
-			materialNames[materials_parsed] = m.name;
+			matId = this._newBlockBytes.readUnsignedInt();
+			mat = <MethodMaterial> (matId? this._blocks[matId].data : DefaultMaterialManager.getDefaultMaterial());
+			//mat.preserveAlpha = true;
+			mat.alphaBlending = true;
+			mat.useColorTransform = true;
+			materials[materials_parsed] = mat;
+			materialNames[materials_parsed] = mat.name;
 		}
 
 		var mesh:Mesh = new Mesh(geom, null);
@@ -1616,10 +1619,13 @@ class AWDParser extends ParserBase
 		var num_materials:number = this._newBlockBytes.readUnsignedShort();
 		var materials:Array<MethodMaterial> = new Array<MethodMaterial>();
 		var materialNames:Array<string> = new Array<string>();
+		var mat:MethodMaterial;
+		var matId:number;
 		for (var materials_parsed:number = 0; materials_parsed < num_materials; materials_parsed++) {
-			var m:MethodMaterial = <MethodMaterial> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
-			materials[materials_parsed] = m;
-			materialNames[materials_parsed] = m.name;
+			matId = this._newBlockBytes.readUnsignedInt();
+			mat = <MethodMaterial> (matId? this._blocks[matId].data : DefaultMaterialManager.getDefaultMaterial());
+			materials[materials_parsed] = mat;
+			materialNames[materials_parsed] = mat.name;
 		}
 
 		var mesh:Mesh = isPrefab? <Mesh> prefab.getNewObject() : new Mesh(geom, null);
