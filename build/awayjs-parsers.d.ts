@@ -1,3 +1,15 @@
+declare module "awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase" {
+	import AWD3FileData = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData");
+	class AWDAssetParserBase {
+	    private _awd_file_data;
+	    constructor();
+	    awd_file_data: AWD3FileData;
+	    parseFromBytes(): void;
+	}
+	export = AWDAssetParserBase;
+	
+}
+
 declare module "awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParsers" {
 	import AWDAssetParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 	import AWD3FileData = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData");
@@ -10,18 +22,6 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParsers" {
 	    parseAsset(type: number): boolean;
 	}
 	export = AWDBlockParsers;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase" {
-	import AWD3FileData = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData");
-	class AWDAssetParserBase {
-	    private _awd_file_data;
-	    constructor();
-	    awd_file_data: AWD3FileData;
-	    parseFromBytes(): void;
-	}
-	export = AWDAssetParserBase;
 	
 }
 
@@ -560,15 +560,10 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private _accuracyMatrix;
 	    private _accuracyGeo;
 	    private _accuracyProps;
-	    private _matrixNrType;
-	    private _geoNrType;
-	    private _propsNrType;
 	    private _streaming;
 	    private _texture_users;
 	    private _parsed_header;
 	    private _body;
-	    private _cubeBitmaps;
-	    private _defaultCubeTexture;
 	    static COMPRESSIONMODE_LZMA: string;
 	    static UNCOMPRESSED: number;
 	    static DEFLATE: number;
@@ -593,6 +588,9 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    static MTX3x3: number;
 	    static MTX4x3: number;
 	    static MTX4x4: number;
+	    static GEO_NUMBER: number;
+	    static MATRIX_NUMBER: number;
+	    static PROPERTY_NUMBER: number;
 	    private blendModeDic;
 	    private _depthSizeDic;
 	    private start_timeing;
@@ -654,36 +652,59 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private parseNextBlock();
 	    private updateTimers(type);
 	    private parseTesselatedFont(blockID);
+	    private static textFormatProperties;
 	    private parseTextFormat(blockID);
+	    private static textFieldProperties;
+	    private static textFieldTypes;
 	    private paresTextField(blockID, factory);
 	    private parseBillBoardLibraryBlock(blockID);
 	    private parseMeshLibraryBlock(blockID);
 	    private parseAudioBlock(blockID, factory);
 	    private parseTimeLine(blockID, factory);
-	    private parseTriangleGeometrieBlock(blockID);
+	    private static geometryProperties;
+	    private static subGeometryProperties;
+	    private parseGeometry(blockID);
+	    private static primitiveProperties;
+	    private static primitiveTypes;
 	    private parsePrimitves(blockID);
+	    private static containerProperties;
 	    private parseContainer(blockID);
+	    private static meshInstanceProperties;
 	    private parseMeshInstance(blockID);
 	    private parseSkyboxInstance(blockID);
+	    private static lightProperties;
 	    private parseLight(blockID);
+	    private static cameraProperties;
+	    private static cameraPivotProperties;
 	    private parseCamera(blockID);
 	    private parseLightPicker(blockID);
+	    private static materialProperties;
 	    private parseMaterial(blockID);
+	    private static material_v1Properties;
+	    private static method_v1Properties;
 	    private parseMaterial_v1(blockID);
 	    private parseTexture(blockID);
 	    private parseCubeTexture(blockID);
 	    private parseSharedMethodBlock(blockID);
 	    private parseShadowMethodBlock(blockID);
+	    private static commandProperties;
+	    private static targetProperties;
 	    private parseCommand(blockID);
+	    private static metaDataProperties;
 	    private parseMetaData(blockID);
 	    private parseNameSpace(blockID);
+	    private shadowMethodListProperties;
 	    private parseShadowMethodList(light, blockID);
 	    private parseSkeleton(blockID);
 	    private parseSkeletonPose(blockID);
 	    private parseSkeletonAnimation(blockID);
+	    private meshPoseAnimationProperties;
 	    private parseMeshPoseAnimation(blockID, poseOnly?);
+	    private static vertexAnimationSetProperties;
 	    private parseVertexAnimationSet(blockID);
+	    private static animatorSetProperties;
 	    private parseAnimatorSet(blockID);
+	    private sharedMethodListProperties;
 	    private parseSharedMethodList(blockID);
 	    private parseUserAttributes();
 	    private parseProperties(expected);
@@ -691,7 +712,6 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private parseHeader();
 	    private getUVForVertexAnimation(meshID);
 	    private parseVarStr();
-	    getDefaultCubeTexture(): IAsset;
 	    private readNumber(precision?);
 	    private parseMatrix3D();
 	    private parseMatrix32RawData();

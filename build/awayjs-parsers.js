@@ -3503,6 +3503,52 @@ var AWDParser = (function (_super) {
         this._num_textures = 0;
         this._num_materials = 0;
         this._num_meshes = 0;
+        //--Parser UTILS---------------------------------------------------------------------------
+        this.shadowMethodListProperties = {
+            1: AWDParser.BADDR,
+            2: AWDParser.BADDR,
+            3: AWDParser.BADDR,
+            101: AWDParser.PROPERTY_NUMBER,
+            102: AWDParser.PROPERTY_NUMBER,
+            103: AWDParser.PROPERTY_NUMBER,
+            201: AWDParser.UINT32,
+            202: AWDParser.UINT32,
+            301: AWDParser.UINT16,
+            302: AWDParser.UINT16,
+            401: AWDParser.UINT8,
+            402: AWDParser.UINT8,
+            601: AWDParser.COLOR,
+            602: AWDParser.COLOR,
+            701: AWDParser.BOOL,
+            702: AWDParser.BOOL,
+            801: AWDParser.MTX4x4
+        };
+        this.meshPoseAnimationProperties = {
+            1: AWDParser.BOOL,
+            2: AWDParser.BOOL
+        };
+        this.sharedMethodListProperties = {
+            1: AWDParser.BADDR,
+            2: AWDParser.BADDR,
+            3: AWDParser.BADDR,
+            101: AWDParser.PROPERTY_NUMBER,
+            102: AWDParser.PROPERTY_NUMBER,
+            103: AWDParser.PROPERTY_NUMBER,
+            104: AWDParser.PROPERTY_NUMBER,
+            105: AWDParser.PROPERTY_NUMBER,
+            106: AWDParser.PROPERTY_NUMBER,
+            107: AWDParser.PROPERTY_NUMBER,
+            201: AWDParser.UINT32,
+            202: AWDParser.UINT32,
+            301: AWDParser.UINT16,
+            302: AWDParser.UINT16,
+            401: AWDParser.UINT8,
+            402: AWDParser.UINT8,
+            601: AWDParser.COLOR,
+            602: AWDParser.COLOR,
+            701: AWDParser.BOOL,
+            702: AWDParser.BOOL
+        };
         this._view = view;
         this._blocks = new Array();
         this._blocks[0] = new AWDBlock(0, 255);
@@ -3708,15 +3754,6 @@ var AWDParser = (function (_super) {
             this._accuracyMatrix = BitFlags.test(flags, BitFlags.FLAG1);
             this._accuracyGeo = BitFlags.test(flags, BitFlags.FLAG2);
             this._accuracyProps = BitFlags.test(flags, BitFlags.FLAG3);
-            this._geoNrType = AWDParser.FLOAT32;
-            if (this._accuracyGeo)
-                this._geoNrType = AWDParser.FLOAT64;
-            this._matrixNrType = AWDParser.FLOAT32;
-            if (this._accuracyMatrix)
-                this._matrixNrType = AWDParser.FLOAT64;
-            this._propsNrType = AWDParser.FLOAT32;
-            if (this._accuracyProps)
-                this._propsNrType = AWDParser.FLOAT64;
         }
         var blockEndAll = this._body.position + len;
         if (len > this._body.getBytesAvailable()) {
@@ -3846,7 +3883,7 @@ var AWDParser = (function (_super) {
         if (isParsed == false) {
             switch (type) {
                 case 1:
-                    this.parseTriangleGeometrieBlock(this._cur_block_id);
+                    this.parseGeometry(this._cur_block_id);
                     break;
                 case 22:
                     this.parseContainer(this._cur_block_id);
@@ -3954,7 +3991,7 @@ var AWDParser = (function (_super) {
             new_font_style.set_font_em_size(this._newBlockBytes.readUnsignedInt());
             font_style_char_cnt = this._newBlockBytes.readUnsignedInt();
             for (var j = 0; j < font_style_char_cnt; ++j) {
-                // todo: this is basically a simplified version of the subgeom-parsing done in parseTriangleGeometry. Make a parseSubGeom() instead (?)
+                // todo: this is basically a simplified version of the subgeom-parsing done in parseGeometry. Make a parseSubGeom() instead (?)
                 font_style_char = this._newBlockBytes.readUnsignedInt();
                 sm_len = this._newBlockBytes.readUnsignedInt();
                 sm_end = this._newBlockBytes.position + sm_len;
@@ -4010,7 +4047,7 @@ var AWDParser = (function (_super) {
         for (var uvcnt = 0; uvcnt < num_uv_values; uvcnt++)
             uv_values[uvcnt] = this._newBlockBytes.readFloat();
         newTextFormat.uv_values = uv_values;
-        var format_props = this.parseProperties({ 1: AWDParser.UINT16, 2: AWDParser.UINT16, 3: AWDParser.UINT8, 4: AWDParser.UINT8, 5: AWDParser.UINT8, 6: AWDParser.UINT8, 7: AWDParser.UINT16, 8: AWDParser.UINT16, 9: AWDParser.UINT16, 10: AWDParser.UINT16 });
+        var format_props = this.parseProperties(AWDParser.textFormatProperties);
         newTextFormat.size = format_props.get(1, 12);
         newTextFormat.letterSpacing = format_props.get(2, 0);
         //newTextFormat.rotated = format_props.get(3,false);
@@ -4038,22 +4075,11 @@ var AWDParser = (function (_super) {
     AWDParser.prototype.paresTextField = function (blockID, factory) {
         var name = this.parseVarStr();
         this._blocks[blockID].name = name;
-        //console.log("name  '" + name);
         var newTextField = factory.createTextField();
         var text_field_type = this._newBlockBytes.readUnsignedByte();
-        if (text_field_type == 0) {
-            newTextField.type = "static";
-        }
-        else if (text_field_type == 1) {
-            newTextField.type = "dynamic";
-        }
-        else if (text_field_type == 2) {
-            newTextField.type = "input";
-        }
-        else if (text_field_type == 3) {
-            newTextField.type = "input";
+        newTextField.type = AWDParser.textFieldTypes[text_field_type];
+        if (text_field_type == 3)
             newTextField.displayAsPassword = true;
-        }
         //
         newTextField.textWidth = Math.abs(this._newBlockBytes.readFloat());
         newTextField.textHeight = Math.abs(this._newBlockBytes.readFloat());
@@ -4076,7 +4102,7 @@ var AWDParser = (function (_super) {
         newTextField.text = complete_text;
         //newTextField.construct_geometry();
         // todo: optional matrix etc can be put in properties.
-        var props = this.parseProperties({ 1: AWDParser.BOOL, 3: AWDParser.BOOL, 4: AWDParser.BOOL, 5: AWDParser.BOOL, 7: AWDParser.UINT8, 8: AWDParser.UINT8, 9: AWDParser.UINT8 });
+        var props = this.parseProperties(AWDParser.textFieldProperties);
         newTextField.selectable = props.get(1, false);
         newTextField.border = props.get(3, false);
         //newTextField.renderHTML =  props.get(4, false);
@@ -4114,13 +4140,14 @@ var AWDParser = (function (_super) {
         var num_materials = this._newBlockBytes.readUnsignedShort();
         var materials = new Array();
         var materialNames = new Array();
+        var mat;
         for (var materials_parsed = 0; materials_parsed < num_materials; materials_parsed++) {
-            var m = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
-            //m.preserveAlpha = true;
-            m.alphaBlending = true;
-            m.useColorTransform = true;
-            materials[materials_parsed] = m;
-            materialNames[materials_parsed] = m.name;
+            mat = (this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager.getDefaultMaterial());
+            //mat.preserveAlpha = true;
+            mat.alphaBlending = true;
+            mat.useColorTransform = true;
+            materials[materials_parsed] = mat;
+            materialNames[materials_parsed] = mat.name;
         }
         var mesh = new Mesh(geom, null);
         if (materials.length >= 1 && mesh.subMeshes.length == 1) {
@@ -4390,13 +4417,13 @@ var AWDParser = (function (_super) {
             console.log("Parsed a TIMELINE: Name = " + name + "| isScene = " + isScene + "| sceneID = " + sceneID + "| numFrames = " + numFrames);
     };
     //Block ID = 1
-    AWDParser.prototype.parseTriangleGeometrieBlock = function (blockID) {
+    AWDParser.prototype.parseGeometry = function (blockID) {
         var geom = new Geometry();
         // Read name and sub count
         var name = this.parseVarStr();
         var num_subs = this._newBlockBytes.readUnsignedShort();
         // Read optional properties
-        var props = this.parseProperties({ 1: this._geoNrType, 2: this._geoNrType });
+        var props = this.parseProperties(AWDParser.geometryProperties);
         var geoScaleU = props.get(1, 1);
         var geoScaleV = props.get(2, 1);
         for (var subs_parsed = 0; subs_parsed < num_subs; subs_parsed++) {
@@ -4406,7 +4433,7 @@ var AWDParser = (function (_super) {
             var weights;
             sm_len = this._newBlockBytes.readUnsignedInt();
             sm_end = this._newBlockBytes.position + sm_len;
-            var subProps = this.parseProperties({ 1: this._geoNrType, 2: this._geoNrType });
+            var subProps = this.parseProperties(AWDParser.subGeometryProperties);
             while (this._newBlockBytes.position < sm_end) {
                 var idx = 0;
                 var str_ftype, str_type, str_len, str_end;
@@ -4527,8 +4554,7 @@ var AWDParser = (function (_super) {
         // Read name and sub count
         name = this.parseVarStr();
         primType = this._newBlockBytes.readUnsignedByte();
-        props = this.parseProperties({ 101: this._geoNrType, 102: this._geoNrType, 103: this._geoNrType, 110: this._geoNrType, 111: this._geoNrType, 301: AWDParser.UINT16, 302: AWDParser.UINT16, 303: AWDParser.UINT16, 701: AWDParser.BOOL, 702: AWDParser.BOOL, 703: AWDParser.BOOL, 704: AWDParser.BOOL });
-        var primitiveTypes = ["Unsupported Type-ID", "PrimitivePlanePrefab", "PrimitiveCubePrefab", "PrimitiveSpherePrefab", "PrimitiveCylinderPrefab", "PrimitivesConePrefab", "PrimitivesCapsulePrefab", "PrimitivesTorusPrefab"];
+        props = this.parseProperties(AWDParser.primitiveProperties);
         switch (primType) {
             case 1:
                 prefab = new PrimitivePlanePrefab(props.get(101, 100), props.get(102, 100), props.get(301, 1), props.get(302, 1), props.get(701, true), props.get(702, false));
@@ -4571,7 +4597,7 @@ var AWDParser = (function (_super) {
         if (this._debug) {
             if ((primType < 0) || (primType > 7))
                 primType = 0;
-            console.log("Parsed a Primivite: Name = " + name + "| type = " + primitiveTypes[primType]);
+            console.log("Parsed a Primivite: Name = " + name + "| type = " + AWDParser.primitiveTypes[primType]);
         }
     };
     // Block ID = 22
@@ -4595,7 +4621,7 @@ var AWDParser = (function (_super) {
         }
         // in AWD version 2.1 we read the Container properties
         if ((this._version[0] == 2) && (this._version[1] == 1)) {
-            var props = this.parseProperties({ 1: this._matrixNrType, 2: this._matrixNrType, 3: this._matrixNrType, 4: AWDParser.UINT8 });
+            var props = this.parseProperties(AWDParser.containerProperties);
             ctr.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
         }
         else {
@@ -4629,10 +4655,11 @@ var AWDParser = (function (_super) {
         var num_materials = this._newBlockBytes.readUnsignedShort();
         var materials = new Array();
         var materialNames = new Array();
+        var mat;
         for (var materials_parsed = 0; materials_parsed < num_materials; materials_parsed++) {
-            var m = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
-            materials[materials_parsed] = m;
-            materialNames[materials_parsed] = m.name;
+            mat = (this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager.getDefaultMaterial());
+            materials[materials_parsed] = mat;
+            materialNames[materials_parsed] = mat.name;
         }
         var mesh = isPrefab ? prefab.getNewObject() : new Mesh(geom, null);
         mesh.transform.matrix3D = mtx;
@@ -4653,7 +4680,7 @@ var AWDParser = (function (_super) {
                 mesh.subMeshes[i].material = materials[Math.min(materials.length - 1, i)];
         }
         if ((this._version[0] == 2) && (this._version[1] == 1)) {
-            var props = this.parseProperties({ 1: this._matrixNrType, 2: this._matrixNrType, 3: this._matrixNrType, 4: AWDParser.UINT8, 5: AWDParser.BOOL });
+            var props = this.parseProperties(AWDParser.meshInstanceProperties);
             mesh.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
             mesh.castsShadows = props.get(5, true);
         }
@@ -4673,14 +4700,15 @@ var AWDParser = (function (_super) {
     //Block ID 31
     AWDParser.prototype.parseSkyboxInstance = function (blockID) {
         var name = this.parseVarStr();
-        var cubeTex = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
-        var asset = new Skybox(cubeTex);
+        var asset = new Skybox();
+        var tex = (this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager.getDefaultTexture(asset));
+        asset.cubeMap = tex;
         this.parseProperties(null);
         asset.extra = this.parseUserAttributes();
         this._pFinalizeAsset(asset, name);
         this._blocks[blockID].data = asset;
         if (this._debug)
-            console.log("Parsed a Skybox: Name = '" + name + "' | CubeTexture-Name = " + cubeTex.name);
+            console.log("Parsed a Skybox: Name = '" + name + "' | CubeTexture-Name = " + tex.name);
     };
     //Block ID = 41
     AWDParser.prototype.parseLight = function (blockID) {
@@ -4690,7 +4718,7 @@ var AWDParser = (function (_super) {
         var mtx = this.parseMatrix3D();
         var name = this.parseVarStr();
         var lightType = this._newBlockBytes.readUnsignedByte();
-        var props = this.parseProperties({ 1: this._propsNrType, 2: this._propsNrType, 3: AWDParser.COLOR, 4: this._propsNrType, 5: this._propsNrType, 6: AWDParser.BOOL, 7: AWDParser.COLOR, 8: this._propsNrType, 9: AWDParser.UINT8, 10: AWDParser.UINT8, 11: this._propsNrType, 12: AWDParser.UINT16, 21: this._matrixNrType, 22: this._matrixNrType, 23: this._matrixNrType });
+        var props = this.parseProperties(AWDParser.lightProperties);
         var shadowMapperType = props.get(9, 0);
         var lightTypes = ["Unsupported LightType", "PointLight", "DirectionalLight"];
         var shadowMapperTypes = ["No ShadowMapper", "DirectionalShadowMapper", "NearDirectionalShadowMapper", "CascadeShadowMapper", "CubeMapShadowMapper"];
@@ -4755,7 +4783,7 @@ var AWDParser = (function (_super) {
         this._newBlockBytes.readUnsignedByte(); //set as active camera
         this._newBlockBytes.readShort(); //lengthof lenses - not used yet
         var projectiontype = this._newBlockBytes.readShort();
-        var props = this.parseProperties({ 101: this._propsNrType, 102: this._propsNrType, 103: this._propsNrType, 104: this._propsNrType });
+        var props = this.parseProperties(AWDParser.cameraProperties);
         switch (projectiontype) {
             case 5001:
                 projection = new PerspectiveProjection(props.get(101, 60));
@@ -4782,7 +4810,7 @@ var AWDParser = (function (_super) {
             this._pContent.addChild(camera);
         }
         camera.name = name;
-        props = this.parseProperties({ 1: this._matrixNrType, 2: this._matrixNrType, 3: this._matrixNrType, 4: AWDParser.UINT8 });
+        props = this.parseProperties(AWDParser.cameraPivotProperties);
         camera.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
         camera.extra = this.parseUserAttributes();
         this._pFinalizeAsset(camera, name);
@@ -4830,8 +4858,7 @@ var AWDParser = (function (_super) {
         type = this._newBlockBytes.readUnsignedByte();
         num_methods = this._newBlockBytes.readUnsignedByte();
         // Read material numerical properties
-        // (1=color, 2=bitmap url, 10=alpha, 11=alpha_blending, 12=alpha_threshold, 13=repeat)
-        props = this.parseProperties({ 1: AWDParser.INT32, 2: AWDParser.BADDR, 10: this._propsNrType, 11: AWDParser.BOOL, 12: this._propsNrType, 13: AWDParser.BOOL });
+        props = this.parseProperties(AWDParser.materialProperties);
         methods_parsed = 0;
         while (methods_parsed < num_methods) {
             var method_type;
@@ -4882,7 +4909,7 @@ var AWDParser = (function (_super) {
         var name = this.parseVarStr();
         var type = this._newBlockBytes.readUnsignedByte();
         var num_methods = this._newBlockBytes.readUnsignedByte();
-        var props = this.parseProperties({ 1: AWDParser.UINT32, 2: AWDParser.BADDR, 3: AWDParser.BADDR, 4: AWDParser.UINT8, 5: AWDParser.BOOL, 6: AWDParser.BOOL, 7: AWDParser.BOOL, 8: AWDParser.BOOL, 9: AWDParser.UINT8, 10: this._propsNrType, 11: AWDParser.BOOL, 12: this._propsNrType, 13: AWDParser.BOOL, 15: this._propsNrType, 16: AWDParser.UINT32, 17: AWDParser.BADDR, 18: this._propsNrType, 19: this._propsNrType, 20: AWDParser.UINT32, 21: AWDParser.BADDR, 22: AWDParser.BADDR });
+        var props = this.parseProperties(AWDParser.material_v1Properties);
         var spezialType = props.get(4, 0);
         var debugString = "Parsed Material ";
         if (spezialType >= 2) {
@@ -4952,25 +4979,7 @@ var AWDParser = (function (_super) {
                 for (var methods_parsed = 0; methods_parsed < num_methods; methods_parsed++) {
                     var method_type;
                     method_type = this._newBlockBytes.readUnsignedShort();
-                    props = this.parseProperties({
-                        1: AWDParser.BADDR,
-                        2: AWDParser.BADDR,
-                        3: AWDParser.BADDR,
-                        101: this._propsNrType,
-                        102: this._propsNrType,
-                        103: this._propsNrType,
-                        201: AWDParser.UINT32,
-                        202: AWDParser.UINT32,
-                        301: AWDParser.UINT16,
-                        302: AWDParser.UINT16,
-                        401: AWDParser.UINT8,
-                        402: AWDParser.UINT8,
-                        601: AWDParser.COLOR,
-                        602: AWDParser.COLOR,
-                        701: AWDParser.BOOL,
-                        702: AWDParser.BOOL,
-                        801: AWDParser.MTX4x4
-                    });
+                    props = this.parseProperties(AWDParser.method_v1Properties);
                     switch (method_type) {
                         case 999:
                             var effectMethod = this._blocks[props.get(1, 0)].data;
@@ -5103,13 +5112,11 @@ var AWDParser = (function (_super) {
         var data_len;
         var asset;
         var i;
-        this._cubeBitmaps = new Array();
         this._texture_users[this._cur_block_id] = [];
         var type = this._newBlockBytes.readUnsignedByte();
         this._blocks[blockID].name = this.parseVarStr();
         for (i = 0; i < 6; i++) {
             this._texture_users[this._cur_block_id] = [];
-            this._cubeBitmaps.push(null);
             // External
             if (type == 0) {
                 data_len = this._newBlockBytes.readUnsignedInt();
@@ -5166,7 +5173,7 @@ var AWDParser = (function (_super) {
         var name = this.parseVarStr();
         var numCommands = this._newBlockBytes.readShort();
         var typeCommand = this._newBlockBytes.readShort();
-        var props = this.parseProperties({ 1: AWDParser.BADDR });
+        var props = this.parseProperties(AWDParser.commandProperties);
         switch (typeCommand) {
             case 1:
                 targetObject = this._blocks[props.get(1, 0)].data;
@@ -5176,7 +5183,7 @@ var AWDParser = (function (_super) {
                 break;
         }
         if (targetObject) {
-            props = this.parseProperties({ 1: this._matrixNrType, 2: this._matrixNrType, 3: this._matrixNrType, 4: AWDParser.UINT8 });
+            props = this.parseProperties(AWDParser.targetProperties);
             targetObject.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
             targetObject.extra = this.parseUserAttributes();
         }
@@ -5186,7 +5193,7 @@ var AWDParser = (function (_super) {
     };
     //blockID 255
     AWDParser.prototype.parseMetaData = function (blockID) {
-        var props = this.parseProperties({ 1: AWDParser.UINT32, 2: AWDParser.AWDSTRING, 3: AWDParser.AWDSTRING, 4: AWDParser.AWDSTRING, 5: AWDParser.AWDSTRING });
+        var props = this.parseProperties(AWDParser.metaDataProperties);
         if (this._debug) {
             console.log("Parsed a MetaDataBlock: TimeStamp         = " + props.get(1, 0));
             console.log("                        EncoderName       = " + props.get(2, "unknown"));
@@ -5202,12 +5209,11 @@ var AWDParser = (function (_super) {
         if (this._debug)
             console.log("Parsed a NameSpaceBlock: ID = " + id + " | String = " + nameSpaceString);
     };
-    //--Parser UTILS---------------------------------------------------------------------------
     // this functions reads and creates a ShadowMethodMethod
     AWDParser.prototype.parseShadowMethodList = function (light, blockID) {
         var methodType = this._newBlockBytes.readUnsignedShort();
         var shadowMethod;
-        var props = this.parseProperties({ 1: AWDParser.BADDR, 2: AWDParser.BADDR, 3: AWDParser.BADDR, 101: this._propsNrType, 102: this._propsNrType, 103: this._propsNrType, 201: AWDParser.UINT32, 202: AWDParser.UINT32, 301: AWDParser.UINT16, 302: AWDParser.UINT16, 401: AWDParser.UINT8, 402: AWDParser.UINT8, 601: AWDParser.COLOR, 602: AWDParser.COLOR, 701: AWDParser.BOOL, 702: AWDParser.BOOL, 801: AWDParser.MTX4x4 });
+        var props = this.parseProperties(this.shadowMethodListProperties);
         var targetID;
         var returnedArray;
         switch (methodType) {
@@ -5343,7 +5349,7 @@ var AWDParser = (function (_super) {
         var num_Streams = this._newBlockBytes.readUnsignedShort();
         for (var streamsParsed = 0; streamsParsed < num_Streams; streamsParsed++)
             streamtypes.push(this._newBlockBytes.readUnsignedShort());
-        props = this.parseProperties({ 1: AWDParser.BOOL, 2: AWDParser.BOOL });
+        props = this.parseProperties(this.meshPoseAnimationProperties);
         clip.looping = props.get(1, true);
         clip.stitchFinalFrame = props.get(2, false);
         var frame_dur;
@@ -5396,7 +5402,7 @@ var AWDParser = (function (_super) {
     AWDParser.prototype.parseVertexAnimationSet = function (blockID /*uint*/) {
         var name = this.parseVarStr();
         var num_frames = this._newBlockBytes.readUnsignedShort();
-        var props = this.parseProperties({ 1: AWDParser.UINT16 });
+        var props = this.parseProperties(AWDParser.vertexAnimationSetProperties);
         var skeletonFrames = new Array();
         var vertexFrames = new Array();
         var clipNode;
@@ -5435,7 +5441,7 @@ var AWDParser = (function (_super) {
     AWDParser.prototype.parseAnimatorSet = function (blockID /*uint*/) {
         var name = this.parseVarStr();
         var type = this._newBlockBytes.readUnsignedShort();
-        var props = this.parseProperties({ 1: AWDParser.BADDR });
+        var props = this.parseProperties(AWDParser.animatorSetProperties);
         var targetAnimationSet = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
         var targetMeshes = new Array();
         var targetMeshLength = this._newBlockBytes.readUnsignedShort();
@@ -5465,7 +5471,7 @@ var AWDParser = (function (_super) {
     AWDParser.prototype.parseSharedMethodList = function (blockID) {
         var methodType = this._newBlockBytes.readUnsignedShort();
         var effectMethodReturn;
-        var props = this.parseProperties({ 1: AWDParser.BADDR, 2: AWDParser.BADDR, 3: AWDParser.BADDR, 101: this._propsNrType, 102: this._propsNrType, 103: this._propsNrType, 104: this._propsNrType, 105: this._propsNrType, 106: this._propsNrType, 107: this._propsNrType, 201: AWDParser.UINT32, 202: AWDParser.UINT32, 301: AWDParser.UINT16, 302: AWDParser.UINT16, 401: AWDParser.UINT8, 402: AWDParser.UINT8, 601: AWDParser.COLOR, 602: AWDParser.COLOR, 701: AWDParser.BOOL, 702: AWDParser.BOOL });
+        var props = this.parseProperties(this.sharedMethodListProperties);
         switch (methodType) {
             case 401:
                 effectMethodReturn = new EffectColorMatrixMethod(props.get(101, new Array(0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)));
@@ -5596,6 +5602,7 @@ var AWDParser = (function (_super) {
     AWDParser.prototype.parseAttrValue = function (type, len) {
         var elem_len;
         var read_func;
+        var accuracy;
         switch (type) {
             case AWDParser.BOOL:
             case AWDParser.INT8:
@@ -5644,6 +5651,21 @@ var AWDParser = (function (_super) {
                 elem_len = 8;
                 read_func = this._newBlockBytes.readDouble;
                 break;
+            case AWDParser.GEO_NUMBER:
+                accuracy = this._accuracyGeo;
+            case AWDParser.MATRIX_NUMBER:
+                accuracy = this._accuracyMatrix;
+            case AWDParser.PROPERTY_NUMBER:
+                accuracy = this._accuracyProps;
+            default:
+                if (accuracy) {
+                    elem_len = 8;
+                    read_func = this._newBlockBytes.readDouble;
+                }
+                else {
+                    elem_len = 4;
+                    read_func = this._newBlockBytes.readFloat;
+                }
         }
         if (elem_len < len) {
             var list = [];
@@ -5662,22 +5684,12 @@ var AWDParser = (function (_super) {
         this._version[1] = this._byteData.readUnsignedByte();
         var flags = this._byteData.readUnsignedShort(); // Parse bit flags
         this._streaming = BitFlags.test(flags, BitFlags.FLAG1);
+        // if we set _accuracyOnBlocks, the precision-values are read from each block-header.
         if ((this._version[0] == 2) && (this._version[1] == 1)) {
             this._accuracyMatrix = BitFlags.test(flags, BitFlags.FLAG2);
             this._accuracyGeo = BitFlags.test(flags, BitFlags.FLAG3);
             this._accuracyProps = BitFlags.test(flags, BitFlags.FLAG4);
         }
-        // if we set _accuracyOnBlocks, the precision-values are read from each block-header.
-        // set storagePrecision types
-        this._geoNrType = AWDParser.FLOAT32;
-        if (this._accuracyGeo)
-            this._geoNrType = AWDParser.FLOAT64;
-        this._matrixNrType = AWDParser.FLOAT32;
-        if (this._accuracyMatrix)
-            this._matrixNrType = AWDParser.FLOAT64;
-        this._propsNrType = AWDParser.FLOAT32;
-        if (this._accuracyProps)
-            this._propsNrType = AWDParser.FLOAT64;
         this._compression = this._byteData.readUnsignedByte(); // compression
         if (this._debug) {
             console.log("Import AWDFile of version = " + this._version[0] + " - " + this._version[1]);
@@ -5706,17 +5718,6 @@ var AWDParser = (function (_super) {
     };
     AWDParser.prototype.parseVarStr = function () {
         return this._newBlockBytes.readUTFBytes(this._newBlockBytes.readUnsignedShort());
-    };
-    AWDParser.prototype.getDefaultCubeTexture = function () {
-        if (!this._defaultCubeTexture) {
-            var defaultBitmap = DefaultMaterialManager.createCheckeredBitmapImage2D();
-            var bitmapImageCube = new BitmapImageCube(defaultBitmap.width);
-            for (var i = 0; i < 6; i++)
-                bitmapImageCube.draw(i, defaultBitmap);
-            this._defaultCubeTexture = new SingleCubeTexture(bitmapImageCube);
-            this._defaultCubeTexture.name = "defaultCubeTexture";
-        }
-        return this._defaultCubeTexture;
     };
     AWDParser.prototype.readNumber = function (precision) {
         if (precision === void 0) { precision = false; }
@@ -5792,6 +5793,145 @@ var AWDParser = (function (_super) {
     AWDParser.MTX3x3 = 45;
     AWDParser.MTX4x3 = 46;
     AWDParser.MTX4x4 = 47;
+    AWDParser.GEO_NUMBER = 48;
+    AWDParser.MATRIX_NUMBER = 49;
+    AWDParser.PROPERTY_NUMBER = 50;
+    AWDParser.textFormatProperties = {
+        1: AWDParser.UINT16,
+        2: AWDParser.UINT16,
+        3: AWDParser.UINT8,
+        4: AWDParser.UINT8,
+        5: AWDParser.UINT8,
+        6: AWDParser.UINT8,
+        7: AWDParser.UINT16,
+        8: AWDParser.UINT16,
+        9: AWDParser.UINT16,
+        10: AWDParser.UINT16
+    };
+    AWDParser.textFieldProperties = {
+        1: AWDParser.BOOL,
+        3: AWDParser.BOOL,
+        4: AWDParser.BOOL,
+        5: AWDParser.BOOL,
+        7: AWDParser.UINT8,
+        8: AWDParser.UINT8,
+        9: AWDParser.UINT8
+    };
+    AWDParser.textFieldTypes = ["static", "dynamic", "input", "input"];
+    AWDParser.geometryProperties = {
+        1: AWDParser.GEO_NUMBER,
+        2: AWDParser.GEO_NUMBER
+    };
+    AWDParser.subGeometryProperties = {
+        1: AWDParser.GEO_NUMBER,
+        2: AWDParser.GEO_NUMBER
+    };
+    AWDParser.primitiveProperties = {
+        101: AWDParser.GEO_NUMBER,
+        102: AWDParser.GEO_NUMBER,
+        103: AWDParser.GEO_NUMBER,
+        110: AWDParser.GEO_NUMBER,
+        111: AWDParser.GEO_NUMBER,
+        301: AWDParser.UINT16,
+        302: AWDParser.UINT16,
+        303: AWDParser.UINT16,
+        701: AWDParser.BOOL,
+        702: AWDParser.BOOL,
+        703: AWDParser.BOOL,
+        704: AWDParser.BOOL
+    };
+    AWDParser.primitiveTypes = ["Unsupported Type-ID", "PrimitivePlanePrefab", "PrimitiveCubePrefab", "PrimitiveSpherePrefab", "PrimitiveCylinderPrefab", "PrimitivesConePrefab", "PrimitivesCapsulePrefab", "PrimitivesTorusPrefab"];
+    AWDParser.containerProperties = {
+        1: AWDParser.MATRIX_NUMBER,
+        2: AWDParser.MATRIX_NUMBER,
+        3: AWDParser.MATRIX_NUMBER,
+        4: AWDParser.UINT8
+    };
+    AWDParser.meshInstanceProperties = {
+        1: AWDParser.MATRIX_NUMBER,
+        2: AWDParser.MATRIX_NUMBER,
+        3: AWDParser.MATRIX_NUMBER,
+        4: AWDParser.UINT8,
+        5: AWDParser.BOOL
+    };
+    AWDParser.lightProperties = {
+        1: AWDParser.PROPERTY_NUMBER,
+        2: AWDParser.PROPERTY_NUMBER,
+        3: AWDParser.COLOR,
+        4: AWDParser.PROPERTY_NUMBER,
+        5: AWDParser.PROPERTY_NUMBER,
+        6: AWDParser.BOOL,
+        7: AWDParser.COLOR,
+        8: AWDParser.PROPERTY_NUMBER,
+        9: AWDParser.UINT8,
+        10: AWDParser.UINT8,
+        11: AWDParser.PROPERTY_NUMBER,
+        12: AWDParser.UINT16,
+        21: AWDParser.MATRIX_NUMBER,
+        22: AWDParser.MATRIX_NUMBER,
+        23: AWDParser.MATRIX_NUMBER
+    };
+    AWDParser.cameraProperties = {
+        101: AWDParser.PROPERTY_NUMBER,
+        102: AWDParser.PROPERTY_NUMBER,
+        103: AWDParser.PROPERTY_NUMBER,
+        104: AWDParser.PROPERTY_NUMBER
+    };
+    AWDParser.cameraPivotProperties = {
+        1: AWDParser.MATRIX_NUMBER,
+        2: AWDParser.MATRIX_NUMBER,
+        3: AWDParser.MATRIX_NUMBER,
+        4: AWDParser.UINT8
+    };
+    // (1=color, 2=bitmap url, 10=alpha, 11=alpha_blending, 12=alpha_threshold, 13=repeat)
+    AWDParser.materialProperties = {
+        1: AWDParser.INT32,
+        2: AWDParser.BADDR,
+        10: AWDParser.PROPERTY_NUMBER,
+        11: AWDParser.BOOL,
+        12: AWDParser.PROPERTY_NUMBER,
+        13: AWDParser.BOOL
+    };
+    AWDParser.material_v1Properties = { 1: AWDParser.UINT32, 2: AWDParser.BADDR, 3: AWDParser.BADDR, 4: AWDParser.UINT8, 5: AWDParser.BOOL, 6: AWDParser.BOOL, 7: AWDParser.BOOL, 8: AWDParser.BOOL, 9: AWDParser.UINT8, 10: AWDParser.PROPERTY_NUMBER, 11: AWDParser.BOOL, 12: AWDParser.PROPERTY_NUMBER, 13: AWDParser.BOOL, 15: AWDParser.PROPERTY_NUMBER, 16: AWDParser.UINT32, 17: AWDParser.BADDR, 18: AWDParser.PROPERTY_NUMBER, 19: AWDParser.PROPERTY_NUMBER, 20: AWDParser.UINT32, 21: AWDParser.BADDR, 22: AWDParser.BADDR };
+    AWDParser.method_v1Properties = {
+        1: AWDParser.BADDR,
+        2: AWDParser.BADDR,
+        3: AWDParser.BADDR,
+        101: AWDParser.PROPERTY_NUMBER,
+        102: AWDParser.PROPERTY_NUMBER,
+        103: AWDParser.PROPERTY_NUMBER,
+        201: AWDParser.UINT32,
+        202: AWDParser.UINT32,
+        301: AWDParser.UINT16,
+        302: AWDParser.UINT16,
+        401: AWDParser.UINT8,
+        402: AWDParser.UINT8,
+        601: AWDParser.COLOR,
+        602: AWDParser.COLOR,
+        701: AWDParser.BOOL,
+        702: AWDParser.BOOL,
+        801: AWDParser.MTX4x4
+    };
+    AWDParser.commandProperties = {
+        1: AWDParser.BADDR
+    };
+    AWDParser.targetProperties = {
+        1: AWDParser.MATRIX_NUMBER,
+        2: AWDParser.MATRIX_NUMBER,
+        3: AWDParser.MATRIX_NUMBER,
+        4: AWDParser.UINT8
+    };
+    AWDParser.metaDataProperties = {
+        1: AWDParser.UINT32,
+        2: AWDParser.AWDSTRING,
+        3: AWDParser.AWDSTRING,
+        4: AWDParser.AWDSTRING,
+        5: AWDParser.AWDSTRING
+    };
+    AWDParser.vertexAnimationSetProperties = {
+        1: AWDParser.UINT16
+    };
+    AWDParser.animatorSetProperties = { 1: AWDParser.BADDR };
     return AWDParser;
 })(ParserBase);
 var AWDProperties = (function () {
@@ -5801,10 +5941,7 @@ var AWDProperties = (function () {
         this[key] = value;
     };
     AWDProperties.prototype.get = function (key, fallback) {
-        if (this[key])
-            return this[key];
-        else
-            return fallback;
+        return (this[key] || fallback);
     };
     return AWDProperties;
 })();
