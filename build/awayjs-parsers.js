@@ -1269,6 +1269,7 @@ var AWDBitFlags = require("awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var TimelineKeyFrame = require("awayjs-player/lib/timeline/TimelineKeyFrame");
+var Timeline = require("awayjs-player/lib/timeline/Timeline");
 var AddChildAtDepthCommand = require("awayjs-player/lib/timeline/commands/AddChildAtDepthCommand");
 var ApplyAS2DepthsCommand = require("awayjs-player/lib/timeline/commands/ApplyAS2DepthsCommand");
 var ExecuteScriptCommand = require("awayjs-player/lib/timeline/commands/ExecuteScriptCommand");
@@ -1291,6 +1292,7 @@ var MovieClipAWDParser = (function (_super) {
         var j;
         var c;
         var new_mc = this.factory.createMovieClip();
+        var new_timeline = new Timeline();
         this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
         var isScene = !!this.awd_file_data.newBlockBytes.readUnsignedByte();
         var sceneID = this.awd_file_data.newBlockBytes.readUnsignedByte();
@@ -1313,7 +1315,7 @@ var MovieClipAWDParser = (function (_super) {
             resourceID = this.awd_file_data.newBlockBytes.readUnsignedInt();
             var cmd_asset = this.awd_file_data.getAssetByID(resourceID);
             if (cmd_asset != null) {
-                new_mc.registerPotentialChild(cmd_asset);
+                new_timeline.registerPotentialChild(cmd_asset);
             }
             else {
                 //todo: register a default display object on timeline, so we do not mess up the incremental obj-id
@@ -1331,7 +1333,7 @@ var MovieClipAWDParser = (function (_super) {
             var cmd_asset = this.awd_file_data.getAssetByID(resourceID);
             if (cmd_asset != null) {
                 for (j = 0; j < num_instances; j++) {
-                    new_mc.registerPotentialChild(cmd_asset);
+                    new_timeline.registerPotentialChild(cmd_asset);
                 }
             }
             else {
@@ -1370,6 +1372,7 @@ var MovieClipAWDParser = (function (_super) {
         var commandType;
         var frame;
         var hasDepthChanges;
+        var sessionCount = 0;
         for (i = 0; i < numFrames; i++) {
             // todo: remove the ms_per_frame to set the duration in frames
             frameDuration = this.awd_file_data.newBlockBytes.readUnsignedInt() * ms_per_frame;
@@ -1377,7 +1380,7 @@ var MovieClipAWDParser = (function (_super) {
             totalDuration += frameDuration;
             numLabels = this.awd_file_data.newBlockBytes.readUnsignedByte();
             for (j = 0; j < numLabels; j++)
-                frame.label = this.awd_file_data.parseVarStr();
+                new_timeline._labels[this.awd_file_data.parseVarStr()] = new_timeline.numKeyFrames();
             numCommands = this.awd_file_data.newBlockBytes.readUnsignedShort();
             //console.log("numCommands "+numCommands);
             //traceString += "\n      Commands " + numCommands;
@@ -1404,9 +1407,10 @@ var MovieClipAWDParser = (function (_super) {
                             hasDepthChanges = true;
                             target_depth = this.awd_file_data.newBlockBytes.readShort();
                             //console.log("target_depth ", target_depth);
-                            var potChild = new_mc.getPotentialChildPrototype(objectID);
+                            var potChild = new_timeline.getPotentialChildPrototype(objectID);
                             if (potChild != undefined) {
-                                frame.frameConstructCommands.push(new AddChildAtDepthCommand(objectID, target_depth));
+                                frame.frameConstructCommands.push(new AddChildAtDepthCommand(objectID, target_depth, sessionCount));
+                                sessionCount++;
                                 // if the object is a tetfield, we set the textfield-name as instancename
                                 if (potChild.isAsset(TextField)) {
                                     frame.frameConstructCommands.push(new SetInstanceNameCommand(objectID, potChild.name));
@@ -1510,8 +1514,9 @@ var MovieClipAWDParser = (function (_super) {
             //trace("length_code = "+length_code+" frame_code = "+frame_code);
             this.awd_file_data.newBlockBytes.readUnsignedInt(); // user attributes - skip for now
             //console.log(traceString);
-            new_mc.addFrame(frame);
+            new_timeline.addFrame(frame);
         }
+        new_mc.timeline = new_timeline;
         this.awd_file_data.parseProperties(null);
         this.awd_file_data.parseUserAttributes();
         this.awd_file_data.cur_block.data = new_mc;
@@ -1522,7 +1527,7 @@ var MovieClipAWDParser = (function (_super) {
 })(AWDBlockParserBase);
 module.exports = MovieClipAWDParser;
 
-},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/entities/TextField":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags":"awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-player/lib/timeline/TimelineKeyFrame":undefined,"awayjs-player/lib/timeline/commands/AddChildAtDepthCommand":undefined,"awayjs-player/lib/timeline/commands/ApplyAS2DepthsCommand":undefined,"awayjs-player/lib/timeline/commands/ExecuteScriptCommand":undefined,"awayjs-player/lib/timeline/commands/RemoveChildrenAtDepthCommand":undefined,"awayjs-player/lib/timeline/commands/SetInstanceNameCommand":undefined,"awayjs-player/lib/timeline/commands/SetMaskCommand":undefined,"awayjs-player/lib/timeline/commands/UpdatePropertyCommand":undefined}],"awayjs-parsers/lib/AWD3BlockParsers/PrefabAWDParser":[function(require,module,exports){
+},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/entities/TextField":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags":"awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-player/lib/timeline/Timeline":undefined,"awayjs-player/lib/timeline/TimelineKeyFrame":undefined,"awayjs-player/lib/timeline/commands/AddChildAtDepthCommand":undefined,"awayjs-player/lib/timeline/commands/ApplyAS2DepthsCommand":undefined,"awayjs-player/lib/timeline/commands/ExecuteScriptCommand":undefined,"awayjs-player/lib/timeline/commands/RemoveChildrenAtDepthCommand":undefined,"awayjs-player/lib/timeline/commands/SetInstanceNameCommand":undefined,"awayjs-player/lib/timeline/commands/SetMaskCommand":undefined,"awayjs-player/lib/timeline/commands/UpdatePropertyCommand":undefined}],"awayjs-parsers/lib/AWD3BlockParsers/PrefabAWDParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -2463,7 +2468,6 @@ var VertexAnimationSetAWDParser = (function (_super) {
 module.exports = VertexAnimationSetAWDParser;
 
 },{"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils","awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData":[function(require,module,exports){
-var BitmapImageCube = require("awayjs-core/lib/data/BitmapImageCube");
 var BlendMode = require("awayjs-core/lib/data/BlendMode");
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
@@ -2839,14 +2843,20 @@ var AWD3FileData = (function () {
         return null;
     };
     AWD3FileData.prototype.getDefaultCubeTexture = function () {
+        /*
         if (!this._defaultCubeTexture) {
-            var defaultBitmap = DefaultMaterialManager.createCheckeredBitmapImage2D();
+            var defaultBitmap:BitmapImage2D = DefaultMaterialManager.createCheckeredBitmapImage2D();
+
             var bitmapImageCube = new BitmapImageCube(defaultBitmap.width);
-            for (var i = 0; i < 6; i++)
+
+            for (var i:number = 0; i < 6; i++)
                 bitmapImageCube.draw(i, defaultBitmap);
+
+
             this._defaultCubeTexture = new SingleCubeTexture(bitmapImageCube);
             this._defaultCubeTexture.name = "defaultCubeTexture";
         }
+        */
         return this._defaultCubeTexture;
     };
     AWD3FileData.prototype.readNumber = function (precision) {
@@ -2905,7 +2915,7 @@ var AWD3FileData = (function () {
 })();
 module.exports = AWD3FileData;
 
-},{"awayjs-core/lib/data/BitmapImageCube":undefined,"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils","awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-parsers/lib/AWD3ParserUtils/AWDProperties":"awayjs-parsers/lib/AWD3ParserUtils/AWDProperties"}],"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":[function(require,module,exports){
+},{"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils","awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-parsers/lib/AWD3ParserUtils/AWDProperties":"awayjs-parsers/lib/AWD3ParserUtils/AWDProperties"}],"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":[function(require,module,exports){
 var AWD3Utils = (function () {
     function AWD3Utils() {
     }
@@ -3456,13 +3466,10 @@ var ShadowSoftMethod = require("awayjs-methodmaterials/lib/methods/ShadowSoftMet
 var BasicMaterial = require("awayjs-display/lib/materials/BasicMaterial");
 var AS2SceneGraphFactory = require("awayjs-player/lib/factories/AS2SceneGraphFactory");
 var TimelineKeyFrame = require("awayjs-player/lib/timeline/TimelineKeyFrame");
+var Timeline = require("awayjs-player/lib/timeline/Timeline");
 var SetButtonCommand = require("awayjs-player/lib/timeline/commands/SetButtonCommand");
-var AddChildAtDepthCommand = require("awayjs-player/lib/timeline/commands/AddChildAtDepthCommand");
 var ApplyAS2DepthsCommand = require("awayjs-player/lib/timeline/commands/ApplyAS2DepthsCommand");
 var ExecuteScriptCommand = require("awayjs-player/lib/timeline/commands/ExecuteScriptCommand");
-var RemoveChildrenAtDepthCommand = require("awayjs-player/lib/timeline/commands/RemoveChildrenAtDepthCommand");
-var SetInstanceNameCommand = require("awayjs-player/lib/timeline/commands/SetInstanceNameCommand");
-var UpdatePropertyCommand = require("awayjs-player/lib/timeline/commands/UpdatePropertyCommand");
 var SetMaskCommand = require("awayjs-player/lib/timeline/commands/SetMaskCommand");
 var Font = require("awayjs-display/lib/text/Font");
 var TextFormat = require("awayjs-display/lib/text/TextFormat");
@@ -4200,6 +4207,7 @@ var AWDParser = (function (_super) {
         var j;
         var cmd_asset;
         var timeLineContainer = factory.createMovieClip();
+        var new_timeline = new Timeline();
         var name = this.parseVarStr();
         var isScene = !!this._newBlockBytes.readUnsignedByte();
         var sceneID = this._newBlockBytes.readUnsignedByte();
@@ -4216,7 +4224,7 @@ var AWDParser = (function (_super) {
         for (i = 0; i < num_potential_childs; i++) {
             cmd_asset = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
             if (cmd_asset != null) {
-                timeLineContainer.registerPotentialChild(cmd_asset);
+                new_timeline.registerPotentialChild(cmd_asset);
             }
             else {
                 //todo: register a default display object on timeline, so we do not mess up the incremental obj-id
@@ -4232,7 +4240,7 @@ var AWDParser = (function (_super) {
             num_all_display_instances += num_instances;
             if (cmd_asset != null) {
                 for (j = 0; j < num_instances; j++)
-                    timeLineContainer.registerPotentialChild(cmd_asset);
+                    new_timeline.registerPotentialChild(cmd_asset);
             }
             else {
                 for (j = 0; j < num_instances; j++) {
@@ -4269,16 +4277,23 @@ var AWDParser = (function (_super) {
         var commandType;
         var frame;
         var hasDepthChanges;
+        var sessionCount = 0;
         var numFrames = this._newBlockBytes.readUnsignedShort();
         for (i = 0; i < numFrames; i++) {
-            var commandCount = 0;
+            var removeCnt = 0;
+            var addChildCnt = 0;
+            var registerChildCnt = 0;
+            var registerNameCnt = 0;
+            var updateChildCnt = 0;
+            var updateChildPropsCnt = 0;
+            var commandCount_props = 0;
             // todo: remove the ms_per_frame to set the duration in frames
             frameDuration = this._newBlockBytes.readUnsignedInt();
             frame = new TimelineKeyFrame(totalDuration, frameDuration);
             totalDuration += frameDuration;
             numLabels = this._newBlockBytes.readUnsignedByte();
             for (j = 0; j < numLabels; j++)
-                frame.label = this.parseVarStr();
+                new_timeline._labels[this.parseVarStr()] = new_timeline.numKeyFrames();
             numCommands = this._newBlockBytes.readUnsignedShort();
             hasDepthChanges = false;
             for (j = 0; j < numCommands; j++) {
@@ -4286,33 +4301,35 @@ var AWDParser = (function (_super) {
                 switch (commandType) {
                     case 1:
                         number_of_obj = this._newBlockBytes.readUnsignedShort();
-                        //console.log("number_of_obj ", number_of_obj);
-                        var remove_depths = new Array();
                         for (var c = 0; c < number_of_obj; c++) {
-                            // Remove Object Command
-                            target_depth = this._newBlockBytes.readShort();
-                            remove_depths.push(target_depth);
+                            // Remove Object depth
+                            frame.removeDepth[removeCnt++] = this._newBlockBytes.readShort();
                         }
-                        frame.frameConstructCommands[commandCount++] = new RemoveChildrenAtDepthCommand(remove_depths);
                         break;
                     case 2:
                     case 3:
                     case 6:
                         objectID = this._newBlockBytes.readUnsignedShort();
                         //console.log("add / update objectID ", objectID);
+                        var updateprops = {};
+                        var updateThis = false;
                         if (commandType != 3) {
                             hasDepthChanges = true;
                             target_depth = this._newBlockBytes.readShort();
                             //console.log("target_depth ", target_depth);
-                            var potChild = timeLineContainer.getPotentialChildPrototype(objectID);
+                            var potChild = new_timeline.getPotentialChildPrototype(objectID);
                             if (potChild != undefined) {
-                                frame.frameConstructCommands[commandCount++] = new AddChildAtDepthCommand(objectID, target_depth);
+                                frame.addCommands[addChildCnt++] = objectID;
+                                frame.addCommands[addChildCnt++] = sessionCount;
+                                frame.addCommands[addChildCnt++] = target_depth;
+                                sessionCount++;
                                 if (commandType == 6) {
-                                    frame.frameConstructCommands[commandCount++] = new SetButtonCommand(objectID);
+                                    frame.frameUpdatePropertiesCommands[commandCount_props++] = new SetButtonCommand(objectID);
                                 }
                                 else if (potChild.isAsset(TextField)) {
-                                    // if the object is a tetfield, we set the textfield-name as instancename
-                                    frame.frameConstructCommands[commandCount++] = new SetInstanceNameCommand(objectID, potChild.name);
+                                    // if the object is a textfield, we set the textfield-name as instancename
+                                    frame.registerChilds[registerChildCnt++] = objectID;
+                                    frame.registerNames[registerNameCnt++] = potChild.name;
                                 }
                             }
                             else {
@@ -4341,7 +4358,8 @@ var AWDParser = (function (_super) {
                                 thisMatrix.rawData[5] = this._newBlockBytes.readFloat();
                                 thisMatrix.position = new Vector3D(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0);
                             }
-                            frame.frameConstructCommands[commandCount++] = new UpdatePropertyCommand(objectID, "_iMatrix3D", thisMatrix);
+                            updateThis = true;
+                            updateprops["_iMatrix3D"] = thisMatrix;
                         }
                         // read colortransforms
                         if (BitFlags.test(props_flag, BitFlags.FLAG3)) {
@@ -4358,19 +4376,23 @@ var AWDParser = (function (_super) {
                                 thisColorTransform.blueOffset = this._newBlockBytes.readShort();
                                 thisColorTransform.alphaOffset = this._newBlockBytes.readShort();
                             }
-                            frame.frameConstructCommands[commandCount++] = new UpdatePropertyCommand(objectID, "colorTransform", thisColorTransform);
+                            updateThis = true;
+                            updateprops["colorTransform"] = thisColorTransform;
                         }
                         if (BitFlags.test(props_flag, BitFlags.FLAG5)) {
                             var blendmode_int = this._newBlockBytes.readUnsignedByte();
                             var blendmode_string = this.blendModeDic[blendmode_int];
                         }
                         if (BitFlags.test(props_flag, BitFlags.FLAG6)) {
-                            frame.frameConstructCommands[commandCount++] = new UpdatePropertyCommand(objectID, "visible", this._newBlockBytes.readByte());
+                            updateThis = true;
+                            updateprops["visible"] = this._newBlockBytes.readByte();
                         }
                         if (BitFlags.test(props_flag, BitFlags.FLAG7)) {
                             var instanceName = this.parseVarStr();
-                            if (instanceName.length)
-                                frame.frameConstructCommands[commandCount++] = new SetInstanceNameCommand(objectID, instanceName);
+                            if (instanceName.length) {
+                                frame.registerChilds[registerChildCnt++] = objectID;
+                                frame.registerNames[registerNameCnt++] = instanceName;
+                            }
                         }
                         if (BitFlags.test(props_flag, BitFlags.FLAG8)) {
                             var mask_id_nums = this._newBlockBytes.readUnsignedShort();
@@ -4378,12 +4400,17 @@ var AWDParser = (function (_super) {
                             for (var mi_cnt = 0; mi_cnt < mask_id_nums; mi_cnt++)
                                 mask_ids[mi_cnt] = this._newBlockBytes.readShort();
                             if (mask_ids.length > 0) {
+                                updateThis = true;
                                 // TODO: this object is used as mask
                                 if ((mask_ids.length == 1) && (mask_ids[0] == -1))
-                                    frame.frameConstructCommands[commandCount++] = new UpdatePropertyCommand(objectID, "_iMaskID", objectID);
+                                    updateprops["_iMaskID"] = objectID;
                                 else
-                                    frame.frameConstructCommands[commandCount++] = new SetMaskCommand(objectID, mask_ids);
+                                    frame.frameUpdatePropertiesCommands[commandCount_props++] = new SetMaskCommand(objectID, mask_ids);
                             }
+                        }
+                        if (updateThis) {
+                            frame.updateChildIDs[updateChildCnt++] = objectID;
+                            frame.updateChildProperties[updateChildPropsCnt++] = updateprops;
                         }
                         break;
                     case 4:
@@ -4398,7 +4425,7 @@ var AWDParser = (function (_super) {
             }
             if (hasDepthChanges) {
                 // only want to do this once after all children's depth values are updated
-                frame.frameConstructCommands[commandCount++] = new ApplyAS2DepthsCommand();
+                frame.frameUpdatePropertiesCommands[commandCount_props++] = new ApplyAS2DepthsCommand();
                 hasDepthChanges = false;
             }
             var length_code = this._newBlockBytes.readUnsignedInt();
@@ -4407,8 +4434,9 @@ var AWDParser = (function (_super) {
                 frame.framePostConstructCommands.push(new ExecuteScriptCommand(this._newBlockBytes.readUTFBytes(length_code)));
             }
             this._newBlockBytes.readUnsignedInt(); // user attributes - skip for now
-            timeLineContainer.addFrame(frame);
+            new_timeline.addFrame(frame);
         }
+        timeLineContainer.timeline = new_timeline;
         this.parseProperties(null);
         this.parseUserAttributes();
         this._pFinalizeAsset(timeLineContainer, name);
@@ -5974,7 +6002,7 @@ var BitFlags = (function () {
 })();
 module.exports = AWDParser;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/data/BitmapImageCube":undefined,"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/CurveSubGeometry":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Billboard":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/entities/TextField":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-display/lib/text/TextFormat":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-player/lib/timeline/TimelineKeyFrame":undefined,"awayjs-player/lib/timeline/commands/AddChildAtDepthCommand":undefined,"awayjs-player/lib/timeline/commands/ApplyAS2DepthsCommand":undefined,"awayjs-player/lib/timeline/commands/ExecuteScriptCommand":undefined,"awayjs-player/lib/timeline/commands/RemoveChildrenAtDepthCommand":undefined,"awayjs-player/lib/timeline/commands/SetButtonCommand":undefined,"awayjs-player/lib/timeline/commands/SetInstanceNameCommand":undefined,"awayjs-player/lib/timeline/commands/SetMaskCommand":undefined,"awayjs-player/lib/timeline/commands/UpdatePropertyCommand":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/data/BitmapImageCube":undefined,"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/CurveSubGeometry":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Billboard":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/entities/TextField":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-display/lib/text/TextFormat":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-player/lib/timeline/Timeline":undefined,"awayjs-player/lib/timeline/TimelineKeyFrame":undefined,"awayjs-player/lib/timeline/commands/ApplyAS2DepthsCommand":undefined,"awayjs-player/lib/timeline/commands/ExecuteScriptCommand":undefined,"awayjs-player/lib/timeline/commands/SetButtonCommand":undefined,"awayjs-player/lib/timeline/commands/SetMaskCommand":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -9040,7 +9068,7 @@ var Vertex = (function () {
 module.exports = OBJParser;
 
 },{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/data/BitmapImage2D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/SpecularBasicMethod":undefined}],"awayjs-parsers/lib/Parsers":[function(require,module,exports){
-var AssetLoader = require("awayjs-core/lib/library/AssetLoader");
+var LoaderSession = require("awayjs-core/lib/library/LoaderSession");
 var AWDParser = require("awayjs-parsers/lib/AWDParser");
 var Max3DSParser = require("awayjs-parsers/lib/Max3DSParser");
 var MD2Parser = require("awayjs-parsers/lib/MD2Parser");
@@ -9054,14 +9082,14 @@ var Parsers = (function () {
     /**
      * Short-hand function to enable all bundled parsers for auto-detection. In practice,
      * this is the same as invoking enableParsers(Parsers.ALL_BUNDLED) on any of the
-     * loader classes SingleFileLoader, AssetLoader, AssetLibrary or Loader3D.
+     * loader classes SingleFileLoader, LoaderSession, AssetLibrary or Loader3D.
      *
      * See notes about file size in the documentation for the ALL_BUNDLED constant.
      *
      * @see away.parsers.Parsers.ALL_BUNDLED
      */
     Parsers.enableAllBundled = function () {
-        AssetLoader.enableParsers(Parsers.ALL_BUNDLED);
+        LoaderSession.enableParsers(Parsers.ALL_BUNDLED);
     };
     /**
      * A list of all parsers that come bundled with Away3D. Use this to quickly
@@ -9101,7 +9129,7 @@ var Parsers = (function () {
 })();
 module.exports = Parsers;
 
-},{"awayjs-core/lib/library/AssetLoader":undefined,"awayjs-parsers/lib/AWDParser":"awayjs-parsers/lib/AWDParser","awayjs-parsers/lib/MD2Parser":"awayjs-parsers/lib/MD2Parser","awayjs-parsers/lib/Max3DSParser":"awayjs-parsers/lib/Max3DSParser","awayjs-parsers/lib/OBJParser":"awayjs-parsers/lib/OBJParser"}]},{},[])
+},{"awayjs-core/lib/library/LoaderSession":undefined,"awayjs-parsers/lib/AWDParser":"awayjs-parsers/lib/AWDParser","awayjs-parsers/lib/MD2Parser":"awayjs-parsers/lib/MD2Parser","awayjs-parsers/lib/Max3DSParser":"awayjs-parsers/lib/Max3DSParser","awayjs-parsers/lib/OBJParser":"awayjs-parsers/lib/OBJParser"}]},{},[])
 
 
 //# sourceMappingURL=awayjs-parsers.js.map

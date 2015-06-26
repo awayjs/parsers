@@ -1387,7 +1387,7 @@ declare module "awayjs-parsers/lib/Parsers" {
 	    /**
 	     * Short-hand function to enable all bundled parsers for auto-detection. In practice,
 	     * this is the same as invoking enableParsers(Parsers.ALL_BUNDLED) on any of the
-	     * loader classes SingleFileLoader, AssetLoader, AssetLibrary or Loader3D.
+	     * loader classes SingleFileLoader, LoaderSession, AssetLibrary or Loader3D.
 	     *
 	     * See notes about file size in the documentation for the ALL_BUNDLED constant.
 	     *

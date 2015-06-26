@@ -466,6 +466,7 @@ class AWD3FileData
 
 	public getDefaultCubeTexture():IAsset
 	{
+		/*
 		if (!this._defaultCubeTexture) {
 			var defaultBitmap:BitmapImage2D = DefaultMaterialManager.createCheckeredBitmapImage2D();
 
@@ -478,7 +479,7 @@ class AWD3FileData
 			this._defaultCubeTexture = new SingleCubeTexture(bitmapImageCube);
 			this._defaultCubeTexture.name = "defaultCubeTexture";
 		}
-
+		*/
 		return <IAsset> this._defaultCubeTexture;
 	}
 

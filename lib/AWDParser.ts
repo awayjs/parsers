@@ -108,6 +108,7 @@ import TimelineSceneGraphFactory 	= require("awayjs-player/lib/factories/Timelin
 import AS2SceneGraphFactory 		= require("awayjs-player/lib/factories/AS2SceneGraphFactory");
 import MovieClip 					= require("awayjs-player/lib/display/MovieClip");
 import TimelineKeyFrame 			= require("awayjs-player/lib/timeline/TimelineKeyFrame");
+import Timeline			 			= require("awayjs-player/lib/timeline/Timeline");
 import AddChildCommand 				= require("awayjs-player/lib/timeline/commands/AddChildCommand");
 import SetButtonCommand 				= require("awayjs-player/lib/timeline/commands/SetButtonCommand");
 
@@ -1068,6 +1069,7 @@ class AWDParser extends ParserBase
 		var j:number;
 		var cmd_asset:DisplayObject;
 		var timeLineContainer = factory.createMovieClip();
+		var new_timeline:Timeline = new Timeline();
 		var name = this.parseVarStr();
 		var isScene = !!this._newBlockBytes.readUnsignedByte();
 		var sceneID = this._newBlockBytes.readUnsignedByte();
@@ -1087,7 +1089,7 @@ class AWDParser extends ParserBase
 		for (i = 0; i < num_potential_childs; i++) {
 			cmd_asset = <DisplayObject> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 			if (cmd_asset != null) {
-				timeLineContainer.registerPotentialChild(cmd_asset);
+				new_timeline.registerPotentialChild(cmd_asset);
 			} else {
 				//todo: register a default display object on timeline, so we do not mess up the incremental obj-id
 				//timeLineContainer.registerPotentialChild(cmd_asset);
@@ -1104,7 +1106,7 @@ class AWDParser extends ParserBase
 			num_all_display_instances += num_instances;
 			if (cmd_asset != null) {
 				for (j = 0; j < num_instances; j++)
-					timeLineContainer.registerPotentialChild(cmd_asset);
+					new_timeline.registerPotentialChild(cmd_asset);
 			} else {
 				for (j = 0; j < num_instances; j++) {
 					//todo: register a default display object on timeline, so we do not mess up the incremental obj-id
@@ -1146,10 +1148,16 @@ class AWDParser extends ParserBase
 		var commandType:number;
 		var frame:TimelineKeyFrame;
 		var hasDepthChanges:boolean;
-
+		var sessionCount:number=0;
 		var numFrames:number = this._newBlockBytes.readUnsignedShort();
 		for (i = 0; i < numFrames; i++) {
-			var commandCount:number = 0;
+			var removeCnt:number = 0;
+			var addChildCnt:number = 0;
+			var registerChildCnt:number = 0;
+			var registerNameCnt:number = 0;
+			var updateChildCnt:number = 0;
+			var updateChildPropsCnt:number = 0;
+			var commandCount_props:number = 0;
 			// todo: remove the ms_per_frame to set the duration in frames
 			frameDuration = this._newBlockBytes.readUnsignedInt();
 			frame = new TimelineKeyFrame(totalDuration, frameDuration);
@@ -1159,7 +1167,7 @@ class AWDParser extends ParserBase
 
 			// TODO: Temporary way to handle labels
 			for (j = 0; j < numLabels; j++)
-				frame.label = this.parseVarStr();
+				new_timeline._labels[this.parseVarStr()] = new_timeline.numKeyFrames();
 
 			numCommands = this._newBlockBytes.readUnsignedShort();
 			hasDepthChanges = false;
@@ -1174,15 +1182,10 @@ class AWDParser extends ParserBase
 				switch (commandType) {
 					case 1:// remove a number of objects at specific depth
 						number_of_obj = this._newBlockBytes.readUnsignedShort();
-						//console.log("number_of_obj ", number_of_obj);
-						var remove_depths:Array<number>=new Array<number>();
 						for (var c:number = 0; c < number_of_obj; c++) {
-							// Remove Object Command
-							target_depth = this._newBlockBytes.readShort();
-							remove_depths.push(target_depth);
-							//console.log("\n       - Remove object at depth: " + target_depth);
+							// Remove Object depth
+							frame.removeDepth[removeCnt++] = this._newBlockBytes.readShort();
 						}
-						frame.frameConstructCommands[commandCount++] = new RemoveChildrenAtDepthCommand(remove_depths);
 						break;
 
 					case 2:// add a of object by child-id at specific depth
@@ -1190,18 +1193,25 @@ class AWDParser extends ParserBase
 					case 6:// add a of button_instance
 						objectID = this._newBlockBytes.readUnsignedShort();
 						//console.log("add / update objectID ", objectID);
+						var updateprops:Object={};
+						var updateThis:boolean=false;
 						if (commandType != 3) {
 							hasDepthChanges = true;
 							target_depth = this._newBlockBytes.readShort();
 							//console.log("target_depth ", target_depth);
-                            var potChild = timeLineContainer.getPotentialChildPrototype(objectID);
+                            var potChild = new_timeline.getPotentialChildPrototype(objectID);
 							if (potChild != undefined) {
-								frame.frameConstructCommands[commandCount++] = new AddChildAtDepthCommand(objectID, target_depth);
-								if(commandType == 6) {
-									frame.frameConstructCommands[commandCount++] = new SetButtonCommand(objectID);
-								} else if (potChild.isAsset(TextField)) {
-									// if the object is a tetfield, we set the textfield-name as instancename
-									frame.frameConstructCommands[commandCount++] = new SetInstanceNameCommand(objectID, potChild.name);
+								frame.addCommands[addChildCnt++] = objectID;
+								frame.addCommands[addChildCnt++] = sessionCount;
+								frame.addCommands[addChildCnt++] = target_depth;
+								sessionCount++;
+								if (commandType == 6) {
+									frame.frameUpdatePropertiesCommands[commandCount_props++] = new SetButtonCommand(objectID);
+								}
+								else if (potChild.isAsset(TextField)) {
+									// if the object is a textfield, we set the textfield-name as instancename
+									frame.registerChilds[registerChildCnt++]=objectID;
+									frame.registerNames[registerNameCnt++]=potChild.name;
 								}
 							}
 							else{
@@ -1230,7 +1240,8 @@ class AWDParser extends ParserBase
 								thisMatrix.rawData[5] = this._newBlockBytes.readFloat();
 								thisMatrix.position = new Vector3D(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0);
 							}
-							frame.frameConstructCommands[commandCount++] = new UpdatePropertyCommand(objectID, "_iMatrix3D", thisMatrix);
+							updateThis=true;
+							updateprops["_iMatrix3D"]=thisMatrix;
 						}
 						// read colortransforms
 						if (BitFlags.test(props_flag, BitFlags.FLAG3)) {
@@ -1246,19 +1257,24 @@ class AWDParser extends ParserBase
 								thisColorTransform.blueOffset = this._newBlockBytes.readShort();
 								thisColorTransform.alphaOffset = this._newBlockBytes.readShort();
 							}
-							frame.frameConstructCommands[commandCount++] = new UpdatePropertyCommand(objectID, "colorTransform", thisColorTransform);
+							updateThis=true;
+							updateprops["colorTransform"]=thisColorTransform;
 						}
 						if (BitFlags.test(props_flag, BitFlags.FLAG5)) {
 							var blendmode_int = this._newBlockBytes.readUnsignedByte();
 							var blendmode_string = this.blendModeDic[blendmode_int];
 						}
 						if (BitFlags.test(props_flag, BitFlags.FLAG6)) {
-							frame.frameConstructCommands[commandCount++] = new UpdatePropertyCommand(objectID, "visible", this._newBlockBytes.readByte());
+							updateThis=true;
+							updateprops["visible"]=this._newBlockBytes.readByte();
 						}
 						if (BitFlags.test(props_flag, BitFlags.FLAG7)) {
 							var instanceName:string = this.parseVarStr();
-							if (instanceName.length)
-								frame.frameConstructCommands[commandCount++] = new SetInstanceNameCommand(objectID, instanceName);
+							if (instanceName.length) {
+								frame.registerChilds[registerChildCnt++] = objectID;
+								frame.registerNames[registerNameCnt++] = instanceName;
+							}
+
 						}
 						if (BitFlags.test(props_flag, BitFlags.FLAG8)) {
 							var mask_id_nums:number = this._newBlockBytes.readUnsignedShort();
@@ -1267,12 +1283,17 @@ class AWDParser extends ParserBase
 								mask_ids[mi_cnt] = this._newBlockBytes.readShort();
 
 							if (mask_ids.length > 0) {
+								updateThis=true;
 								// TODO: this object is used as mask
 								if ((mask_ids.length == 1) && (mask_ids[0] == -1))
-									frame.frameConstructCommands[commandCount++] = new UpdatePropertyCommand(objectID, "_iMaskID", objectID);
+									updateprops["_iMaskID"]=objectID;
 								else
-									frame.frameConstructCommands[commandCount++] = new SetMaskCommand(objectID, mask_ids);
+									frame.frameUpdatePropertiesCommands[commandCount_props++] = new SetMaskCommand(objectID, mask_ids);
 							}
+						}
+						if(updateThis){
+							frame.updateChildIDs[updateChildCnt++]=objectID;
+							frame.updateChildProperties[updateChildPropsCnt++]=updateprops;
 						}
 						break;
 
@@ -1298,7 +1319,7 @@ class AWDParser extends ParserBase
 
 			if (hasDepthChanges) {
 				// only want to do this once after all children's depth values are updated
-				frame.frameConstructCommands[commandCount++] = new ApplyAS2DepthsCommand();
+				frame.frameUpdatePropertiesCommands[commandCount_props++] = new ApplyAS2DepthsCommand();
 				hasDepthChanges = false;
 			}
 
@@ -1310,9 +1331,9 @@ class AWDParser extends ParserBase
 
 			this._newBlockBytes.readUnsignedInt();// user attributes - skip for now
 
-			timeLineContainer.addFrame(frame);
+			new_timeline.addFrame(frame);
 		}
-
+		timeLineContainer.timeline=new_timeline;
 		this.parseProperties(null);
 		this.parseUserAttributes();
 		this._pFinalizeAsset(<IAsset>timeLineContainer, name);
