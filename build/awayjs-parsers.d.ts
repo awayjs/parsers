@@ -135,6 +135,16 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/MaterialAWDParser" {
 	
 }
 
+declare module "awayjs-parsers/lib/AWD3BlockParsers/MetadataAWDParser" {
+	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+	class MetadataAWDParser extends AWDBlockParserBase {
+	    constructor();
+	    parseFromBytes(): void;
+	}
+	export = MetadataAWDParser;
+	
+}
+
 declare module "awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 	class MeshAWDParser extends AWDBlockParserBase {
@@ -145,13 +155,13 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/MetadataAWDParser" {
+declare module "awayjs-parsers/lib/AWD3BlockParsers/PrefabAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class MetadataAWDParser extends AWDBlockParserBase {
+	class PrefabAWDParser extends AWDBlockParserBase {
 	    constructor();
 	    parseFromBytes(): void;
 	}
-	export = MetadataAWDParser;
+	export = PrefabAWDParser;
 	
 }
 
@@ -167,13 +177,14 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/MovieClipAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/PrefabAWDParser" {
+declare module "awayjs-parsers/lib/AWD3BlockParsers/SharedMethodAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class PrefabAWDParser extends AWDBlockParserBase {
+	class SharedMethodAWDParser extends AWDBlockParserBase {
 	    constructor();
 	    parseFromBytes(): void;
+	    private parseSharedMethodList();
 	}
-	export = PrefabAWDParser;
+	export = SharedMethodAWDParser;
 	
 }
 
@@ -188,14 +199,13 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/ShadowMethodAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/SharedMethodAWDParser" {
+declare module "awayjs-parsers/lib/AWD3BlockParsers/SingleCubeTextureAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class SharedMethodAWDParser extends AWDBlockParserBase {
+	class SingleCubeTextureAWDParser extends AWDBlockParserBase {
 	    constructor();
 	    parseFromBytes(): void;
-	    private parseSharedMethodList();
 	}
-	export = SharedMethodAWDParser;
+	export = SingleCubeTextureAWDParser;
 	
 }
 
@@ -209,13 +219,13 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/Single2DTextureAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/SingleCubeTextureAWDParser" {
+declare module "awayjs-parsers/lib/AWD3BlockParsers/SkeletonAnimClipAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class SingleCubeTextureAWDParser extends AWDBlockParserBase {
+	class SkeletonAnimClipAWDParser extends AWDBlockParserBase {
 	    constructor();
 	    parseFromBytes(): void;
 	}
-	export = SingleCubeTextureAWDParser;
+	export = SkeletonAnimClipAWDParser;
 	
 }
 
@@ -229,13 +239,13 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/SkeletonAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/SkeletonAnimClipAWDParser" {
+declare module "awayjs-parsers/lib/AWD3BlockParsers/SkyboxAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class SkeletonAnimClipAWDParser extends AWDBlockParserBase {
+	class SkyboxAWDParser extends AWDBlockParserBase {
 	    constructor();
 	    parseFromBytes(): void;
 	}
-	export = SkeletonAnimClipAWDParser;
+	export = SkyboxAWDParser;
 	
 }
 
@@ -249,13 +259,15 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/SkeletonPoseAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/SkyboxAWDParser" {
+declare module "awayjs-parsers/lib/AWD3BlockParsers/TextfieldAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class SkyboxAWDParser extends AWDBlockParserBase {
-	    constructor();
+	import View = require("awayjs-display/lib/containers/View");
+	class TextfieldAWDParser extends AWDBlockParserBase {
+	    private factory;
+	    constructor(view?: View);
 	    parseFromBytes(): void;
 	}
-	export = SkyboxAWDParser;
+	export = TextfieldAWDParser;
 	
 }
 
@@ -266,18 +278,6 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/TesselatedFontAWDParser" {
 	    parseFromBytes(): void;
 	}
 	export = TesselatedFontAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/TextfieldAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	import View = require("awayjs-display/lib/containers/View");
-	class TextfieldAWDParser extends AWDBlockParserBase {
-	    private factory;
-	    constructor(view?: View);
-	    parseFromBytes(): void;
-	}
-	export = TextfieldAWDParser;
 	
 }
 
