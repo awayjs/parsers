@@ -135,16 +135,6 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/MaterialAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/MetadataAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class MetadataAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = MetadataAWDParser;
-	
-}
-
 declare module "awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 	class MeshAWDParser extends AWDBlockParserBase {
@@ -155,13 +145,13 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/PrefabAWDParser" {
+declare module "awayjs-parsers/lib/AWD3BlockParsers/MetadataAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class PrefabAWDParser extends AWDBlockParserBase {
+	class MetadataAWDParser extends AWDBlockParserBase {
 	    constructor();
 	    parseFromBytes(): void;
 	}
-	export = PrefabAWDParser;
+	export = MetadataAWDParser;
 	
 }
 
@@ -177,14 +167,13 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/MovieClipAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/SharedMethodAWDParser" {
+declare module "awayjs-parsers/lib/AWD3BlockParsers/PrefabAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class SharedMethodAWDParser extends AWDBlockParserBase {
+	class PrefabAWDParser extends AWDBlockParserBase {
 	    constructor();
 	    parseFromBytes(): void;
-	    private parseSharedMethodList();
 	}
-	export = SharedMethodAWDParser;
+	export = PrefabAWDParser;
 	
 }
 
@@ -199,13 +188,14 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/ShadowMethodAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/SingleCubeTextureAWDParser" {
+declare module "awayjs-parsers/lib/AWD3BlockParsers/SharedMethodAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class SingleCubeTextureAWDParser extends AWDBlockParserBase {
+	class SharedMethodAWDParser extends AWDBlockParserBase {
 	    constructor();
 	    parseFromBytes(): void;
+	    private parseSharedMethodList();
 	}
-	export = SingleCubeTextureAWDParser;
+	export = SharedMethodAWDParser;
 	
 }
 
@@ -219,13 +209,13 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/Single2DTextureAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/SkeletonAnimClipAWDParser" {
+declare module "awayjs-parsers/lib/AWD3BlockParsers/SingleCubeTextureAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class SkeletonAnimClipAWDParser extends AWDBlockParserBase {
+	class SingleCubeTextureAWDParser extends AWDBlockParserBase {
 	    constructor();
 	    parseFromBytes(): void;
 	}
-	export = SkeletonAnimClipAWDParser;
+	export = SingleCubeTextureAWDParser;
 	
 }
 
@@ -239,13 +229,13 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/SkeletonAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/SkyboxAWDParser" {
+declare module "awayjs-parsers/lib/AWD3BlockParsers/SkeletonAnimClipAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class SkyboxAWDParser extends AWDBlockParserBase {
+	class SkeletonAnimClipAWDParser extends AWDBlockParserBase {
 	    constructor();
 	    parseFromBytes(): void;
 	}
-	export = SkyboxAWDParser;
+	export = SkeletonAnimClipAWDParser;
 	
 }
 
@@ -259,15 +249,13 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/SkeletonPoseAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/TextfieldAWDParser" {
+declare module "awayjs-parsers/lib/AWD3BlockParsers/SkyboxAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	import View = require("awayjs-display/lib/containers/View");
-	class TextfieldAWDParser extends AWDBlockParserBase {
-	    private factory;
-	    constructor(view?: View);
+	class SkyboxAWDParser extends AWDBlockParserBase {
+	    constructor();
 	    parseFromBytes(): void;
 	}
-	export = TextfieldAWDParser;
+	export = SkyboxAWDParser;
 	
 }
 
@@ -278,6 +266,18 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/TesselatedFontAWDParser" {
 	    parseFromBytes(): void;
 	}
 	export = TesselatedFontAWDParser;
+	
+}
+
+declare module "awayjs-parsers/lib/AWD3BlockParsers/TextfieldAWDParser" {
+	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+	import View = require("awayjs-display/lib/containers/View");
+	class TextfieldAWDParser extends AWDBlockParserBase {
+	    private factory;
+	    constructor(view?: View);
+	    parseFromBytes(): void;
+	}
+	export = TextfieldAWDParser;
 	
 }
 
@@ -1214,6 +1214,60 @@ declare module "awayjs-parsers/lib/Max3DSParser" {
 	
 }
 
+declare module "awayjs-parsers/lib/Parsers" {
+	/**
+	 *
+	 */
+	class Parsers {
+	    /**
+	     * A list of all parsers that come bundled with Away3D. Use this to quickly
+	     * enable support for all bundled parsers to the file format auto-detection
+	     * feature, using any of the enableParsers() methods on loaders, e.g.:
+	     *
+	     * <code>AssetLibrary.enableParsers(Parsers.ALL_BUNDLED);</code>
+	     *
+	     * Beware however that this requires all parser classes to be included in the
+	     * SWF file, which will add 50-100 kb to the file. When only a limited set of
+	     * file formats are used, SWF file size can be saved by adding the parsers
+	     * individually using AssetLibrary.enableParser()
+	     *
+	     * A third way is to specify a parser for each loaded file, thereby bypassing
+	     * the auto-detection mechanisms altogether, while at the same time allowing
+	     * any properties that are unique to that parser to be set for that load.
+	     *
+	     * The bundled parsers are:
+	     *
+	     * <ul>
+	     * <li>AC3D (.ac)</li>
+	     * <li>Away Data version 1 ASCII and version 2 binary (.awd). AWD1 BSP unsupported</li>
+	     * <li>3DMax (.3ds)</li>
+	     * <li>DXF (.dxf)</li>
+	     * <li>Quake 2 MD2 models (.md2)</li>
+	     * <li>Doom 3 MD5 animation clips (.md5anim)</li>
+	     * <li>Doom 3 MD5 meshes (.md5mesh)</li>
+	     * <li>Wavefront OBJ (.obj)</li>
+	     * <li>Collada (.dae)</li>
+	     * <li>Images (.jpg, .png)</li>
+	     * </ul>
+	     *
+	     * @see away.library.AssetLibrary.enableParser
+	     */
+	    static ALL_BUNDLED: Array<Object>;
+	    /**
+	     * Short-hand function to enable all bundled parsers for auto-detection. In practice,
+	     * this is the same as invoking enableParsers(Parsers.ALL_BUNDLED) on any of the
+	     * loader classes SingleFileLoader, LoaderSession, AssetLibrary or Loader3D.
+	     *
+	     * See notes about file size in the documentation for the ALL_BUNDLED constant.
+	     *
+	     * @see away.parsers.Parsers.ALL_BUNDLED
+	     */
+	    static enableAllBundled(): void;
+	}
+	export = Parsers;
+	
+}
+
 declare module "awayjs-parsers/lib/OBJParser" {
 	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 	import ResourceDependency = require("awayjs-core/lib/parsers/ResourceDependency");
@@ -1342,60 +1396,6 @@ declare module "awayjs-parsers/lib/OBJParser" {
 	    private applyMaterials();
 	}
 	export = OBJParser;
-	
-}
-
-declare module "awayjs-parsers/lib/Parsers" {
-	/**
-	 *
-	 */
-	class Parsers {
-	    /**
-	     * A list of all parsers that come bundled with Away3D. Use this to quickly
-	     * enable support for all bundled parsers to the file format auto-detection
-	     * feature, using any of the enableParsers() methods on loaders, e.g.:
-	     *
-	     * <code>AssetLibrary.enableParsers(Parsers.ALL_BUNDLED);</code>
-	     *
-	     * Beware however that this requires all parser classes to be included in the
-	     * SWF file, which will add 50-100 kb to the file. When only a limited set of
-	     * file formats are used, SWF file size can be saved by adding the parsers
-	     * individually using AssetLibrary.enableParser()
-	     *
-	     * A third way is to specify a parser for each loaded file, thereby bypassing
-	     * the auto-detection mechanisms altogether, while at the same time allowing
-	     * any properties that are unique to that parser to be set for that load.
-	     *
-	     * The bundled parsers are:
-	     *
-	     * <ul>
-	     * <li>AC3D (.ac)</li>
-	     * <li>Away Data version 1 ASCII and version 2 binary (.awd). AWD1 BSP unsupported</li>
-	     * <li>3DMax (.3ds)</li>
-	     * <li>DXF (.dxf)</li>
-	     * <li>Quake 2 MD2 models (.md2)</li>
-	     * <li>Doom 3 MD5 animation clips (.md5anim)</li>
-	     * <li>Doom 3 MD5 meshes (.md5mesh)</li>
-	     * <li>Wavefront OBJ (.obj)</li>
-	     * <li>Collada (.dae)</li>
-	     * <li>Images (.jpg, .png)</li>
-	     * </ul>
-	     *
-	     * @see away.library.AssetLibrary.enableParser
-	     */
-	    static ALL_BUNDLED: Array<Object>;
-	    /**
-	     * Short-hand function to enable all bundled parsers for auto-detection. In practice,
-	     * this is the same as invoking enableParsers(Parsers.ALL_BUNDLED) on any of the
-	     * loader classes SingleFileLoader, LoaderSession, AssetLibrary or Loader3D.
-	     *
-	     * See notes about file size in the documentation for the ALL_BUNDLED constant.
-	     *
-	     * @see away.parsers.Parsers.ALL_BUNDLED
-	     */
-	    static enableAllBundled(): void;
-	}
-	export = Parsers;
 	
 }
 

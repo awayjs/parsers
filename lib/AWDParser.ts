@@ -109,16 +109,9 @@ import AS2SceneGraphFactory 		= require("awayjs-player/lib/factories/AS2SceneGra
 import MovieClip 					= require("awayjs-player/lib/display/MovieClip");
 import TimelineKeyFrame 			= require("awayjs-player/lib/timeline/TimelineKeyFrame");
 import Timeline			 			= require("awayjs-player/lib/timeline/Timeline");
-import AddChildCommand 				= require("awayjs-player/lib/timeline/commands/AddChildCommand");
-import SetButtonCommand 				= require("awayjs-player/lib/timeline/commands/SetButtonCommand");
 
-import AddChildAtDepthCommand		= require("awayjs-player/lib/timeline/commands/AddChildAtDepthCommand");
-import ApplyAS2DepthsCommand		= require("awayjs-player/lib/timeline/commands/ApplyAS2DepthsCommand");
+import SetButtonCommand 				= require("awayjs-player/lib/timeline/commands/SetButtonCommand");
 import ExecuteScriptCommand 		= require("awayjs-player/lib/timeline/commands/ExecuteScriptCommand");
-import RemoveChildCommand 			= require("awayjs-player/lib/timeline/commands/RemoveChildCommand");
-import RemoveChildrenAtDepthCommand	= require("awayjs-player/lib/timeline/commands/RemoveChildrenAtDepthCommand");
-import SetInstanceNameCommand 		= require("awayjs-player/lib/timeline/commands/SetInstanceNameCommand");
-import UpdatePropertyCommand 		= require("awayjs-player/lib/timeline/commands/UpdatePropertyCommand");
 import SetMaskCommand 		        = require("awayjs-player/lib/timeline/commands/SetMaskCommand");
 
 import Font							= require("awayjs-display/lib/text/Font");
@@ -777,6 +770,8 @@ class AWDParser extends ParserBase
 			font_style_name = this.parseVarStr();
 			new_font_style = new_font.get_font_table(font_style_name);
 			new_font_style.set_font_em_size(this._newBlockBytes.readUnsignedInt());
+			new_font_style.set_whitespace_width(this._newBlockBytes.readUnsignedInt());
+			console.log(new_font_style.get_whitespace_width());
 			font_style_char_cnt = this._newBlockBytes.readUnsignedInt();
 			for (var j:number = 0; j < font_style_char_cnt; ++j) {
 				// todo: this is basically a simplified version of the subgeom-parsing done in parseGeometry. Make a parseSubGeom() instead (?)
@@ -1316,13 +1311,6 @@ class AWDParser extends ParserBase
 
 				}
 			}
-
-			if (hasDepthChanges) {
-				// only want to do this once after all children's depth values are updated
-				frame.frameUpdatePropertiesCommands[commandCount_props++] = new ApplyAS2DepthsCommand();
-				hasDepthChanges = false;
-			}
-
 			var length_code:number = this._newBlockBytes.readUnsignedInt();
 			if (length_code > 0) {
 				// TODO: Script should probably not be attached to keyframes?

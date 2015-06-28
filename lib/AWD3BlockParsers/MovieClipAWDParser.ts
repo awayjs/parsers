@@ -13,14 +13,7 @@ import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
 import MovieClip 					= require("awayjs-player/lib/display/MovieClip");
 import TimelineKeyFrame 			= require("awayjs-player/lib/timeline/TimelineKeyFrame");
 import Timeline			 			= require("awayjs-player/lib/timeline/Timeline");
-import AddChildCommand 				= require("awayjs-player/lib/timeline/commands/AddChildCommand");
-import AddChildAtDepthCommand		= require("awayjs-player/lib/timeline/commands/AddChildAtDepthCommand");
-import ApplyAS2DepthsCommand		= require("awayjs-player/lib/timeline/commands/ApplyAS2DepthsCommand");
 import ExecuteScriptCommand 		= require("awayjs-player/lib/timeline/commands/ExecuteScriptCommand");
-import RemoveChildCommand 			= require("awayjs-player/lib/timeline/commands/RemoveChildCommand");
-import RemoveChildrenAtDepthCommand	= require("awayjs-player/lib/timeline/commands/RemoveChildrenAtDepthCommand");
-import SetInstanceNameCommand 		= require("awayjs-player/lib/timeline/commands/SetInstanceNameCommand");
-import UpdatePropertyCommand 		= require("awayjs-player/lib/timeline/commands/UpdatePropertyCommand");
 import SetMaskCommand 		        = require("awayjs-player/lib/timeline/commands/SetMaskCommand");
 
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
@@ -173,7 +166,7 @@ class MovieClipAWDParser extends AWDBlockParserBase
 							remove_depths.push(target_depth);
 							//console.log("\n       - Remove object at depth: " + target_depth);
 						}
-						frame.frameConstructCommands.push(new RemoveChildrenAtDepthCommand(remove_depths));
+						//frame.frameConstructCommands.push(new RemoveChildrenAtDepthCommand(remove_depths));
 						break;
 
 					case 2:// add a of object by child-id at specific depth
@@ -186,11 +179,11 @@ class MovieClipAWDParser extends AWDBlockParserBase
 							//console.log("target_depth ", target_depth);
 							var potChild = new_timeline.getPotentialChildPrototype(objectID);
 							if (potChild != undefined) {
-								frame.frameConstructCommands.push(new AddChildAtDepthCommand(objectID, target_depth, sessionCount));
+								//frame.frameConstructCommands.push(new AddChildAtDepthCommand(objectID, target_depth, sessionCount));
 								sessionCount++;
 								// if the object is a tetfield, we set the textfield-name as instancename
 								if(potChild.isAsset(TextField)) {
-									frame.frameConstructCommands.push(new SetInstanceNameCommand(objectID, potChild.name));
+									//frame.frameConstructCommands.push(new SetInstanceNameCommand(objectID, potChild.name));
 								}
 							}
 							else{
@@ -219,7 +212,7 @@ class MovieClipAWDParser extends AWDBlockParserBase
 								thisMatrix.rawData[5] = this.awd_file_data.newBlockBytes.readFloat();
 								thisMatrix.position = new Vector3D(this.awd_file_data.newBlockBytes.readFloat(), this.awd_file_data.newBlockBytes.readFloat(), 0);
 							}
-							frame.frameConstructCommands.push(new UpdatePropertyCommand(objectID, "_iMatrix3D", thisMatrix));
+							//frame.frameConstructCommands.push(new UpdatePropertyCommand(objectID, "_iMatrix3D", thisMatrix));
 						}
 						// read colortransforms
 						if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG3)) {
@@ -242,12 +235,12 @@ class MovieClipAWDParser extends AWDBlockParserBase
 							var blendmode_string = this.awd_file_data.getBlendModeStringFromEnum(blendmode_int);
 						}
 						if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG6)) {
-							frame.frameConstructCommands.push(new UpdatePropertyCommand(objectID, "visible", this.awd_file_data.newBlockBytes.readByte()));
+							//frame.frameConstructCommands.push(new UpdatePropertyCommand(objectID, "visible", this.awd_file_data.newBlockBytes.readByte()));
 						}
 						if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG7)) {
 							var instanceName = this.awd_file_data.parseVarStr();
 							if (instanceName.length) {
-								frame.frameConstructCommands.push(new SetInstanceNameCommand(objectID, instanceName));
+								//frame.frameConstructCommands.push(new SetInstanceNameCommand(objectID, instanceName));
 							}
 						}
 						if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG8)) {
@@ -259,7 +252,7 @@ class MovieClipAWDParser extends AWDBlockParserBase
 							if (mask_ids.length > 0) {
 								if ((mask_ids.length == 1) && (mask_ids[0] == -1)) {
 									// TODO: this.awd_file_data object is used as mask
-									frame.frameConstructCommands.push(new UpdatePropertyCommand(objectID, "_iMaskID", objectID));
+									//frame.frameConstructCommands.push(new UpdatePropertyCommand(objectID, "_iMaskID", objectID));
 								}
 								else
 									frame.frameConstructCommands.push(new SetMaskCommand(objectID, mask_ids));
@@ -287,7 +280,7 @@ class MovieClipAWDParser extends AWDBlockParserBase
 
 			if (hasDepthChanges) {
 				// only want to do this.awd_file_data once after all children's depth values are updated
-				frame.frameConstructCommands.push(new ApplyAS2DepthsCommand());
+				//frame.frameConstructCommands.push(new ApplyAS2DepthsCommand());
 				hasDepthChanges = false;
 			}
 
