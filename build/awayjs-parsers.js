@@ -4010,11 +4010,13 @@ var AWDParser = (function (_super) {
                         this._newBlockBytes.position = str_end;
                     }
                 }
-                var vertexBuffer = new AttributesBuffer(28, str_len / 28);
-                vertexBuffer.bufferView = new Uint8Array(curveData.arraybytes);
-                var curve_sub_geom = new CurveSubGeometry(vertexBuffer);
-                curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
-                new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
+                if (curveData) {
+                    var vertexBuffer = new AttributesBuffer(28, str_len / 28);
+                    vertexBuffer.bufferView = new Uint8Array(curveData.arraybytes);
+                    var curve_sub_geom = new CurveSubGeometry(vertexBuffer);
+                    curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
+                    new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
+                }
             }
         }
         this.parseProperties(null);
