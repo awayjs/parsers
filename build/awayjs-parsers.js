@@ -1268,10 +1268,7 @@ var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockPa
 var AWDBitFlags = require("awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-var TimelineKeyFrame = require("awayjs-player/lib/timeline/TimelineKeyFrame");
 var Timeline = require("awayjs-player/lib/timeline/Timeline");
-var ExecuteScriptCommand = require("awayjs-player/lib/timeline/commands/ExecuteScriptCommand");
-var SetMaskCommand = require("awayjs-player/lib/timeline/commands/SetMaskCommand");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var TextField = require("awayjs-display/lib/entities/TextField");
 var AS2SceneGraphFactory = require("awayjs-player/lib/factories/AS2SceneGraphFactory");
@@ -1365,17 +1362,17 @@ var MovieClipAWDParser = (function (_super) {
         var resourceID;
         var number_of_obj;
         var commandType;
-        var frame;
+        //var frame:TimelineKeyFrame;
         var hasDepthChanges;
         var sessionCount = 0;
         for (i = 0; i < numFrames; i++) {
             // todo: remove the ms_per_frame to set the duration in frames
             frameDuration = this.awd_file_data.newBlockBytes.readUnsignedInt() * ms_per_frame;
-            frame = new TimelineKeyFrame(totalDuration, frameDuration);
+            //frame = new TimelineKeyFrame(totalDuration, frameDuration);
             totalDuration += frameDuration;
             numLabels = this.awd_file_data.newBlockBytes.readUnsignedByte();
-            for (j = 0; j < numLabels; j++)
-                new_timeline._labels[this.awd_file_data.parseVarStr()] = new_timeline.numKeyFrames();
+            //for (j = 0; j < numLabels; j++)
+            //	new_timeline._labels[this.awd_file_data.parseVarStr()]=new_timeline.numKeyFrames();
             numCommands = this.awd_file_data.newBlockBytes.readUnsignedShort();
             //console.log("numCommands "+numCommands);
             //traceString += "\n      Commands " + numCommands;
@@ -1472,8 +1469,6 @@ var MovieClipAWDParser = (function (_super) {
                             if (mask_ids.length > 0) {
                                 if ((mask_ids.length == 1) && (mask_ids[0] == -1)) {
                                 }
-                                else
-                                    frame.frameConstructCommands.push(new SetMaskCommand(objectID, mask_ids));
                             }
                         }
                         break;
@@ -1494,15 +1489,10 @@ var MovieClipAWDParser = (function (_super) {
             }
             var length_code = this.awd_file_data.newBlockBytes.readUnsignedInt();
             if (length_code > 0) {
-                // TODO: Script should probably not be attached to keyframes?
-                var frame_code = this.awd_file_data.newBlockBytes.readUTFBytes(length_code);
-                frame.framePostConstructCommands.push(new ExecuteScriptCommand(frame_code));
             }
             //traceString += commandString;
             //trace("length_code = "+length_code+" frame_code = "+frame_code);
             this.awd_file_data.newBlockBytes.readUnsignedInt(); // user attributes - skip for now
-            //console.log(traceString);
-            new_timeline.addFrame(frame);
         }
         new_mc.timeline = new_timeline;
         this.awd_file_data.parseProperties(null);
@@ -1515,7 +1505,7 @@ var MovieClipAWDParser = (function (_super) {
 })(AWDBlockParserBase);
 module.exports = MovieClipAWDParser;
 
-},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/entities/TextField":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags":"awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-player/lib/timeline/Timeline":undefined,"awayjs-player/lib/timeline/TimelineKeyFrame":undefined,"awayjs-player/lib/timeline/commands/ExecuteScriptCommand":undefined,"awayjs-player/lib/timeline/commands/SetMaskCommand":undefined}],"awayjs-parsers/lib/AWD3BlockParsers/PrefabAWDParser":[function(require,module,exports){
+},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/entities/TextField":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags":"awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-player/lib/timeline/Timeline":undefined}],"awayjs-parsers/lib/AWD3BlockParsers/PrefabAWDParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -3398,7 +3388,6 @@ var DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
 var PointLight = require("awayjs-display/lib/entities/PointLight");
 var Camera = require("awayjs-display/lib/entities/Camera");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
-var TextField = require("awayjs-display/lib/entities/TextField");
 var Billboard = require("awayjs-display/lib/entities/Billboard");
 var Skybox = require("awayjs-display/lib/entities/Skybox");
 var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
@@ -3453,11 +3442,8 @@ var ShadowNearMethod = require("awayjs-methodmaterials/lib/methods/ShadowNearMet
 var ShadowSoftMethod = require("awayjs-methodmaterials/lib/methods/ShadowSoftMethod");
 var BasicMaterial = require("awayjs-display/lib/materials/BasicMaterial");
 var AS2SceneGraphFactory = require("awayjs-player/lib/factories/AS2SceneGraphFactory");
-var TimelineKeyFrame = require("awayjs-player/lib/timeline/TimelineKeyFrame");
 var Timeline = require("awayjs-player/lib/timeline/Timeline");
-var SetButtonCommand = require("awayjs-player/lib/timeline/commands/SetButtonCommand");
 var ExecuteScriptCommand = require("awayjs-player/lib/timeline/commands/ExecuteScriptCommand");
-var SetMaskCommand = require("awayjs-player/lib/timeline/commands/SetMaskCommand");
 var Font = require("awayjs-display/lib/text/Font");
 var TextFormat = require("awayjs-display/lib/text/TextFormat");
 var AWDBlock = require("awayjs-parsers/lib/AWD3ParserUtils/AWDBlock");
@@ -3476,7 +3462,7 @@ var AWDParser = (function (_super) {
         _super.call(this, URLLoaderDataFormat.ARRAY_BUFFER);
         //set to "true" to have some console.logs in the Console
         this._debug = false;
-        this._debugTimers = false;
+        this._debugTimers = true;
         this._startedParsing = false;
         this._texture_users = {};
         this._parsed_header = false;
@@ -3984,7 +3970,7 @@ var AWDParser = (function (_super) {
             new_font_style = new_font.get_font_table(font_style_name);
             new_font_style.set_font_em_size(this._newBlockBytes.readUnsignedInt());
             new_font_style.set_whitespace_width(this._newBlockBytes.readUnsignedInt());
-            console.log(new_font_style.get_whitespace_width());
+            //console.log(new_font_style.get_whitespace_width());
             font_style_char_cnt = this._newBlockBytes.readUnsignedInt();
             for (var j = 0; j < font_style_char_cnt; ++j) {
                 // todo: this is basically a simplified version of the subgeom-parsing done in parseGeometry. Make a parseSubGeom() instead (?)
@@ -4011,10 +3997,11 @@ var AWDParser = (function (_super) {
                     }
                 }
                 if (curveData) {
-                    var vertexBuffer = new AttributesBuffer(28, str_len / 28);
+                    var vertexBuffer = new AttributesBuffer(20, str_len / 20);
                     vertexBuffer.bufferView = new Uint8Array(curveData.arraybytes);
                     var curve_sub_geom = new CurveSubGeometry(vertexBuffer);
-                    curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
+                    //curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
+                    curve_sub_geom.autoDeriveUVs = false;
                     new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
                 }
             }
@@ -4243,192 +4230,147 @@ var AWDParser = (function (_super) {
         }
         if (this._debug)
             console.log("Parsed " + (num_potential_childs + num_potential_childs_multi_instanced) + " potential childs. They will be used by " + num_all_display_instances + " instances.");
-        // register list of potential sounds
-        // a potential child can be reused on a timeline (added / removed / added)
+        // register list of potential sounds - for now we always have 0 sounds
         var num_potential_sounds = this._newBlockBytes.readUnsignedShort();
-        for (i = 0; i < num_potential_sounds; i++) {
-            cmd_asset = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
-            if (cmd_asset != null) {
-                //todo: register sound objects on movieclip
-                console.log("ERROR when collecting objects for timeline");
-            }
-            else {
-            }
-        }
-        //console.log("numFrames "+numFrames);
-        // var previousTimeLine:TimeLineFrame;
-        // var fill_props:AWDProperties = this.parseProperties({1:AWD3Parserutils.UINT32});// { 1:UINT32, 6:AWDSTRING }  ); //; , 2:UINT32, 3:UINT32, 5:BOOL } );
-        var totalDuration = 0;
-        var frameDuration;
-        var numLabels;
-        var numCommands;
-        var objectID;
-        var target_depth;
-        var number_of_obj;
-        var commandType;
-        var frame;
-        var hasDepthChanges;
-        var sessionCount = 0;
-        var numFrames = this._newBlockBytes.readUnsignedShort();
-        for (i = 0; i < numFrames; i++) {
-            var removeCnt = 0;
-            var addChildCnt = 0;
-            var registerChildCnt = 0;
-            var registerNameCnt = 0;
-            var updateChildCnt = 0;
-            var updateChildPropsCnt = 0;
-            var commandCount_props = 0;
-            // todo: remove the ms_per_frame to set the duration in frames
-            frameDuration = this._newBlockBytes.readUnsignedInt();
-            frame = new TimelineKeyFrame(totalDuration, frameDuration);
-            totalDuration += frameDuration;
-            numLabels = this._newBlockBytes.readUnsignedByte();
-            for (j = 0; j < numLabels; j++)
-                new_timeline._labels[this.parseVarStr()] = new_timeline.numKeyFrames();
-            numCommands = this._newBlockBytes.readUnsignedShort();
-            hasDepthChanges = false;
-            for (j = 0; j < numCommands; j++) {
-                commandType = this._newBlockBytes.readUnsignedByte();
-                switch (commandType) {
+        var str_cnt = this._newBlockBytes.readUnsignedByte();
+        var str_len = 0;
+        var str_data_type = 0;
+        var str_type = 0;
+        var str_counter = 0;
+        for (i = 0; i < str_cnt; i++) {
+            // the first 6 lists are not optional and always in same order
+            // hence we can get type by incremental counter instead of stored uint8
+            if (str_counter < 6)
+                str_type = str_counter;
+            else
+                str_type = this._newBlockBytes.readUnsignedByte();
+            // get the data type for this stream (1:UINT8 - 2:UINT16 - 3:UINT32)
+            str_data_type = this._newBlockBytes.readUnsignedByte();
+            // size of this stream in byte
+            str_len = this._newBlockBytes.readUnsignedInt();
+            if (str_len > 0) {
+                var keyframes_start_indices_data = new ByteArray(str_len);
+                this._newBlockBytes.readBytes(keyframes_start_indices_data, 0, str_len);
+                var new_buffer;
+                switch (str_data_type) {
                     case 1:
-                        number_of_obj = this._newBlockBytes.readUnsignedShort();
-                        for (var c = 0; c < number_of_obj; c++) {
-                            // Remove Object depth
-                            frame.removeDepth[removeCnt++] = this._newBlockBytes.readShort();
-                        }
+                        new_buffer = new Uint8Array(keyframes_start_indices_data.arraybytes);
                         break;
                     case 2:
-                    case 3:
-                    case 6:
-                        objectID = this._newBlockBytes.readUnsignedShort();
-                        //console.log("add / update objectID ", objectID);
-                        var updateprops = {};
-                        var updateThis = false;
-                        if (commandType != 3) {
-                            hasDepthChanges = true;
-                            target_depth = this._newBlockBytes.readShort();
-                            //console.log("target_depth ", target_depth);
-                            var potChild = new_timeline.getPotentialChildPrototype(objectID);
-                            if (potChild != undefined) {
-                                frame.addCommands[addChildCnt++] = objectID;
-                                frame.addCommands[addChildCnt++] = sessionCount;
-                                frame.addCommands[addChildCnt++] = target_depth;
-                                sessionCount++;
-                                if (commandType == 6) {
-                                    frame.frameUpdatePropertiesCommands[commandCount_props++] = new SetButtonCommand(objectID);
-                                }
-                                else if (potChild.isAsset(TextField)) {
-                                    // if the object is a textfield, we set the textfield-name as instancename
-                                    frame.registerChilds[registerChildCnt++] = objectID;
-                                    frame.registerNames[registerNameCnt++] = potChild.name;
-                                }
-                            }
-                            else {
-                                console.log("ERROR: could not find the objectID ", objectID);
-                            }
-                        }
-                        var props_flag = this._newBlockBytes.readUnsignedShort();
-                        /*	Props_flags
-                         1: read display matrix - 6 x float,
-                         2: read display matrix - read another UINT8-bitflag that determinates what matrix components to parse
-                         3: read color matrix - 4 x float, 4 x uint16
-                         4: read color matrix - read another UINT8-bitflag that determinates what matrix components to parse
-                         5: blendmode - uint8
-                         6: visible - boolean
-                         7: AWD3Parserutils.UINT8
-                         });*/
-                        // read display matrix
-                        if (BitFlags.test(props_flag, BitFlags.FLAG1)) {
-                            var thisMatrix = new Matrix3D();
-                            if (BitFlags.test(props_flag, BitFlags.FLAG2)) {
-                            }
-                            else {
-                                thisMatrix.rawData[0] = this._newBlockBytes.readFloat();
-                                thisMatrix.rawData[1] = this._newBlockBytes.readFloat();
-                                thisMatrix.rawData[4] = this._newBlockBytes.readFloat();
-                                thisMatrix.rawData[5] = this._newBlockBytes.readFloat();
-                                thisMatrix.position = new Vector3D(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0);
-                            }
-                            updateThis = true;
-                            updateprops["_iMatrix3D"] = thisMatrix;
-                        }
-                        // read colortransforms
-                        if (BitFlags.test(props_flag, BitFlags.FLAG3)) {
-                            var thisColorTransform = new ColorTransform();
-                            if (BitFlags.test(props_flag, BitFlags.FLAG4)) {
-                            }
-                            else {
-                                thisColorTransform.redMultiplier = this._newBlockBytes.readFloat();
-                                thisColorTransform.greenMultiplier = this._newBlockBytes.readFloat();
-                                thisColorTransform.blueMultiplier = this._newBlockBytes.readFloat();
-                                thisColorTransform.alphaMultiplier = this._newBlockBytes.readFloat();
-                                thisColorTransform.redOffset = this._newBlockBytes.readShort();
-                                thisColorTransform.greenOffset = this._newBlockBytes.readShort();
-                                thisColorTransform.blueOffset = this._newBlockBytes.readShort();
-                                thisColorTransform.alphaOffset = this._newBlockBytes.readShort();
-                            }
-                            updateThis = true;
-                            updateprops["colorTransform"] = thisColorTransform;
-                        }
-                        if (BitFlags.test(props_flag, BitFlags.FLAG5)) {
-                            var blendmode_int = this._newBlockBytes.readUnsignedByte();
-                            var blendmode_string = this.blendModeDic[blendmode_int];
-                        }
-                        if (BitFlags.test(props_flag, BitFlags.FLAG6)) {
-                            updateThis = true;
-                            updateprops["visible"] = this._newBlockBytes.readByte();
-                        }
-                        if (BitFlags.test(props_flag, BitFlags.FLAG7)) {
-                            var instanceName = this.parseVarStr();
-                            if (instanceName.length) {
-                                frame.registerChilds[registerChildCnt++] = objectID;
-                                frame.registerNames[registerNameCnt++] = instanceName;
-                            }
-                        }
-                        if (BitFlags.test(props_flag, BitFlags.FLAG8)) {
-                            var mask_id_nums = this._newBlockBytes.readUnsignedShort();
-                            var mask_ids = new Array();
-                            for (var mi_cnt = 0; mi_cnt < mask_id_nums; mi_cnt++)
-                                mask_ids[mi_cnt] = this._newBlockBytes.readShort();
-                            if (mask_ids.length > 0) {
-                                updateThis = true;
-                                // TODO: this object is used as mask
-                                if ((mask_ids.length == 1) && (mask_ids[0] == -1))
-                                    updateprops["_iMaskID"] = objectID;
-                                else
-                                    frame.frameUpdatePropertiesCommands[commandCount_props++] = new SetMaskCommand(objectID, mask_ids);
-                            }
-                        }
-                        if (updateThis) {
-                            frame.updateChildIDs[updateChildCnt++] = objectID;
-                            frame.updateChildProperties[updateChildPropsCnt++] = updateprops;
-                        }
+                        new_buffer = new Uint16Array(keyframes_start_indices_data.arraybytes);
                         break;
                     case 4:
-                        // Add Sound Command
-                        // TODO: create CommandPropsSound and check which asset to use
-                        objectID = this._newBlockBytes.readUnsignedInt();
-                        this._newBlockBytes.readUnsignedInt();
+                        new_buffer = new Uint32Array(keyframes_start_indices_data.arraybytes);
                         break;
-                    default:
+                }
+                switch (str_type) {
+                    case 0:
+                        new_timeline.keyframe_durations = new_buffer;
+                        new_timeline.numKeyFrames = str_len / str_data_type;
+                        break;
+                    case 1:
+                        new_timeline.frame_command_indices = new_buffer;
+                        break;
+                    case 2:
+                        new_timeline.frame_recipe = new_buffer;
+                        break;
+                    case 3:
+                        new_timeline.command_length_stream = new_buffer;
+                        break;
+                    case 4:
+                        new_timeline.command_index_stream = new_buffer;
+                        break;
+                    case 5:
+                        new_timeline.add_child_stream = new_buffer;
+                        break;
+                    case 6:
+                        new_timeline.remove_child_stream = new_buffer;
+                        break;
+                    case 7:
+                        new_timeline.update_child_stream = new_buffer;
+                        break;
+                    case 8:
+                        new_timeline.update_child_props_indices_stream = new_buffer;
+                        break;
+                    case 9:
+                        new_timeline.update_child_props_length_stream = new_buffer;
+                        break;
+                    case 10:
+                        new_timeline.property_type_stream = new_buffer;
+                        break;
+                    case 11:
+                        new_timeline.property_index_stream = new_buffer;
+                        break;
+                    case 12:
+                        new_timeline.properties_stream_int = new_buffer;
                         break;
                 }
             }
-            var length_code = this._newBlockBytes.readUnsignedInt();
-            if (length_code > 0) {
-                // TODO: Script should probably not be attached to keyframes?
-                frame.framePostConstructCommands.push(new ExecuteScriptCommand(this._newBlockBytes.readUTFBytes(length_code)));
-            }
-            this._newBlockBytes.readUnsignedInt(); // user attributes - skip for now
-            new_timeline.addFrame(frame);
+            str_counter++;
         }
+        var lc = 0;
+        var float_array_data;
+        str_cnt = this._newBlockBytes.readUnsignedByte();
+        for (i = 0; i < str_cnt; i++) {
+            str_type = this._newBlockBytes.readUnsignedByte();
+            switch (str_type) {
+                case 0:
+                    str_len = this._newBlockBytes.readUnsignedInt();
+                    float_array_data = new ByteArray(str_len);
+                    this._newBlockBytes.readBytes(float_array_data, 0, str_len);
+                    new_timeline.properties_stream_f32_mtx_scale_rot = new Float32Array(float_array_data.arraybytes);
+                    break;
+                case 1:
+                    str_len = this._newBlockBytes.readUnsignedInt();
+                    float_array_data = new ByteArray(str_len);
+                    this._newBlockBytes.readBytes(float_array_data, 0, str_len);
+                    new_timeline.properties_stream_f32_mtx_pos = new Float32Array(float_array_data.arraybytes);
+                    break;
+                case 2:
+                    str_len = this._newBlockBytes.readUnsignedInt();
+                    float_array_data = new ByteArray(str_len);
+                    this._newBlockBytes.readBytes(float_array_data, 0, str_len);
+                    new_timeline.properties_stream_f32_mtx_all = new Float32Array(float_array_data.arraybytes);
+                    break;
+                case 3:
+                    str_len = this._newBlockBytes.readUnsignedInt();
+                    float_array_data = new ByteArray(str_len);
+                    this._newBlockBytes.readBytes(float_array_data, 0, str_len);
+                    new_timeline.properties_stream_f32_ct = new Float32Array(float_array_data.arraybytes);
+                    break;
+                case 4:
+                    str_len = this._newBlockBytes.readUnsignedShort();
+                    for (lc = 0; lc < str_len; lc++) {
+                        new_timeline._labels[this.parseVarStr()] = this._newBlockBytes.readUnsignedShort();
+                    }
+                    break;
+                case 5:
+                    str_len = this._newBlockBytes.readUnsignedShort();
+                    var string_props_array = [];
+                    for (lc = 0; lc < str_len; lc++) {
+                        string_props_array.push(this._newBlockBytes.readUTFBytes(this._newBlockBytes.readUnsignedShort()));
+                    }
+                    new_timeline.properties_stream_strings = string_props_array;
+                    break;
+                case 6:
+                    str_len = this._newBlockBytes.readUnsignedShort();
+                    for (lc = 0; lc < str_len; lc++) {
+                        var frame_index = this._newBlockBytes.readUnsignedShort();
+                        var one_str_len = this._newBlockBytes.readUnsignedInt();
+                        //this._newBlockBytes.readUTFBytes(one_str_len);
+                        new_timeline._framescripts[frame_index] = new ExecuteScriptCommand(this._newBlockBytes.readUTFBytes(one_str_len));
+                    }
+                    break;
+            }
+        }
+        new_timeline.init();
         timeLineContainer.timeline = new_timeline;
         this.parseProperties(null);
         this.parseUserAttributes();
         this._pFinalizeAsset(timeLineContainer, name);
         this._blocks[blockID].data = timeLineContainer;
         if (this._debug)
-            console.log("Parsed a TIMELINE: Name = " + name + "| isScene = " + isScene + "| sceneID = " + sceneID + "| numFrames = " + numFrames);
+            console.log("Parsed a TIMELINE: Name = " + name + "| isScene = " + isScene + "| sceneID = " + sceneID + "| numFrames = ");
     };
     //Block ID = 1
     AWDParser.prototype.parseGeometry = function (blockID) {
@@ -5988,7 +5930,7 @@ var BitFlags = (function () {
 })();
 module.exports = AWDParser;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/data/BitmapImageCube":undefined,"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/CurveSubGeometry":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Billboard":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/entities/TextField":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-display/lib/text/TextFormat":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-player/lib/timeline/Timeline":undefined,"awayjs-player/lib/timeline/TimelineKeyFrame":undefined,"awayjs-player/lib/timeline/commands/ExecuteScriptCommand":undefined,"awayjs-player/lib/timeline/commands/SetButtonCommand":undefined,"awayjs-player/lib/timeline/commands/SetMaskCommand":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/data/BitmapImageCube":undefined,"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/CurveSubGeometry":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Billboard":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-display/lib/text/TextFormat":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-player/lib/timeline/Timeline":undefined,"awayjs-player/lib/timeline/commands/ExecuteScriptCommand":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }

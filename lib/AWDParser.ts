@@ -107,12 +107,9 @@ import BasicMaterial					= require("awayjs-display/lib/materials/BasicMaterial")
 import TimelineSceneGraphFactory 	= require("awayjs-player/lib/factories/TimelineSceneGraphFactory");
 import AS2SceneGraphFactory 		= require("awayjs-player/lib/factories/AS2SceneGraphFactory");
 import MovieClip 					= require("awayjs-player/lib/display/MovieClip");
-import TimelineKeyFrame 			= require("awayjs-player/lib/timeline/TimelineKeyFrame");
 import Timeline			 			= require("awayjs-player/lib/timeline/Timeline");
 
-import SetButtonCommand 				= require("awayjs-player/lib/timeline/commands/SetButtonCommand");
 import ExecuteScriptCommand 		= require("awayjs-player/lib/timeline/commands/ExecuteScriptCommand");
-import SetMaskCommand 		        = require("awayjs-player/lib/timeline/commands/SetMaskCommand");
 
 import Font							= require("awayjs-display/lib/text/Font");
 import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTable");
@@ -129,7 +126,7 @@ class AWDParser extends ParserBase
 
 	//set to "true" to have some console.logs in the Console
 	private _debug:boolean = false;
-	private _debugTimers:boolean = false;
+	private _debugTimers:boolean = true;
 	private _byteData:ByteArray;
 	private _startedParsing:boolean = false;
 	private _cur_block_id:number;
@@ -771,7 +768,7 @@ class AWDParser extends ParserBase
 			new_font_style = new_font.get_font_table(font_style_name);
 			new_font_style.set_font_em_size(this._newBlockBytes.readUnsignedInt());
 			new_font_style.set_whitespace_width(this._newBlockBytes.readUnsignedInt());
-			console.log(new_font_style.get_whitespace_width());
+			//console.log(new_font_style.get_whitespace_width());
 			font_style_char_cnt = this._newBlockBytes.readUnsignedInt();
 			for (var j:number = 0; j < font_style_char_cnt; ++j) {
 				// todo: this is basically a simplified version of the subgeom-parsing done in parseGeometry. Make a parseSubGeom() instead (?)
@@ -792,7 +789,7 @@ class AWDParser extends ParserBase
 						for(var idx:number = 0; this._newBlockBytes.position < str_end; idx++)
 							indices[idx] = this._newBlockBytes.readUnsignedShort();
 
-					} else if (str_type == 10) {// combined vertex2D stream 5 x float32
+					} else if (str_type == 10) {// combined vertex2D stream 7 x float32
 						var curveData:ByteArray = new ByteArray(str_len);
 						this._newBlockBytes.readBytes(curveData, 0, str_len);
 					} else {
@@ -800,11 +797,12 @@ class AWDParser extends ParserBase
 					}
 				}
 				if(curveData) {
-					var vertexBuffer:AttributesBuffer = new AttributesBuffer(28, str_len / 28);
+					var vertexBuffer:AttributesBuffer = new AttributesBuffer(20, str_len / 20);
 					vertexBuffer.bufferView = new Uint8Array(<ArrayBuffer> curveData.arraybytes);
 
 					var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(vertexBuffer);
-					curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
+					//curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
+					curve_sub_geom.autoDeriveUVs=false;
 					new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
 				}
 			}
@@ -1115,213 +1113,144 @@ class AWDParser extends ParserBase
 		if (this._debug)
 			console.log("Parsed " + (num_potential_childs + num_potential_childs_multi_instanced) + " potential childs. They will be used by " + num_all_display_instances + " instances.");
 
-		// register list of potential sounds
-		// a potential child can be reused on a timeline (added / removed / added)
+		// register list of potential sounds - for now we always have 0 sounds
 		var num_potential_sounds = this._newBlockBytes.readUnsignedShort();
-		for (i = 0; i < num_potential_sounds; i++) {
-			cmd_asset = <DisplayObject> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
-			if (cmd_asset != null) {
-				//todo: register sound objects on movieclip
-				console.log("ERROR when collecting objects for timeline");
-				//timeLineContainer.registerPotentialChild(cmd_asset);
-			} else {
-				//todo: this is a error that might break complete timeline, because all sound obj-id shift
-			}
-		}
-
-		//console.log("numFrames "+numFrames);
-		// var previousTimeLine:TimeLineFrame;
-		// var fill_props:AWDProperties = this.parseProperties({1:AWD3Parserutils.UINT32});// { 1:UINT32, 6:AWDSTRING }  ); //; , 2:UINT32, 3:UINT32, 5:BOOL } );
 
 
-		var totalDuration:number = 0;
-		var frameDuration:number;
-		var numLabels:number;
-		var numCommands:number;
-		var objectID:number;
-		var target_depth:number;
-		var number_of_obj:number;
-		var commandType:number;
-		var frame:TimelineKeyFrame;
-		var hasDepthChanges:boolean;
-		var sessionCount:number=0;
-		var numFrames:number = this._newBlockBytes.readUnsignedShort();
-		for (i = 0; i < numFrames; i++) {
-			var removeCnt:number = 0;
-			var addChildCnt:number = 0;
-			var registerChildCnt:number = 0;
-			var registerNameCnt:number = 0;
-			var updateChildCnt:number = 0;
-			var updateChildPropsCnt:number = 0;
-			var commandCount_props:number = 0;
-			// todo: remove the ms_per_frame to set the duration in frames
-			frameDuration = this._newBlockBytes.readUnsignedInt();
-			frame = new TimelineKeyFrame(totalDuration, frameDuration);
-			totalDuration += frameDuration;
-
-			numLabels = this._newBlockBytes.readUnsignedByte();
-
-			// TODO: Temporary way to handle labels
-			for (j = 0; j < numLabels; j++)
-				new_timeline._labels[this.parseVarStr()] = new_timeline.numKeyFrames();
-
-			numCommands = this._newBlockBytes.readUnsignedShort();
-			hasDepthChanges = false;
-			for (j = 0; j < numCommands; j++) {
-				commandType = this._newBlockBytes.readUnsignedByte();
-
-				// 1 = remove a number of objects by depth
-				// 2 = add a object by child-id at specific depth
-				// 3 = update a object by child-id
-				// 4 = add / update sound - (not finished)
-
-				switch (commandType) {
-					case 1:// remove a number of objects at specific depth
-						number_of_obj = this._newBlockBytes.readUnsignedShort();
-						for (var c:number = 0; c < number_of_obj; c++) {
-							// Remove Object depth
-							frame.removeDepth[removeCnt++] = this._newBlockBytes.readShort();
-						}
+		var str_cnt = this._newBlockBytes.readUnsignedByte();
+		var str_len = 0;
+		var str_data_type = 0;
+		var str_type=0;
+		var str_counter=0;
+		for(i=0; i<str_cnt;i++){
+			// the first 6 lists are not optional and always in same order
+			// hence we can get type by incremental counter instead of stored uint8
+			if(str_counter<6)
+				str_type=str_counter;
+			else
+				str_type = this._newBlockBytes.readUnsignedByte();
+			// get the data type for this stream (1:UINT8 - 2:UINT16 - 3:UINT32)
+			str_data_type = this._newBlockBytes.readUnsignedByte();
+			// size of this stream in byte
+			str_len = this._newBlockBytes.readUnsignedInt();
+			if(str_len>0) {
+				var keyframes_start_indices_data:ByteArray = new ByteArray(str_len);
+				this._newBlockBytes.readBytes(keyframes_start_indices_data, 0, str_len);
+				var new_buffer:ArrayBufferView;
+				//console.log("str_data_type = "+str_type);
+				switch (str_data_type) {
+					case 1:
+						new_buffer = new Uint8Array(<ArrayBuffer> keyframes_start_indices_data.arraybytes);
 						break;
-
-					case 2:// add a of object by child-id at specific depth
-					case 3:// update a object by child-id
-					case 6:// add a of button_instance
-						objectID = this._newBlockBytes.readUnsignedShort();
-						//console.log("add / update objectID ", objectID);
-						var updateprops:Object={};
-						var updateThis:boolean=false;
-						if (commandType != 3) {
-							hasDepthChanges = true;
-							target_depth = this._newBlockBytes.readShort();
-							//console.log("target_depth ", target_depth);
-                            var potChild = new_timeline.getPotentialChildPrototype(objectID);
-							if (potChild != undefined) {
-								frame.addCommands[addChildCnt++] = objectID;
-								frame.addCommands[addChildCnt++] = sessionCount;
-								frame.addCommands[addChildCnt++] = target_depth;
-								sessionCount++;
-								if (commandType == 6) {
-									frame.frameUpdatePropertiesCommands[commandCount_props++] = new SetButtonCommand(objectID);
-								}
-								else if (potChild.isAsset(TextField)) {
-									// if the object is a textfield, we set the textfield-name as instancename
-									frame.registerChilds[registerChildCnt++]=objectID;
-									frame.registerNames[registerNameCnt++]=potChild.name;
-								}
-							}
-							else{
-								console.log("ERROR: could not find the objectID ", objectID);
-							}
-						}
-
-						var props_flag = this._newBlockBytes.readUnsignedShort();
-						/*	Props_flags
-						 1: read display matrix - 6 x float,
-						 2: read display matrix - read another UINT8-bitflag that determinates what matrix components to parse
-						 3: read color matrix - 4 x float, 4 x uint16
-						 4: read color matrix - read another UINT8-bitflag that determinates what matrix components to parse
-						 5: blendmode - uint8
-						 6: visible - boolean
-						 7: AWD3Parserutils.UINT8
-						 });*/
-						// read display matrix
-						if (BitFlags.test(props_flag, BitFlags.FLAG1)) {
-							var thisMatrix:Matrix3D = new Matrix3D();
-							if (BitFlags.test(props_flag, BitFlags.FLAG2)) {
-							} else {
-								thisMatrix.rawData[0] = this._newBlockBytes.readFloat();
-								thisMatrix.rawData[1] = this._newBlockBytes.readFloat();
-								thisMatrix.rawData[4] = this._newBlockBytes.readFloat();
-								thisMatrix.rawData[5] = this._newBlockBytes.readFloat();
-								thisMatrix.position = new Vector3D(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0);
-							}
-							updateThis=true;
-							updateprops["_iMatrix3D"]=thisMatrix;
-						}
-						// read colortransforms
-						if (BitFlags.test(props_flag, BitFlags.FLAG3)) {
-							var thisColorTransform:ColorTransform = new ColorTransform();
-							if (BitFlags.test(props_flag, BitFlags.FLAG4)) {
-							} else {
-								thisColorTransform.redMultiplier = this._newBlockBytes.readFloat();
-								thisColorTransform.greenMultiplier = this._newBlockBytes.readFloat();
-								thisColorTransform.blueMultiplier = this._newBlockBytes.readFloat();
-								thisColorTransform.alphaMultiplier = this._newBlockBytes.readFloat();
-								thisColorTransform.redOffset = this._newBlockBytes.readShort();
-								thisColorTransform.greenOffset = this._newBlockBytes.readShort();
-								thisColorTransform.blueOffset = this._newBlockBytes.readShort();
-								thisColorTransform.alphaOffset = this._newBlockBytes.readShort();
-							}
-							updateThis=true;
-							updateprops["colorTransform"]=thisColorTransform;
-						}
-						if (BitFlags.test(props_flag, BitFlags.FLAG5)) {
-							var blendmode_int = this._newBlockBytes.readUnsignedByte();
-							var blendmode_string = this.blendModeDic[blendmode_int];
-						}
-						if (BitFlags.test(props_flag, BitFlags.FLAG6)) {
-							updateThis=true;
-							updateprops["visible"]=this._newBlockBytes.readByte();
-						}
-						if (BitFlags.test(props_flag, BitFlags.FLAG7)) {
-							var instanceName:string = this.parseVarStr();
-							if (instanceName.length) {
-								frame.registerChilds[registerChildCnt++] = objectID;
-								frame.registerNames[registerNameCnt++] = instanceName;
-							}
-
-						}
-						if (BitFlags.test(props_flag, BitFlags.FLAG8)) {
-							var mask_id_nums:number = this._newBlockBytes.readUnsignedShort();
-							var mask_ids:Array<number> = new Array<number>();
-							for (var mi_cnt:number = 0; mi_cnt < mask_id_nums; mi_cnt++)
-								mask_ids[mi_cnt] = this._newBlockBytes.readShort();
-
-							if (mask_ids.length > 0) {
-								updateThis=true;
-								// TODO: this object is used as mask
-								if ((mask_ids.length == 1) && (mask_ids[0] == -1))
-									updateprops["_iMaskID"]=objectID;
-								else
-									frame.frameUpdatePropertiesCommands[commandCount_props++] = new SetMaskCommand(objectID, mask_ids);
-							}
-						}
-						if(updateThis){
-							frame.updateChildIDs[updateChildCnt++]=objectID;
-							frame.updateChildProperties[updateChildPropsCnt++]=updateprops;
-						}
+					case 2:
+						new_buffer = new Uint16Array(<ArrayBuffer> keyframes_start_indices_data.arraybytes);
 						break;
-
 					case 4:
-
-						// Add Sound Command
-						// TODO: create CommandPropsSound and check which asset to use
-						objectID = this._newBlockBytes.readUnsignedInt();
-						this._newBlockBytes.readUnsignedInt();
-						// TODO: implement sound in timeline
-						//commandString += "\n      - Add new Sound AWD-ID = " + resourceID.toString() + " as object_id = " + objectID.toString();
+						new_buffer = new Uint32Array(<ArrayBuffer> keyframes_start_indices_data.arraybytes);
 						break;
-
-					default:
-
-						//commandString += "\n       - Un
-						//
-						// known Command Type = " + commandType;
+				}
+				switch (str_type) {
+					case 0:
+						new_timeline.keyframe_durations = new_buffer;
+						new_timeline.numKeyFrames=str_len / str_data_type;
 						break;
-
+					case 1:
+						new_timeline.frame_command_indices = new_buffer;
+						break;
+					case 2:
+						new_timeline.frame_recipe = new_buffer;
+						break;
+					case 3:
+						new_timeline.command_length_stream = new_buffer;
+						break;
+					case 4:
+						new_timeline.command_index_stream = new_buffer;
+						break;
+					case 5:
+						new_timeline.add_child_stream = new_buffer;
+						break;
+					case 6:
+						new_timeline.remove_child_stream = new_buffer;
+						break;
+					case 7:
+						new_timeline.update_child_stream = new_buffer;
+						break;
+					case 8:
+						new_timeline.update_child_props_indices_stream = new_buffer;
+						break;
+					case 9:
+						new_timeline.update_child_props_length_stream = new_buffer;
+						break;
+					case 10:
+						new_timeline.property_type_stream = new_buffer;
+						break;
+					case 11:
+						new_timeline.property_index_stream = new_buffer;
+						break;
+					case 12:
+						new_timeline.properties_stream_int = new_buffer;
+						break;
 				}
 			}
-			var length_code:number = this._newBlockBytes.readUnsignedInt();
-			if (length_code > 0) {
-				// TODO: Script should probably not be attached to keyframes?
-				frame.framePostConstructCommands.push(new ExecuteScriptCommand(this._newBlockBytes.readUTFBytes(length_code)));
-			}
-
-			this._newBlockBytes.readUnsignedInt();// user attributes - skip for now
-
-			new_timeline.addFrame(frame);
+			str_counter++;
 		}
+		var lc:number=0;
+		var float_array_data:ByteArray;
+		str_cnt = this._newBlockBytes.readUnsignedByte();
+		for(i=0; i<str_cnt;i++){
+			str_type = this._newBlockBytes.readUnsignedByte();
+			switch(str_type) {
+				case 0://mtx_scale
+					str_len = this._newBlockBytes.readUnsignedInt();
+					float_array_data = new ByteArray(str_len);
+					this._newBlockBytes.readBytes(float_array_data, 0, str_len);
+					new_timeline.properties_stream_f32_mtx_scale_rot=new Float32Array(<ArrayBuffer> float_array_data.arraybytes);
+					break;
+				case 1://mtx_pos
+					str_len = this._newBlockBytes.readUnsignedInt();
+					float_array_data = new ByteArray(str_len);
+					this._newBlockBytes.readBytes(float_array_data, 0, str_len);
+					new_timeline.properties_stream_f32_mtx_pos=new Float32Array(<ArrayBuffer> float_array_data.arraybytes);
+					break;
+				case 2://mtx_all
+					str_len = this._newBlockBytes.readUnsignedInt();
+					float_array_data = new ByteArray(str_len);
+					this._newBlockBytes.readBytes(float_array_data, 0, str_len);
+					new_timeline.properties_stream_f32_mtx_all=new Float32Array(<ArrayBuffer> float_array_data.arraybytes);
+					break;
+				case 3://ct
+					str_len = this._newBlockBytes.readUnsignedInt();
+					float_array_data = new ByteArray(str_len);
+					this._newBlockBytes.readBytes(float_array_data, 0, str_len);
+					new_timeline.properties_stream_f32_ct=new Float32Array(<ArrayBuffer> float_array_data.arraybytes);
+					break;
+				case 4://labels
+					str_len = this._newBlockBytes.readUnsignedShort();
+					//console.log("start reading labels "+str_len);
+					for (lc = 0; lc < str_len; lc++) {
+						new_timeline._labels[this.parseVarStr()] = this._newBlockBytes.readUnsignedShort();
+					}
+					break;
+				case 5://name_stream
+					str_len = this._newBlockBytes.readUnsignedShort();
+					var string_props_array:Array<string>=[];
+					for (lc = 0; lc < str_len; lc++) {
+						string_props_array.push(this._newBlockBytes.readUTFBytes(this._newBlockBytes.readUnsignedShort()));
+					}
+					new_timeline.properties_stream_strings = string_props_array;
+					break;
+				case 6://script_stream
+					str_len = this._newBlockBytes.readUnsignedShort();
+					for (lc = 0; lc < str_len; lc++) {
+						var frame_index=this._newBlockBytes.readUnsignedShort();
+						var one_str_len=this._newBlockBytes.readUnsignedInt();
+						//this._newBlockBytes.readUTFBytes(one_str_len);
+						new_timeline._framescripts[frame_index] = new ExecuteScriptCommand(this._newBlockBytes.readUTFBytes(one_str_len));
+					}
+					break;
+			}
+		}
+		new_timeline.init();
 		timeLineContainer.timeline=new_timeline;
 		this.parseProperties(null);
 		this.parseUserAttributes();
@@ -1330,7 +1259,7 @@ class AWDParser extends ParserBase
 		this._blocks[blockID].data = timeLineContainer;
 
 		if (this._debug)
-			console.log("Parsed a TIMELINE: Name = " + name + "| isScene = " + isScene + "| sceneID = " + sceneID + "| numFrames = " + numFrames);
+			console.log("Parsed a TIMELINE: Name = " + name + "| isScene = " + isScene + "| sceneID = " + sceneID + "| numFrames = ");
 	}
 
 	private static geometryProperties:Object = {

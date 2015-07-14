@@ -11,10 +11,8 @@ import ColorTransform					= require("awayjs-core/lib/geom/ColorTransform");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
 
 import MovieClip 					= require("awayjs-player/lib/display/MovieClip");
-import TimelineKeyFrame 			= require("awayjs-player/lib/timeline/TimelineKeyFrame");
 import Timeline			 			= require("awayjs-player/lib/timeline/Timeline");
 import ExecuteScriptCommand 		= require("awayjs-player/lib/timeline/commands/ExecuteScriptCommand");
-import SetMaskCommand 		        = require("awayjs-player/lib/timeline/commands/SetMaskCommand");
 
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
 
@@ -129,18 +127,18 @@ class MovieClipAWDParser extends AWDBlockParserBase
 		var resourceID:number;
 		var number_of_obj:number;
 		var commandType:number;
-		var frame:TimelineKeyFrame;
+		//var frame:TimelineKeyFrame;
 		var hasDepthChanges:boolean;
 		var sessionCount:number=0;
 		for (i = 0; i < numFrames; i++) {
 			// todo: remove the ms_per_frame to set the duration in frames
 			frameDuration = this.awd_file_data.newBlockBytes.readUnsignedInt()*ms_per_frame;
-			frame = new TimelineKeyFrame(totalDuration, frameDuration);
+			//frame = new TimelineKeyFrame(totalDuration, frameDuration);
 			totalDuration += frameDuration;
 
 			numLabels = this.awd_file_data.newBlockBytes.readUnsignedByte();
-			for (j = 0; j < numLabels; j++)
-				new_timeline._labels[this.awd_file_data.parseVarStr()]=new_timeline.numKeyFrames();
+			//for (j = 0; j < numLabels; j++)
+			//	new_timeline._labels[this.awd_file_data.parseVarStr()]=new_timeline.numKeyFrames();
 
 			numCommands = this.awd_file_data.newBlockBytes.readUnsignedShort();
 			//console.log("numCommands "+numCommands);
@@ -254,8 +252,8 @@ class MovieClipAWDParser extends AWDBlockParserBase
 									// TODO: this.awd_file_data object is used as mask
 									//frame.frameConstructCommands.push(new UpdatePropertyCommand(objectID, "_iMaskID", objectID));
 								}
-								else
-									frame.frameConstructCommands.push(new SetMaskCommand(objectID, mask_ids));
+								//else
+								//	frame.frameConstructCommands.push(new SetMaskCommand(objectID, mask_ids));
 							}
 						}
 						break;
@@ -287,15 +285,15 @@ class MovieClipAWDParser extends AWDBlockParserBase
 			var length_code = this.awd_file_data.newBlockBytes.readUnsignedInt();
 			if (length_code > 0) {
 				// TODO: Script should probably not be attached to keyframes?
-				var frame_code = this.awd_file_data.newBlockBytes.readUTFBytes(length_code);
-				frame.framePostConstructCommands.push(new ExecuteScriptCommand(frame_code));
+				//var frame_code = this.awd_file_data.newBlockBytes.readUTFBytes(length_code);
+				//frame.framePostConstructCommands.push(new ExecuteScriptCommand(frame_code));
 				//traceString += "\nframe-code = " + frame_code;
 			}
 			//traceString += commandString;
 			//trace("length_code = "+length_code+" frame_code = "+frame_code);
 			this.awd_file_data.newBlockBytes.readUnsignedInt();// user attributes - skip for now
 			//console.log(traceString);
-			new_timeline.addFrame(frame);
+			//new_timeline.addFrame(frame);
 
 		}
 		new_mc.timeline = new_timeline;
