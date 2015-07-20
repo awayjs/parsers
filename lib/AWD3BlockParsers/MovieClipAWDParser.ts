@@ -12,7 +12,6 @@ import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
 
 import MovieClip 					= require("awayjs-player/lib/display/MovieClip");
 import Timeline			 			= require("awayjs-player/lib/timeline/Timeline");
-import ExecuteScriptCommand 		= require("awayjs-player/lib/timeline/commands/ExecuteScriptCommand");
 
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
 

@@ -109,7 +109,6 @@ import AS2SceneGraphFactory 		= require("awayjs-player/lib/factories/AS2SceneGra
 import MovieClip 					= require("awayjs-player/lib/display/MovieClip");
 import Timeline			 			= require("awayjs-player/lib/timeline/Timeline");
 
-import ExecuteScriptCommand 		= require("awayjs-player/lib/timeline/commands/ExecuteScriptCommand");
 
 import Font							= require("awayjs-display/lib/text/Font");
 import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTable");
@@ -1245,7 +1244,7 @@ class AWDParser extends ParserBase
 						var frame_index=this._newBlockBytes.readUnsignedShort();
 						var one_str_len=this._newBlockBytes.readUnsignedInt();
 						//this._newBlockBytes.readUTFBytes(one_str_len);
-						new_timeline._framescripts[frame_index] = new ExecuteScriptCommand(this._newBlockBytes.readUTFBytes(one_str_len));
+						new_timeline.add_framescript(this._newBlockBytes.readUTFBytes(one_str_len), frame_index);
 					}
 					break;
 			}
