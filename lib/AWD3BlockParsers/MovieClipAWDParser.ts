@@ -10,8 +10,8 @@ import DisplayObject					= require("awayjs-display/lib/base/DisplayObject");
 import ColorTransform					= require("awayjs-core/lib/geom/ColorTransform");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
 
-import MovieClip 					= require("awayjs-player/lib/display/MovieClip");
-import Timeline			 			= require("awayjs-player/lib/timeline/Timeline");
+import MovieClip 					= require("awayjs-display/lib/entities/MovieClip");
+import Timeline			 			= require("awayjs-display/lib/base/Timeline");
 
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
 

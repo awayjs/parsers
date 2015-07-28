@@ -104,10 +104,10 @@ import ShadowSoftMethod					= require("awayjs-methodmaterials/lib/methods/Shadow
 
 import BasicMaterial					= require("awayjs-display/lib/materials/BasicMaterial");
 
-import TimelineSceneGraphFactory 	= require("awayjs-player/lib/factories/TimelineSceneGraphFactory");
+import ITimelineSceneGraphFactory 	= require("awayjs-display/lib/factories/ITimelineSceneGraphFactory");
 import AS2SceneGraphFactory 		= require("awayjs-player/lib/factories/AS2SceneGraphFactory");
-import MovieClip 					= require("awayjs-player/lib/display/MovieClip");
-import Timeline			 			= require("awayjs-player/lib/timeline/Timeline");
+import MovieClip 					= require("awayjs-display/lib/entities/MovieClip");
+import Timeline			 			= require("awayjs-display/lib/base/Timeline");
 
 
 import Font							= require("awayjs-display/lib/text/Font");
@@ -896,7 +896,7 @@ class AWDParser extends ParserBase
 	private static textFieldTypes:Array<string> = ["static", "dynamic", "input", "input"];
 
 
-	private paresTextField(blockID:number, factory:TimelineSceneGraphFactory)
+	private paresTextField(blockID:number, factory:ITimelineSceneGraphFactory)
 	{
 		var name:string = this.parseVarStr();
 		this._blocks[blockID].name = name;
@@ -1017,7 +1017,7 @@ class AWDParser extends ParserBase
 			console.log("Parsed a Library-Mesh: Name = '" + name + "| Geometry-Name = " + geom.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames);
 	}
 
-	private parseAudioBlock(blockID:number, factory:TimelineSceneGraphFactory)
+	private parseAudioBlock(blockID:number, factory:ITimelineSceneGraphFactory)
 	{
 		//var asset:Audio;todo create asset for audio
 
@@ -1056,7 +1056,7 @@ class AWDParser extends ParserBase
 	}
 
 	//Block ID = 4
-	private parseTimeLine(blockID:number, factory:TimelineSceneGraphFactory)
+	private parseTimeLine(blockID:number, factory:ITimelineSceneGraphFactory)
 	{
 		var i:number;
 		var j:number;
