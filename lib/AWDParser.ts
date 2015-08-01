@@ -1061,8 +1061,8 @@ class AWDParser extends ParserBase
 		var i:number;
 		var j:number;
 		var cmd_asset:DisplayObject;
-		var timeLineContainer = factory.createMovieClip();
 		var new_timeline:Timeline = new Timeline();
+		var timeLineContainer = factory.createMovieClip(new_timeline);
 		var name = this.parseVarStr();
 		var isScene = !!this._newBlockBytes.readUnsignedByte();
 		var sceneID = this._newBlockBytes.readUnsignedByte();
@@ -1250,7 +1250,6 @@ class AWDParser extends ParserBase
 			}
 		}
 		new_timeline.init();
-		timeLineContainer.timeline=new_timeline;
 		this.parseProperties(null);
 		this.parseUserAttributes();
 		this._pFinalizeAsset(<IAsset>timeLineContainer, name);

@@ -37,8 +37,8 @@ class MovieClipAWDParser extends AWDBlockParserBase
 		var i:number;
 		var j:number;
 		var c:number;
-		var new_mc = this.factory.createMovieClip()
 		var new_timeline:Timeline = new Timeline();
+		var new_mc = this.factory.createMovieClip(new_timeline)
 		this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
 		var isScene = !!this.awd_file_data.newBlockBytes.readUnsignedByte();
 		var sceneID = this.awd_file_data.newBlockBytes.readUnsignedByte();
@@ -295,7 +295,6 @@ class MovieClipAWDParser extends AWDBlockParserBase
 			//new_timeline.addFrame(frame);
 
 		}
-		new_mc.timeline = new_timeline;
 		this.awd_file_data.parseProperties(null);
 		this.awd_file_data.parseUserAttributes();
 		this.awd_file_data.cur_block.data = new_mc;
