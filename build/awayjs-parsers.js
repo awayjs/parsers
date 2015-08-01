@@ -1283,8 +1283,8 @@ var MovieClipAWDParser = (function (_super) {
         var i;
         var j;
         var c;
-        var new_mc = this.factory.createMovieClip();
         var new_timeline = new Timeline();
+        var new_mc = this.factory.createMovieClip(new_timeline);
         this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
         var isScene = !!this.awd_file_data.newBlockBytes.readUnsignedByte();
         var sceneID = this.awd_file_data.newBlockBytes.readUnsignedByte();
@@ -1494,7 +1494,6 @@ var MovieClipAWDParser = (function (_super) {
             //trace("length_code = "+length_code+" frame_code = "+frame_code);
             this.awd_file_data.newBlockBytes.readUnsignedInt(); // user attributes - skip for now
         }
-        new_mc.timeline = new_timeline;
         this.awd_file_data.parseProperties(null);
         this.awd_file_data.parseUserAttributes();
         this.awd_file_data.cur_block.data = new_mc;
@@ -4183,8 +4182,8 @@ var AWDParser = (function (_super) {
         var i;
         var j;
         var cmd_asset;
-        var timeLineContainer = factory.createMovieClip();
         var new_timeline = new Timeline();
+        var timeLineContainer = factory.createMovieClip(new_timeline);
         var name = this.parseVarStr();
         var isScene = !!this._newBlockBytes.readUnsignedByte();
         var sceneID = this._newBlockBytes.readUnsignedByte();
@@ -4363,7 +4362,6 @@ var AWDParser = (function (_super) {
             }
         }
         new_timeline.init();
-        timeLineContainer.timeline = new_timeline;
         this.parseProperties(null);
         this.parseUserAttributes();
         this._pFinalizeAsset(timeLineContainer, name);
