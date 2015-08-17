@@ -434,7 +434,7 @@ declare module "awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData" {
 	    readNumber(precision?: boolean): number;
 	    parseMatrix3D(): Matrix3D;
 	    private parseMatrix32RawData();
-	    parseMatrix43RawData(): Array<number>;
+	    parseMatrix43RawData(): Float32Array;
 	}
 	export = AWD3FileData;
 	
@@ -596,6 +596,7 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private start_timeing;
 	    private _time_all;
 	    private _time_geom;
+	    private _time_geom_bytes;
 	    private _time_timeline;
 	    private _time_fonts;
 	    private _time_textfields;

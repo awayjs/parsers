@@ -2854,7 +2854,7 @@ var AWD3FileData = (function () {
         return mtx_raw;
     };
     AWD3FileData.prototype.parseMatrix43RawData = function () {
-        var mtx_raw = new Array(16);
+        var mtx_raw = new Float32Array(16);
         mtx_raw[0] = this.readNumber(this._accuracyMatrix);
         mtx_raw[1] = this.readNumber(this._accuracyMatrix);
         mtx_raw[2] = this.readNumber(this._accuracyMatrix);
@@ -3466,6 +3466,7 @@ var AWDParser = (function (_super) {
         this._parsed_header = false;
         this._time_all = 0;
         this._time_geom = 0;
+        this._time_geom_bytes = 0;
         this._time_timeline = 0;
         this._time_fonts = 0;
         this._time_textfields = 0;
@@ -3680,7 +3681,7 @@ var AWDParser = (function (_super) {
             if (this._body.getBytesAvailable() == 0) {
                 this.dispose();
                 if (this._debugTimers)
-                    console.log("Parsing total: " + (this._time_all | 0) + "ms", " | geoms: " + this._num_geom + ", " + (this._time_geom | 0) + "ms", " | timelines: " + this._num_timeline + ", " + (this._time_timeline | 0) + "ms", " | fonts: " + this._num_fonts + ", " + (this._time_fonts | 0) + "ms", " | sounds: " + this._num_sounds + ", " + (this._time_sounds | 0) + "ms", " | mats: " + this._num_materials + ", " + (this._time_materials | 0) + "ms", " | textures: " + this._num_textures + ", " + (this._time_textures | 0) + "ms", " | meshes: " + this._num_meshes + ", " + (this._time_meshes | 0) + "ms");
+                    console.log("Parsing total: " + (this._time_all | 0) + "ms", " | geoms: " + this._num_geom + ", " + (this._time_geom | 0) + "ms", " | geoms bytes: " + this._num_geom + ", " + (this._time_geom_bytes | 0) + "ms", " | timelines: " + this._num_timeline + ", " + (this._time_timeline | 0) + "ms", " | fonts: " + this._num_fonts + ", " + (this._time_fonts | 0) + "ms", " | sounds: " + this._num_sounds + ", " + (this._time_sounds | 0) + "ms", " | mats: " + this._num_materials + ", " + (this._time_materials | 0) + "ms", " | textures: " + this._num_textures + ", " + (this._time_textures | 0) + "ms", " | meshes: " + this._num_meshes + ", " + (this._time_meshes | 0) + "ms");
                 return ParserBase.PARSING_DONE;
             }
             else {
@@ -4132,7 +4133,11 @@ var AWDParser = (function (_super) {
             materials[materials_parsed] = mat;
             materialNames[materials_parsed] = mat.name;
         }
+        var start_timeing = performance.now();
         var mesh = new Mesh(geom, null);
+        var end_timing = performance.now();
+        var time_delta = end_timing - start_timeing;
+        this._time_geom_bytes += time_delta;
         if (materials.length >= 1 && mesh.subMeshes.length == 1) {
             mesh.material = materials[0];
         }
@@ -4187,7 +4192,7 @@ var AWDParser = (function (_super) {
         var name = this.parseVarStr();
         var isScene = !!this._newBlockBytes.readUnsignedByte();
         var sceneID = this._newBlockBytes.readUnsignedByte();
-        timeLineContainer.fps = this._newBlockBytes.readFloat();
+        var fps = this._newBlockBytes.readFloat();
         // register list of potential childs
         // a potential child can be reused on a timeline (added / removed / added)
         // However, for each potential child, we need to register the max-number of instances that a frame contains
@@ -5688,7 +5693,7 @@ var AWDParser = (function (_super) {
         return mtx_raw;
     };
     AWDParser.prototype.parseMatrix43RawData = function () {
-        var mtx_raw = new Array(16);
+        var mtx_raw = new Float32Array(16);
         mtx_raw[0] = this.readNumber(this._accuracyMatrix);
         mtx_raw[1] = this.readNumber(this._accuracyMatrix);
         mtx_raw[2] = this.readNumber(this._accuracyMatrix);
@@ -7828,11 +7833,10 @@ var Max3DSParser = (function (_super) {
                 if (obj.transform) {
                     // If a transform was found while parsing the
                     // object chunk, use it to find the local pivot vector
-                    var dat = obj.transform.concat();
-                    dat[12] = 0;
-                    dat[13] = 0;
-                    dat[14] = 0;
-                    mtx = new Matrix3D(dat);
+                    mtx = new Matrix3D(obj.transform);
+                    mtx.rawData[12] = 0;
+                    mtx.rawData[13] = 0;
+                    mtx.rawData[14] = 0;
                     pivot = mtx.transformVector(pivot);
                 }
                 pivot.scaleBy(-1);
@@ -7988,8 +7992,7 @@ var Max3DSParser = (function (_super) {
         return str;
     };
     Max3DSParser.prototype.readTransform = function () {
-        var data;
-        data = new Array(16);
+        var data = new Float32Array(16);
         // X axis
         data[0] = this._byteData.readFloat(); // X
         data[2] = this._byteData.readFloat(); // Z
