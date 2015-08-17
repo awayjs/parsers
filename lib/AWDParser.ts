@@ -178,6 +178,7 @@ class AWDParser extends ParserBase
 	private start_timeing:number;
 	private _time_all:number=0;
 	private _time_geom:number=0;
+	private _time_geom_bytes:number=0;
 	private _time_timeline:number=0;
 	private _time_fonts:number=0;
 	private _time_textfields:number=0;
@@ -423,6 +424,7 @@ class AWDParser extends ParserBase
 				if (this._debugTimers)
 					console.log("Parsing total: "+(this._time_all | 0)+"ms",
 						" | geoms: "+this._num_geom+", "+(this._time_geom | 0)+"ms",
+						" | geoms bytes: "+this._num_geom+", "+(this._time_geom_bytes | 0)+"ms",
 						" | timelines: "+this._num_timeline+", "+(this._time_timeline | 0)+"ms",
 						" | fonts: "+this._num_fonts+", "+(this._time_fonts | 0)+"ms",
 						" | sounds: "+this._num_sounds+", "+(this._time_sounds | 0)+"ms",
@@ -995,8 +997,12 @@ class AWDParser extends ParserBase
 			materials[materials_parsed] = mat;
 			materialNames[materials_parsed] = mat.name;
 		}
-
+		var start_timeing = performance.now();
 		var mesh:Mesh = new Mesh(geom, null);
+		var end_timing = performance.now();
+		var time_delta = end_timing - start_timeing;
+		this._time_geom_bytes += time_delta;
+
 		if (materials.length >= 1 && mesh.subMeshes.length == 1) {
 			mesh.material = materials[0];
 		} else if (materials.length > 1) {
@@ -1066,7 +1072,7 @@ class AWDParser extends ParserBase
 		var name = this.parseVarStr();
 		var isScene = !!this._newBlockBytes.readUnsignedByte();
 		var sceneID = this._newBlockBytes.readUnsignedByte();
-		timeLineContainer.fps = this._newBlockBytes.readFloat();
+		var fps = this._newBlockBytes.readFloat();
 
 		// register list of potential childs
 		// a potential child can be reused on a timeline (added / removed / added)
@@ -2507,7 +2513,7 @@ class AWDParser extends ParserBase
 			joint_pose = new JointPose();
 			has_transform = this._newBlockBytes.readUnsignedByte();
 			if (has_transform == 1) {
-				var mtx_data:Array<number> = this.parseMatrix43RawData();
+				var mtx_data:Float32Array = this.parseMatrix43RawData();
 
 				var mtx:Matrix3D = new Matrix3D(mtx_data);
 				joint_pose.orientation.fromMatrix(mtx);
@@ -3103,9 +3109,9 @@ class AWDParser extends ParserBase
 		return mtx_raw;
 	}
 
-	private parseMatrix43RawData():Array<number>
+	private parseMatrix43RawData():Float32Array
 	{
-		var mtx_raw:Array<number> = new Array<number>(16);
+		var mtx_raw:Float32Array = new Float32Array(16);
 
 		mtx_raw[0] = this.readNumber(this._accuracyMatrix);
 		mtx_raw[1] = this.readNumber(this._accuracyMatrix);

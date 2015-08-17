@@ -507,9 +507,9 @@ class AWD3FileData
 		return mtx_raw;
 	}
 
-	public parseMatrix43RawData():Array<number>
+	public parseMatrix43RawData():Float32Array
 	{
-		var mtx_raw:Array<number> = new Array<number>(16);
+		var mtx_raw:Float32Array = new Float32Array(16);
 
 		mtx_raw[0] = this.readNumber(this._accuracyMatrix);
 		mtx_raw[1] = this.readNumber(this._accuracyMatrix);

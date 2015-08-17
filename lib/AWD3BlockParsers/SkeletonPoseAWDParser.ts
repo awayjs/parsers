@@ -35,7 +35,7 @@ class SkeletonPoseAWDParser extends AWDBlockParserBase
 			joint_pose = new JointPose();
 			has_transform = this.awd_file_data.newBlockBytes.readUnsignedByte();
 			if (has_transform == 1) {
-				var mtx_data:Array<number> = this.awd_file_data.parseMatrix43RawData();
+				var mtx_data:Float32Array = this.awd_file_data.parseMatrix43RawData();
 
 				var mtx:Matrix3D = new Matrix3D(mtx_data);
 				joint_pose.orientation.fromMatrix(mtx);

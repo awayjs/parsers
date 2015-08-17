@@ -574,11 +574,10 @@ class Max3DSParser extends ParserBase
 				if (obj.transform) {
 					// If a transform was found while parsing the
 					// object chunk, use it to find the local pivot vector
-					var dat:Array<number> = obj.transform.concat();
-					dat[12] = 0;
-					dat[13] = 0;
-					dat[14] = 0;
-					mtx = new Matrix3D(dat);
+					mtx = new Matrix3D(obj.transform);
+					mtx.rawData[12] = 0;
+					mtx.rawData[13] = 0;
+					mtx.rawData[14] = 0;
 					pivot = mtx.transformVector(pivot);
 				}
 
@@ -758,11 +757,9 @@ class Max3DSParser extends ParserBase
 		return str;
 	}
 
-	private readTransform():Array<number>
+	private readTransform():Float32Array
 	{
-		var data:Array<number>;
-
-		data = new Array<number>(16);
+		var data:Float32Array = new Float32Array(16);
 
 		// X axis
 		data[0] = this._byteData.readFloat(); // X
@@ -858,7 +855,7 @@ class ObjectVO
 	public pivotX:number;
 	public pivotY:number;
 	public pivotZ:number;
-	public transform:Array<number>;
+	public transform:Float32Array;
 	public verts:Array<number>;
 	public indices:Array<number> /*int*/;
 	public uvs:Array<number>;
