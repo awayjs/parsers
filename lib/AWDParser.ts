@@ -20,6 +20,7 @@ import PerspectiveProjection			= require("awayjs-core/lib/projections/Perspectiv
 import OrthographicProjection			= require("awayjs-core/lib/projections/OrthographicProjection");
 import OrthographicOffCenterProjection	= require("awayjs-core/lib/projections/OrthographicOffCenterProjection");
 import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
+import Point						= require("awayjs-core/lib/geom/Point");
 
 import AnimationNodeBase				= require("awayjs-display/lib/animators/nodes/AnimationNodeBase");
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
@@ -560,7 +561,7 @@ class AWDParser extends ParserBase
 					this.parseBillBoardLibraryBlock(this._cur_block_id);
 					isParsed = true;
 					break;
-				case 44:
+				case 4444:
 					this.parseAudioBlock(this._cur_block_id, factory);
 					isParsed = true;
 					break;
@@ -997,12 +998,29 @@ class AWDParser extends ParserBase
 			materials[materials_parsed] = mat;
 			materialNames[materials_parsed] = mat.name;
 		}
+
 		var start_timeing = performance.now();
 		var mesh:Mesh = new Mesh(geom, null);
 		var end_timing = performance.now();
 		var time_delta = end_timing - start_timeing;
 		this._time_geom_bytes += time_delta;
 
+		var num_subgeoms:number = this._newBlockBytes.readUnsignedShort();
+		if(num_subgeoms!=mesh.subMeshes.length){
+			//error
+		}
+		for (var i:number = 0; i < num_subgeoms; i++) {
+
+			// uv that descripes top left corner of area in textureatlas
+			new Point (this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+			// uv that descripes bottom right corner of area in textureatlas
+			new Point (this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+			// optional: transform matrix
+			var hasUVTransform:Boolean=!!this._newBlockBytes.readUnsignedByte();
+			if(hasUVTransform){
+				this.parseMatrix32RawData();
+			}
+		}
 		if (materials.length >= 1 && mesh.subMeshes.length == 1) {
 			mesh.material = materials[0];
 		} else if (materials.length > 1) {
