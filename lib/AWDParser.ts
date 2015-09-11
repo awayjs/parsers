@@ -1005,6 +1005,7 @@ class AWDParser extends ParserBase
 		var time_delta = end_timing - start_timeing;
 		this._time_geom_bytes += time_delta;
 
+		/*
 		var num_subgeoms:number = this._newBlockBytes.readUnsignedShort();
 		if(num_subgeoms!=mesh.subMeshes.length){
 			//error
@@ -1021,6 +1022,7 @@ class AWDParser extends ParserBase
 				this.parseMatrix32RawData();
 			}
 		}
+		*/
 		if (materials.length >= 1 && mesh.subMeshes.length == 1) {
 			mesh.material = materials[0];
 		} else if (materials.length > 1) {
