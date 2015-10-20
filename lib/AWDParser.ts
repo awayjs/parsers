@@ -111,6 +111,8 @@ import MovieClip 					= require("awayjs-display/lib/entities/MovieClip");
 import Timeline			 			= require("awayjs-display/lib/base/Timeline");
 
 
+import AssetLibrary							= require("awayjs-core/lib/library/AssetLibrary");
+
 import Font							= require("awayjs-display/lib/text/Font");
 import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTable");
 import TextFormat			= require("awayjs-display/lib/text/TextFormat");
@@ -756,17 +758,30 @@ class AWDParser extends ParserBase
 	{
 		var name:string = this.parseVarStr();
 		this._blocks[blockID].name = name;
+		var new_font:Font=<Font>AssetLibrary.getAsset(this._blocks[blockID].name);
+		var newfont:Boolean = false;
+		if(new_font==undefined){
+			new_font = new Font();
+			newfont=true;
+		}
 		var font_style_cnt:number = this._newBlockBytes.readUnsignedInt();
 		var font_style_char_cnt:number;
 		var font_style_name:string;
 		var new_font_style:TesselatedFontTable;
-		var new_font:Font=new Font();
 		var font_style_char:number;
 		var sm_len:number;
 		var sm_end:number;
 		var str_ftype:number, str_type:number, str_len:number, str_end:number;
 		for (var i:number = 0; i < font_style_cnt; ++i) {
 			font_style_name = this.parseVarStr();
+
+			// dirty hack for icycle
+			// we use bold chars for non-latin chars, but we use regular for € sign,
+			// so the dirty hack is to merge the regular and the bold style
+			if((this._blocks[blockID].name=="Tahoma") && (font_style_name=="RegularStyle")){
+				font_style_name="BoldStyle";
+			}
+
 			new_font_style = new_font.get_font_table(font_style_name);
 			new_font_style.set_font_em_size(this._newBlockBytes.readUnsignedInt());
 			new_font_style.set_whitespace_width(this._newBlockBytes.readUnsignedInt());
@@ -812,7 +827,9 @@ class AWDParser extends ParserBase
 
 		this.parseProperties(null);
 		this.parseUserAttributes();
-		this._pFinalizeAsset(<IAsset>new_font, name);
+		if(newfont) {
+			this._pFinalizeAsset(<IAsset>new_font, name);
+		}
 
 		this._blocks[blockID].data = new_font;
 
