@@ -8,16 +8,6 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/AnimatorAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/AudioAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class AudioAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = AudioAWDParser;
-	
-}
-
 declare module "awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase" {
 	import AWD3FileData = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData");
 	class AWDAssetParserBase {
@@ -27,6 +17,16 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase" {
 	    parseFromBytes(): void;
 	}
 	export = AWDAssetParserBase;
+	
+}
+
+declare module "awayjs-parsers/lib/AWD3BlockParsers/AudioAWDParser" {
+	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+	class AudioAWDParser extends AWDBlockParserBase {
+	    constructor();
+	    parseFromBytes(): void;
+	}
+	export = AudioAWDParser;
 	
 }
 
@@ -528,15 +528,6 @@ declare module "awayjs-parsers/lib/AWD3ParserUtils/AWDBlock" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3ParserUtils/AWDProperties" {
-	class AWDProperties {
-	    set(key: number, value: any): void;
-	    get(key: number, fallback: any): any;
-	}
-	export = AWDProperties;
-	
-}
-
 declare module "awayjs-parsers/lib/AWDParser" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
@@ -719,6 +710,15 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private parseMatrix43RawData();
 	}
 	export = AWDParser;
+	
+}
+
+declare module "awayjs-parsers/lib/AWD3ParserUtils/AWDProperties" {
+	class AWDProperties {
+	    set(key: number, value: any): void;
+	    get(key: number, fallback: any): any;
+	}
+	export = AWDProperties;
 	
 }
 
