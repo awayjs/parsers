@@ -5086,7 +5086,7 @@ var AWDParser = (function (_super) {
             //
             // Converting data to image here instead of parser - fix FireFox bug where image width / height is 0 when created from data
             // This gives the browser time to initialise image width / height.
-            this._pAddDependency(this._cur_block_id.toString(), null, false, ParserUtils.byteArrayToImage(data), true);
+            this._pAddDependency(this._cur_block_id.toString(), null, false, data, true);
         }
         // Ignore for now
         this.parseProperties(null);
