@@ -1,4 +1,4 @@
-import LoaderSession						= require("awayjs-core/lib/library/LoaderSession");
+import Loader							= require("awayjs-core/lib/library/Loader");
 
 import AWDParser						= require("awayjs-parsers/lib/AWDParser");
 import Max3DSParser						= require("awayjs-parsers/lib/Max3DSParser");
@@ -56,7 +56,7 @@ class Parsers
 	 */
 	public static enableAllBundled():void
 	{
-		LoaderSession.enableParsers(Parsers.ALL_BUNDLED);
+		Loader.enableParsers(Parsers.ALL_BUNDLED);
 	}
 }
 

@@ -2,10 +2,10 @@ import AttributesBuffer					= require("awayjs-core/lib/attributes/AttributesBuff
 import Short3Attributes					= require("awayjs-core/lib/attributes/Short3Attributes");
 import Float3Attributes					= require("awayjs-core/lib/attributes/Float3Attributes");
 import Float2Attributes					= require("awayjs-core/lib/attributes/Float2Attributes");
-import BitmapImage2D					= require("awayjs-core/lib/data/BitmapImage2D");
-import BitmapImageCube					= require("awayjs-core/lib/data/BitmapImageCube");
-import BlendMode						= require("awayjs-core/lib/data/BlendMode");
-import WaveAudio						= require("awayjs-core/lib/data/WaveAudio");
+import BitmapImage2D					= require("awayjs-core/lib/image/BitmapImage2D");
+import BitmapImageCube					= require("awayjs-core/lib/image/BitmapImageCube");
+import BlendMode						= require("awayjs-core/lib/image/BlendMode");
+import WaveAudio						= require("awayjs-core/lib/audio/WaveAudio");
 import ColorTransform					= require("awayjs-core/lib/geom/ColorTransform");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
@@ -776,7 +776,7 @@ class AWDParser extends ParserBase
 			font_style_name = this.parseVarStr();
 
 			// dirty hack for icycle
-			// we use bold chars for non-latin chars, but we use regular for € sign,
+			// we use bold chars for non-latin chars, but we use regular for ï¿½ sign,
 			// so the dirty hack is to merge the regular and the bold style
 			if((this._blocks[blockID].name=="Tahoma") && (font_style_name=="RegularStyle")){
 				font_style_name="BoldStyle";
@@ -2229,9 +2229,6 @@ class AWDParser extends ParserBase
 	//Block ID = 82
 	private parseTexture(blockID:number)
 	{
-
-		var asset:TextureBase;
-
 		this._blocks[blockID].name = this.parseVarStr();
 
 		var type:number = this._newBlockBytes.readUnsignedByte();
@@ -2262,7 +2259,6 @@ class AWDParser extends ParserBase
 		// Ignore for now
 		this.parseProperties(null);
 		this._blocks[blockID].extras = this.parseUserAttributes();
-		this._blocks[blockID].data = asset;
 
 		this._pPauseAndRetrieveDependencies();
 
@@ -2275,7 +2271,6 @@ class AWDParser extends ParserBase
 	{
 		//blockLength = block.len;
 		var data_len:number;
-		var asset:SingleCubeTexture;
 		var i:number;
 
 		this._texture_users[ this._cur_block_id ] = [];
@@ -2307,7 +2302,6 @@ class AWDParser extends ParserBase
 		this.parseProperties(null);
 		this._blocks[blockID].extras = this.parseUserAttributes();
 		this._pPauseAndRetrieveDependencies();
-		this._blocks[blockID].data = asset;
 
 		if (this._debug)
 			console.log("Start parsing 6 " + ["external", "embed"][type] + " Bitmaps for CubeTexture");

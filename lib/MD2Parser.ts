@@ -1,5 +1,5 @@
 import AttributesBuffer					= require("awayjs-core/lib/attributes/AttributesBuffer");
-import BitmapImage2D					= require("awayjs-core/lib/data/BitmapImage2D");
+import BitmapImage2D					= require("awayjs-core/lib/image/BitmapImage2D");
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
 import URLLoaderDataFormat				= require("awayjs-core/lib/net/URLLoaderDataFormat");
 import URLRequest						= require("awayjs-core/lib/net/URLRequest");

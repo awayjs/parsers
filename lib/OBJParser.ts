@@ -1,5 +1,5 @@
 import AttributesBuffer					= require("awayjs-core/lib/attributes/AttributesBuffer");
-import BitmapImage2D					= require("awayjs-core/lib/data/BitmapImage2D");
+import BitmapImage2D					= require("awayjs-core/lib/image/BitmapImage2D");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
 import Quaternion						= require("awayjs-core/lib/geom/Quaternion");
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
