@@ -1,10 +1,9 @@
-import BitmapImage2D				= require("awayjs-core/lib/data/BitmapImage2D");
-import BlendMode					= require("awayjs-core/lib/data/BlendMode");
+import BitmapImage2D				= require("awayjs-core/lib/image/BitmapImage2D");
+import BlendMode					= require("awayjs-core/lib/image/BlendMode");
 import LoaderEvent					= require("awayjs-core/lib/events/LoaderEvent");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import AssetLibrary					= require("awayjs-core/lib/library/AssetLibrary");
-import AssetLoader					= require("awayjs-core/lib/library/AssetLoader");
-import AssetLoaderToken				= require("awayjs-core/lib/library/AssetLoaderToken");
+import Loader						= require("awayjs-core/lib/library/Loader");
 import IAsset						= require("awayjs-core/lib/library/IAsset");
 import URLLoader					= require("awayjs-core/lib/net/URLLoader");
 import URLLoaderDataFormat			= require("awayjs-core/lib/net/URLLoaderDataFormat");
@@ -31,10 +30,6 @@ import OBJParser					= require("awayjs-parsers/lib/OBJParser");
 
 class MaterialAlphaTest
 {
-
-	private height : number = 0;
-
-	private token:AssetLoaderToken;
 	private view:View;
 	private raf:RequestAnimationFrame;
 	private meshes  : Array<Mesh> = new Array<Mesh>();
@@ -83,11 +78,15 @@ class MaterialAlphaTest
 
 		AssetLibrary.enableParser(OBJParser);
 
-		this.token = AssetLibrary.load(new URLRequest('assets/platonic.obj'));
-		this.token.addEventListener(LoaderEvent.RESOURCE_COMPLETE , (event:LoaderEvent) => this.onResourceComplete(event));
+		var session:Loader;
 
-		this.token = AssetLibrary.load(new URLRequest('assets/dots.png') );
-		this.token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, (event:LoaderEvent) => this.onResourceComplete(event));
+		session = AssetLibrary.getLoader();
+		session.addEventListener(LoaderEvent.LOAD_COMPLETE, (event:LoaderEvent) => this.onLoadComplete(event));
+		session.load(new URLRequest('assets/platonic.obj'));
+
+		session = AssetLibrary.getLoader();
+		session.addEventListener(LoaderEvent.LOAD_COMPLETE, (event:LoaderEvent) => this.onLoadComplete(event));
+		session.load(new URLRequest('assets/dots.png'));
 
 		window.onresize = (event:UIEvent) => this.onResize(event);
 		document.onmousedown = (event:MouseEvent) => this.onMouseDown(event);
@@ -114,9 +113,9 @@ class MaterialAlphaTest
 		this.view.render();
 	}
 
-	public onResourceComplete(event:LoaderEvent)
+	public onLoadComplete(event:LoaderEvent)
 	{
-		var loader:AssetLoader = <AssetLoader> event.target;
+		var loader:Loader = event.target;
 		var l:number = loader.baseDependency.assets.length
 
 		for (var c:number = 0; c < l; c ++) {

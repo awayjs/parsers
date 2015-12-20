@@ -1,9 +1,8 @@
-import BitmapImage2D				= require("awayjs-core/lib/data/BitmapImage2D");
+import BitmapImage2D				= require("awayjs-core/lib/image/BitmapImage2D");
 import LoaderEvent					= require("awayjs-core/lib/events/LoaderEvent");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import AssetLibrary					= require("awayjs-core/lib/library/AssetLibrary");
-import AssetLoader					= require("awayjs-core/lib/library/AssetLoader");
-import AssetLoaderToken				= require("awayjs-core/lib/library/AssetLoaderToken");
+import Loader						= require("awayjs-core/lib/library/Loader");
 import IAsset						= require("awayjs-core/lib/library/IAsset");
 import URLRequest					= require("awayjs-core/lib/net/URLRequest");
 import Debug						= require("awayjs-core/lib/utils/Debug");
@@ -27,7 +26,6 @@ import OBJParser					= require("awayjs-parsers/lib/OBJParser");
  */
 class ObjChiefTestDay
 {
-	private token:AssetLoaderToken;
 	private view:View;
 	private raf:RequestAnimationFrame;
 	private meshes:Array<Mesh> = new Array<Mesh>();
@@ -62,25 +60,31 @@ class ObjChiefTestDay
 		this.light.ambientColor = 0x85b2cd;
 		this.light.diffuse = 2.8;
 		this.light.specular = 1.8;
+		this.view.scene.addChild(this.light);
 
 		this.spartan.transform.scale = new Vector3D(.25, .25, .25);
 		this.spartan.y = 0;
-
-		this.view.scene.addChild(this.light);
+		this.view.scene.addChild(this.spartan);
 
 		AssetLibrary.enableParser(OBJParser);
 
-		this.token = AssetLibrary.load(new URLRequest('assets/Halo_3_SPARTAN4.obj'));
-		this.token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, (event:LoaderEvent) => this.onResourceComplete(event));
+		var session:Loader;
 
-		this.token = AssetLibrary.load(new URLRequest('assets/terrain.obj'));
-		this.token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, (event:LoaderEvent) => this.onResourceComplete(event));
+		session = AssetLibrary.getLoader();
+		session.addEventListener(LoaderEvent.LOAD_COMPLETE, (event:LoaderEvent) => this.onLoadComplete(event));
+		session.load(new URLRequest('assets/Halo_3_SPARTAN4.obj'));
 
-		this.token = AssetLibrary.load(new URLRequest('assets/masterchief_base.png'));
-		this.token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, (event:LoaderEvent) => this.onResourceComplete(event));
+		session = AssetLibrary.getLoader();
+		session.addEventListener(LoaderEvent.LOAD_COMPLETE, (event:LoaderEvent) => this.onLoadComplete(event));
+		session.load(new URLRequest('assets/terrain.obj'));
 
-		this.token = AssetLibrary.load(new URLRequest('assets/stone_tx.jpg'));
-		this.token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, (event:LoaderEvent) => this.onResourceComplete(event));
+		session = AssetLibrary.getLoader();
+		session.addEventListener(LoaderEvent.LOAD_COMPLETE, (event:LoaderEvent) => this.onLoadComplete(event));
+		session.load(new URLRequest('assets/masterchief_base.png'));
+
+		session = AssetLibrary.getLoader();
+		session.addEventListener(LoaderEvent.LOAD_COMPLETE, (event:LoaderEvent) => this.onLoadComplete(event));
+		session.load(new URLRequest('assets/stone_tx.jpg'));
 
 		window.onresize = (event:UIEvent) => this.onResize();
 
@@ -96,16 +100,15 @@ class ObjChiefTestDay
 		this.view.render();
 	}
 
-	public onResourceComplete (event:LoaderEvent)
+	public onLoadComplete(event:LoaderEvent)
 	{
-		var loader:AssetLoader = <AssetLoader> event.target;
+		var loader:Loader = event.target;
 		var l:number = loader.baseDependency.assets.length;
 
 		console.log('------------------------------------------------------------------------------');
 		console.log('events.LoaderEvent.RESOURCE_COMPLETE', event, l, loader);
 		console.log('------------------------------------------------------------------------------');
 
-		var loader:AssetLoader = <AssetLoader> event.target;
 		var l:number = loader.baseDependency.assets.length;
 
 		for (var c:number = 0; c < l; c++) {
@@ -150,7 +153,6 @@ class ObjChiefTestDay
 			for (var c:number = 0; c < this.meshes.length; c++)
 				this.meshes[c].material = this.mat;
 
-		this.view.scene.addChild(this.spartan);
 		this.onResize();
 	}
 

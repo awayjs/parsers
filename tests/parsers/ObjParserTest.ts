@@ -2,8 +2,7 @@ import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
 import LoaderEvent					= require("awayjs-core/lib/events/LoaderEvent");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import AssetLibrary					= require("awayjs-core/lib/library/AssetLibrary");
-import AssetLoader					= require("awayjs-core/lib/library/AssetLoader");
-import AssetLoaderToken				= require("awayjs-core/lib/library/AssetLoaderToken");
+import Loader						= require("awayjs-core/lib/library/Loader");
 import URLRequest					= require("awayjs-core/lib/net/URLRequest");
 import Debug						= require("awayjs-core/lib/utils/Debug");
 import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationFrame");
@@ -21,7 +20,6 @@ import OBJParser					= require("awayjs-parsers/lib/OBJParser");
 class ObjParserTest
 {
 	private _view:View;
-	private _token:AssetLoaderToken;
 	private _timer:RequestAnimationFrame;
 	private _t800:Mesh;
 
@@ -32,9 +30,10 @@ class ObjParserTest
 
 		AssetLibrary.enableParser(OBJParser) ;
 
-		this._token = AssetLibrary.load(new URLRequest('assets/t800.obj'));
-		this._token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, (event:LoaderEvent) => this.onResourceComplete(event));
-		this._token.addEventListener(AssetEvent.ASSET_COMPLETE, (event:AssetEvent) => this.onAssetComplete(event));
+		var session:Loader = AssetLibrary.getLoader();
+		session.addEventListener(LoaderEvent.LOAD_COMPLETE, (event:LoaderEvent) => this.onLoadComplete(event));
+		session.addEventListener(AssetEvent.ASSET_COMPLETE, (event:AssetEvent) => this.onAssetComplete(event));
+		session.load(new URLRequest('assets/t800.obj'));
 
 		this._view = new View(new DefaultRenderer());
 		this._timer = new RequestAnimationFrame(this.render, this);
@@ -68,7 +67,7 @@ class ObjParserTest
 		console.log('------------------------------------------------------------------------------');
 	}
 
-	public onResourceComplete(event:LoaderEvent)
+	public onLoadComplete(event:LoaderEvent)
 	{
 		console.log('------------------------------------------------------------------------------');
 		console.log('events.LoaderEvent.RESOURCE_COMPLETE', event);

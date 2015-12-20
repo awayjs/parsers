@@ -34,8 +34,8 @@
 
  */
 
-import Geometry						= require("awayjs-core/lib/data/Geometry");
 import AssetLibrary					= require("awayjs-core/lib/library/AssetLibrary");
+import Loader						= require("awayjs-core/lib/library/Loader");
 import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
 import URLRequest					= require("awayjs-core/lib/net/URLRequest");
 import LoaderEvent					= require("awayjs-core/lib/events/LoaderEvent");
@@ -45,22 +45,22 @@ import OrthographicProjection		= require("awayjs-core/lib/projections/Orthograph
 import Keyboard						= require("awayjs-core/lib/ui/Keyboard");
 import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationFrame");
 
+import Geometry						= require("awayjs-display/lib/base/Geometry");
 import View							= require("awayjs-display/lib/containers/View");
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
+import MovieClip					= require("awayjs-display/lib/entities/MovieClip");
 import Container					= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import HoverController				= require("awayjs-display/lib/controllers/HoverController");
-import Loader						= require("awayjs-display/lib/containers/Loader");
-import RenderableNullSort			= require("awayjs-display/lib/sort/RenderableNullSort");
+import LoaderContainer				= require("awayjs-display/lib/containers/LoaderContainer");
+import SceneGraphPartition			= require("awayjs-display/lib/partition/SceneGraphPartition");
 import PrimitiveCubePrefab			= require("awayjs-display/lib/prefabs/PrimitiveCubePrefab");
 
 import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
+import RenderableNullSort			= require("awayjs-renderergl/lib/sort/RenderableNullSort");
 
 import MethodMaterial				= require("awayjs-methodmaterials/lib/MethodMaterial");
 
-import AWD3Parser					= require("awayjs-parsers/lib/AWD3Parser");
-
-import Partition2D					= require("awayjs-player/lib/partition/Partition2D");
-import MovieClip					= require("awayjs-player/lib/display/MovieClip");
+import AWDParser					= require("awayjs-parsers/lib/AWDParser");
 
 import CoordinateSystem = require("awayjs-core/lib/projections/CoordinateSystem");
 import PerspectiveProjection = require("awayjs-core/lib/projections/PerspectiveProjection");
@@ -69,27 +69,27 @@ import Camera = require("awayjs-display/lib/entities/Camera");
 class AWD3ParserTest
 {
 	//engine variables
-	private _view: View;
+	private _view:View;
 
-	private _rootTimeLine: MovieClip;
+	private _rootTimeLine:MovieClip;
 
-	private _timer: RequestAnimationFrame;
-	private _time: number = 0;
+	private _timer:RequestAnimationFrame;
+	private _time:number = 0;
 
 	//navigation
-	private _lastPanAngle: number;
-	private _lastTiltAngle: number;
-	private _lastMouseX: number;
-	private _lastMouseY: number;
-	private _move: boolean;
-	private _isperspective: boolean;
-	private _projection: PerspectiveProjection;
-	private _ortho_projection: OrthographicProjection;
-	private _hoverControl: HoverController;
-	private _camera_perspective: Camera;
-	private _camera_ortho: Camera;
-	private _stage_width: number;
-	private _stage_height: number;
+	private _lastPanAngle:number;
+	private _lastTiltAngle:number;
+	private _lastMouseX:number;
+	private _lastMouseY:number;
+	private _move:boolean;
+	private _isperspective:boolean;
+	private _projection:PerspectiveProjection;
+	private _ortho_projection:OrthographicProjection;
+	private _hoverControl:HoverController;
+	private _camera_perspective:Camera;
+	private _camera_ortho:Camera;
+	private _stage_width:number;
+	private _stage_height:number;
 
 	/**
 	 * Constructor
@@ -102,7 +102,7 @@ class AWD3ParserTest
 	/**
 	 * Global initialise function
 	 */
-	private init(): void
+	private init()
 	{
 		this.initEngine();
 		this.initObjects();
@@ -112,7 +112,7 @@ class AWD3ParserTest
 	/**
 	 * Initialise the engine
 	 */
-	private initEngine(): void
+	private initEngine()
 	{
 		//create the view
 		this._view = new View(new DefaultRenderer());
@@ -150,14 +150,14 @@ class AWD3ParserTest
 	/**
 	 * Initialise the scene objects
 	 */
-	private initObjects(): void
+	private initObjects()
 	{
-		AssetLibrary.enableParser(AWD3Parser);
+		AssetLibrary.enableParser(AWDParser);
 
 		//kickoff asset loading
 		var loader:Loader = new Loader();
-		loader.addEventListener(AssetEvent.ASSET_COMPLETE, (event: AssetEvent) => this.onAssetComplete(event));
-		loader.addEventListener(LoaderEvent.RESOURCE_COMPLETE, (event: LoaderEvent) => this.onRessourceComplete(event));
+		loader.addEventListener(AssetEvent.ASSET_COMPLETE, (event:AssetEvent) => this.onAssetComplete(event));
+		loader.addEventListener(LoaderEvent.LOAD_COMPLETE, (event:LoaderEvent) => this.onLoadComplete(event));
 
 
 		//loader.load(new URLRequest(document.getElementById("awdPath").innerHTML));
@@ -171,7 +171,7 @@ class AWD3ParserTest
 	/**
 	 * Initialise the listeners
 	 */
-	private initListeners(): void
+	private initListeners()
 	{
 		window.onresize  = (event) => this.onResize(event);
 
@@ -190,18 +190,19 @@ class AWD3ParserTest
 	/**
 	 * loader listener for asset complete events
 	 */
-	private onAssetComplete(event: AssetEvent): void
+	private onAssetComplete(event:AssetEvent)
 	{
 		if(event.asset.isAsset(MovieClip)) {
 			this._rootTimeLine = <MovieClip> event.asset;
-			this._rootTimeLine.partition = new Partition2D(this._rootTimeLine);
+			this._rootTimeLine.partition = new SceneGraphPartition();
 		}
 	}
 
 	/**
 	 * loader listener for asset complete events
 	 */
-	private onRessourceComplete(event: LoaderEvent): void {
+	private onLoadComplete(event:LoaderEvent)
+	{
 		if (this._rootTimeLine) {
 			//console.log("LOADING A ROOT name = " + this._rootTimeLine.name + " duration=" + this._rootTimeLine.duration);
 			this._view.scene.addChild(this._rootTimeLine);
@@ -215,7 +216,8 @@ class AWD3ParserTest
 	/**
 	 * Render loop
 	 */
-	private onEnterFrame(dt: number): void {
+	private onEnterFrame(dt:number)
+	{
 		this._time += dt;
 
 		//update camera controler
@@ -223,14 +225,15 @@ class AWD3ParserTest
 
 		if (this._rootTimeLine != undefined) {
 			//console.log("RENDER = ");
-			this._rootTimeLine.update(dt);
+			this._rootTimeLine.update();
 		}
 		//console.log("RENDER = ");
 		//update view
 		this._view.render();
 	}
 
-	private onKeyDown(event): void {
+	private onKeyDown(event)
+	{
 		console.log("keycode = "+event.keyCode);
 		if (event.keyCode == 80) {
 			this._isperspective = true;
@@ -274,7 +277,7 @@ class AWD3ParserTest
 		}
 	}
 
-	private onMouseDown(event): void
+	private onMouseDown(event)
 	{
 		this._lastPanAngle = this._hoverControl.panAngle;
 		this._lastTiltAngle = this._hoverControl.tiltAngle;
@@ -283,7 +286,7 @@ class AWD3ParserTest
 		this._move = true;
 	}
 
-	private onMouseUp(event): void
+	private onMouseUp(event)
 	{
 		this._move = false;
 	}
@@ -318,7 +321,7 @@ class AWD3ParserTest
 		}
 	}
 
-	private onMouseWheel(event): void
+	private onMouseWheel(event)
 	{
 
 		if (this._isperspective) {
@@ -335,7 +338,7 @@ class AWD3ParserTest
 		}
 	}
 
-	private onResize(event = null): void
+	private onResize(event = null)
 	{
 		this._view.y         = 0;
 		this._view.x         = 0;
