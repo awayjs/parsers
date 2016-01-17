@@ -787,6 +787,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var Sampler2D = require("awayjs-core/lib/image/Sampler2D");
 var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 var MethodMaterialMode = require("awayjs-methodmaterials/lib/MethodMaterialMode");
 var MethodMaterial = require("awayjs-methodmaterials/lib/MethodMaterial");
@@ -863,11 +864,12 @@ var MaterialAWDParser = (function (_super) {
                 if (texture == undefined) {
                     texture = DefaultMaterialManager.getDefaultTexture();
                 }
-                mat = new MethodMaterial(texture);
+                mat = new MethodMaterial();
+                mat.ambientMethod.texture = texture;
             }
             mat.extra = attributes;
             mat.alphaThreshold = props.get(12, 0.0);
-            mat.repeat = props.get(13, false);
+            mat.style.sampler = new Sampler2D(props.get(13, false));
             mat.name = name;
             if (this.awd_file_data.debug) {
                 console.log(debugString);
@@ -913,7 +915,8 @@ var MaterialAWDParser = (function (_super) {
                     if (diftexture == undefined) {
                         diftexture = DefaultMaterialManager.getDefaultTexture();
                     }
-                    mat = new MethodMaterial(diftexture);
+                    mat = new MethodMaterial();
+                    mat.ambientMethod.texture = diftexture;
                     if (spezialType == 1) {
                         mat.mode = MethodMaterialMode.MULTI_PASS;
                         debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + this.awd_file_data.cur_block.name + "' | Texture-Name = " + diftexture.name;
@@ -947,22 +950,18 @@ var MaterialAWDParser = (function (_super) {
                 if (lightPickerAddr > 0) {
                     mat.lightPicker = this.awd_file_data.getAssetByID(lightPickerAddr);
                 }
-                mat.smooth = props.get(5, true);
-                mat.mipmap = props.get(6, true);
+                mat.style.sampler = new Sampler2D(props.get(13, false), props.get(5, true), props.get(6, true));
                 mat.bothSides = props.get(7, false);
                 mat.alphaPremultiplied = props.get(8, false);
                 mat.blendMode = this.awd_file_data.getBlendModeStringFromEnum(props.get(9, 0));
-                mat.repeat = props.get(13, false);
-                if (normalTexture)
-                    mat.normalMap = normalTexture;
-                if (specTexture)
-                    mat.specularMap = specTexture;
+                mat.normalMethod.texture = normalTexture;
+                mat.specularMethod.texture = specTexture;
                 mat.alphaThreshold = props.get(12, 0.0);
-                mat.ambient = props.get(15, 1.0);
-                mat.diffuseColor = props.get(16, 0xffffff);
-                mat.specular = props.get(18, 1.0);
-                mat.gloss = props.get(19, 50);
-                mat.specularColor = props.get(20, 0xffffff);
+                mat.ambientMethod.strength = props.get(15, 1.0);
+                mat.diffuseMethod.color = props.get(16, 0xffffff);
+                mat.specularMethod.strength = props.get(18, 1.0);
+                mat.specularMethod.gloss = props.get(19, 50);
+                mat.specularMethod.color = props.get(20, 0xffffff);
                 var methods_parsed = 0;
                 var targetID;
                 while (methods_parsed < num_methods) {
@@ -1016,7 +1015,7 @@ var MaterialAWDParser = (function (_super) {
                             //if (!returnedArray[0])
                             //this.awd_file_data._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this.awd_file_data EnvMapAmbientMethodMaterial");
                             mat.ambientMethod = new AmbientEnvMapMethod();
-                            mat.texture = cubeTex;
+                            mat.ambientMethod.texture = cubeTex;
                             debugString += " | AmbientEnvMapMethod | EnvMap-Name =" + cubeTex.name;
                             break;
                         case 51:
@@ -1096,9 +1095,7 @@ var MaterialAWDParser = (function (_super) {
                             //	this.awd_file_data._blocks[blockID].addError("Could not find the SecoundNormalMap (ID = " + targetID + " ) for this.awd_file_data SimpleWaterNormalMethod");
                             //if (!mat.normalMap)
                             //	this.awd_file_data._blocks[blockID].addError("Could not find a normal Map on this.awd_file_data Material to use with this.awd_file_data SimpleWaterNormalMethod");
-                            if (mat.normalMap == undefined)
-                                mat.normalMap = thisTex;
-                            mat.normalMethod = new NormalSimpleWaterMethod(mat.normalMap, thisTex);
+                            mat.normalMethod = new NormalSimpleWaterMethod(mat.normalMethod.texture || thisTex, thisTex);
                             debugString += " | NormalSimpleWaterMethod | Second-NormalTexture-Name = " + thisTex.name;
                             break;
                     }
@@ -1119,7 +1116,8 @@ var MaterialAWDParser = (function (_super) {
             if (diffuseTex_addr == undefined) {
                 diffuseTexture = DefaultMaterialManager.getDefaultTexture();
             }
-            var basic_mat = new BasicMaterial(diffuseTexture);
+            var basic_mat = new BasicMaterial();
+            basic_mat.texture = diffuseTexture;
             //debugString+= " alpha = "+props.get(10, 1.0)+" ";
             debugString += " texture = " + diffuseTex_addr + " ";
             basic_mat.bothSides = true;
@@ -1141,7 +1139,7 @@ var MaterialAWDParser = (function (_super) {
 })(AWDBlockParserBase);
 module.exports = MaterialAWDParser;
 
-},{"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser":[function(require,module,exports){
+},{"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser":[function(require,module,exports){
 /**
  * Created by 80prozent on 4/18/2015.
  */
@@ -2004,7 +2002,8 @@ var SkyboxAWDParser = (function (_super) {
         }
         //if ((!returnedArrayCubeTex[0]) && (cubeTexAddr != 0))
         //this.awd_file_data._blocks[blockID].addError("Could not find the Cubetexture (ID = " + cubeTexAddr + " ) for this.awd_file_data Skybox");
-        var new_skybox = new Skybox(cube_tex);
+        var new_skybox = new Skybox();
+        new_skybox.texture = cube_tex;
         this.awd_file_data.parseProperties(null);
         new_skybox.extra = this.awd_file_data.parseUserAttributes();
         this.awd_file_data.cur_block.data = new_skybox;
@@ -3368,6 +3367,7 @@ var AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 var Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
 var BitmapImageCube = require("awayjs-core/lib/image/BitmapImageCube");
 var BlendMode = require("awayjs-core/lib/image/BlendMode");
+var Sampler2D = require("awayjs-core/lib/image/Sampler2D");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -4692,7 +4692,7 @@ var AWDParser = (function (_super) {
         var name = this.parseVarStr();
         var asset = new Skybox();
         var tex = (this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager.getDefaultTexture(asset));
-        asset.cubeMap = tex;
+        asset.texture = tex;
         this.parseProperties(null);
         asset.extra = this.parseUserAttributes();
         this._pFinalizeAsset(asset, name);
@@ -4871,7 +4871,8 @@ var AWDParser = (function (_super) {
         }
         else if (type === 2) {
             var texture = this._blocks[props.get(2, 0)].data;
-            mat = new MethodMaterial(texture);
+            mat = new MethodMaterial();
+            mat.ambientMethod.texture = texture;
             if (this.materialMode < 2) {
                 mat.alphaBlending = props.get(11, false);
                 mat.alpha = props.get(10, 1.0);
@@ -4884,7 +4885,7 @@ var AWDParser = (function (_super) {
         }
         mat.extra = this.parseUserAttributes();
         mat.alphaThreshold = props.get(12, 0.0);
-        mat.repeat = props.get(13, false);
+        mat.style.sampler = new Sampler2D(props.get(13, false));
         this._pFinalizeAsset(mat, name);
         this._blocks[blockID].data = mat;
         if (this._debug)
@@ -4927,7 +4928,8 @@ var AWDParser = (function (_super) {
                 }
                 else if (type == 2) {
                     var texture = this._blocks[props.get(2, 0)].data;
-                    mat = new MethodMaterial(texture);
+                    mat = new MethodMaterial();
+                    mat.ambientMethod.texture = texture;
                     if (spezialType == 1) {
                         mat.mode = MethodMaterialMode.MULTI_PASS;
                         debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "'" + (texture ? " | Texture-Name = " + texture.name : "");
@@ -4942,30 +4944,28 @@ var AWDParser = (function (_super) {
                 normalTexture = this._blocks[props.get(3, 0)].data;
                 specTexture = this._blocks[props.get(21, 0)].data;
                 mat.lightPicker = this._blocks[props.get(22, 0)].data;
-                mat.smooth = props.get(5, true);
-                mat.mipmap = props.get(6, true);
+                mat.style.sampler = new Sampler2D(props.get(13, false), props.get(5, true), props.get(6, true));
                 mat.bothSides = props.get(7, false);
                 mat.alphaPremultiplied = props.get(8, false);
                 mat.blendMode = this.blendModeDic[props.get(9, 0)];
-                mat.repeat = props.get(13, false);
                 if (diffuseTexture) {
                     mat.diffuseTexture = diffuseTexture;
                     debugString += " | DiffuseTexture-Name = " + diffuseTexture.name;
                 }
                 if (normalTexture) {
-                    mat.normalMap = normalTexture;
+                    mat.normalMethod.texture = normalTexture;
                     debugString += " | NormalTexture-Name = " + normalTexture.name;
                 }
                 if (specTexture) {
-                    mat.specularMap = specTexture;
+                    mat.specularMethod.texture = specTexture;
                     debugString += " | SpecularTexture-Name = " + specTexture.name;
                 }
                 mat.alphaThreshold = props.get(12, 0.0);
-                mat.ambient = props.get(15, 1.0);
-                mat.diffuseColor = props.get(16, 0xffffff);
-                mat.specular = props.get(18, 1.0);
-                mat.gloss = props.get(19, 50);
-                mat.specularColor = props.get(20, 0xffffff);
+                mat.ambientMethod.strength = props.get(15, 1.0);
+                mat.diffuseMethod.color = props.get(16, 0xffffff);
+                mat.specularMethod.strength = props.get(18, 1.0);
+                mat.specularMethod.gloss = props.get(19, 50);
+                mat.specularMethod.color = props.get(20, 0xffffff);
                 for (var methods_parsed = 0; methods_parsed < num_methods; methods_parsed++) {
                     var method_type;
                     method_type = this._newBlockBytes.readUnsignedShort();
@@ -4984,7 +4984,7 @@ var AWDParser = (function (_super) {
                         case 1:
                             var cubeTexture = this._blocks[props.get(1, 0)].data;
                             mat.ambientMethod = new AmbientEnvMapMethod();
-                            mat.texture = cubeTexture;
+                            mat.ambientMethod.texture = cubeTexture;
                             debugString += " | AmbientEnvMapMethod | EnvMap-Name =" + cubeTexture.name;
                             break;
                         case 51:
@@ -5035,8 +5035,7 @@ var AWDParser = (function (_super) {
                             break;
                         case 152:
                             var texture = this._blocks[props.get(1, 0)].data;
-                            mat.normalMap = texture;
-                            mat.normalMethod = new NormalSimpleWaterMethod(mat.normalMap, texture);
+                            mat.normalMethod = new NormalSimpleWaterMethod(mat.normalMethod.texture || texture, texture);
                             debugString += " | NormalSimpleWaterMethod | Second-NormalTexture-Name = " + texture.name;
                             break;
                     }
@@ -5049,7 +5048,8 @@ var AWDParser = (function (_super) {
             var color = props.get(1, 0xcccccc);
             debugString += color;
             var diffuseTexture = this._blocks[props.get(2, 0)].data;
-            var basic_mat = new BasicMaterial(diffuseTexture);
+            var basic_mat = new BasicMaterial();
+            basic_mat.texture = diffuseTexture;
             basic_mat.bothSides = true;
             basic_mat.preserveAlpha = true;
             basic_mat.alphaBlending = true;
@@ -5960,7 +5960,7 @@ var BitFlags = (function () {
 })();
 module.exports = AWDParser;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/image/BitmapImageCube":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-core/lib/library/AssetLibrary":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/CurveSubGeometry":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/Timeline":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Billboard":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-display/lib/text/TextFormat":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/image/BitmapImageCube":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-core/lib/library/AssetLibrary":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/CurveSubGeometry":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/Timeline":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Billboard":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-display/lib/text/TextFormat":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -5977,7 +5977,6 @@ var TriangleSubGeometry = require("awayjs-display/lib/base/TriangleSubGeometry")
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
 var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
-var Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
 var VertexClipNode = require("awayjs-renderergl/lib/animators/nodes/VertexClipNode");
 var VertexAnimationSet = require("awayjs-renderergl/lib/animators/VertexAnimationSet");
 var MethodMaterial = require("awayjs-methodmaterials/lib/MethodMaterial");
@@ -6027,19 +6026,16 @@ var MD2Parser = (function (_super) {
     MD2Parser.prototype._iResolveDependency = function (resourceDependency) {
         if (resourceDependency.assets.length != 1)
             return;
-        var asset = new Single2DTexture(resourceDependency.assets[0]);
-        if (asset) {
-            var material = new MethodMaterial(asset);
-            if (this.materialMode >= 2)
-                material.mode = MethodMaterialMode.MULTI_PASS;
-            //add to the content property
-            this._pContent.addChild(this._mesh);
-            material.name = this._mesh.material.name;
-            this._mesh.material = material;
-            this._pFinalizeAsset(material);
-            this._pFinalizeAsset(this._mesh.geometry);
-            this._pFinalizeAsset(this._mesh);
-        }
+        var material = new MethodMaterial(resourceDependency.assets[0]);
+        if (this.materialMode >= 2)
+            material.mode = MethodMaterialMode.MULTI_PASS;
+        //add to the content property
+        this._pContent.addChild(this._mesh);
+        material.name = this._mesh.material.name;
+        this._mesh.material = material;
+        this._pFinalizeAsset(material);
+        this._pFinalizeAsset(this._mesh.geometry);
+        this._pFinalizeAsset(this._mesh);
         this.materialFinal = true;
     };
     /**
@@ -6051,7 +6047,7 @@ var MD2Parser = (function (_super) {
             this._mesh.material = DefaultMaterialManager.getDefaultMaterial();
         }
         else {
-            this._mesh.material = new MethodMaterial(DefaultMaterialManager.getDefaultTexture());
+            this._mesh.material = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
             this._mesh.material.mode = MethodMaterialMode.MULTI_PASS;
         }
         //add to the content property
@@ -6085,7 +6081,7 @@ var MD2Parser = (function (_super) {
                     this._mesh.material = DefaultMaterialManager.getDefaultMaterial();
                 }
                 else {
-                    this._mesh.material = new MethodMaterial(DefaultMaterialManager.getDefaultTexture());
+                    this._mesh.material = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
                     this._mesh.material.mode = MethodMaterialMode.MULTI_PASS;
                 }
                 //_geometry.animation = new VertexAnimation(2, VertexAnimationMode.ABSOLUTE);
@@ -6354,7 +6350,7 @@ var MD2Parser = (function (_super) {
 })(ParserBase);
 module.exports = MD2Parser;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD5AnimParser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD5AnimParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -7998,12 +7994,11 @@ var Max3DSParser = (function (_super) {
     };
     Max3DSParser.prototype.finalizeCurrentMaterial = function () {
         var mat;
+        mat = new MethodMaterial(this._cur_mat.ambientColor);
         if (this._cur_mat.colorMap)
-            mat = new MethodMaterial(this._cur_mat.colorMap.texture || DefaultMaterialManager.getDefaultTexture());
-        else
-            mat = new MethodMaterial(this._cur_mat.ambientColor);
-        mat.diffuseColor = this._cur_mat.diffuseColor;
-        mat.specularColor = this._cur_mat.specularColor;
+            mat.ambientMethod.texture = this._cur_mat.colorMap.texture || DefaultMaterialManager.getDefaultTexture();
+        mat.diffuseMethod.color = this._cur_mat.diffuseColor;
+        mat.specularMethod.color = this._cur_mat.specularColor;
         if (this.materialMode >= 2)
             mat.mode = MethodMaterialMode.MULTI_PASS;
         mat.bothSides = this._cur_mat.twoSided;
@@ -8117,6 +8112,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var Sampler2D = require("awayjs-core/lib/image/Sampler2D");
 var AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 var BitmapImage2D = require("awayjs-core/lib/image/BitmapImage2D");
 var URLLoaderDataFormat = require("awayjs-core/lib/net/URLLoaderDataFormat");
@@ -8349,7 +8345,7 @@ var OBJParser = (function (_super) {
                     continue;
                 // Finalize and force type-based name
                 this._pFinalizeAsset(geometry); //, "");
-                bmMaterial = new MethodMaterial(DefaultMaterialManager.getDefaultTexture());
+                bmMaterial = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
                 //check for multipass
                 if (this.materialMode >= 2)
                     bmMaterial.mode = MethodMaterialMode.MULTI_PASS;
@@ -8665,8 +8661,8 @@ var OBJParser = (function (_super) {
             if (mapkd != "") {
                 if (useSpecular) {
                     basicSpecularMethod = new SpecularBasicMethod();
-                    basicSpecularMethod.specularColor = specularColor;
-                    basicSpecularMethod.specular = specular;
+                    basicSpecularMethod.color = specularColor;
+                    basicSpecularMethod.strength = specular;
                     var specularData = new SpecularData();
                     specularData.alpha = alpha;
                     specularData.basicSpecularMethod = basicSpecularMethod;
@@ -8682,28 +8678,17 @@ var OBJParser = (function (_super) {
                 lm.materialID = this._lastMtlID;
                 if (alpha == 0)
                     console.log("Warning: an alpha value of 0 was found in mtl color tag (Tr or d) ref:" + this._lastMtlID + ", mesh(es) using it will be invisible!");
-                var cm;
+                var cm = new MethodMaterial(color);
                 if (this.materialMode < 2) {
-                    cm = new MethodMaterial(color);
-                    var colorMat = cm;
-                    colorMat.alpha = alpha;
-                    colorMat.diffuseColor = diffuseColor;
-                    colorMat.repeat = true;
-                    if (useSpecular) {
-                        colorMat.specularColor = specularColor;
-                        colorMat.specular = specular;
-                    }
+                    cm.alpha = alpha;
                 }
                 else {
-                    cm = new MethodMaterial(color);
                     cm.mode = MethodMaterialMode.MULTI_PASS;
-                    var colorMultiMat = cm;
-                    colorMultiMat.diffuseColor = diffuseColor;
-                    colorMultiMat.repeat = true;
-                    if (useSpecular) {
-                        colorMultiMat.specularColor = specularColor;
-                        colorMultiMat.specular = specular;
-                    }
+                }
+                cm.diffuseMethod.color = diffuseColor;
+                if (useSpecular) {
+                    cm.specularMethod.color = specularColor;
+                    cm.specularMethod.strength = specular;
                 }
                 lm.cm = cm;
                 this._materialLoaded.push(lm);
@@ -8771,56 +8756,32 @@ var OBJParser = (function (_super) {
                     mesh.material = lm.cm;
                 }
                 else if (lm.texture) {
-                    if (this.materialMode < 2) {
-                        tm = mesh.material;
-                        tm.texture = lm.texture;
-                        tm.color = lm.color;
+                    tm = mesh.material;
+                    tm.ambientMethod.texture = lm.texture;
+                    tm.style.color = lm.color;
+                    tm.alpha = lm.alpha;
+                    tm.style.sampler = new Sampler2D(true);
+                    if (this.materialMode < 2)
                         tm.alpha = lm.alpha;
-                        tm.repeat = true;
-                        if (lm.specularMethod) {
-                            // By setting the specularMethod property to null before assigning
-                            // the actual method instance, we avoid having the properties of
-                            // the new method being overridden with the settings from the old
-                            // one, which is default behavior of the setter.
-                            tm.specularMethod = null;
-                            tm.specularMethod = lm.specularMethod;
-                        }
-                        else if (this._materialSpecularData) {
-                            for (j = 0; j < this._materialSpecularData.length; ++j) {
-                                specularData = this._materialSpecularData[j];
-                                if (specularData.materialID == lm.materialID) {
-                                    tm.specularMethod = null; // Prevent property overwrite (see above)
-                                    tm.specularMethod = specularData.basicSpecularMethod;
-                                    tm.color = specularData.color;
-                                    tm.alpha = specularData.alpha;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    else {
-                        tm = mesh.material;
+                    else
                         tm.mode = MethodMaterialMode.MULTI_PASS;
-                        tm.texture = lm.texture;
-                        tm.color = lm.color;
-                        tm.repeat = true;
-                        if (lm.specularMethod) {
-                            // By setting the specularMethod property to null before assigning
-                            // the actual method instance, we avoid having the properties of
-                            // the new method being overridden with the settings from the old
-                            // one, which is default behavior of the setter.
-                            tm.specularMethod = null;
-                            tm.specularMethod = lm.specularMethod;
-                        }
-                        else if (this._materialSpecularData) {
-                            for (j = 0; j < this._materialSpecularData.length; ++j) {
-                                specularData = this._materialSpecularData[j];
-                                if (specularData.materialID == lm.materialID) {
-                                    tm.specularMethod = null; // Prevent property overwrite (see above)
-                                    tm.specularMethod = specularData.basicSpecularMethod;
-                                    tm.color = specularData.color;
-                                    break;
-                                }
+                    if (lm.specularMethod) {
+                        // By setting the specularMethod property to null before assigning
+                        // the actual method instance, we avoid having the properties of
+                        // the new method being overridden with the settings from the old
+                        // one, which is default behavior of the setter.
+                        tm.specularMethod = null;
+                        tm.specularMethod = lm.specularMethod;
+                    }
+                    else if (this._materialSpecularData) {
+                        for (j = 0; j < this._materialSpecularData.length; ++j) {
+                            specularData = this._materialSpecularData[j];
+                            if (specularData.materialID == lm.materialID) {
+                                tm.specularMethod = null; // Prevent property overwrite (see above)
+                                tm.specularMethod = specularData.basicSpecularMethod;
+                                tm.specularMethod.color = specularData.color;
+                                tm.specularMethod.strength = specularData.alpha;
+                                break;
                             }
                         }
                     }
@@ -9023,7 +8984,7 @@ var Vertex = (function () {
 })();
 module.exports = OBJParser;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/SpecularBasicMethod":undefined}],"awayjs-parsers/lib/Parsers":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/SpecularBasicMethod":undefined}],"awayjs-parsers/lib/Parsers":[function(require,module,exports){
 var Loader = require("awayjs-core/lib/library/Loader");
 var AWDParser = require("awayjs-parsers/lib/AWDParser");
 var Max3DSParser = require("awayjs-parsers/lib/Max3DSParser");
