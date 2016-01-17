@@ -1,3 +1,4 @@
+import Sampler2D					= require("awayjs-core/lib/image/Sampler2D");
 import AttributesBuffer					= require("awayjs-core/lib/attributes/AttributesBuffer");
 import BitmapImage2D					= require("awayjs-core/lib/image/BitmapImage2D");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
@@ -331,7 +332,7 @@ class OBJParser extends ParserBase
 				// Finalize and force type-based name
 				this._pFinalizeAsset(<IAsset> geometry);//, "");
 
-				bmMaterial = new MethodMaterial(DefaultMaterialManager.getDefaultTexture());
+				bmMaterial = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
 
 				//check for multipass
 				if (this.materialMode >= 2)
@@ -730,8 +731,8 @@ class OBJParser extends ParserBase
 				if (useSpecular) {
 
 					basicSpecularMethod = new SpecularBasicMethod();
-					basicSpecularMethod.specularColor = specularColor;
-					basicSpecularMethod.specular = specular;
+					basicSpecularMethod.color = specularColor;
+					basicSpecularMethod.strength = specular;
 
 					var specularData:SpecularData = new SpecularData();
 					specularData.alpha = alpha;
@@ -755,36 +756,19 @@ class OBJParser extends ParserBase
 				if (alpha == 0)
 					console.log("Warning: an alpha value of 0 was found in mtl color tag (Tr or d) ref:" + this._lastMtlID + ", mesh(es) using it will be invisible!");
 
-				var cm:MethodMaterial;
+				var cm:MethodMaterial = new MethodMaterial(color);
 
 				if (this.materialMode < 2) {
-					cm = new MethodMaterial(color);
-
-					var colorMat:MethodMaterial = <MethodMaterial> cm;
-
-					colorMat.alpha = alpha;
-					colorMat.diffuseColor = diffuseColor;
-					colorMat.repeat = true;
-
-					if (useSpecular) {
-						colorMat.specularColor = specularColor;
-						colorMat.specular = specular;
-					}
-
+					cm.alpha = alpha;
 				} else {
-					cm = new MethodMaterial(color);
 					cm.mode = MethodMaterialMode.MULTI_PASS;
+				}
 
-					var colorMultiMat:MethodMaterial = <MethodMaterial> cm;
+				cm.diffuseMethod.color = diffuseColor;
 
-
-					colorMultiMat.diffuseColor = diffuseColor;
-					colorMultiMat.repeat = true;
-
-					if (useSpecular) {
-						colorMultiMat.specularColor = specularColor;
-						colorMultiMat.specular = specular;
-					}
+				if (useSpecular) {
+					cm.specularMethod.color = specularColor;
+					cm.specularMethod.strength = specular;
 				}
 
 				lm.cm = cm;
@@ -872,64 +856,38 @@ class OBJParser extends ParserBase
 					mesh.material = lm.cm;
 
 				} else if (lm.texture) {
-					if (this.materialMode < 2) { // if materialMode is 0 or 1, we create a SinglePass
-						tm = <MethodMaterial > mesh.material;
+					tm = <MethodMaterial > mesh.material;
 
-						tm.texture = lm.texture;
-						tm.color = lm.color;
+					tm.ambientMethod.texture = lm.texture;
+					tm.style.color = lm.color;
+					tm.alpha = lm.alpha;
+					tm.style.sampler = new Sampler2D(true);
+
+					if (this.materialMode < 2) // if materialMode is 0 or 1, we create a SinglePass
 						tm.alpha = lm.alpha;
-						tm.repeat = true;
-
-						if (lm.specularMethod) {
-
-							// By setting the specularMethod property to null before assigning
-							// the actual method instance, we avoid having the properties of
-							// the new method being overridden with the settings from the old
-							// one, which is default behavior of the setter.
-							tm.specularMethod = null;
-							tm.specularMethod = lm.specularMethod;
-
-						} else if (this._materialSpecularData) {
-
-							for (j = 0; j < this._materialSpecularData.length; ++j) {
-								specularData = this._materialSpecularData[j];
-
-								if (specularData.materialID == lm.materialID) {
-									tm.specularMethod = null; // Prevent property overwrite (see above)
-									tm.specularMethod = specularData.basicSpecularMethod;
-									tm.color = specularData.color;
-									tm.alpha = specularData.alpha;
-									break;
-								}
-							}
-						}
-					} else { //if materialMode==2 this is a MultiPassTexture
-						tm = <MethodMaterial> mesh.material;
+					else
 						tm.mode = MethodMaterialMode.MULTI_PASS;
 
-						tm.texture = lm.texture;
-						tm.color = lm.color;
-						tm.repeat = true;
+					if (lm.specularMethod) {
 
-						if (lm.specularMethod) {
-							// By setting the specularMethod property to null before assigning
-							// the actual method instance, we avoid having the properties of
-							// the new method being overridden with the settings from the old
-							// one, which is default behavior of the setter.
-							tm.specularMethod = null;
-							tm.specularMethod = lm.specularMethod;
-						} else if (this._materialSpecularData) {
-							for (j = 0; j < this._materialSpecularData.length; ++j) {
-								specularData = this._materialSpecularData[j];
+						// By setting the specularMethod property to null before assigning
+						// the actual method instance, we avoid having the properties of
+						// the new method being overridden with the settings from the old
+						// one, which is default behavior of the setter.
+						tm.specularMethod = null;
+						tm.specularMethod = lm.specularMethod;
 
-								if (specularData.materialID == lm.materialID) {
-									tm.specularMethod = null; // Prevent property overwrite (see above)
-									tm.specularMethod = specularData.basicSpecularMethod;
-									tm.color = specularData.color;
+					} else if (this._materialSpecularData) {
 
-									break;
+						for (j = 0; j < this._materialSpecularData.length; ++j) {
+							specularData = this._materialSpecularData[j];
 
-								}
+							if (specularData.materialID == lm.materialID) {
+								tm.specularMethod = null; // Prevent property overwrite (see above)
+								tm.specularMethod = specularData.basicSpecularMethod;
+								tm.specularMethod.color = specularData.color;
+								tm.specularMethod.strength = specularData.alpha;
+								break;
 							}
 						}
 					}

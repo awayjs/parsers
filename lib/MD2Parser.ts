@@ -116,23 +116,20 @@ class MD2Parser extends ParserBase
 		if (resourceDependency.assets.length != 1)
 			return;
 
-		var asset:Single2DTexture = new Single2DTexture(<BitmapImage2D> resourceDependency.assets[0]);
+		var material:MethodMaterial = new MethodMaterial(<BitmapImage2D> resourceDependency.assets[0]);
 
-		if (asset) {
-			var material:MethodMaterial = new MethodMaterial(asset);
+		if (this.materialMode >= 2)
+			material.mode = MethodMaterialMode.MULTI_PASS;
 
-			if (this.materialMode >= 2)
-				material.mode = MethodMaterialMode.MULTI_PASS;
+		//add to the content property
+		(<DisplayObjectContainer> this._pContent).addChild(this._mesh);
 
-			//add to the content property
-			(<DisplayObjectContainer> this._pContent).addChild(this._mesh);
+		material.name = this._mesh.material.name;
+		this._mesh.material = material;
+		this._pFinalizeAsset(material);
+		this._pFinalizeAsset(this._mesh.geometry);
+		this._pFinalizeAsset(this._mesh);
 
-			material.name = this._mesh.material.name;
-			this._mesh.material = material;
-			this._pFinalizeAsset(material);
-			this._pFinalizeAsset(this._mesh.geometry);
-			this._pFinalizeAsset(this._mesh);
-		}
 		this.materialFinal = true;
 	}
 
@@ -145,7 +142,7 @@ class MD2Parser extends ParserBase
 		if (this.materialMode < 2) {
 			this._mesh.material = DefaultMaterialManager.getDefaultMaterial();
 		} else {
-			this._mesh.material = new MethodMaterial(DefaultMaterialManager.getDefaultTexture());
+			this._mesh.material = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
 			(<MethodMaterial> this._mesh.material).mode = MethodMaterialMode.MULTI_PASS;
 		}
 
@@ -186,7 +183,7 @@ class MD2Parser extends ParserBase
 				if (this.materialMode < 2) {
 					this._mesh.material = DefaultMaterialManager.getDefaultMaterial();
 				} else {
-					this._mesh.material = new MethodMaterial(DefaultMaterialManager.getDefaultTexture());
+					this._mesh.material = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
 					(<MethodMaterial> this._mesh.material).mode = MethodMaterialMode.MULTI_PASS;
 				}
 
@@ -297,7 +294,8 @@ class MD2Parser extends ParserBase
 		}
 
 		if (this._materialNames.length > 0)
-			this._mesh.material.name = this._materialNames[0]; else
+			this._mesh.material.name = this._materialNames[0];
+		else
 			this.materialFinal = true;
 	}
 

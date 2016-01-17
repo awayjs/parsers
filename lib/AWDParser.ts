@@ -5,6 +5,7 @@ import Float2Attributes					= require("awayjs-core/lib/attributes/Float2Attribut
 import BitmapImage2D					= require("awayjs-core/lib/image/BitmapImage2D");
 import BitmapImageCube					= require("awayjs-core/lib/image/BitmapImageCube");
 import BlendMode						= require("awayjs-core/lib/image/BlendMode");
+import Sampler2D						= require("awayjs-core/lib/image/Sampler2D");
 import WaveAudio						= require("awayjs-core/lib/audio/WaveAudio");
 import ColorTransform					= require("awayjs-core/lib/geom/ColorTransform");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
@@ -1686,7 +1687,7 @@ class AWDParser extends ParserBase
 		var name:string = this.parseVarStr();
 		var asset:Skybox = new Skybox();
 		var tex:SingleCubeTexture = <SingleCubeTexture> (this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager.getDefaultTexture(asset));
-		asset.cubeMap = tex;
+		asset.texture = tex;
 
 		this.parseProperties(null);
 		asset.extra = this.parseUserAttributes();
@@ -1949,7 +1950,8 @@ class AWDParser extends ParserBase
 		} else if (type === 2) {
 			var texture:Single2DTexture = <Single2DTexture> this._blocks[props.get(2, 0)].data;
 
-			mat = new MethodMaterial(texture);
+			mat = new MethodMaterial();
+			mat.ambientMethod.texture = texture;
 
 			if (this.materialMode < 2) {
 				mat.alphaBlending = props.get(11, false);
@@ -1963,7 +1965,7 @@ class AWDParser extends ParserBase
 
 		mat.extra = this.parseUserAttributes();
 		mat.alphaThreshold = props.get(12, 0.0);
-		mat.repeat = props.get(13, false);
+		mat.style.sampler = new Sampler2D(props.get(13, false));
 
 		this._pFinalizeAsset(<IAsset> mat, name);
 
@@ -2059,7 +2061,8 @@ class AWDParser extends ParserBase
 				} else if (type == 2) {// texture material
 					var texture:Single2DTexture = <Single2DTexture> this._blocks[props.get(2, 0)].data;
 
-					mat = new MethodMaterial(texture);
+					mat = new MethodMaterial();
+					mat.ambientMethod.texture = texture;
 
 					if (spezialType == 1) {// MultiPassMaterial
 						mat.mode = MethodMaterialMode.MULTI_PASS;
@@ -2077,12 +2080,10 @@ class AWDParser extends ParserBase
 				normalTexture = <TextureBase> this._blocks[props.get(3, 0)].data;
 				specTexture = <TextureBase> this._blocks[props.get(21, 0)].data;
 				mat.lightPicker = <LightPickerBase> this._blocks[props.get(22, 0)].data;
-				mat.smooth = props.get(5, true);
-				mat.mipmap = props.get(6, true);
+				mat.style.sampler = new Sampler2D(props.get(13, false), props.get(5, true), props.get(6, true))
 				mat.bothSides = props.get(7, false);
 				mat.alphaPremultiplied = props.get(8, false);
 				mat.blendMode = this.blendModeDic[props.get(9, 0)];
-				mat.repeat = props.get(13, false);
 
 				if (diffuseTexture) {
 					mat.diffuseTexture = diffuseTexture;
@@ -2090,21 +2091,21 @@ class AWDParser extends ParserBase
 				}
 
 				if (normalTexture) {
-					mat.normalMap = normalTexture;
+					mat.normalMethod.texture = normalTexture;
 					debugString += " | NormalTexture-Name = " + normalTexture.name;
 				}
 
 				if (specTexture) {
-					mat.specularMap = specTexture;
+					mat.specularMethod.texture = specTexture;
 					debugString += " | SpecularTexture-Name = " + specTexture.name;
 				}
 
 				mat.alphaThreshold = props.get(12, 0.0);
-				mat.ambient = props.get(15, 1.0);
-				mat.diffuseColor = props.get(16, 0xffffff);
-				mat.specular = props.get(18, 1.0);
-				mat.gloss = props.get(19, 50);
-				mat.specularColor = props.get(20, 0xffffff);
+				mat.ambientMethod.strength = props.get(15, 1.0);
+				mat.diffuseMethod.color = props.get(16, 0xffffff);
+				mat.specularMethod.strength = props.get(18, 1.0);
+				mat.specularMethod.gloss = props.get(19, 50);
+				mat.specularMethod.color = props.get(20, 0xffffff);
 
 				for (var methods_parsed:number = 0; methods_parsed < num_methods; methods_parsed++) {
 					var method_type:number;
@@ -2130,7 +2131,7 @@ class AWDParser extends ParserBase
 						case 1: //EnvMapAmbientMethod
 							var cubeTexture:SingleCubeTexture = <SingleCubeTexture> this._blocks[props.get(1, 0)].data;
 							mat.ambientMethod = new AmbientEnvMapMethod();
-							mat.texture = cubeTexture;
+							mat.ambientMethod.texture = cubeTexture;
 							debugString += " | AmbientEnvMapMethod | EnvMap-Name =" + cubeTexture.name;
 
 							break;
@@ -2189,8 +2190,7 @@ class AWDParser extends ParserBase
 							break;
 						case 152: //SimpleWaterNormalMethod
 							var texture:Single2DTexture = <Single2DTexture> this._blocks[props.get(1, 0)].data;
-							mat.normalMap = texture;
-							mat.normalMethod = new NormalSimpleWaterMethod(mat.normalMap, texture);
+							mat.normalMethod = new NormalSimpleWaterMethod(<Single2DTexture> mat.normalMethod.texture || texture, texture);
 							debugString += " | NormalSimpleWaterMethod | Second-NormalTexture-Name = " + texture.name;
 							break;
 					}
@@ -2205,7 +2205,8 @@ class AWDParser extends ParserBase
 			debugString+=color;
 		
 			var diffuseTexture:Single2DTexture = <Single2DTexture> this._blocks[props.get(2, 0)].data;
-			var basic_mat:BasicMaterial = new BasicMaterial(diffuseTexture);
+			var basic_mat:BasicMaterial = new BasicMaterial();
+			basic_mat.texture = diffuseTexture;
 			basic_mat.bothSides = true;
 			basic_mat.preserveAlpha = true;
 			basic_mat.alphaBlending = true;

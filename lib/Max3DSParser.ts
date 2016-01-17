@@ -725,16 +725,16 @@ class Max3DSParser extends ParserBase
 	{
 		var mat:MethodMaterial;
 
-		if (this._cur_mat.colorMap)
-			mat = new MethodMaterial(this._cur_mat.colorMap.texture || DefaultMaterialManager.getDefaultTexture());
-		else
-			mat = new MethodMaterial(this._cur_mat.ambientColor);
+		mat = new MethodMaterial(this._cur_mat.ambientColor);
 
-		mat.diffuseColor = this._cur_mat.diffuseColor;
-		mat.specularColor = this._cur_mat.specularColor;
+		if (this._cur_mat.colorMap)
+			mat.ambientMethod.texture = this._cur_mat.colorMap.texture || DefaultMaterialManager.getDefaultTexture();
+
+		mat.diffuseMethod.color = this._cur_mat.diffuseColor;
+		mat.specularMethod.color = this._cur_mat.specularColor;
 
 		if (this.materialMode >= 2)
-			mat.mode = MethodMaterialMode.MULTI_PASS
+			mat.mode = MethodMaterialMode.MULTI_PASS;
 
 		mat.bothSides = this._cur_mat.twoSided;
 

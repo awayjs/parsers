@@ -34,8 +34,8 @@ class SkyboxAWDParser extends AWDBlockParserBase
 		}
 		//if ((!returnedArrayCubeTex[0]) && (cubeTexAddr != 0))
 			//this.awd_file_data._blocks[blockID].addError("Could not find the Cubetexture (ID = " + cubeTexAddr + " ) for this.awd_file_data Skybox");
-		var new_skybox:Skybox = new Skybox(<SingleCubeTexture> cube_tex);
-
+		var new_skybox:Skybox = new Skybox();
+		new_skybox.texture = cube_tex;
 		this.awd_file_data.parseProperties(null)
 		new_skybox.extra = this.awd_file_data.parseUserAttributes();
 		this.awd_file_data.cur_block.data = new_skybox;
