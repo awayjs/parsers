@@ -86,7 +86,7 @@ class AWDParserTest
 				case Mesh.assetType:
 
 					this._suzanne = <Mesh> asset;
-					this._suzanne.transform.scale = new Vector3D(600, 600, 600);
+					this._suzanne.transform.scaleTo(600, 600, 600);
 
 					this._view.scene.addChild(this._suzanne);
 

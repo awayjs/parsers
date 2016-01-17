@@ -121,13 +121,13 @@ class AWDSuzanne
 							clone.x = this.getRandom(-2000 , 2000);
 							clone.y = this.getRandom(-2000 , 2000);
 							clone.z = this.getRandom(-2000 , 2000);
-							clone.transform.scale = new Vector3D(scale, scale, scale);
+							clone.transform.scaleTo(scale, scale, scale);
 							clone.rotationY = this.getRandom(0 , 360);
 						this._view.scene.addChild( clone );
 
 					}
 
-					this._suzanne.transform.scale = new Vector3D(500, 500, 500);
+					this._suzanne.transform.scaleTo(500, 500, 500);
 
 					this._view.scene.addChild(this._suzanne);
 

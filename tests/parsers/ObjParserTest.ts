@@ -77,7 +77,7 @@ class ObjParserTest
 
 		this._t800 = <Mesh> AssetLibrary.getAsset('Mesh_g0');
 		this._t800.y = -200;
-		this._t800.transform.scale = new Vector3D(4, 4, 4);
+		this._t800.transform.scaleTo(4, 4, 4);
 
 		this._view.scene.addChild(this._t800);
 	}

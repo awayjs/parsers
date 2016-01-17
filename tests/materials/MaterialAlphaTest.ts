@@ -1,4 +1,5 @@
 import BitmapImage2D				= require("awayjs-core/lib/image/BitmapImage2D");
+import Sampler2D					= require("awayjs-core/lib/image/Sampler2D");
 import BlendMode					= require("awayjs-core/lib/image/BlendMode");
 import LoaderEvent					= require("awayjs-core/lib/events/LoaderEvent");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
@@ -133,9 +134,9 @@ class MaterialAlphaTest
 					if (d.name == 'Mesh_g0') {
 						this.loadedMesh = mesh;
 						mesh.y = -400;
-						mesh.transform.scale = new Vector3D(5, 5, 5);
+						mesh.transform.scaleTo(5, 5, 5);
 					} else {
-						mesh.transform.scale = new Vector3D(3.5, 3.5, 3.5);
+						mesh.transform.scaleTo(3.5, 3.5, 3.5);
 					}
 
 					if (this.loadedMeshMaterial)
@@ -147,14 +148,12 @@ class MaterialAlphaTest
 					this.raf.start();
 					break;
 				case BitmapImage2D.assetType:
-					// Loaded Texture
-					var tx:Single2DTexture = new Single2DTexture(<BitmapImage2D> d);
-
 					// Light Picker
 					this.staticLightPicker = new StaticLightPicker( [this.light , this.lightB ] );
 
 					// Material for loaded mesh
-					this.loadedMeshMaterial = new MethodMaterial( tx, true, true, false );
+					this.loadedMeshMaterial = new MethodMaterial(<BitmapImage2D> d);
+					this.loadedMeshMaterial.style.sampler = new Sampler2D(true, true, false);
 					this.loadedMeshMaterial.lightPicker = this.staticLightPicker;
 					this.loadedMeshMaterial.alpha = 1;
 					this.loadedMeshMaterial.bothSides = true;
@@ -166,7 +165,8 @@ class MaterialAlphaTest
 					var torus:PrimitiveTorusPrefab = new PrimitiveTorusPrefab(150 , 50 , 64 , 64);
 
 					// Torus Texture Material
-					this.torusTextureMaterial = new MethodMaterial(tx, true, true, false);
+					this.torusTextureMaterial = new MethodMaterial(<BitmapImage2D> d);
+					this.torusTextureMaterial.style.sampler = new Sampler2D(true, true, false);
 					this.torusTextureMaterial.lightPicker = this.staticLightPicker ;
 					this.torusTextureMaterial.bothSides = true;
 					this.torusTextureMaterial.alpha = .8;
