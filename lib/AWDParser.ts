@@ -112,17 +112,18 @@ import MovieClip 					= require("awayjs-display/lib/entities/MovieClip");
 import Timeline			 			= require("awayjs-display/lib/base/Timeline");
 
 
-import AssetLibrary							= require("awayjs-core/lib/library/AssetLibrary");
+import AssetLibrary					= require("awayjs-core/lib/library/AssetLibrary");
 
 import Font							= require("awayjs-display/lib/text/Font");
 import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTable");
-import TextFormat			= require("awayjs-display/lib/text/TextFormat");
-import TextFieldType			= require("awayjs-display/lib/text/TextFieldType");
+import TextFormat					= require("awayjs-display/lib/text/TextFormat");
+import TextFieldType				= require("awayjs-display/lib/text/TextFieldType");
 
-import AWDBlock							= require("awayjs-parsers/lib/AWD3ParserUtils/AWDBlock");
-import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-import Style = require("awayjs-display/lib/base/Style");
-import Matrix = require("awayjs-core/lib/geom/Matrix");
+import AWDBlock						= require("awayjs-parsers/lib/AWD3ParserUtils/AWDBlock");
+import Rectangle 					= require("awayjs-core/lib/geom/Rectangle");
+import Style 						= require("awayjs-display/lib/base/Style");
+import Matrix 						= require("awayjs-core/lib/geom/Matrix");
+import MappingMode 					= require("awayjs-display/lib/textures/MappingMode");
 /**
  * AWDParser provides a parser for the AWD data type.
  */
@@ -1358,7 +1359,7 @@ class AWDParser extends ParserBase
 				str_ftype = this._newBlockBytes.readUnsignedByte();
 				str_len = this._newBlockBytes.readUnsignedInt();
 				str_end = this._newBlockBytes.position + str_len;
-
+				
 				var x:number, y:number, z:number;
 
 				if (str_type == 1) {//vertex 3d positions
@@ -2225,6 +2226,12 @@ class AWDParser extends ParserBase
 			console.log("parsed material type = "+type);
 		
 			var diffuseTexture:Single2DTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(2, 0)].data);
+			if(type==5){
+				diffuseTexture.mappingMode = MappingMode.LINEAR_GRADIENT;
+			}
+			else if(type==6){
+				diffuseTexture.mappingMode = MappingMode.LINEAR_GRADIENT;
+			}
 			var basic_mat:BasicMaterial = new BasicMaterial();
 			basic_mat.texture = diffuseTexture;
 			basic_mat.bothSides = true;
