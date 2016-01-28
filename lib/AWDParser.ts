@@ -21,7 +21,7 @@ import PerspectiveProjection			= require("awayjs-core/lib/projections/Perspectiv
 import OrthographicProjection			= require("awayjs-core/lib/projections/OrthographicProjection");
 import OrthographicOffCenterProjection	= require("awayjs-core/lib/projections/OrthographicOffCenterProjection");
 import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
-import Point						= require("awayjs-core/lib/geom/Point");
+import Point							= require("awayjs-core/lib/geom/Point");
 
 import AnimationNodeBase				= require("awayjs-display/lib/animators/nodes/AnimationNodeBase");
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
@@ -120,6 +120,9 @@ import TextFormat			= require("awayjs-display/lib/text/TextFormat");
 import TextFieldType			= require("awayjs-display/lib/text/TextFieldType");
 
 import AWDBlock							= require("awayjs-parsers/lib/AWD3ParserUtils/AWDBlock");
+import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+import Style = require("awayjs-display/lib/base/Style");
+import Matrix = require("awayjs-core/lib/geom/Matrix");
 /**
  * AWDParser provides a parser for the AWD data type.
  */
@@ -1023,24 +1026,6 @@ class AWDParser extends ParserBase
 		var time_delta = end_timing - start_timeing;
 		this._time_geom_bytes += time_delta;
 
-		/*
-		var num_subgeoms:number = this._newBlockBytes.readUnsignedShort();
-		if(num_subgeoms!=mesh.subMeshes.length){
-			//error
-		}
-		for (var i:number = 0; i < num_subgeoms; i++) {
-
-			// uv that descripes top left corner of area in textureatlas
-			new Point (this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
-			// uv that descripes bottom right corner of area in textureatlas
-			new Point (this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
-			// optional: transform matrix
-			var hasUVTransform:Boolean=!!this._newBlockBytes.readUnsignedByte();
-			if(hasUVTransform){
-				this.parseMatrix32RawData();
-			}
-		}
-		*/
 		if (materials.length >= 1 && mesh.subMeshes.length == 1) {
 			mesh.material = materials[0];
 		} else if (materials.length > 1) {
@@ -1048,6 +1033,31 @@ class AWDParser extends ParserBase
 			// than materials, repeat the last material for all remaining sub-meshes.
 			for (var i:number = 0; i < mesh.subMeshes.length; i++)
 				mesh.subMeshes[i].material = materials[Math.min(materials.length - 1, i)];
+		}
+
+		var num_subgeoms:number = this._newBlockBytes.readUnsignedShort();
+		if(num_subgeoms!=mesh.subMeshes.length){
+			throw new Error("num subgeoms does not match num submeshes")
+		}
+		for (var i:number = 0; i < num_subgeoms; i++) {
+
+			var sampler:Sampler2D = new Sampler2D();
+			var x:number = this._newBlockBytes.readFloat();
+			var y:number = this._newBlockBytes.readFloat();
+			var width:number = this._newBlockBytes.readFloat() - x;
+			var height:number = this._newBlockBytes.readFloat() - y;
+
+			sampler.imageRect = new Rectangle(x, y, width, height);
+			mesh.subMeshes[i].material.imageRect = true;
+			mesh.subMeshes[i].style = new Style();
+			mesh.subMeshes[i].style.addSamplerAt(sampler, mesh.subMeshes[i].material.getTextureAt(0));
+			// optional: transform matrix
+			var hasUVTransform:boolean = !this._newBlockBytes.readUnsignedByte();
+			if(hasUVTransform){
+				var matrix:Array<number> = this.parseMatrix32RawData();
+				mesh.subMeshes[i].material.animateUVs = true;
+				mesh.subMeshes[i].uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+			}
 		}
 
 		this.parseProperties(null);
