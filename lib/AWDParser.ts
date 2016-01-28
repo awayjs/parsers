@@ -1052,11 +1052,11 @@ class AWDParser extends ParserBase
 			mesh.subMeshes[i].style = new Style();
 			mesh.subMeshes[i].style.addSamplerAt(sampler, mesh.subMeshes[i].material.getTextureAt(0));
 			// optional: transform matrix
-			var hasUVTransform:boolean = !this._newBlockBytes.readUnsignedByte();
+			var hasUVTransform:boolean = Boolean(this._newBlockBytes.readUnsignedByte());
 			if(hasUVTransform){
 				var matrix:Array<number> = this.parseMatrix32RawData();
-				mesh.subMeshes[i].material.animateUVs = true;
-				mesh.subMeshes[i].uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+				//mesh.subMeshes[i].material.animateUVs = true;
+				//mesh.subMeshes[i].uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
 			}
 		}
 
@@ -1118,7 +1118,7 @@ class AWDParser extends ParserBase
 		var new_timeline:Timeline = new Timeline();
 		var timeLineContainer = factory.createMovieClip(new_timeline);
 		var name = this.parseVarStr();
-		var isScene = !!this._newBlockBytes.readUnsignedByte();
+		var isScene = Boolean(this._newBlockBytes.readUnsignedByte());
 		var sceneID = this._newBlockBytes.readUnsignedByte();
 		var fps = this._newBlockBytes.readFloat();
 
@@ -1339,6 +1339,7 @@ class AWDParser extends ParserBase
 		// Loop through sub meshes
 		for (var subs_parsed:number = 0;  subs_parsed < num_subs; subs_parsed++) {
 			var is_curve_geom:boolean=false;
+			var attr_count:number=0;
 			var sm_len:number, sm_end:number;
 			var w_indices:Array<number>;
 			var weights:Array<number>;
@@ -1398,8 +1399,16 @@ class AWDParser extends ParserBase
 					this._newBlockBytes.position = str_end;
 				} else if (str_type == 9) {// combined vertex3D stream 13 x float32
 					this._newBlockBytes.position = str_end;
-				} else if (str_type == 10) {// combined vertex2D stream 5 x float32
+				} else if (str_type == 10) {// combined vertex2D stream 7 x float32 (2d pos + uv + curvedata)
+					//console.log("Parse data 7xfloat32");
 					is_curve_geom = true;
+					attr_count = 28;
+					var curveData:ByteArray = new ByteArray(str_len);
+					this._newBlockBytes.readBytes(curveData, 0, str_len);
+				} else if (str_type == 11) {// combined vertex2D stream 5 x float32
+					//console.log("Parse data 5xfloat32");
+					is_curve_geom = true;
+					attr_count = 20;
 					var curveData:ByteArray = new ByteArray(str_len);
 					this._newBlockBytes.readBytes(curveData, 0, str_len);
 				} else {
@@ -1410,11 +1419,13 @@ class AWDParser extends ParserBase
 			this.parseUserAttributes(); // Ignore sub-mesh attributes for now
 
 			if(is_curve_geom){
-				var vertexBuffer:AttributesBuffer = new AttributesBuffer(28, str_len/28);
+				var vertexBuffer:AttributesBuffer = new AttributesBuffer(attr_count, str_len/attr_count);
 				vertexBuffer.bufferView = new Uint8Array(<ArrayBuffer> curveData.arraybytes);
 
 				var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(vertexBuffer);
-				curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
+				if(attr_count==28){
+					curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
+				}
 				geom.addSubGeometry(curve_sub_geom);
 				if (this._debug)
 					console.log("Parsed a CurveSubGeometry");
@@ -2213,6 +2224,7 @@ class AWDParser extends ParserBase
 			// if this is a basic material, we create it, finalize it, assign it to block-cache and return and return.
 			var color:number = props.get(1, 0xcccccc);
 			debugString+=color;
+			console.log("parsed material type = "+type);
 		
 			var diffuseTexture:Single2DTexture = <Single2DTexture> this._blocks[props.get(2, 0)].data;
 			var basic_mat:BasicMaterial = new BasicMaterial();
