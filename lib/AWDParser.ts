@@ -131,7 +131,7 @@ class AWDParser extends ParserBase
 	private _view:View;
 
 	//set to "true" to have some console.logs in the Console
-	private _debug:boolean = true;
+	private _debug:boolean = false;
 	private _debugTimers:boolean = true;
 	private _byteData:ByteArray;
 	private _startedParsing:boolean = false;
@@ -1336,7 +1336,7 @@ class AWDParser extends ParserBase
 		var geoScaleU:number = props.get(1, 1);
 		var geoScaleV:number = props.get(2, 1);
 
-		console.log("num_subs "+num_subs);
+		//console.log("num_subs "+num_subs);
 		// Loop through sub meshes
 		for (var subs_parsed:number = 0;  subs_parsed < num_subs; subs_parsed++) {
 			var is_curve_geom:boolean=false;
