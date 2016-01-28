@@ -301,16 +301,6 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/VertexAnimClipAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/VertexAnimationSetAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class VertexAnimationSetAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = VertexAnimationSetAWDParser;
-	
-}
-
 declare module "awayjs-parsers/lib/AWD3Parser" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
@@ -374,6 +364,16 @@ declare module "awayjs-parsers/lib/AWD3Parser" {
 	    private parseHeader();
 	}
 	export = AWD3Parser;
+	
+}
+
+declare module "awayjs-parsers/lib/AWD3BlockParsers/VertexAnimationSetAWDParser" {
+	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+	class VertexAnimationSetAWDParser extends AWDBlockParserBase {
+	    constructor();
+	    parseFromBytes(): void;
+	}
+	export = VertexAnimationSetAWDParser;
 	
 }
 
