@@ -131,7 +131,7 @@ class AWDParser extends ParserBase
 	private _view:View;
 
 	//set to "true" to have some console.logs in the Console
-	private _debug:boolean = false;
+	private _debug:boolean = true;
 	private _debugTimers:boolean = true;
 	private _byteData:ByteArray;
 	private _startedParsing:boolean = false;
@@ -823,7 +823,7 @@ class AWDParser extends ParserBase
 
 					var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(vertexBuffer);
 					//curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
-					curve_sub_geom.autoDeriveUVs=false;
+					//curve_sub_geom.autoDeriveUVs=false;
 					new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
 				}
 			}
@@ -1055,8 +1055,8 @@ class AWDParser extends ParserBase
 			var hasUVTransform:boolean = Boolean(this._newBlockBytes.readUnsignedByte());
 			if(hasUVTransform){
 				var matrix:Array<number> = this.parseMatrix32RawData();
-				//mesh.subMeshes[i].material.animateUVs = true;
-				//mesh.subMeshes[i].uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+				mesh.subMeshes[i].material.animateUVs = true;
+				mesh.subMeshes[i].uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
 			}
 		}
 
@@ -1336,6 +1336,7 @@ class AWDParser extends ParserBase
 		var geoScaleU:number = props.get(1, 1);
 		var geoScaleV:number = props.get(2, 1);
 
+		console.log("num_subs "+num_subs);
 		// Loop through sub meshes
 		for (var subs_parsed:number = 0;  subs_parsed < num_subs; subs_parsed++) {
 			var is_curve_geom:boolean=false;
@@ -1400,13 +1401,11 @@ class AWDParser extends ParserBase
 				} else if (str_type == 9) {// combined vertex3D stream 13 x float32
 					this._newBlockBytes.position = str_end;
 				} else if (str_type == 10) {// combined vertex2D stream 7 x float32 (2d pos + uv + curvedata)
-					//console.log("Parse data 7xfloat32");
 					is_curve_geom = true;
 					attr_count = 28;
 					var curveData:ByteArray = new ByteArray(str_len);
 					this._newBlockBytes.readBytes(curveData, 0, str_len);
 				} else if (str_type == 11) {// combined vertex2D stream 5 x float32
-					//console.log("Parse data 5xfloat32");
 					is_curve_geom = true;
 					attr_count = 20;
 					var curveData:ByteArray = new ByteArray(str_len);
