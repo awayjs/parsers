@@ -275,11 +275,11 @@ class AWDParser extends ParserBase
 		if (resourceDependency.assets.length == 1) {
 			var this_block:AWDBlock = this._blocks[parseInt(resourceDependency.id)];
 			if(this_block.type==82){
-				var texture_asset:Single2DTexture = new Single2DTexture(<BitmapImage2D> resourceDependency.assets[0]);
-				this_block.data = texture_asset; // Store finished asset
+				var image_asset:BitmapImage2D = <BitmapImage2D> resourceDependency.assets[0];
+				this_block.data = image_asset; // Store finished asset
 				// Finalize texture asset to dispatch texture event, which was
 				// previously suppressed while the dependency was loaded.
-				this._pFinalizeAsset(<IAsset> texture_asset, this_block.name);
+				this._pFinalizeAsset(<IAsset> image_asset, this_block.name);
 
 				if (this._debug)
 					console.log("Parsed Texture: Name = " + this_block.name);
@@ -308,9 +308,8 @@ class AWDParser extends ParserBase
 					for (var i:number = 0; i < 6; i++)
 						cube_image_asset.draw(i, this_block.loaded_dependencies[i]);
 
-					var cube_tex_asset = new SingleCubeTexture(cube_image_asset);
-					this_block.data = cube_tex_asset; // Store finished asset
-					this._pFinalizeAsset(<IAsset> cube_tex_asset, this_block.name);
+					this_block.data = cube_image_asset; // Store finished asset
+					this._pFinalizeAsset(<IAsset> cube_image_asset, this_block.name);
 
 					if (this._debug)
 						console.log("Parsed CubeTexture: Name = " + this_block.name);
@@ -1706,7 +1705,7 @@ class AWDParser extends ParserBase
 	{
 		var name:string = this.parseVarStr();
 		var asset:Skybox = new Skybox();
-		var tex:SingleCubeTexture = <SingleCubeTexture> (this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager.getDefaultTexture(asset));
+		var tex:SingleCubeTexture = new SingleCubeTexture(<BitmapImageCube> this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager.getDefaultImageCube());
 		asset.texture = tex;
 
 		this.parseProperties(null);
@@ -1968,7 +1967,7 @@ class AWDParser extends ParserBase
 				mat.mode = MethodMaterialMode.MULTI_PASS;
 			}
 		} else if (type === 2) {
-			var texture:Single2DTexture = <Single2DTexture> this._blocks[props.get(2, 0)].data;
+			var texture:Single2DTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(2, 0)].data);
 
 			mat = new MethodMaterial();
 			mat.ambientMethod.texture = texture;
@@ -2079,7 +2078,7 @@ class AWDParser extends ParserBase
 					}
 
 				} else if (type == 2) {// texture material
-					var texture:Single2DTexture = <Single2DTexture> this._blocks[props.get(2, 0)].data;
+					var texture:Single2DTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(2, 0)].data);
 
 					mat = new MethodMaterial();
 					mat.ambientMethod.texture = texture;
@@ -2096,7 +2095,7 @@ class AWDParser extends ParserBase
 					}
 				}
 
-				diffuseTexture = <Single2DTexture> this._blocks[props.get(17, 0)].data;
+				diffuseTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(17, 0)].data);
 				normalTexture = <TextureBase> this._blocks[props.get(3, 0)].data;
 				specTexture = <TextureBase> this._blocks[props.get(21, 0)].data;
 				mat.lightPicker = <LightPickerBase> this._blocks[props.get(22, 0)].data;
@@ -2149,7 +2148,7 @@ class AWDParser extends ParserBase
 							break;
 
 						case 1: //EnvMapAmbientMethod
-							var cubeTexture:SingleCubeTexture = <SingleCubeTexture> this._blocks[props.get(1, 0)].data;
+							var cubeTexture:SingleCubeTexture = new SingleCubeTexture(<BitmapImageCube> this._blocks[props.get(1, 0)].data);
 							mat.ambientMethod = new AmbientEnvMapMethod();
 							mat.ambientMethod.texture = cubeTexture;
 							debugString += " | AmbientEnvMapMethod | EnvMap-Name =" + cubeTexture.name;
@@ -2161,7 +2160,7 @@ class AWDParser extends ParserBase
 							debugString += " | DiffuseDepthMethod";
 							break;
 						case 52: //GradientDiffuseMethod
-							var texture:Single2DTexture = <Single2DTexture> this._blocks[props.get(1, 0)].data;
+							var texture:Single2DTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(1, 0)].data);
 							mat.diffuseMethod = new DiffuseGradientMethod(texture);
 							debugString += " | DiffuseGradientMethod | GradientDiffuseTexture-Name =" + texture.name;
 							break;
@@ -2170,7 +2169,7 @@ class AWDParser extends ParserBase
 							debugString += " | DiffuseWrapMethod";
 							break;
 						case 54: //LightMapDiffuseMethod
-							var texture:Single2DTexture = <Single2DTexture> this._blocks[props.get(1, 0)].data;
+							var texture:Single2DTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(1, 0)].data);
 							mat.diffuseMethod = new DiffuseLightMapMethod(texture, this.blendModeDic[props.get(401, 10)], false, mat.diffuseMethod);
 							debugString += " | DiffuseLightMapMethod | LightMapTexture-Name =" + texture.name;
 							break;
@@ -2209,7 +2208,7 @@ class AWDParser extends ParserBase
 						case 151://HeightMapNormalMethod - thios is not implemented for now, but might appear later
 							break;
 						case 152: //SimpleWaterNormalMethod
-							var texture:Single2DTexture = <Single2DTexture> this._blocks[props.get(1, 0)].data;
+							var texture:Single2DTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(1, 0)].data);
 							mat.normalMethod = new NormalSimpleWaterMethod(<Single2DTexture> mat.normalMethod.texture || texture, texture);
 							debugString += " | NormalSimpleWaterMethod | Second-NormalTexture-Name = " + texture.name;
 							break;
@@ -2225,7 +2224,7 @@ class AWDParser extends ParserBase
 			debugString+=color;
 			console.log("parsed material type = "+type);
 		
-			var diffuseTexture:Single2DTexture = <Single2DTexture> this._blocks[props.get(2, 0)].data;
+			var diffuseTexture:Single2DTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(2, 0)].data);
 			var basic_mat:BasicMaterial = new BasicMaterial();
 			basic_mat.texture = diffuseTexture;
 			basic_mat.bothSides = true;
@@ -2834,7 +2833,7 @@ class AWDParser extends ParserBase
 				(<EffectColorTransformMethod> effectMethodReturn).colorTransform = new ColorTransform(props.get(102, 1), props.get(103, 1), props.get(104, 1), props.get(101, 1), ((offCol >> 16) & 0xFF), ((offCol >> 8) & 0xFF), (offCol & 0xFF), ((offCol >> 24) & 0xFF));
 				break;
 			case 403: //EnvMap
-				effectMethodReturn = new EffectEnvMapMethod(<SingleCubeTexture> this._blocks[props.get(1, 0)].data, <number> props.get(101, 1));
+				effectMethodReturn = new EffectEnvMapMethod(new SingleCubeTexture(<BitmapImageCube> this._blocks[props.get(1, 0)].data), <number> props.get(101, 1));
 				var targetID:number = props.get(2, 0);
 				if (targetID > 0) {
 					// Todo: test mask with EnvMapMethod
