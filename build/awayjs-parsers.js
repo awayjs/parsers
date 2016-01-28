@@ -3587,11 +3587,11 @@ var AWDParser = (function (_super) {
         if (resourceDependency.assets.length == 1) {
             var this_block = this._blocks[parseInt(resourceDependency.id)];
             if (this_block.type == 82) {
-                var texture_asset = new Single2DTexture(resourceDependency.assets[0]);
-                this_block.data = texture_asset; // Store finished asset
+                var image_asset = resourceDependency.assets[0];
+                this_block.data = image_asset; // Store finished asset
                 // Finalize texture asset to dispatch texture event, which was
                 // previously suppressed while the dependency was loaded.
-                this._pFinalizeAsset(texture_asset, this_block.name);
+                this._pFinalizeAsset(image_asset, this_block.name);
                 if (this._debug)
                     console.log("Parsed Texture: Name = " + this_block.name);
             }
@@ -3614,9 +3614,8 @@ var AWDParser = (function (_super) {
                     var cube_image_asset = new BitmapImageCube(this_block.loaded_dependencies[0].width);
                     for (var i = 0; i < 6; i++)
                         cube_image_asset.draw(i, this_block.loaded_dependencies[i]);
-                    var cube_tex_asset = new SingleCubeTexture(cube_image_asset);
-                    this_block.data = cube_tex_asset; // Store finished asset
-                    this._pFinalizeAsset(cube_tex_asset, this_block.name);
+                    this_block.data = cube_image_asset; // Store finished asset
+                    this._pFinalizeAsset(cube_image_asset, this_block.name);
                     if (this._debug)
                         console.log("Parsed CubeTexture: Name = " + this_block.name);
                 }
@@ -4708,7 +4707,7 @@ var AWDParser = (function (_super) {
     AWDParser.prototype.parseSkyboxInstance = function (blockID) {
         var name = this.parseVarStr();
         var asset = new Skybox();
-        var tex = (this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager.getDefaultTexture(asset));
+        var tex = new SingleCubeTexture(this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager.getDefaultImageCube());
         asset.texture = tex;
         this.parseProperties(null);
         asset.extra = this.parseUserAttributes();
@@ -4887,7 +4886,7 @@ var AWDParser = (function (_super) {
             }
         }
         else if (type === 2) {
-            var texture = this._blocks[props.get(2, 0)].data;
+            var texture = new Single2DTexture(this._blocks[props.get(2, 0)].data);
             mat = new MethodMaterial();
             mat.ambientMethod.texture = texture;
             if (this.materialMode < 2) {
@@ -4944,7 +4943,7 @@ var AWDParser = (function (_super) {
                     }
                 }
                 else if (type == 2) {
-                    var texture = this._blocks[props.get(2, 0)].data;
+                    var texture = new Single2DTexture(this._blocks[props.get(2, 0)].data);
                     mat = new MethodMaterial();
                     mat.ambientMethod.texture = texture;
                     if (spezialType == 1) {
@@ -4957,7 +4956,7 @@ var AWDParser = (function (_super) {
                         debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + name + "'" + (texture ? " | Texture-Name = " + texture.name : "");
                     }
                 }
-                diffuseTexture = this._blocks[props.get(17, 0)].data;
+                diffuseTexture = new Single2DTexture(this._blocks[props.get(17, 0)].data);
                 normalTexture = this._blocks[props.get(3, 0)].data;
                 specTexture = this._blocks[props.get(21, 0)].data;
                 mat.lightPicker = this._blocks[props.get(22, 0)].data;
@@ -4999,7 +4998,7 @@ var AWDParser = (function (_super) {
                             debugString += " | ShadowMethod-Name = " + shadowMapMethod.name;
                             break;
                         case 1:
-                            var cubeTexture = this._blocks[props.get(1, 0)].data;
+                            var cubeTexture = new SingleCubeTexture(this._blocks[props.get(1, 0)].data);
                             mat.ambientMethod = new AmbientEnvMapMethod();
                             mat.ambientMethod.texture = cubeTexture;
                             debugString += " | AmbientEnvMapMethod | EnvMap-Name =" + cubeTexture.name;
@@ -5009,7 +5008,7 @@ var AWDParser = (function (_super) {
                             debugString += " | DiffuseDepthMethod";
                             break;
                         case 52:
-                            var texture = this._blocks[props.get(1, 0)].data;
+                            var texture = new Single2DTexture(this._blocks[props.get(1, 0)].data);
                             mat.diffuseMethod = new DiffuseGradientMethod(texture);
                             debugString += " | DiffuseGradientMethod | GradientDiffuseTexture-Name =" + texture.name;
                             break;
@@ -5018,7 +5017,7 @@ var AWDParser = (function (_super) {
                             debugString += " | DiffuseWrapMethod";
                             break;
                         case 54:
-                            var texture = this._blocks[props.get(1, 0)].data;
+                            var texture = new Single2DTexture(this._blocks[props.get(1, 0)].data);
                             mat.diffuseMethod = new DiffuseLightMapMethod(texture, this.blendModeDic[props.get(401, 10)], false, mat.diffuseMethod);
                             debugString += " | DiffuseLightMapMethod | LightMapTexture-Name =" + texture.name;
                             break;
@@ -5051,7 +5050,7 @@ var AWDParser = (function (_super) {
                         case 151:
                             break;
                         case 152:
-                            var texture = this._blocks[props.get(1, 0)].data;
+                            var texture = new Single2DTexture(this._blocks[props.get(1, 0)].data);
                             mat.normalMethod = new NormalSimpleWaterMethod(mat.normalMethod.texture || texture, texture);
                             debugString += " | NormalSimpleWaterMethod | Second-NormalTexture-Name = " + texture.name;
                             break;
@@ -5065,7 +5064,7 @@ var AWDParser = (function (_super) {
             var color = props.get(1, 0xcccccc);
             debugString += color;
             console.log("parsed material type = " + type);
-            var diffuseTexture = this._blocks[props.get(2, 0)].data;
+            var diffuseTexture = new Single2DTexture(this._blocks[props.get(2, 0)].data);
             var basic_mat = new BasicMaterial();
             basic_mat.texture = diffuseTexture;
             basic_mat.bothSides = true;
@@ -5486,7 +5485,7 @@ var AWDParser = (function (_super) {
                 effectMethodReturn.colorTransform = new ColorTransform(props.get(102, 1), props.get(103, 1), props.get(104, 1), props.get(101, 1), ((offCol >> 16) & 0xFF), ((offCol >> 8) & 0xFF), (offCol & 0xFF), ((offCol >> 24) & 0xFF));
                 break;
             case 403:
-                effectMethodReturn = new EffectEnvMapMethod(this._blocks[props.get(1, 0)].data, props.get(101, 1));
+                effectMethodReturn = new EffectEnvMapMethod(new SingleCubeTexture(this._blocks[props.get(1, 0)].data), props.get(101, 1));
                 var targetID = props.get(2, 0);
                 if (targetID > 0) {
                 }
