@@ -1,3 +1,23 @@
+declare module "awayjs-parsers/lib/AWD3BlockParsers/AnimatorAWDParser" {
+	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+	class AnimatorAWDParser extends AWDBlockParserBase {
+	    constructor();
+	    parseFromBytes(): void;
+	}
+	export = AnimatorAWDParser;
+	
+}
+
+declare module "awayjs-parsers/lib/AWD3BlockParsers/AudioAWDParser" {
+	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+	class AudioAWDParser extends AWDBlockParserBase {
+	    constructor();
+	    parseFromBytes(): void;
+	}
+	export = AudioAWDParser;
+	
+}
+
 declare module "awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase" {
 	import AWD3FileData = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData");
 	class AWDAssetParserBase {
@@ -22,26 +42,6 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParsers" {
 	    parseAsset(type: number): boolean;
 	}
 	export = AWDBlockParsers;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/AnimatorAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class AnimatorAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = AnimatorAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/AudioAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class AudioAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = AudioAWDParser;
 	
 }
 
@@ -219,16 +219,6 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/SingleCubeTextureAWDParser" 
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/SkeletonAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class SkeletonAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = SkeletonAWDParser;
-	
-}
-
 declare module "awayjs-parsers/lib/AWD3BlockParsers/SkeletonAnimClipAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 	class SkeletonAnimClipAWDParser extends AWDBlockParserBase {
@@ -236,6 +226,16 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/SkeletonAnimClipAWDParser" {
 	    parseFromBytes(): void;
 	}
 	export = SkeletonAnimClipAWDParser;
+	
+}
+
+declare module "awayjs-parsers/lib/AWD3BlockParsers/SkeletonAWDParser" {
+	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+	class SkeletonAWDParser extends AWDBlockParserBase {
+	    constructor();
+	    parseFromBytes(): void;
+	}
+	export = SkeletonAWDParser;
 	
 }
 
@@ -291,16 +291,6 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/TextformatAWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3BlockParsers/VertexAnimClipAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class VertexAnimClipAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = VertexAnimClipAWDParser;
-	
-}
-
 declare module "awayjs-parsers/lib/AWD3BlockParsers/VertexAnimationSetAWDParser" {
 	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
 	class VertexAnimationSetAWDParser extends AWDBlockParserBase {
@@ -308,6 +298,16 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/VertexAnimationSetAWDParser"
 	    parseFromBytes(): void;
 	}
 	export = VertexAnimationSetAWDParser;
+	
+}
+
+declare module "awayjs-parsers/lib/AWD3BlockParsers/VertexAnimClipAWDParser" {
+	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+	class VertexAnimClipAWDParser extends AWDBlockParserBase {
+	    constructor();
+	    parseFromBytes(): void;
+	}
+	export = VertexAnimClipAWDParser;
 	
 }
 
@@ -719,6 +719,73 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private parseMatrix43RawData();
 	}
 	export = AWDParser;
+	
+}
+
+declare module "awayjs-parsers/lib/Max3DSParser" {
+	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
+	import ResourceDependency = require("awayjs-core/lib/parsers/ResourceDependency");
+	/**
+	 * Max3DSParser provides a parser for the 3ds data type.
+	 */
+	class Max3DSParser extends ParserBase {
+	    private _byteData;
+	    private _textures;
+	    private _materials;
+	    private _unfinalized_objects;
+	    private _cur_obj_end;
+	    private _cur_obj;
+	    private _cur_mat_end;
+	    private _cur_mat;
+	    private _useSmoothingGroups;
+	    /**
+	     * Creates a new <code>Max3DSParser</code> object.
+	     *
+	     * @param useSmoothingGroups Determines whether the parser looks for smoothing groups in the 3ds file or assumes uniform smoothing. Defaults to true.
+	     */
+	    constructor(useSmoothingGroups?: boolean);
+	    /**
+	     * Indicates whether or not a given file extension is supported by the parser.
+	     * @param extension The file extension of a potential file to be parsed.
+	     * @return Whether or not the given file type is supported.
+	     */
+	    static supportsType(extension: string): boolean;
+	    /**
+	     * Tests whether a data block can be parsed by the parser.
+	     * @param data The data block to potentially be parsed.
+	     * @return Whether or not the given data is supported.
+	     */
+	    static supportsData(data: any): boolean;
+	    /**
+	     * @inheritDoc
+	     */
+	    _iResolveDependency(resourceDependency: ResourceDependency): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    _iResolveDependencyFailure(resourceDependency: ResourceDependency): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    _pProceedParsing(): boolean;
+	    _pStartParsing(frameLimit: number): void;
+	    private parseMaterial();
+	    private parseTexture(end);
+	    private parseVertexList();
+	    private parseFaceList();
+	    private parseSmoothingGroups();
+	    private parseUVList();
+	    private parseFaceMaterialList();
+	    private parseObjectAnimation(end);
+	    private constructObject(obj, pivot?);
+	    private prepareData(vertices, faces, obj);
+	    private applySmoothGroups(vertices, faces);
+	    private finalizeCurrentMaterial();
+	    private readNulTermstring();
+	    private readTransform();
+	    private readColor();
+	}
+	export = Max3DSParser;
 	
 }
 
@@ -1145,73 +1212,6 @@ declare module "awayjs-parsers/lib/MD5MeshParser" {
 	    private sendUnknownKeywordError();
 	}
 	export = MD5MeshParser;
-	
-}
-
-declare module "awayjs-parsers/lib/Max3DSParser" {
-	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
-	import ResourceDependency = require("awayjs-core/lib/parsers/ResourceDependency");
-	/**
-	 * Max3DSParser provides a parser for the 3ds data type.
-	 */
-	class Max3DSParser extends ParserBase {
-	    private _byteData;
-	    private _textures;
-	    private _materials;
-	    private _unfinalized_objects;
-	    private _cur_obj_end;
-	    private _cur_obj;
-	    private _cur_mat_end;
-	    private _cur_mat;
-	    private _useSmoothingGroups;
-	    /**
-	     * Creates a new <code>Max3DSParser</code> object.
-	     *
-	     * @param useSmoothingGroups Determines whether the parser looks for smoothing groups in the 3ds file or assumes uniform smoothing. Defaults to true.
-	     */
-	    constructor(useSmoothingGroups?: boolean);
-	    /**
-	     * Indicates whether or not a given file extension is supported by the parser.
-	     * @param extension The file extension of a potential file to be parsed.
-	     * @return Whether or not the given file type is supported.
-	     */
-	    static supportsType(extension: string): boolean;
-	    /**
-	     * Tests whether a data block can be parsed by the parser.
-	     * @param data The data block to potentially be parsed.
-	     * @return Whether or not the given data is supported.
-	     */
-	    static supportsData(data: any): boolean;
-	    /**
-	     * @inheritDoc
-	     */
-	    _iResolveDependency(resourceDependency: ResourceDependency): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    _iResolveDependencyFailure(resourceDependency: ResourceDependency): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    _pProceedParsing(): boolean;
-	    _pStartParsing(frameLimit: number): void;
-	    private parseMaterial();
-	    private parseTexture(end);
-	    private parseVertexList();
-	    private parseFaceList();
-	    private parseSmoothingGroups();
-	    private parseUVList();
-	    private parseFaceMaterialList();
-	    private parseObjectAnimation(end);
-	    private constructObject(obj, pivot?);
-	    private prepareData(vertices, faces, obj);
-	    private applySmoothGroups(vertices, faces);
-	    private finalizeCurrentMaterial();
-	    private readNulTermstring();
-	    private readTransform();
-	    private readColor();
-	}
-	export = Max3DSParser;
 	
 }
 

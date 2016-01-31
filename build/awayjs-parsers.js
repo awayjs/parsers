@@ -4189,7 +4189,7 @@ var AWDParser = (function (_super) {
             if (hasUVTransform) {
                 var matrix = this.parseMatrix32RawData();
                 mesh.subMeshes[i].material.animateUVs = true;
-                mesh.subMeshes[i].uvTransform = new Matrix(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
+                mesh.subMeshes[i].uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
             }
         }
         this.parseProperties(null);
