@@ -3790,7 +3790,7 @@ var AWDParser = (function (_super) {
                     isParsed = true;
                     break;
                 case 134:
-                    this.paresTextField(this._cur_block_id, factory);
+                    this.parseTextField(this._cur_block_id, factory);
                     isParsed = true;
                     break;
                 case 135:
@@ -4081,7 +4081,7 @@ var AWDParser = (function (_super) {
         if (this._debug)
             console.log("Parsed a TextFormat: Name = '" + name + " font: " + font.name);
     };
-    AWDParser.prototype.paresTextField = function (blockID, factory) {
+    AWDParser.prototype.parseTextField = function (blockID, factory) {
         var name = this.parseVarStr();
         this._blocks[blockID].name = name;
         var newTextField = factory.createTextField();
