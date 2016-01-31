@@ -3970,6 +3970,7 @@ var AWDParser = (function (_super) {
         var font_style_name;
         var new_font_style;
         var font_style_char;
+        var attr_count = 0;
         var sm_len;
         var sm_end;
         var str_ftype, str_type, str_len, str_end;
@@ -4002,7 +4003,13 @@ var AWDParser = (function (_super) {
                         for (var idx = 0; this._newBlockBytes.position < str_end; idx++)
                             indices[idx] = this._newBlockBytes.readUnsignedShort();
                     }
+                    else if (str_type == 11) {
+                        attr_count = 20;
+                        var curveData = new ByteArray(str_len);
+                        this._newBlockBytes.readBytes(curveData, 0, str_len);
+                    }
                     else if (str_type == 10) {
+                        attr_count = 28;
                         var curveData = new ByteArray(str_len);
                         this._newBlockBytes.readBytes(curveData, 0, str_len);
                     }
@@ -4011,11 +4018,12 @@ var AWDParser = (function (_super) {
                     }
                 }
                 if (curveData) {
-                    var vertexBuffer = new AttributesBuffer(20, str_len / 20);
+                    var vertexBuffer = new AttributesBuffer(attr_count, str_len / attr_count);
                     vertexBuffer.bufferView = new Uint8Array(curveData.arraybytes);
                     var curve_sub_geom = new CurveSubGeometry(vertexBuffer);
-                    //curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
-                    //curve_sub_geom.autoDeriveUVs=false;
+                    if (attr_count == 28) {
+                        curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
+                    }
                     new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
                 }
             }
@@ -4181,7 +4189,7 @@ var AWDParser = (function (_super) {
             if (hasUVTransform) {
                 var matrix = this.parseMatrix32RawData();
                 mesh.subMeshes[i].material.animateUVs = true;
-                mesh.subMeshes[i].uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+                mesh.subMeshes[i].uvTransform = new Matrix(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
             }
         }
         this.parseProperties(null);
@@ -5061,10 +5069,9 @@ var AWDParser = (function (_super) {
             }
         }
         else if ((type >= 3) && (type <= 7)) {
-            // if this is a basic material, we create it, finalize it, assign it to block-cache and return and return.
+            // if this is a basic material, we create it, finalize it, assign it to block-cache and return.
             var color = props.get(1, 0xcccccc);
             debugString += color;
-            console.log("parsed material type = " + type);
             var diffuseTexture = new Single2DTexture(this._blocks[props.get(2, 0)].data);
             if (type == 5) {
                 diffuseTexture.mappingMode = MappingMode.LINEAR_GRADIENT;
