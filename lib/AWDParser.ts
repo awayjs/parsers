@@ -810,7 +810,7 @@ class AWDParser extends ParserBase
 						for(var idx:number = 0; this._newBlockBytes.position < str_end; idx++)
 							indices[idx] = this._newBlockBytes.readUnsignedShort();
 
-					} else if (str_type == 10) {// combined vertex2D stream 7 x float32
+					} else if (str_type == 10) {// combined vertex2D stream 5 x float32
 						var curveData:ByteArray = new ByteArray(str_len);
 						this._newBlockBytes.readBytes(curveData, 0, str_len);
 					} else {
@@ -1056,7 +1056,7 @@ class AWDParser extends ParserBase
 			if(hasUVTransform){
 				var matrix:Array<number> = this.parseMatrix32RawData();
 				mesh.subMeshes[i].material.animateUVs = true;
-				mesh.subMeshes[i].uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+				mesh.subMeshes[i].uvTransform = new Matrix(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
 			}
 		}
 
@@ -2220,17 +2220,15 @@ class AWDParser extends ParserBase
 		}
 		// todo: we should not need this anymore (if using texture-atlas)
 		else if ((type>=3)&&(type<=7)){
-			// if this is a basic material, we create it, finalize it, assign it to block-cache and return and return.
+			// if this is a basic material, we create it, finalize it, assign it to block-cache and return.
 			var color:number = props.get(1, 0xcccccc);
 			debugString+=color;
-			console.log("parsed material type = "+type);
-		
 			var diffuseTexture:Single2DTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(2, 0)].data);
 			if(type==5){
 				diffuseTexture.mappingMode = MappingMode.LINEAR_GRADIENT;
 			}
 			else if(type==6){
-				diffuseTexture.mappingMode = MappingMode.LINEAR_GRADIENT;
+				diffuseTexture.mappingMode = MappingMode.RADIAL_GRADIENT;
 			}
 			var basic_mat:BasicMaterial = new BasicMaterial();
 			basic_mat.texture = diffuseTexture;
