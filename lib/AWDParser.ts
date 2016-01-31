@@ -576,7 +576,7 @@ class AWDParser extends ParserBase
 					isParsed = true;
 					break;
 				case 134:
-					this.paresTextField(this._cur_block_id, factory);
+					this.parseTextField(this._cur_block_id, factory);
 					isParsed = true;
 					break;
 				case 135:
@@ -810,11 +810,11 @@ class AWDParser extends ParserBase
 						var indices:Array<number> = new Array<number>();
 						for(var idx:number = 0; this._newBlockBytes.position < str_end; idx++)
 							indices[idx] = this._newBlockBytes.readUnsignedShort();
-					} else if (str_type == 11) {// combined vertex2D stream 5 x float32
+					} else if (str_type == 11) {// combined vertex2D stream 5 x float32 (position + curvedata)
 						attr_count = 20;
 						var curveData:ByteArray = new ByteArray(str_len);
 						this._newBlockBytes.readBytes(curveData, 0, str_len);
-					} else if (str_type == 10) {// combined vertex2D stream 5 x float32
+					} else if (str_type == 10) {// combined vertex2D stream 7 x float32 (position + curvedata + uv)
 						attr_count = 28;
 						var curveData:ByteArray = new ByteArray(str_len);
 						this._newBlockBytes.readBytes(curveData, 0, str_len);
@@ -926,7 +926,7 @@ class AWDParser extends ParserBase
 	private static textFieldTypes:Array<string> = ["static", "dynamic", "input", "input"];
 
 
-	private paresTextField(blockID:number, factory:ITimelineSceneGraphFactory)
+	private parseTextField(blockID:number, factory:ITimelineSceneGraphFactory)
 	{
 		var name:string = this.parseVarStr();
 		this._blocks[blockID].name = name;
@@ -1411,7 +1411,7 @@ class AWDParser extends ParserBase
 					attr_count = 28;
 					var curveData:ByteArray = new ByteArray(str_len);
 					this._newBlockBytes.readBytes(curveData, 0, str_len);
-				} else if (str_type == 11) {// combined vertex2D stream 5 x float32
+				} else if (str_type == 11) {// combined vertex2D stream 5 x float32 (2d pos + curvedata)
 					is_curve_geom = true;
 					attr_count = 20;
 					var curveData:ByteArray = new ByteArray(str_len);
