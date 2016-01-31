@@ -773,6 +773,7 @@ class AWDParser extends ParserBase
 		var font_style_name:string;
 		var new_font_style:TesselatedFontTable;
 		var font_style_char:number;
+		var attr_count:number=0;
 		var sm_len:number;
 		var sm_end:number;
 		var str_ftype:number, str_type:number, str_len:number, str_end:number;
@@ -809,8 +810,12 @@ class AWDParser extends ParserBase
 						var indices:Array<number> = new Array<number>();
 						for(var idx:number = 0; this._newBlockBytes.position < str_end; idx++)
 							indices[idx] = this._newBlockBytes.readUnsignedShort();
-
+					} else if (str_type == 11) {// combined vertex2D stream 5 x float32
+						attr_count = 20;
+						var curveData:ByteArray = new ByteArray(str_len);
+						this._newBlockBytes.readBytes(curveData, 0, str_len);
 					} else if (str_type == 10) {// combined vertex2D stream 5 x float32
+						attr_count = 28;
 						var curveData:ByteArray = new ByteArray(str_len);
 						this._newBlockBytes.readBytes(curveData, 0, str_len);
 					} else {
@@ -818,12 +823,13 @@ class AWDParser extends ParserBase
 					}
 				}
 				if(curveData) {
-					var vertexBuffer:AttributesBuffer = new AttributesBuffer(20, str_len / 20);
+					var vertexBuffer:AttributesBuffer = new AttributesBuffer(attr_count, str_len / attr_count);
 					vertexBuffer.bufferView = new Uint8Array(<ArrayBuffer> curveData.arraybytes);
 
 					var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(vertexBuffer);
-					//curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
-					//curve_sub_geom.autoDeriveUVs=false;
+					if (attr_count == 28) {
+						curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
+					}
 					new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
 				}
 			}
