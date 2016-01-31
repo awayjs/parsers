@@ -5070,7 +5070,7 @@ var AWDParser = (function (_super) {
                 diffuseTexture.mappingMode = MappingMode.LINEAR_GRADIENT;
             }
             else if (type == 6) {
-                diffuseTexture.mappingMode = MappingMode.LINEAR_GRADIENT;
+                diffuseTexture.mappingMode = MappingMode.RADIAL_GRADIENT;
             }
             var basic_mat = new BasicMaterial();
             basic_mat.texture = diffuseTexture;
