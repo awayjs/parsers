@@ -902,7 +902,7 @@ class AWDParser extends ParserBase
 		newTextFormat.indent = format_props.get(7,0);
 		newTextFormat.leftMargin = format_props.get(8,0);
 		newTextFormat.rightMargin = format_props.get(9,0);
-		//newTextFormat.linespacing = format_props.get(10,0);
+		newTextFormat.leading = format_props.get(10,0);
 		newTextFormat.material = mat;
 		this.parseUserAttributes();// textformat has no extra-properties
 		//newTextFormat.extra =
@@ -1047,23 +1047,35 @@ class AWDParser extends ParserBase
 		}
 		for (var i:number = 0; i < num_subgeoms; i++) {
 
-			var sampler:Sampler2D = new Sampler2D();
-			var x:number = this._newBlockBytes.readFloat();
-			var y:number = this._newBlockBytes.readFloat();
-			var width:number = this._newBlockBytes.readFloat() - x;
-			var height:number = this._newBlockBytes.readFloat() - y;
+			var type:number = this._newBlockBytes.readUnsignedByte();
 
-			sampler.imageRect = new Rectangle(x, y, width, height);
-			mesh.subMeshes[i].material.imageRect = true;
+			var sampler:Sampler2D = new Sampler2D();
 			mesh.subMeshes[i].style = new Style();
 			mesh.subMeshes[i].style.addSamplerAt(sampler, mesh.subMeshes[i].material.getTextureAt(0));
-			// optional: transform matrix
-			var hasUVTransform:boolean = Boolean(this._newBlockBytes.readUnsignedByte());
-			if(hasUVTransform){
-				var matrix:Array<number> = this.parseMatrix32RawData();
+
+			if(type==3){// solid color fill - need tx and ty
 				mesh.subMeshes[i].material.animateUVs = true;
-				mesh.subMeshes[i].uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+				mesh.subMeshes[i].uvTransform = new Matrix(0, 0, 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
 			}
+			else if(type==5){// linear gradient fill - need a, c , tx and ty
+				mesh.subMeshes[i].material.animateUVs = true;
+				mesh.subMeshes[i].uvTransform = new Matrix(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+			}
+			else if(type==6){// radial gradient fill - need image rectangle + full transform
+				var x:number = this._newBlockBytes.readFloat();
+				var y:number = this._newBlockBytes.readFloat();
+				var width:number = this._newBlockBytes.readFloat();
+				var height:number = this._newBlockBytes.readFloat();
+				sampler.imageRect = new Rectangle(x, y, width, height);
+				mesh.subMeshes[i].material.imageRect = true;
+				mesh.subMeshes[i].material.animateUVs = true;
+				var matrix:Array<number> = this.parseMatrix32RawData();
+				mesh.subMeshes[i].uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+
+			}
+
+			// todo: finish optional properties (spreadmode + focalpoint)
+			this._newBlockBytes.readUnsignedInt();
 		}
 
 		this.parseProperties(null);
