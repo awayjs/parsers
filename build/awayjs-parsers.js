@@ -4172,20 +4172,47 @@ var AWDParser = (function (_super) {
         }
         var num_subgeoms = this._newBlockBytes.readUnsignedShort();
         if (num_subgeoms != mesh.subMeshes.length) {
-            throw new Error("num subgeoms does not match num submeshes");
         }
+        var subMesh;
         for (var i = 0; i < num_subgeoms; i++) {
+            subMesh = null;
+            if (mesh.subMeshes.length > i) {
+                subMesh = mesh.subMeshes[i];
+            }
             var type = this._newBlockBytes.readUnsignedByte();
             var sampler = new Sampler2D();
-            mesh.subMeshes[i].style = new Style();
-            mesh.subMeshes[i].style.addSamplerAt(sampler, mesh.subMeshes[i].material.getTextureAt(0));
+            if (subMesh) {
+                subMesh.style = new Style();
+                subMesh.style.addSamplerAt(sampler, mesh.subMeshes[i].material.getTextureAt(0));
+            }
             if (type == 3) {
-                mesh.subMeshes[i].material.animateUVs = true;
-                mesh.subMeshes[i].uvTransform = new Matrix(0, 0, 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+                if (subMesh) {
+                    subMesh.material.animateUVs = true;
+                    subMesh.uvTransform = new Matrix(0, 0, 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+                }
+                else {
+                    this._newBlockBytes.readFloat();
+                    this._newBlockBytes.readFloat();
+                }
+            }
+            else if (type == 4) {
+                var matrix = this.parseMatrix32RawData();
+                if (subMesh) {
+                    subMesh.material.animateUVs = true;
+                    subMesh.uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+                }
             }
             else if (type == 5) {
-                mesh.subMeshes[i].material.animateUVs = true;
-                mesh.subMeshes[i].uvTransform = new Matrix(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+                if (subMesh) {
+                    subMesh.material.animateUVs = true;
+                    subMesh.uvTransform = new Matrix(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+                }
+                else {
+                    this._newBlockBytes.readFloat();
+                    this._newBlockBytes.readFloat();
+                    this._newBlockBytes.readFloat();
+                    this._newBlockBytes.readFloat();
+                }
             }
             else if (type == 6) {
                 var x = this._newBlockBytes.readFloat();
@@ -4193,10 +4220,12 @@ var AWDParser = (function (_super) {
                 var width = this._newBlockBytes.readFloat();
                 var height = this._newBlockBytes.readFloat();
                 sampler.imageRect = new Rectangle(x, y, width, height);
-                mesh.subMeshes[i].material.imageRect = true;
-                mesh.subMeshes[i].material.animateUVs = true;
                 var matrix = this.parseMatrix32RawData();
-                mesh.subMeshes[i].uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+                if (subMesh) {
+                    subMesh.material.imageRect = true;
+                    subMesh.material.animateUVs = true;
+                    subMesh.uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+                }
             }
             // todo: finish optional properties (spreadmode + focalpoint)
             this._newBlockBytes.readUnsignedInt();

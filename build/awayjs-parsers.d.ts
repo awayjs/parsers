@@ -311,6 +311,69 @@ declare module "awayjs-parsers/lib/AWD3BlockParsers/VertexAnimClipAWDParser" {
 	
 }
 
+declare module "awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
+	import AWDProperties = require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
+	import AWDBlock = require("awayjs-parsers/lib/AWD3ParserUtils/AWDBlock");
+	/**
+	 * AWD3FileData stores the data loaded for a AWD-file. It also gives access to some helper functions.
+	 */
+	class AWD3FileData {
+	    private _debug;
+	    private _cur_block;
+	    private _blocks;
+	    private _newBlockBytes;
+	    major_version: number;
+	    minor_version: number;
+	    private _accuracyOnBlocks;
+	    private _accuracyMatrix;
+	    private _accuracyGeo;
+	    private _accuracyProps;
+	    private _matrixNrType;
+	    private _geoNrType;
+	    private _propsNrType;
+	    private blendModeDic;
+	    private _depthSizeDic;
+	    private _defaultCubeTexture;
+	    /**
+	     * Creates a new AWD3FileData object.
+	     */
+	    constructor();
+	    getDepthSizeFromEnum(depthSize: number): number;
+	    getBlendModeStringFromEnum(blendmode: number): string;
+	    dispose(): void;
+	    accuracyOnBlocks: boolean;
+	    accuracyMatrix: boolean;
+	    accuracyProps: boolean;
+	    accuracyGeo: boolean;
+	    debug: boolean;
+	    matrixNrType: number;
+	    propsNrType: number;
+	    geoNrType: number;
+	    newBlockBytes: ByteArray;
+	    create_new_block(type: number, id: number): void;
+	    cur_block: AWDBlock;
+	    block_cnt(): number;
+	    parseUserAttributes(): Object;
+	    parseProperties(expected: Object): AWDProperties;
+	    private parseAttrValue(type, len);
+	    getUVForVertexAnimation(meshID: number): Array<Float32Array>;
+	    parseVarStr(): string;
+	    getBlockByID(assetID: number): AWDBlock;
+	    getAssetByID(assetID: number): IAsset;
+	    private getDefaultAsset(assetType);
+	    getDefaultCubeTexture(): IAsset;
+	    readNumber(precision?: boolean): number;
+	    parseMatrix3D(): Matrix3D;
+	    private parseMatrix32RawData();
+	    parseMatrix43RawData(): Float32Array;
+	}
+	export = AWD3FileData;
+	
+}
+
 declare module "awayjs-parsers/lib/AWD3Parser" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
@@ -377,66 +440,30 @@ declare module "awayjs-parsers/lib/AWD3Parser" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
-	import AWDProperties = require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
-	import AWDBlock = require("awayjs-parsers/lib/AWD3ParserUtils/AWDBlock");
+declare module "awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags" {
 	/**
-	 * AWD3FileData stores the data loaded for a AWD-file. It also gives access to some helper functions.
+	 *
 	 */
-	class AWD3FileData {
-	    private _debug;
-	    private _cur_block;
-	    private _blocks;
-	    private _newBlockBytes;
-	    major_version: number;
-	    minor_version: number;
-	    private _accuracyOnBlocks;
-	    private _accuracyMatrix;
-	    private _accuracyGeo;
-	    private _accuracyProps;
-	    private _matrixNrType;
-	    private _geoNrType;
-	    private _propsNrType;
-	    private blendModeDic;
-	    private _depthSizeDic;
-	    private _defaultCubeTexture;
-	    /**
-	     * Creates a new AWD3FileData object.
-	     */
-	    constructor();
-	    getDepthSizeFromEnum(depthSize: number): number;
-	    getBlendModeStringFromEnum(blendmode: number): string;
-	    dispose(): void;
-	    accuracyOnBlocks: boolean;
-	    accuracyMatrix: boolean;
-	    accuracyProps: boolean;
-	    accuracyGeo: boolean;
-	    debug: boolean;
-	    matrixNrType: number;
-	    propsNrType: number;
-	    geoNrType: number;
-	    newBlockBytes: ByteArray;
-	    create_new_block(type: number, id: number): void;
-	    cur_block: AWDBlock;
-	    block_cnt(): number;
-	    parseUserAttributes(): Object;
-	    parseProperties(expected: Object): AWDProperties;
-	    private parseAttrValue(type, len);
-	    getUVForVertexAnimation(meshID: number): Array<Float32Array>;
-	    parseVarStr(): string;
-	    getBlockByID(assetID: number): AWDBlock;
-	    getAssetByID(assetID: number): IAsset;
-	    private getDefaultAsset(assetType);
-	    getDefaultCubeTexture(): IAsset;
-	    readNumber(precision?: boolean): number;
-	    parseMatrix3D(): Matrix3D;
-	    private parseMatrix32RawData();
-	    parseMatrix43RawData(): Float32Array;
+	class AWDBitFlags {
+	    static FLAG1: number;
+	    static FLAG2: number;
+	    static FLAG3: number;
+	    static FLAG4: number;
+	    static FLAG5: number;
+	    static FLAG6: number;
+	    static FLAG7: number;
+	    static FLAG8: number;
+	    static FLAG9: number;
+	    static FLAG10: number;
+	    static FLAG11: number;
+	    static FLAG12: number;
+	    static FLAG13: number;
+	    static FLAG14: number;
+	    static FLAG15: number;
+	    static FLAG16: number;
+	    static test(flags: number, testFlag: number): boolean;
 	}
-	export = AWD3FileData;
+	export = AWDBitFlags;
 	
 }
 
@@ -472,33 +499,6 @@ declare module "awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils" {
 	    static MTX4x4: number;
 	}
 	export = AWD3Utils;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags" {
-	/**
-	 *
-	 */
-	class AWDBitFlags {
-	    static FLAG1: number;
-	    static FLAG2: number;
-	    static FLAG3: number;
-	    static FLAG4: number;
-	    static FLAG5: number;
-	    static FLAG6: number;
-	    static FLAG7: number;
-	    static FLAG8: number;
-	    static FLAG9: number;
-	    static FLAG10: number;
-	    static FLAG11: number;
-	    static FLAG12: number;
-	    static FLAG13: number;
-	    static FLAG14: number;
-	    static FLAG15: number;
-	    static FLAG16: number;
-	    static test(flags: number, testFlag: number): boolean;
-	}
-	export = AWDBitFlags;
 	
 }
 
