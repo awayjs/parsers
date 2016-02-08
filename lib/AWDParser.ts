@@ -124,6 +124,8 @@ import Rectangle 					= require("awayjs-core/lib/geom/Rectangle");
 import Style 						= require("awayjs-display/lib/base/Style");
 import Matrix 						= require("awayjs-core/lib/geom/Matrix");
 import MappingMode 					= require("awayjs-display/lib/textures/MappingMode");
+
+import ISubMesh 					= require("awayjs-display/lib/base/ISubMesh");
 /**
  * AWDParser provides a parser for the AWD data type.
  */
@@ -1043,23 +1045,49 @@ class AWDParser extends ParserBase
 
 		var num_subgeoms:number = this._newBlockBytes.readUnsignedShort();
 		if(num_subgeoms!=mesh.subMeshes.length){
-			throw new Error("num subgeoms does not match num submeshes")
+			//throw new Error("num subgeoms does not match num submeshes")
 		}
+		var subMesh:ISubMesh;
 		for (var i:number = 0; i < num_subgeoms; i++) {
-
+			subMesh=null;
+			if(mesh.subMeshes.length>i){
+				subMesh=mesh.subMeshes[i];
+			}
 			var type:number = this._newBlockBytes.readUnsignedByte();
 
 			var sampler:Sampler2D = new Sampler2D();
-			mesh.subMeshes[i].style = new Style();
-			mesh.subMeshes[i].style.addSamplerAt(sampler, mesh.subMeshes[i].material.getTextureAt(0));
-
+			if(subMesh) {
+				subMesh.style = new Style();
+				subMesh.style.addSamplerAt(sampler, mesh.subMeshes[i].material.getTextureAt(0));
+			}
 			if(type==3){// solid color fill - need tx and ty
-				mesh.subMeshes[i].material.animateUVs = true;
-				mesh.subMeshes[i].uvTransform = new Matrix(0, 0, 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+				if(subMesh) {
+					subMesh.material.animateUVs = true;
+					subMesh.uvTransform = new Matrix(0, 0, 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+				}
+				else{
+					this._newBlockBytes.readFloat();
+					this._newBlockBytes.readFloat();
+				}
+			}
+			else if(type==4){// texture fill - need full matrix
+				var matrix:Array<number> = this.parseMatrix32RawData();
+				if(subMesh) {
+					subMesh.material.animateUVs = true;
+					subMesh.uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+				}
 			}
 			else if(type==5){// linear gradient fill - need a, c , tx and ty
-				mesh.subMeshes[i].material.animateUVs = true;
-				mesh.subMeshes[i].uvTransform = new Matrix(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+				if(subMesh) {
+					subMesh.material.animateUVs = true;
+					subMesh.uvTransform = new Matrix(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+				}
+				else{
+					this._newBlockBytes.readFloat();
+					this._newBlockBytes.readFloat();
+					this._newBlockBytes.readFloat();
+					this._newBlockBytes.readFloat();
+				}
 			}
 			else if(type==6){// radial gradient fill - need image rectangle + full transform
 				var x:number = this._newBlockBytes.readFloat();
@@ -1067,13 +1095,13 @@ class AWDParser extends ParserBase
 				var width:number = this._newBlockBytes.readFloat();
 				var height:number = this._newBlockBytes.readFloat();
 				sampler.imageRect = new Rectangle(x, y, width, height);
-				mesh.subMeshes[i].material.imageRect = true;
-				mesh.subMeshes[i].material.animateUVs = true;
 				var matrix:Array<number> = this.parseMatrix32RawData();
-				mesh.subMeshes[i].uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
-
+				if(subMesh) {
+					subMesh.material.imageRect = true;
+					subMesh.material.animateUVs = true;
+					subMesh.uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+				}
 			}
-
 			// todo: finish optional properties (spreadmode + focalpoint)
 			this._newBlockBytes.readUnsignedInt();
 		}
