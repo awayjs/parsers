@@ -5,8 +5,8 @@ import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
 import URLLoaderDataFormat				= require("awayjs-core/lib/net/URLLoaderDataFormat");
 import ParserBase						= require("awayjs-core/lib/parsers/ParserBase");
 
-import Geometry							= require("awayjs-display/lib/base/Geometry");
-import TriangleSubGeometry				= require("awayjs-display/lib/base/TriangleSubGeometry");
+import Graphics							= require("awayjs-display/lib/graphics/Graphics");
+import TriangleElements					= require("awayjs-display/lib/graphics/TriangleElements");
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import Mesh								= require("awayjs-display/lib/entities/Mesh");
 
@@ -17,7 +17,7 @@ import SkeletonJoint					= require("awayjs-renderergl/lib/animators/data/Skeleto
 // todo: create animation system, parse skeleton
 
 /**
- * MD5MeshParser provides a parser for the md5mesh data type, providing the geometry of the md5 format.
+ * MD5MeshParser provides a parser for the md5mesh data type, providing the graphics of the md5 format.
  *
  * todo: optimize
  */
@@ -55,7 +55,7 @@ class MD5MeshParser extends ParserBase
 	private _maxJointCount:number /*int*/;
 	private _meshData:Array<MeshData>;
 	private _bindPoses:Array<Matrix3D>;
-	private _geometry:Geometry;
+	private _graphics:Graphics;
 
 	private _skeleton:Skeleton;
 	private _animationSet:SkeletonAnimationSet;
@@ -148,19 +148,19 @@ class MD5MeshParser extends ParserBase
 				this.calculateMaxJointCount();
 				this._animationSet = new SkeletonAnimationSet(this._maxJointCount);
 
-				this._mesh = new Mesh(new Geometry(), null);
-				this._geometry = this._mesh.geometry;
+				this._mesh = new Mesh();
+				this._graphics = this._mesh.graphics;
 
 				for (var i:number /*int*/ = 0; i < this._meshData.length; ++i)
-					this._geometry.addSubGeometry(this.translateGeom(this._meshData[i].vertexData, this._meshData[i].weightData, this._meshData[i].indices));
+					this._graphics.addGraphic(this.translateElements(this._meshData[i].vertexData, this._meshData[i].weightData, this._meshData[i].indices));
 
-				//_geometry.animation = _animation;
+				//_graphics.animation = _animation;
 				//					_mesh.animationController = _animationController;
 
 				//add to the content property
 				(<DisplayObjectContainer> this._pContent).addChild(this._mesh);
 
-				this._pFinalizeAsset(this._geometry);
+				this._pFinalizeAsset(this._graphics);
 				this._pFinalizeAsset(this._mesh);
 				this._pFinalizeAsset(this._skeleton);
 				this._pFinalizeAsset(this._animationSet);
@@ -276,7 +276,7 @@ class MD5MeshParser extends ParserBase
 	}
 
 	/**
-	 * Parses the mesh geometry.
+	 * Parses the mesh graphics.
 	 */
 	private parseMesh():void
 	{
@@ -337,9 +337,9 @@ class MD5MeshParser extends ParserBase
 	 * @param vertexData The mesh's vertices.
 	 * @param weights The joint weights per vertex.
 	 * @param indices The indices for the faces.
-	 * @return A SubGeometry instance containing all geometrical data for the current mesh.
+	 * @return A TriangleElements instance containing all elements data for the current mesh.
 	 */
-	private translateGeom(vertexData:Array<VertexData>, weights:Array<JointData>, indices:Array<number> /*uint*/):TriangleSubGeometry
+	private translateElements(vertexData:Array<VertexData>, weights:Array<JointData>, indices:Array<number> /*uint*/):TriangleElements
 	{
 		var len:number /*int*/ = vertexData.length;
 		var v1:number /*int*/, v2:number /*int*/, v3:number /*int*/;
@@ -347,7 +347,7 @@ class MD5MeshParser extends ParserBase
 		var weight:JointData;
 		var bindPose:Matrix3D;
 		var pos:Vector3D;
-		var subGeom:TriangleSubGeometry = new TriangleSubGeometry(new AttributesBuffer());
+		var elements:TriangleElements = new TriangleElements(new AttributesBuffer());
 		var uvs:Array<number> = new Array<number>(len*2);
 		var vertices:Array<number> = new Array<number>(len*3);
 		var jointIndices:Array<number> = new Array<number>(len*this._maxJointCount);
@@ -389,20 +389,20 @@ class MD5MeshParser extends ParserBase
 			uvs[v1] = vertex.t;
 		}
 
-		subGeom.jointsPerVertex = this._maxJointCount;
-		subGeom.setIndices(indices);
-		subGeom.setPositions(vertices);
-		subGeom.setUVs(uvs);
-		subGeom.setJointIndices(jointIndices);
-		subGeom.setJointWeights(jointWeights);
+		elements.jointsPerVertex = this._maxJointCount;
+		elements.setIndices(indices);
+		elements.setPositions(vertices);
+		elements.setUVs(uvs);
+		elements.setJointIndices(jointIndices);
+		elements.setJointWeights(jointWeights);
 		// cause explicit updates
-		subGeom.setNormals(null);
-		subGeom.setTangents(null);
+		elements.setNormals(null);
+		elements.setTangents(null);
 		// turn auto updates off because they may be animated and set explicitly
-		subGeom.autoDeriveTangents = false;
-		subGeom.autoDeriveNormals = false;
+		elements.autoDeriveTangents = false;
+		elements.autoDeriveNormals = false;
 
-		return subGeom;
+		return elements;
 	}
 
 	/**

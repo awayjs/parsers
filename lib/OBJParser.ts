@@ -11,8 +11,8 @@ import ParserBase						= require("awayjs-core/lib/parsers/ParserBase");
 import ParserUtils						= require("awayjs-core/lib/parsers/ParserUtils");
 import ResourceDependency				= require("awayjs-core/lib/parsers/ResourceDependency");
 
-import TriangleSubGeometry				= require("awayjs-display/lib/base/TriangleSubGeometry");
-import Geometry							= require("awayjs-display/lib/base/Geometry");
+import Graphics							= require("awayjs-display/lib/graphics/Graphics");
+import TriangleElements					= require("awayjs-display/lib/graphics/TriangleElements");
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import Mesh								= require("awayjs-display/lib/entities/Mesh");
 import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
@@ -311,7 +311,7 @@ class OBJParser extends ParserBase
 			var numGroups:number = groups.length;
 			var materialGroups:Array<MaterialGroup>;
 			var numMaterialGroups:number;
-			var geometry:Geometry;
+			var graphics:Graphics;
 			var mesh:Mesh;
 
 			var m:number;
@@ -319,26 +319,25 @@ class OBJParser extends ParserBase
 			var bmMaterial:MethodMaterial;
 
 			for (var g:number = 0; g < numGroups; ++g) {
-				geometry = new Geometry();
-				materialGroups = groups[g].materialGroups;
-				numMaterialGroups = materialGroups.length;
-
-				for (m = 0; m < numMaterialGroups; ++m)
-					this.translateMaterialGroup(materialGroups[m], geometry);
-
-				if (geometry.subGeometries.length == 0)
-					continue;
-
-				// Finalize and force type-based name
-				this._pFinalizeAsset(<IAsset> geometry);//, "");
-
 				bmMaterial = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
 
 				//check for multipass
 				if (this.materialMode >= 2)
 					bmMaterial.mode = MethodMaterialMode.MULTI_PASS;
 
-				mesh = new Mesh(geometry, bmMaterial);
+				mesh = new Mesh(bmMaterial);
+				graphics = mesh.graphics;
+				materialGroups = groups[g].materialGroups;
+				numMaterialGroups = materialGroups.length;
+
+				for (m = 0; m < numMaterialGroups; ++m)
+					this.translateMaterialGroup(materialGroups[m], graphics);
+
+				if (graphics.count == 0)
+					continue;
+
+				// Finalize and force type-based name
+				this._pFinalizeAsset(<IAsset> graphics);//, "");
 
 				if (this._objects[objIndex].name) {
 					// this is a full independent object ('o' tag in OBJ file)
@@ -361,9 +360,9 @@ class OBJParser extends ParserBase
 					bmMaterial.name = groups[g].materialID + "~" + mesh.name; else
 					bmMaterial.name = this._lastMtlID + "~" + mesh.name;
 
-				if (mesh.subMeshes.length > 1) {
-					for (sm = 1; sm < mesh.subMeshes.length; ++sm)
-						mesh.subMeshes[sm].material = bmMaterial;
+				if (mesh.graphics.count > 1) {
+					for (sm = 1; sm < mesh.graphics.count; ++sm)
+						mesh.graphics.getGraphicAt(sm).material = bmMaterial;
 				}
 
 				//add to the content property
@@ -375,17 +374,17 @@ class OBJParser extends ParserBase
 	}
 
 	/**
-	 * Translates an obj's material group to a subgeometry.
+	 * Translates an obj's material group to a subgraphics.
 	 * @param materialGroup The material group data to convert.
-	 * @param geometry The Geometry to contain the converted SubGeometry.
+	 * @param graphics The Graphics to contain the converted Elements.
 	 */
-	private translateMaterialGroup(materialGroup:MaterialGroup, geometry:Geometry)
+	private translateMaterialGroup(materialGroup:MaterialGroup, graphics:Graphics)
 	{
 		var faces:Array<FaceData> = materialGroup.faces;
 		var face:FaceData;
 		var numFaces:number = faces.length;
 		var numVerts:number;
-		var sub:TriangleSubGeometry;
+		var elements:TriangleElements;
 
 		var vertices:Array<number> = new Array<number>();
 		var uvs:Array<number> = new Array<number>();
@@ -409,14 +408,14 @@ class OBJParser extends ParserBase
 			}
 		}
 		if (vertices.length > 0) {
-			sub = new TriangleSubGeometry(new AttributesBuffer());
-			sub.autoDeriveNormals = normals.length? false : true;
-			sub.setIndices(indices);
-			sub.setPositions(vertices);
-			sub.setNormals(normals);
-			sub.setUVs(uvs);
+			elements = new TriangleElements(new AttributesBuffer());
+			elements.autoDeriveNormals = normals.length? false : true;
+			elements.setIndices(indices);
+			elements.setPositions(vertices);
+			elements.setNormals(normals);
+			elements.setUVs(uvs);
 
-			geometry.addSubGeometry(sub);
+			graphics.addGraphic(elements);
 		}
 	}
 

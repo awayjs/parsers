@@ -10,8 +10,8 @@ import ParserUtils						= require("awayjs-core/lib/parsers/ParserUtils");
 import ResourceDependency				= require("awayjs-core/lib/parsers/ResourceDependency");
 import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
 
-import Geometry							= require("awayjs-display/lib/base/Geometry");
-import TriangleSubGeometry				= require("awayjs-display/lib/base/TriangleSubGeometry");
+import Graphics							= require("awayjs-display/lib/graphics/Graphics");
+import TriangleElements					= require("awayjs-display/lib/graphics/TriangleElements");
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import Mesh								= require("awayjs-display/lib/entities/Mesh");
 import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
@@ -503,8 +503,8 @@ class Max3DSParser extends ParserBase
 	{
 		if (obj.type == Mesh.assetType) {
 			var i:number /*uint*/;
-			var sub:TriangleSubGeometry;
-			var geom:Geometry;
+			var sub:TriangleElements;
+			var graphics:Graphics;
 			var mat:MaterialBase;
 			var mesh:Mesh;
 			var mtx:Matrix3D;
@@ -551,24 +551,28 @@ class Max3DSParser extends ParserBase
 				}
 			}
 
-			geom = new Geometry();
-
-			// Construct sub-geometries (potentially splitting buffers)
-			// and add them to geometry.
-			sub = new TriangleSubGeometry(new AttributesBuffer());
-			sub.setIndices(obj.indices);
-			sub.setPositions(obj.verts);
-			sub.setUVs(obj.uvs);
-
-			geom.addSubGeometry(sub);
-
 			if (obj.materials.length > 0) {
 				var mname:string;
 				mname = obj.materials[0];
 				mat = this._materials[mname].material;
 			}
 
-			// Apply pivot translation to geometry if a pivot was
+			// Build mesh and return it
+			mesh = new Mesh(mat);
+			mesh.transform.matrix3D = new Matrix3D(obj.transform);
+
+			graphics = mesh.graphics;
+
+			// Construct elements (potentially splitting buffers)
+			// and add them to graphics.
+			sub = new TriangleElements(new AttributesBuffer());
+			sub.setIndices(obj.indices);
+			sub.setPositions(obj.verts);
+			sub.setUVs(obj.uvs);
+
+			graphics.addGraphic(sub);
+
+			// Apply pivot translation to graphics if a pivot was
 			// found while parsing the keyframe chunk earlier.
 			if (pivot) {
 				if (obj.transform) {
@@ -585,24 +589,21 @@ class Max3DSParser extends ParserBase
 
 				mtx = new Matrix3D();
 				mtx.appendTranslation(pivot.x, pivot.y, pivot.z);
-				geom.applyTransformation(mtx);
+				graphics.applyTransformation(mtx);
 			}
 
-			// Apply transformation to geometry if a transformation
+			// Apply transformation to graphics if a transformation
 			// was found while parsing the object chunk earlier.
 			if (obj.transform) {
 				mtx = new Matrix3D(obj.transform);
 				mtx.invert();
-				geom.applyTransformation(mtx);
+				graphics.applyTransformation(mtx);
 			}
 
-			// Final transform applied to geometry. Finalize the geometry,
+			// Final transform applied to graphics. Finalize the graphics,
 			// which will no longer be modified after this point.
-			this._pFinalizeAsset(geom, obj.name.concat('_geom'));
+			this._pFinalizeAsset(graphics, obj.name.concat('_graphics'));
 
-			// Build mesh and return it
-			mesh = new Mesh(geom, mat);
-			mesh.transform.matrix3D = new Matrix3D(obj.transform);
 			return mesh;
 		}
 

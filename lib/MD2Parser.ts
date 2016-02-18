@@ -8,8 +8,8 @@ import ParserUtils						= require("awayjs-core/lib/parsers/ParserUtils");
 import ResourceDependency				= require("awayjs-core/lib/parsers/ResourceDependency");
 import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
 
-import Geometry							= require("awayjs-display/lib/base/Geometry");
-import TriangleSubGeometry				= require("awayjs-display/lib/base/TriangleSubGeometry");
+import Graphics							= require("awayjs-display/lib/graphics/Graphics");
+import TriangleElements					= require("awayjs-display/lib/graphics/TriangleElements");
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import DisplayObject					= require("awayjs-display/lib/base/DisplayObject");
 import Camera							= require("awayjs-display/lib/entities/Camera");
@@ -60,9 +60,9 @@ class MD2Parser extends ParserBase
 	private _indices:Array<number> /*uint*/;
 	private _vertIndices:Array<number>;
 
-	// the current subgeom being built
+	// the current elements being built
 	private _animationSet:VertexAnimationSet = new VertexAnimationSet();
-	private _firstSubGeom:TriangleSubGeometry;
+	private _firstElements:TriangleElements;
 	private _uvs:Array<number>;
 	private _finalUV:Array<number>;
 
@@ -70,10 +70,10 @@ class MD2Parser extends ParserBase
 	private _textureType:string;
 	private _ignoreTexturePath:boolean;
 	private _mesh:Mesh;
-	private _geometry:Geometry;
+	private _graphics:Graphics;
 
 	private materialFinal:boolean = false;
-	private geoCreated:boolean = false;
+	private graphicsCreated:boolean = false;
 
 	/**
 	 * Creates a new MD2Parser object.
@@ -127,7 +127,7 @@ class MD2Parser extends ParserBase
 		material.name = this._mesh.material.name;
 		this._mesh.material = material;
 		this._pFinalizeAsset(material);
-		this._pFinalizeAsset(this._mesh.geometry);
+		this._pFinalizeAsset(this._mesh.graphics);
 		this._pFinalizeAsset(this._mesh);
 
 		this.materialFinal = true;
@@ -149,7 +149,7 @@ class MD2Parser extends ParserBase
 		//add to the content property
 		(<DisplayObjectContainer> this._pContent).addChild(this._mesh);
 
-		this._pFinalizeAsset(this._mesh.geometry);
+		this._pFinalizeAsset(this._mesh.graphics);
 		this._pFinalizeAsset(this._mesh);
 		this.materialFinal = true;
 
@@ -178,8 +178,8 @@ class MD2Parser extends ParserBase
 
 				// TODO: Create a mesh only when encountered (if it makes sense
 				// for this file format) and return it using this._pFinalizeAsset()
-				this._geometry = new Geometry();
-				this._mesh = new Mesh(this._geometry, null);
+				this._mesh = new Mesh();
+				this._graphics = this._mesh.graphics;
 				if (this.materialMode < 2) {
 					this._mesh.material = DefaultMaterialManager.getDefaultMaterial();
 				} else {
@@ -187,7 +187,7 @@ class MD2Parser extends ParserBase
 					(<MethodMaterial> this._mesh.material).mode = MethodMaterialMode.MULTI_PASS;
 				}
 
-				//_geometry.animation = new VertexAnimation(2, VertexAnimationMode.ABSOLUTE);
+				//_graphics.animation = new VertexAnimation(2, VertexAnimationMode.ABSOLUTE);
 				//_animator = new VertexAnimator(VertexAnimationState(_mesh.animationState));
 
 				// Parse header and decompress body
@@ -199,19 +199,19 @@ class MD2Parser extends ParserBase
 				this.parseFaces();
 			} else if (!this._parsedFrames) {
 				this.parseFrames();
-			} else if ((this.geoCreated) && (this.materialFinal)) {
+			} else if ((this.graphicsCreated) && (this.materialFinal)) {
 				return ParserBase.PARSING_DONE;
-			} else if (!this.geoCreated) {
-				this.geoCreated = true;
-				//create default subgeometry
-				this._geometry.addSubGeometry(this._firstSubGeom.clone());
+			} else if (!this.graphicsCreated) {
+				this.graphicsCreated = true;
+				//create default subgraphics
+				this._graphics.addGraphic(this._firstElements.clone());
 				// Force name to be chosen by this._pFinalizeAsset()
 				this._mesh.name = "";
 				if (this.materialFinal) {
 					//add to the content property
 					(<DisplayObjectContainer> this._pContent).addChild(this._mesh);
 
-					this._pFinalizeAsset(this._mesh.geometry);
+					this._pFinalizeAsset(this._mesh.graphics);
 					this._pFinalizeAsset(this._mesh);
 				}
 
@@ -394,14 +394,14 @@ class MD2Parser extends ParserBase
 	}
 
 	/**
-	 * Parses all the frame geometries.
+	 * Parses all the frame elements.
 	 */
 	private parseFrames()
 	{
 		var sx:number, sy:number, sz:number;
 		var tx:number, ty:number, tz:number;
-		var geometry:Geometry;
-		var subGeom:TriangleSubGeometry;
+		var graphics:Graphics;
+		var elements:TriangleElements;
 		var vertLen:number /*uint*/ = this._vertIndices.length;
 		var fvertices:Array<number>;
 		var tvertices:Array<number>;
@@ -439,23 +439,23 @@ class MD2Parser extends ParserBase
 				fvertices[k++] = tvertices[this._vertIndices[j]*3 + 1];
 			}
 
-			subGeom = new TriangleSubGeometry(new AttributesBuffer());
+			elements = new TriangleElements(new AttributesBuffer());
 
-			if (this._firstSubGeom == null)
-				this._firstSubGeom = subGeom;
+			if (this._firstElements == null)
+				this._firstElements = elements;
 
-			geometry = new Geometry();
-			geometry.addSubGeometry(subGeom);
+			graphics = new Graphics(null);
+			graphics.addGraphic(elements);
 
-			subGeom.setIndices(this._indices);
-			subGeom.setPositions(fvertices);
-			subGeom.setUVs(this._finalUV);
+			elements.setIndices(this._indices);
+			elements.setPositions(fvertices);
+			elements.setUVs(this._finalUV);
 			// cause explicit updates
-			subGeom.setNormals(null);
-			subGeom.setTangents(null);
+			elements.setNormals(null);
+			elements.setTangents(null);
 			// turn auto updates off because they may be animated and set explicitly
-			subGeom.autoDeriveNormals = false;
-			subGeom.autoDeriveTangents = false;
+			elements.autoDeriveNormals = false;
+			elements.autoDeriveTangents = false;
 
 			var clip:VertexClipNode = this._clipNodes[name];
 
@@ -476,7 +476,7 @@ class MD2Parser extends ParserBase
 
 				prevClip = clip;
 			}
-			clip.addFrame(geometry, 1000/MD2Parser.FPS);
+			clip.addFrame(graphics, 1000/MD2Parser.FPS);
 		}
 
 		// Finalize the last state
