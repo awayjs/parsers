@@ -1063,6 +1063,11 @@ class AWDParser extends ParserBase
 				graphic.material.animateUVs = true;
 				graphic.uvTransform = new Matrix(0, 0, 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
 			}
+			else if(type==4){// texture fill - need full matrix
+				var matrix:Array<number> = this.parseMatrix32RawData();
+				graphic.material.animateUVs = true;
+				graphic.uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+			}
 			else if(type==5){// linear gradient fill - need a, c , tx and ty
 				graphic.material.animateUVs = true;
 				graphic.uvTransform = new Matrix(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());

@@ -1,4 +1,2897 @@
-require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":[function(require,module,exports){
+require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":[function(require,module,exports){
+var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
+var AWDAssetParserBase = (function () {
+    function AWDAssetParserBase() {
+    }
+    Object.defineProperty(AWDAssetParserBase.prototype, "awd_file_data", {
+        get: function () {
+            return this._awd_file_data;
+        },
+        set: function (awd_file_data) {
+            this._awd_file_data = awd_file_data;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    AWDAssetParserBase.prototype.parseFromBytes = function () {
+        throw new AbstractMethodError();
+    };
+    return AWDAssetParserBase;
+})();
+module.exports = AWDAssetParserBase;
+
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParsers":[function(require,module,exports){
+var GeometryAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/GeometryAWDParser");
+var PrefabAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/PrefabAWDParser");
+var DisplayObjectContainerAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/DisplayObjectContainerAWDParser");
+var MeshAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser");
+var BillboardAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/BillboardAWDParser");
+var Single2DTextureAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/Single2DTextureAWDParser");
+var CameraAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/CameraAWDParser");
+var SingleCubeTextureAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/SingleCubeTextureAWDParser");
+var LightAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/LightAWDParser");
+var LightPickerAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/LightPickerAWDParser");
+var MaterialAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/MaterialAWDParser");
+var MovieClipAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/MovieClipAWDParser");
+var ShadowMethodAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/ShadowMethodAWDParser");
+var SharedMethodAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/SharedMethodAWDParser");
+var SkeletonAnimClipAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/SkeletonAnimClipAWDParser");
+var SkeletonAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/SkeletonAWDParser");
+var SkeletonPoseAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/SkeletonPoseAWDParser");
+var SkyboxAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/SkyboxAWDParser");
+var TesselatedFontAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/TesselatedFontAWDParser");
+var TextfieldAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/TextfieldAWDParser");
+var TextformatAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/TextformatAWDParser");
+var VertexAnimationSetAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/VertexAnimationSetAWDParser");
+var VertexAnimClipAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/VertexAnimClipAWDParser");
+var CommandAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/CommandAWDParser");
+var MetadataAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/MetadataAWDParser");
+var BlockNameSpaceAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/BlockNameSpaceAWDParser");
+var AnimatorAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/AnimatorAWDParser");
+var AudioAWDParser = require("awayjs-parsers/lib/AWD3BlockParsers/AudioAWDParser");
+var AWDBlockParsers = (function () {
+    function AWDBlockParsers() {
+        this._supported_asset_blocks = {};
+        this._all_block_parsers = new Array();
+        this.add_block_parser(new GeometryAWDParser(), [1]);
+        this.add_block_parser(new PrefabAWDParser(), [11]);
+        this.add_block_parser(new DisplayObjectContainerAWDParser(), [22]);
+        this.add_block_parser(new MeshAWDParser(), [23, 24]);
+        this.add_block_parser(new BillboardAWDParser(), [25]);
+        this.add_block_parser(new SkyboxAWDParser(), [31]);
+        this.add_block_parser(new LightAWDParser(), [41]);
+        this.add_block_parser(new CameraAWDParser(), [42]);
+        //this.add_block_parser(new TextureprojectorAWDParser(), [43]);
+        this.add_block_parser(new AudioAWDParser(), [44]);
+        this.add_block_parser(new LightPickerAWDParser(), [51]);
+        this.add_block_parser(new MaterialAWDParser(), [81]);
+        this.add_block_parser(new Single2DTextureAWDParser(), [82]);
+        this.add_block_parser(new SingleCubeTextureAWDParser(), [83]);
+        this.add_block_parser(new SharedMethodAWDParser(), [91]);
+        this.add_block_parser(new ShadowMethodAWDParser(), [92]);
+        this.add_block_parser(new SkeletonAWDParser(), [101]);
+        this.add_block_parser(new SkeletonPoseAWDParser(), [102]);
+        this.add_block_parser(new SkeletonAnimClipAWDParser(), [103]);
+        this.add_block_parser(new VertexAnimClipAWDParser(), [111, 112]);
+        this.add_block_parser(new VertexAnimationSetAWDParser(), [113]);
+        //this.add_block_parser(new UVAnimationClipAWDParser(), [121]);
+        this.add_block_parser(new AnimatorAWDParser(), [122]);
+        this.add_block_parser(new MovieClipAWDParser(), [133]);
+        this.add_block_parser(new TextfieldAWDParser(), [134]);
+        this.add_block_parser(new TesselatedFontAWDParser(), [135]);
+        this.add_block_parser(new TextformatAWDParser(), [136]);
+        this.add_block_parser(new CommandAWDParser(), [253]);
+        this.add_block_parser(new BlockNameSpaceAWDParser(), [254]);
+        this.add_block_parser(new MetadataAWDParser(), [255]);
+    }
+    AWDBlockParsers.prototype.add_block_parser = function (block_parser, block_types) {
+        for (var i = 0; i < block_types.length; i++) {
+            this._supported_asset_blocks[block_types[i]] = block_parser;
+        }
+        this._all_block_parsers.push(block_parser);
+    };
+    AWDBlockParsers.prototype.init_parser = function (file_data) {
+        for (var i = 0; i < this._all_block_parsers.length; i++) {
+            this._all_block_parsers[i].awd_file_data = file_data;
+        }
+    };
+    AWDBlockParsers.prototype.parseAsset = function (type) {
+        var this_parser = this._supported_asset_blocks[type];
+        if (this_parser != undefined) {
+            this_parser.parseFromBytes();
+            return true;
+        }
+        return false;
+    };
+    return AWDBlockParsers;
+})();
+module.exports = AWDBlockParsers;
+
+},{"awayjs-parsers/lib/AWD3BlockParsers/AnimatorAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/AnimatorAWDParser","awayjs-parsers/lib/AWD3BlockParsers/AudioAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/AudioAWDParser","awayjs-parsers/lib/AWD3BlockParsers/BillboardAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/BillboardAWDParser","awayjs-parsers/lib/AWD3BlockParsers/BlockNameSpaceAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/BlockNameSpaceAWDParser","awayjs-parsers/lib/AWD3BlockParsers/CameraAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/CameraAWDParser","awayjs-parsers/lib/AWD3BlockParsers/CommandAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/CommandAWDParser","awayjs-parsers/lib/AWD3BlockParsers/DisplayObjectContainerAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/DisplayObjectContainerAWDParser","awayjs-parsers/lib/AWD3BlockParsers/GeometryAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/GeometryAWDParser","awayjs-parsers/lib/AWD3BlockParsers/LightAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/LightAWDParser","awayjs-parsers/lib/AWD3BlockParsers/LightPickerAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/LightPickerAWDParser","awayjs-parsers/lib/AWD3BlockParsers/MaterialAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/MaterialAWDParser","awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser","awayjs-parsers/lib/AWD3BlockParsers/MetadataAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/MetadataAWDParser","awayjs-parsers/lib/AWD3BlockParsers/MovieClipAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/MovieClipAWDParser","awayjs-parsers/lib/AWD3BlockParsers/PrefabAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/PrefabAWDParser","awayjs-parsers/lib/AWD3BlockParsers/ShadowMethodAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/ShadowMethodAWDParser","awayjs-parsers/lib/AWD3BlockParsers/SharedMethodAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/SharedMethodAWDParser","awayjs-parsers/lib/AWD3BlockParsers/Single2DTextureAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/Single2DTextureAWDParser","awayjs-parsers/lib/AWD3BlockParsers/SingleCubeTextureAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/SingleCubeTextureAWDParser","awayjs-parsers/lib/AWD3BlockParsers/SkeletonAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/SkeletonAWDParser","awayjs-parsers/lib/AWD3BlockParsers/SkeletonAnimClipAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/SkeletonAnimClipAWDParser","awayjs-parsers/lib/AWD3BlockParsers/SkeletonPoseAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/SkeletonPoseAWDParser","awayjs-parsers/lib/AWD3BlockParsers/SkyboxAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/SkyboxAWDParser","awayjs-parsers/lib/AWD3BlockParsers/TesselatedFontAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/TesselatedFontAWDParser","awayjs-parsers/lib/AWD3BlockParsers/TextfieldAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/TextfieldAWDParser","awayjs-parsers/lib/AWD3BlockParsers/TextformatAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/TextformatAWDParser","awayjs-parsers/lib/AWD3BlockParsers/VertexAnimClipAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/VertexAnimClipAWDParser","awayjs-parsers/lib/AWD3BlockParsers/VertexAnimationSetAWDParser":"awayjs-parsers/lib/AWD3BlockParsers/VertexAnimationSetAWDParser"}],"awayjs-parsers/lib/AWD3BlockParsers/AnimatorAWDParser":[function(require,module,exports){
+/**
+ * Created by 80prozent on 4/18/2015.
+ */
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var VertexAnimator = require("awayjs-renderergl/lib/animators/VertexAnimator");
+var SkeletonAnimator = require("awayjs-renderergl/lib/animators/SkeletonAnimator");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+var AnimatorAWDParser = (function (_super) {
+    __extends(AnimatorAWDParser, _super);
+    function AnimatorAWDParser() {
+        _super.call(this);
+    }
+    AnimatorAWDParser.prototype.parseFromBytes = function () {
+        var animSetBlockAdress; /*int*/
+        var targetAnimationSet;
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        var type = this.awd_file_data.newBlockBytes.readUnsignedShort();
+        var props = this.awd_file_data.parseProperties({ 1: AWD3Utils.BADDR });
+        animSetBlockAdress = this.awd_file_data.newBlockBytes.readUnsignedInt();
+        var targetMeshLength = this.awd_file_data.newBlockBytes.readUnsignedShort();
+        var meshAdresses = new Array() /*uint*/;
+        for (var i = 0; i < targetMeshLength; i++)
+            meshAdresses.push(this.awd_file_data.newBlockBytes.readUnsignedInt());
+        var activeState = this.awd_file_data.newBlockBytes.readUnsignedShort();
+        var autoplay = (this.awd_file_data.newBlockBytes.readUnsignedByte() == 1);
+        this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.parseUserAttributes();
+        var returnedArray;
+        var targetMeshes = new Array();
+        for (i = 0; i < meshAdresses.length; i++) {
+            var targetMesh = this.awd_file_data.getAssetByID(meshAdresses[i]);
+            if (targetMesh != undefined)
+                targetMeshes.push(targetMesh);
+        }
+        var targetAnimationSet = this.awd_file_data.getAssetByID(animSetBlockAdress);
+        if (targetAnimationSet == undefined) {
+            //this.awd_file_data._blocks[blockID].addError("Could not find the AnimationSet ( " + animSetBlockAdress + " ) for this.awd_file_data Animator");
+            return undefined;
+        }
+        var thisAnimator;
+        if (type == 1) {
+            var skeleton = this.awd_file_data.getAssetByID(props.get(1, 0));
+            if (skeleton == undefined) {
+                //this.awd_file_data._blocks[blockID].addError("Could not find the Skeleton ( " + props.get(1, 0) + " ) for this.awd_file_data Animator");
+                return;
+            }
+            thisAnimator = new SkeletonAnimator(targetAnimationSet, skeleton);
+        }
+        else if (type == 2)
+            thisAnimator = new VertexAnimator(targetAnimationSet);
+        for (i = 0; i < targetMeshes.length; i++) {
+            if (type == 1)
+                targetMeshes[i].animator = thisAnimator;
+            if (type == 2)
+                targetMeshes[i].animator = thisAnimator;
+        }
+        this.awd_file_data.cur_block.data = thisAnimator;
+        if (this.awd_file_data.debug)
+            console.log("Parsed a Animator: Name = " + this.awd_file_data.cur_block.name);
+    };
+    return AnimatorAWDParser;
+})(AWDBlockParserBase);
+module.exports = AnimatorAWDParser;
+
+},{"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils","awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined}],"awayjs-parsers/lib/AWD3BlockParsers/AudioAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var ByteArray = require("awayjs-core/lib/utils/ByteArray");
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+var AudioAWDParser = (function (_super) {
+    __extends(AudioAWDParser, _super);
+    function AudioAWDParser() {
+        _super.call(this);
+    }
+    AudioAWDParser.prototype.parseFromBytes = function () {
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        var type = this.awd_file_data.newBlockBytes.readUnsignedByte();
+        var data_len;
+        //this.awd_file_data._texture_users[this.awd_file_data._cur_block_id.toString()] = [];
+        // External
+        if (type == 0) {
+            data_len = this.awd_file_data.newBlockBytes.readUnsignedInt();
+            var url;
+            url = this.awd_file_data.newBlockBytes.readUTFBytes(data_len);
+            this.awd_file_data.cur_block.dependencies_urls.push(url);
+        }
+        else {
+            data_len = this.awd_file_data.newBlockBytes.readUnsignedInt();
+            var data;
+            data = new ByteArray();
+            this.awd_file_data.newBlockBytes.readBytes(data, 0, data_len);
+            this.awd_file_data.cur_block.dependencies_data.push(data);
+        }
+        this.awd_file_data.cur_block.state = AWD3Utils.BLOCKSTATE_LOAD_DEPENDENICES;
+        // Ignore for now
+        this.awd_file_data.parseProperties(null);
+        this.awd_file_data.parseUserAttributes();
+        //this.awd_file_data._pPauseAndRetrieveDependencies();
+        if (this.awd_file_data.debug) {
+            var audioStylesNames = ["external", "embed"];
+            console.log("Start parsing a " + audioStylesNames[type] + " AudioFile");
+        }
+    };
+    return AudioAWDParser;
+})(AWDBlockParserBase);
+module.exports = AudioAWDParser;
+
+},{"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3BlockParsers/BillboardAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var Billboard = require("awayjs-display/lib/entities/Billboard");
+var BasicMaterial = require("awayjs-display/lib/materials/BasicMaterial");
+var BillboardAWDParser = (function (_super) {
+    __extends(BillboardAWDParser, _super);
+    function BillboardAWDParser() {
+        _super.call(this);
+    }
+    BillboardAWDParser.prototype.parseFromBytes = function () {
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        var data_id = this.awd_file_data.newBlockBytes.readUnsignedInt();
+        var mat = this.awd_file_data.getAssetByID(data_id);
+        if (mat == undefined) {
+            mat = new BasicMaterial();
+        }
+        mat.bothSides = true;
+        var billboard = new Billboard(mat);
+        this.awd_file_data.cur_block.data = billboard;
+        // todo: optional matrix etc can be put in properties.
+        this.awd_file_data.parseProperties(null);
+        billboard.extra = this.awd_file_data.parseUserAttributes();
+        if (this.awd_file_data.debug) {
+            console.log("Parsed a Library-Billboard: Name = '" + billboard.name + "| Material-Name = " + mat.name);
+        }
+    };
+    return BillboardAWDParser;
+})(AWDBlockParserBase);
+module.exports = BillboardAWDParser;
+
+},{"awayjs-display/lib/entities/Billboard":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase"}],"awayjs-parsers/lib/AWD3BlockParsers/BlockNameSpaceAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+var BlockNameSpaceAWDParser = (function (_super) {
+    __extends(BlockNameSpaceAWDParser, _super);
+    function BlockNameSpaceAWDParser() {
+        _super.call(this);
+    }
+    BlockNameSpaceAWDParser.prototype.parseFromBytes = function () {
+        this.awd_file_data.cur_block.state = AWD3Utils.BLOCKSTATE_NO_ASSET;
+        var id = this.awd_file_data.newBlockBytes.readUnsignedByte();
+        var nameSpaceString = this.awd_file_data.parseVarStr();
+        if (this.awd_file_data.debug)
+            console.log("Parsed a NameSpaceBlock: ID = " + id + " | String = " + nameSpaceString);
+    };
+    return BlockNameSpaceAWDParser;
+})(AWDBlockParserBase);
+module.exports = BlockNameSpaceAWDParser;
+
+},{"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3BlockParsers/CameraAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var Camera = require("awayjs-display/lib/entities/Camera");
+var PerspectiveProjection = require("awayjs-core/lib/projections/PerspectiveProjection");
+var OrthographicProjection = require("awayjs-core/lib/projections/OrthographicProjection");
+var OrthographicOffCenterProjection = require("awayjs-core/lib/projections/OrthographicOffCenterProjection");
+var Vector3D = require("awayjs-core/lib/geom/Vector3D");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+var CameraAWD3Parser = (function (_super) {
+    __extends(CameraAWD3Parser, _super);
+    function CameraAWD3Parser() {
+        _super.call(this);
+    }
+    CameraAWD3Parser.prototype.parseFromBytes = function () {
+        var par_id = this.awd_file_data.newBlockBytes.readUnsignedInt();
+        var mtx = this.awd_file_data.parseMatrix3D();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        var parentName = "Root (TopLevel)";
+        var projection;
+        this.awd_file_data.newBlockBytes.readUnsignedByte(); //set as active camera
+        this.awd_file_data.newBlockBytes.readShort(); //lengthof lenses - not used yet
+        var projectiontype = this.awd_file_data.newBlockBytes.readShort();
+        var props = this.awd_file_data.parseProperties({
+            101: this.awd_file_data.propsNrType,
+            102: this.awd_file_data.propsNrType,
+            103: this.awd_file_data.propsNrType,
+            104: this.awd_file_data.propsNrType
+        });
+        switch (projectiontype) {
+            case 5001:
+                projection = new PerspectiveProjection(props.get(101, 60));
+                break;
+            case 5002:
+                projection = new OrthographicProjection(props.get(101, 500));
+                break;
+            case 5003:
+                projection = new OrthographicOffCenterProjection(props.get(101, -400), props.get(102, 400), props.get(103, -300), props.get(104, 300));
+                break;
+            default:
+                console.log("unsupportedLenstype");
+                return;
+        }
+        var camera = new Camera(projection);
+        camera.transform.matrix3D = mtx;
+        if (par_id > 0) {
+            var parent = this.awd_file_data.getAssetByID(par_id);
+            if (parent != undefined) {
+                parent.addChild(camera);
+                parentName = parent.name;
+            }
+        }
+        camera.name = name;
+        props = this.awd_file_data.parseProperties({ 1: this.awd_file_data.matrixNrType, 2: this.awd_file_data.matrixNrType, 3: this.awd_file_data.matrixNrType, 4: AWD3Utils.UINT8 });
+        camera.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
+        camera.extra = this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = camera;
+        if (this.awd_file_data.debug) {
+            console.log("Parsed a Camera: Name = '" + camera.name + "' | Projectiontype = " + projection + " | Parent-Name = " + parentName);
+        }
+    };
+    return CameraAWD3Parser;
+})(AWDBlockParserBase);
+module.exports = CameraAWD3Parser;
+
+},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3BlockParsers/CommandAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var Vector3D = require("awayjs-core/lib/geom/Vector3D");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+var CommandAWDParser = (function (_super) {
+    __extends(CommandAWDParser, _super);
+    function CommandAWDParser() {
+        _super.call(this);
+    }
+    CommandAWDParser.prototype.parseFromBytes = function () {
+        this.awd_file_data.cur_block.state = AWD3Utils.BLOCKSTATE_NO_ASSET;
+        var hasBlocks = (this.awd_file_data.newBlockBytes.readUnsignedByte() == 1);
+        var par_id = this.awd_file_data.newBlockBytes.readUnsignedInt();
+        var mtx = this.awd_file_data.parseMatrix3D();
+        var name = this.awd_file_data.parseVarStr();
+        var parentObject;
+        var targetObject;
+        if (par_id > 0)
+            parentObject = this.awd_file_data.getAssetByID(par_id); //for no only light is requested!!!!
+        var numCommands = this.awd_file_data.newBlockBytes.readShort();
+        var typeCommand = this.awd_file_data.newBlockBytes.readShort();
+        var props = this.awd_file_data.parseProperties({ 1: AWD3Utils.BADDR });
+        switch (typeCommand) {
+            case 1:
+                var targetID = props.get(1, 0);
+                //var returnedArrayTarget:Array<any> = this.getAssetByID(targetID, [LightBase.assetType, TextureProjector.assetType]); //for no only light is requested!!!!
+                targetObject = this.awd_file_data.getAssetByID(targetID); //for no only light is requested!!!!
+                if (targetObject == undefined) {
+                    //this._awd_data._blocks[blockID].addError("Could not find the light (ID = " + targetID + " ( for this CommandBock!");
+                    return;
+                }
+                if (parentObject) {
+                    parentObject.addChild(targetObject);
+                }
+                targetObject.transform.matrix3D = mtx;
+                break;
+        }
+        if (targetObject) {
+            props = this.awd_file_data.parseProperties({ 1: this.awd_file_data.matrixNrType, 2: this.awd_file_data.matrixNrType, 3: this.awd_file_data.matrixNrType, 4: AWD3Utils.UINT8 });
+            targetObject.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
+            targetObject.extra = this.awd_file_data.parseUserAttributes();
+        }
+        //this._awd_data._blocks[blockID].data = targetObject
+        if (this.awd_file_data.debug) {
+            console.log("Parsed a CommandBlock: Name = '" + name);
+        }
+    };
+    return CommandAWDParser;
+})(AWDBlockParserBase);
+module.exports = CommandAWDParser;
+
+},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3BlockParsers/DisplayObjectContainerAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var Vector3D = require("awayjs-core/lib/geom/Vector3D");
+var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+var DisplayObjectContainerAWDParser = (function (_super) {
+    __extends(DisplayObjectContainerAWDParser, _super);
+    function DisplayObjectContainerAWDParser() {
+        _super.call(this);
+    }
+    DisplayObjectContainerAWDParser.prototype.parseFromBytes = function () {
+        var par_id;
+        var mtx;
+        var ctr;
+        var parent;
+        ctr = new DisplayObjectContainer();
+        par_id = this.awd_file_data.newBlockBytes.readUnsignedInt();
+        mtx = this.awd_file_data.parseMatrix3D();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        var parentName = "Root (TopLevel)";
+        ctr.transform.matrix3D = mtx;
+        if (par_id > 0) {
+            var parent = this.awd_file_data.getAssetByID(par_id);
+            if (parent != undefined) {
+                parent.addChild(ctr);
+                parentName = parent.name;
+            }
+        }
+        // in AWD version 2.1 we read the Container properties
+        if ((this.awd_file_data.major_version > 2) || ((this.awd_file_data.major_version >= 2) && (this.awd_file_data.minor_version == 1))) {
+            var props = this.awd_file_data.parseProperties({ 1: this.awd_file_data.matrixNrType, 2: this.awd_file_data.matrixNrType, 3: this.awd_file_data.matrixNrType, 4: AWD3Utils.UINT8 });
+            ctr.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
+        }
+        else {
+            this.awd_file_data.parseProperties(null);
+        }
+        // the extraProperties should only be set for AWD2.1-Files, but is read for both versions
+        ctr.extra = this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = ctr;
+        if (this.awd_file_data.debug) {
+            console.log("Parsed a Container: Name = '" + ctr.name + "' | Parent-Name = " + parentName);
+        }
+    };
+    return DisplayObjectContainerAWDParser;
+})(AWDBlockParserBase);
+module.exports = DisplayObjectContainerAWDParser;
+
+},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3BlockParsers/GeometryAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var Geometry = require("awayjs-display/lib/base/Geometry");
+var CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
+var TriangleSubGeometry = require("awayjs-display/lib/base/TriangleSubGeometry");
+var GeometryAWDParser = (function (_super) {
+    __extends(GeometryAWDParser, _super);
+    function GeometryAWDParser() {
+        _super.call(this);
+    }
+    GeometryAWDParser.prototype.parseFromBytes = function () {
+        var geom = new Geometry();
+        // Read name and sub count
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        var num_subs = this.awd_file_data.newBlockBytes.readUnsignedShort();
+        // Read optional properties
+        var props = this.awd_file_data.parseProperties({ 1: this.awd_file_data.geoNrType, 2: this.awd_file_data.geoNrType });
+        var geoScaleU = props.get(1, 1);
+        var geoScaleV = props.get(2, 1);
+        // Loop through sub meshes
+        var subs_parsed = 0;
+        while (subs_parsed < num_subs) {
+            var is_curve_geom = false;
+            var i;
+            var sm_len, sm_end;
+            var w_indices;
+            var weights;
+            sm_len = this.awd_file_data.newBlockBytes.readUnsignedInt();
+            sm_end = this.awd_file_data.newBlockBytes.position + sm_len;
+            var subProps = this.awd_file_data.parseProperties({ 1: this.awd_file_data.geoNrType, 2: this.awd_file_data.geoNrType });
+            while (this.awd_file_data.newBlockBytes.position < sm_end) {
+                var idx = 0;
+                var str_ftype, str_type, str_len, str_end;
+                // Type, field type, length
+                str_type = this.awd_file_data.newBlockBytes.readUnsignedByte();
+                str_ftype = this.awd_file_data.newBlockBytes.readUnsignedByte();
+                str_len = this.awd_file_data.newBlockBytes.readUnsignedInt();
+                str_end = this.awd_file_data.newBlockBytes.position + str_len;
+                var x, y, z;
+                if (str_type == 1) {
+                    var verts = new Array();
+                    while (this.awd_file_data.newBlockBytes.position < str_end) {
+                        x = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo);
+                        y = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo);
+                        z = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo);
+                        verts[idx++] = x;
+                        verts[idx++] = y;
+                        verts[idx++] = z;
+                    }
+                }
+                else if (str_type == 2) {
+                    var indices = new Array();
+                    while (this.awd_file_data.newBlockBytes.position < str_end) {
+                        indices[idx++] = this.awd_file_data.newBlockBytes.readUnsignedShort();
+                    }
+                }
+                else if (str_type == 3) {
+                    var uvs = new Array();
+                    while (this.awd_file_data.newBlockBytes.position < str_end) {
+                        uvs[idx++] = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo);
+                    }
+                }
+                else if (str_type == 4) {
+                    var normals = new Array();
+                    while (this.awd_file_data.newBlockBytes.position < str_end) {
+                        normals[idx++] = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo);
+                    }
+                }
+                else if (str_type == 6) {
+                    w_indices = Array();
+                    while (this.awd_file_data.newBlockBytes.position < str_end) {
+                        w_indices[idx++] = this.awd_file_data.newBlockBytes.readUnsignedShort() * 3;
+                    }
+                }
+                else if (str_type == 7) {
+                    weights = new Array();
+                    while (this.awd_file_data.newBlockBytes.position < str_end) {
+                        weights[idx++] = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo);
+                    }
+                }
+                else if (str_type == 8) {
+                    this.awd_file_data.newBlockBytes.position = str_end;
+                }
+                else if (str_type == 9) {
+                    this.awd_file_data.newBlockBytes.position = str_end;
+                }
+                else if (str_type == 10) {
+                    is_curve_geom = true;
+                    var idx_pos = 0;
+                    var idx_curves = 0;
+                    var idx_uvs = 0;
+                    var positions = new Array();
+                    var curveData = new Array();
+                    var uvs = new Array();
+                    while (this.awd_file_data.newBlockBytes.position < str_end) {
+                        positions[idx_pos++] = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo); // x
+                        positions[idx_pos++] = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo); // y
+                        positions[idx_pos++] = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo); // type
+                        curveData[idx_curves++] = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo); // curve value 1
+                        curveData[idx_curves++] = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo); // curve value 2
+                        uvs[idx_uvs++] = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo); // curve value 1
+                        uvs[idx_uvs++] = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo); // curve value 1
+                    }
+                }
+                else {
+                    this.awd_file_data.newBlockBytes.position = str_end;
+                }
+            }
+            this.awd_file_data.parseUserAttributes(); // Ignore sub-mesh attributes for now
+            if (is_curve_geom) {
+                var curve_sub_geom = new CurveSubGeometry(new AttributesBuffer());
+                curve_sub_geom.setIndices(indices);
+                curve_sub_geom.setPositions(positions);
+                curve_sub_geom.setCurves(curveData);
+                curve_sub_geom.setUVs(uvs);
+                geom.addSubGeometry(curve_sub_geom);
+                if (this.awd_file_data.debug)
+                    console.log("Parsed a CurveSubGeometry");
+            }
+            else {
+                var triangle_sub_geom = new TriangleSubGeometry(new AttributesBuffer());
+                if (weights)
+                    triangle_sub_geom.jointsPerVertex = weights.length / (verts.length / 3);
+                if (normals)
+                    triangle_sub_geom.autoDeriveNormals = false;
+                if (uvs)
+                    triangle_sub_geom.autoDeriveUVs = false;
+                //triangle_sub_geom.autoDeriveNormals = false;
+                if (true) {
+                    triangle_sub_geom.autoDeriveTangents = true;
+                }
+                triangle_sub_geom.setIndices(indices);
+                triangle_sub_geom.setPositions(verts);
+                triangle_sub_geom.setNormals(normals);
+                triangle_sub_geom.setUVs(uvs);
+                triangle_sub_geom.setTangents(null);
+                triangle_sub_geom.setJointWeights(weights);
+                triangle_sub_geom.setJointIndices(w_indices);
+                var scaleU = subProps.get(1, 1);
+                var scaleV = subProps.get(2, 1);
+                var setSubUVs = false; //this should remain false atm, because in AwayBuilder the uv is only scaled by the geometry
+                if ((geoScaleU != scaleU) || (geoScaleV != scaleV)) {
+                    setSubUVs = true;
+                    scaleU = geoScaleU / scaleU;
+                    scaleV = geoScaleV / scaleV;
+                }
+                if (setSubUVs)
+                    triangle_sub_geom.scaleUV(scaleU, scaleV);
+                geom.addSubGeometry(triangle_sub_geom);
+                if (this.awd_file_data.debug)
+                    console.log("Parsed a TriangleSubGeometry");
+            }
+            // TODO: Somehow map in-sub to out-sub indices to enable look-up
+            // when creating meshes (and their material assignments.)
+            subs_parsed++;
+        }
+        if ((geoScaleU != 1) || (geoScaleV != 1))
+            geom.scaleUV(geoScaleU, geoScaleV);
+        this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = geom;
+        if (this.awd_file_data.debug) {
+            console.log("Parsed a TriangleGeometry: Name = " + name);
+        }
+    };
+    return GeometryAWDParser;
+})(AWDBlockParserBase);
+module.exports = GeometryAWDParser;
+
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-display/lib/base/CurveSubGeometry":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase"}],"awayjs-parsers/lib/AWD3BlockParsers/LightAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var CubeMapShadowMapper = require("awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper");
+var DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
+var DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
+var PointLight = require("awayjs-display/lib/entities/PointLight");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+var LightAWDParser = (function (_super) {
+    __extends(LightAWDParser, _super);
+    function LightAWDParser() {
+        _super.call(this);
+    }
+    LightAWDParser.prototype.parseFromBytes = function () {
+        var light;
+        var newShadowMapper;
+        var par_id = this.awd_file_data.newBlockBytes.readUnsignedInt();
+        var mtx = this.awd_file_data.parseMatrix3D();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        var lightType = this.awd_file_data.newBlockBytes.readUnsignedByte();
+        var props = this.awd_file_data.parseProperties({ 1: this.awd_file_data.propsNrType, 2: this.awd_file_data.propsNrType, 3: AWD3Utils.COLOR, 4: this.awd_file_data.propsNrType, 5: this.awd_file_data.propsNrType, 6: AWD3Utils.BOOL, 7: AWD3Utils.COLOR, 8: this.awd_file_data.propsNrType, 9: AWD3Utils.UINT8, 10: AWD3Utils.UINT8, 11: this.awd_file_data.propsNrType, 12: AWD3Utils.UINT16, 21: this.awd_file_data.matrixNrType, 22: this.awd_file_data.matrixNrType, 23: this.awd_file_data.matrixNrType });
+        var shadowMapperType = props.get(9, 0);
+        var parentName = "Root (TopLevel)";
+        var lightTypes = ["Unsupported LightType", "PointLight", "DirectionalLight"];
+        var shadowMapperTypes = ["No ShadowMapper", "DirectionalShadowMapper", "NearDirectionalShadowMapper", "CascadeShadowMapper", "CubeMapShadowMapper"];
+        if (lightType == 1) {
+            light = new PointLight();
+            light.radius = props.get(1, 90000);
+            light.fallOff = props.get(2, 100000);
+            if (shadowMapperType > 0) {
+                if (shadowMapperType == 4) {
+                    newShadowMapper = new CubeMapShadowMapper();
+                }
+            }
+            light.transform.matrix3D = mtx;
+        }
+        if (lightType == 2) {
+            light = new DirectionalLight(props.get(21, 0), props.get(22, -1), props.get(23, 1));
+            if (shadowMapperType > 0) {
+                if (shadowMapperType == 1) {
+                    newShadowMapper = new DirectionalShadowMapper();
+                }
+            }
+        }
+        light.name = name;
+        light.color = props.get(3, 0xffffff);
+        light.specular = props.get(4, 1.0);
+        light.diffuse = props.get(5, 1.0);
+        light.ambientColor = props.get(7, 0xffffff);
+        light.ambient = props.get(8, 0.0);
+        // if a shadowMapper has been created, adjust the depthMapSize if needed, assign to light and set castShadows to true
+        if (newShadowMapper) {
+            if (newShadowMapper instanceof CubeMapShadowMapper) {
+                if (props.get(10, 1) != 1) {
+                    newShadowMapper.depthMapSize = this.awd_file_data.getDepthSizeFromEnum(props.get(10, 1));
+                }
+            }
+            else {
+                if (props.get(10, 2) != 2) {
+                    newShadowMapper.depthMapSize = this.awd_file_data.getDepthSizeFromEnum(props.get(10, 2));
+                }
+            }
+            light.shadowMapper = newShadowMapper;
+            light.castsShadows = true;
+        }
+        if (par_id != 0) {
+            var parent = this.awd_file_data.getAssetByID(par_id);
+            if (parent != undefined) {
+                parent.addChild(light);
+                parentName = parent.name;
+            }
+            else {
+            }
+        }
+        else {
+        }
+        this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = light;
+        if (this.awd_file_data.debug)
+            console.log("Parsed a Light: Name = '" + this.awd_file_data.cur_block.name + "' | Type = " + lightTypes[lightType] + " | Parent-Name = " + parentName + " | ShadowMapper-Type = " + shadowMapperTypes[shadowMapperType]);
+    };
+    return LightAWDParser;
+})(AWDBlockParserBase);
+module.exports = LightAWDParser;
+
+},{"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3BlockParsers/LightPickerAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var StaticLightPicker = require("awayjs-display/lib/materials/lightpickers/StaticLightPicker");
+var LightPickerAWDParser = (function (_super) {
+    __extends(LightPickerAWDParser, _super);
+    function LightPickerAWDParser() {
+        _super.call(this);
+    }
+    LightPickerAWDParser.prototype.parseFromBytes = function () {
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        var numLights = this.awd_file_data.newBlockBytes.readUnsignedShort();
+        var lightsArray = new Array();
+        var k = 0;
+        var lightID = 0;
+        var returnedArrayLight;
+        var lightsArrayNames = new Array();
+        for (k = 0; k < numLights; k++) {
+            lightID = this.awd_file_data.newBlockBytes.readUnsignedInt();
+            var light = this.awd_file_data.getAssetByID(lightID);
+            if (light != undefined) {
+                lightsArray.push(light);
+                lightsArrayNames.push(light.name);
+            }
+            else {
+            }
+        }
+        if (lightsArray.length == 0) {
+            //this.awd_file_data._blocks[blockID].addError("Could not create this.awd_file_data LightPicker, cause no Light was found.");
+            this.awd_file_data.parseUserAttributes();
+            return undefined; //return without any more parsing for this.awd_file_data block
+        }
+        var lightPicker = new StaticLightPicker(lightsArray);
+        this.awd_file_data.cur_block.data = lightPicker;
+        this.awd_file_data.parseUserAttributes();
+        if (this.awd_file_data.debug) {
+            console.log("Parsed a StaticLightPicker: Name = '" + this.awd_file_data.cur_block.name + "' | Texture-Name = " + lightsArrayNames.toString());
+        }
+    };
+    return LightPickerAWDParser;
+})(AWDBlockParserBase);
+module.exports = LightPickerAWDParser;
+
+},{"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase"}],"awayjs-parsers/lib/AWD3BlockParsers/MaterialAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var Sampler2D = require("awayjs-core/lib/image/Sampler2D");
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var MethodMaterialMode = require("awayjs-methodmaterials/lib/MethodMaterialMode");
+var MethodMaterial = require("awayjs-methodmaterials/lib/MethodMaterial");
+var BasicMaterial = require("awayjs-display/lib/materials/BasicMaterial");
+var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
+var AmbientEnvMapMethod = require("awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod");
+var DiffuseDepthMethod = require("awayjs-methodmaterials/lib/methods/DiffuseDepthMethod");
+var DiffuseCelMethod = require("awayjs-methodmaterials/lib/methods/DiffuseCelMethod");
+var DiffuseGradientMethod = require("awayjs-methodmaterials/lib/methods/DiffuseGradientMethod");
+var DiffuseLightMapMethod = require("awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod");
+var DiffuseWrapMethod = require("awayjs-methodmaterials/lib/methods/DiffuseWrapMethod");
+var NormalSimpleWaterMethod = require("awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod");
+var SpecularFresnelMethod = require("awayjs-methodmaterials/lib/methods/SpecularFresnelMethod");
+var SpecularAnisotropicMethod = require("awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod");
+var SpecularCelMethod = require("awayjs-methodmaterials/lib/methods/SpecularCelMethod");
+var SpecularPhongMethod = require("awayjs-methodmaterials/lib/methods/SpecularPhongMethod");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+var MaterialAWDParser = (function (_super) {
+    __extends(MaterialAWDParser, _super);
+    function MaterialAWDParser() {
+        _super.call(this);
+    }
+    MaterialAWDParser.prototype.parseFromBytes = function () {
+        // version 2.0
+        ////blockLength = block.len;
+        var name;
+        var type;
+        var props;
+        var mat;
+        var attributes;
+        var finalize;
+        var num_methods;
+        var methods_parsed;
+        var returnedArray;
+        var mat;
+        var normalTexture;
+        var specTexture;
+        var returnedArray;
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        type = this.awd_file_data.newBlockBytes.readUnsignedByte();
+        num_methods = this.awd_file_data.newBlockBytes.readUnsignedByte();
+        if ((this.awd_file_data.major_version == 2) && (this.awd_file_data.major_version == 0)) {
+            // Read material numerical properties
+            // (1=color, 2=bitmap url, 10=alpha, 11=alpha_blending, 12=alpha_threshold, 13=repeat)
+            props = this.awd_file_data.parseProperties({
+                1: AWD3Utils.INT32,
+                2: AWD3Utils.BADDR,
+                10: this.awd_file_data.propsNrType,
+                11: AWD3Utils.BOOL,
+                12: this.awd_file_data.propsNrType,
+                13: AWD3Utils.BOOL
+            });
+            methods_parsed = 0;
+            while (methods_parsed < num_methods) {
+                var method_type;
+                method_type = this.awd_file_data.newBlockBytes.readUnsignedShort();
+                this.awd_file_data.parseProperties(null);
+                this.awd_file_data.parseUserAttributes();
+                methods_parsed += 1;
+            }
+            var debugString = "";
+            attributes = this.awd_file_data.parseUserAttributes();
+            if (type === 1) {
+                debugString += "Parsed a ColorMaterial(SinglePass): Name = '" + name + "' | ";
+                var color;
+                color = props.get(1, 0xffffff);
+            }
+            else if (type === 2) {
+                var tex_addr = props.get(2, 0);
+                var texture = undefined;
+                if (tex_addr > 0) {
+                    var texture = this.awd_file_data.getAssetByID(tex_addr);
+                }
+                if (texture == undefined) {
+                    texture = DefaultMaterialManager.getDefaultTexture();
+                }
+                mat = new MethodMaterial();
+                mat.ambientMethod.texture = texture;
+            }
+            mat.extra = attributes;
+            mat.alphaThreshold = props.get(12, 0.0);
+            mat.style.sampler = new Sampler2D(props.get(13, false));
+            mat.name = name;
+            if (this.awd_file_data.debug) {
+                console.log(debugString);
+            }
+            this.awd_file_data.cur_block.data = mat;
+            return;
+        }
+        // version 2.1+
+        var props = this.awd_file_data.parseProperties({ 1: AWD3Utils.UINT32, 2: AWD3Utils.BADDR, 3: AWD3Utils.BADDR, 4: AWD3Utils.UINT8, 5: AWD3Utils.BOOL, 6: AWD3Utils.BOOL, 7: AWD3Utils.BOOL, 8: AWD3Utils.BOOL, 9: AWD3Utils.UINT8, 10: this.awd_file_data.propsNrType, 11: AWD3Utils.BOOL, 12: this.awd_file_data.propsNrType, 13: AWD3Utils.BOOL, 15: this.awd_file_data.propsNrType, 16: AWD3Utils.UINT32, 17: AWD3Utils.BADDR, 18: this.awd_file_data.propsNrType, 19: this.awd_file_data.propsNrType, 20: AWD3Utils.UINT32, 21: AWD3Utils.BADDR, 22: AWD3Utils.BADDR });
+        var spezialType = props.get(4, 0);
+        var debugString = "Parsed Material ";
+        if (spezialType >= 2) {
+            //this.awd_file_data._blocks[blockID].addError("Material-spezialType '" + spezialType + "' is not supported, can only be 0:singlePass, 1:MultiPass !");
+            return;
+        }
+        if (type <= 2) {
+            /*
+            if (this.awd_file_data.materialMode == 1)
+                spezialType = 0;
+            else if (this.awd_file_data.materialMode == 2)
+                spezialType = 1;
+                */
+            if (spezialType < 2) {
+                if (type == 1) {
+                    var color = props.get(1, 0xcccccc); //TODO temporarily swapped so that diffuse color goes to ambient
+                    if (spezialType == 1) {
+                        mat = new MethodMaterial(color);
+                        mat.mode = MethodMaterialMode.MULTI_PASS;
+                        debugString += "Parsed a ColorMaterial(MultiPass): Name = '" + name + "' | ";
+                    }
+                    else {
+                        mat = new MethodMaterial(color, props.get(10, 1.0));
+                        mat.alphaBlending = props.get(11, false);
+                        debugString += "Parsed a ColorMaterial(SinglePass): Name = '" + name + "' | ";
+                    }
+                }
+                else if (type == 2) {
+                    var tex_addr = props.get(2, 0); //TODO temporarily swapped so that diffuse texture goes to ambient
+                    var diftexture = undefined;
+                    if (tex_addr > 0) {
+                        diftexture = this.awd_file_data.getAssetByID(tex_addr);
+                    }
+                    if (diftexture == undefined) {
+                        diftexture = DefaultMaterialManager.getDefaultTexture();
+                    }
+                    mat = new MethodMaterial();
+                    mat.ambientMethod.texture = diftexture;
+                    if (spezialType == 1) {
+                        mat.mode = MethodMaterialMode.MULTI_PASS;
+                        debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + this.awd_file_data.cur_block.name + "' | Texture-Name = " + diftexture.name;
+                    }
+                    else {
+                        mat.alpha = props.get(10, 1.0);
+                        mat.alphaBlending = props.get(11, false);
+                        debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + this.awd_file_data.cur_block.name + "' | Texture-Name = " + diftexture.name;
+                    }
+                }
+                var diffuseTex_addr = props.get(17, 0);
+                var diffuseTexture = undefined;
+                if (diffuseTex_addr > 0) {
+                    diffuseTexture = this.awd_file_data.getAssetByID(diffuseTex_addr);
+                }
+                if (diffuseTexture) {
+                    mat.diffuseTexture = diffuseTexture;
+                    debugString += " | DiffuseTexture-Name = " + diffuseTexture.name;
+                }
+                var normalTex_addr = props.get(3, 0);
+                normalTexture = undefined;
+                if (normalTex_addr > 0) {
+                    normalTexture = this.awd_file_data.getAssetByID(normalTex_addr);
+                }
+                var specTex_addr = props.get(21, 0);
+                specTexture = undefined;
+                if (specTex_addr > 0) {
+                    specTexture = this.awd_file_data.getAssetByID(specTex_addr);
+                }
+                var lightPickerAddr = props.get(22, 0);
+                if (lightPickerAddr > 0) {
+                    mat.lightPicker = this.awd_file_data.getAssetByID(lightPickerAddr);
+                }
+                mat.style.sampler = new Sampler2D(props.get(13, false), props.get(5, true), props.get(6, true));
+                mat.bothSides = props.get(7, false);
+                mat.alphaPremultiplied = props.get(8, false);
+                mat.blendMode = this.awd_file_data.getBlendModeStringFromEnum(props.get(9, 0));
+                mat.normalMethod.texture = normalTexture;
+                mat.specularMethod.texture = specTexture;
+                mat.alphaThreshold = props.get(12, 0.0);
+                mat.ambientMethod.strength = props.get(15, 1.0);
+                mat.diffuseMethod.color = props.get(16, 0xffffff);
+                mat.specularMethod.strength = props.get(18, 1.0);
+                mat.specularMethod.gloss = props.get(19, 50);
+                mat.specularMethod.color = props.get(20, 0xffffff);
+                var methods_parsed = 0;
+                var targetID;
+                while (methods_parsed < num_methods) {
+                    var method_type;
+                    method_type = this.awd_file_data.newBlockBytes.readUnsignedShort();
+                    props = this.awd_file_data.parseProperties({
+                        1: AWD3Utils.BADDR,
+                        2: AWD3Utils.BADDR,
+                        3: AWD3Utils.BADDR,
+                        101: this.awd_file_data.propsNrType,
+                        102: this.awd_file_data.propsNrType,
+                        103: this.awd_file_data.propsNrType,
+                        201: AWD3Utils.UINT32,
+                        202: AWD3Utils.UINT32,
+                        301: AWD3Utils.UINT16,
+                        302: AWD3Utils.UINT16,
+                        401: AWD3Utils.UINT8,
+                        402: AWD3Utils.UINT8,
+                        601: AWD3Utils.COLOR,
+                        602: AWD3Utils.COLOR,
+                        701: AWD3Utils.BOOL,
+                        702: AWD3Utils.BOOL,
+                        801: AWD3Utils.MTX4x4
+                    });
+                    switch (method_type) {
+                        case 999:
+                            targetID = props.get(1, 0);
+                            if (targetID > 0) {
+                                var fx_method = this.awd_file_data.getAssetByID(targetID);
+                                mat.addEffectMethod(fx_method);
+                                debugString += " | EffectMethod-Name = " + fx_method.name;
+                            }
+                            break;
+                        case 998:
+                            targetID = props.get(1, 0);
+                            if (targetID > 0) {
+                                var shadow_method = this.awd_file_data.getAssetByID(targetID);
+                                mat.shadowMethod = shadow_method;
+                                debugString += " | EffectMethod-Name = " + shadow_method.name;
+                            }
+                            break;
+                        case 1:
+                            targetID = props.get(1, 0);
+                            var cubeTex = undefined;
+                            if (targetID > 0) {
+                                cubeTex = this.awd_file_data.getAssetByID(targetID);
+                            }
+                            if (cubeTex == undefined) {
+                                cubeTex = this.awd_file_data.getDefaultCubeTexture();
+                            }
+                            //if (!returnedArray[0])
+                            //this.awd_file_data._blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this.awd_file_data EnvMapAmbientMethodMaterial");
+                            mat.ambientMethod = new AmbientEnvMapMethod();
+                            mat.ambientMethod.texture = cubeTex;
+                            debugString += " | AmbientEnvMapMethod | EnvMap-Name =" + cubeTex.name;
+                            break;
+                        case 51:
+                            mat.diffuseMethod = new DiffuseDepthMethod();
+                            debugString += " | DiffuseDepthMethod";
+                            break;
+                        case 52:
+                            targetID = props.get(1, 0);
+                            var thisTex = undefined;
+                            if (targetID > 0) {
+                                thisTex = this.awd_file_data.getAssetByID(targetID);
+                            }
+                            if (thisTex == undefined) {
+                                thisTex = DefaultMaterialManager.getDefaultTexture();
+                            }
+                            //if (!returnedArray[0])
+                            //this.awd_file_data._blocks[blockID].addError("Could not find the GradientDiffuseTexture (ID = " + targetID + " ) for this.awd_file_data GradientDiffuseMethod");
+                            mat.diffuseMethod = new DiffuseGradientMethod(thisTex);
+                            debugString += " | DiffuseGradientMethod | GradientDiffuseTexture-Name =" + thisTex.name;
+                            break;
+                        case 53:
+                            mat.diffuseMethod = new DiffuseWrapMethod(props.get(101, 5));
+                            debugString += " | DiffuseWrapMethod";
+                            break;
+                        case 54:
+                            targetID = props.get(1, 0);
+                            var thisTex = undefined;
+                            if (targetID > 0) {
+                                thisTex = this.awd_file_data.getAssetByID(targetID);
+                            }
+                            if (thisTex == undefined) {
+                                thisTex = DefaultMaterialManager.getDefaultTexture();
+                            }
+                            //if (!returnedArray[0])
+                            //this.awd_file_data._blocks[blockID].addError("Could not find the LightMap (ID = " + targetID + " ) for this.awd_file_data LightMapDiffuseMethod");
+                            mat.diffuseMethod = new DiffuseLightMapMethod(thisTex, this.awd_file_data.getBlendModeStringFromEnum(props.get(401, 10)), false, mat.diffuseMethod);
+                            debugString += " | DiffuseLightMapMethod | LightMapTexture-Name =" + thisTex.name;
+                            break;
+                        case 55:
+                            mat.diffuseMethod = new DiffuseCelMethod(props.get(401, 3), mat.diffuseMethod);
+                            mat.diffuseMethod.smoothness = props.get(101, 0.1);
+                            debugString += " | DiffuseCelMethod";
+                            break;
+                        case 56:
+                            break;
+                        case 101:
+                            mat.specularMethod = new SpecularAnisotropicMethod();
+                            debugString += " | SpecularAnisotropicMethod";
+                            break;
+                        case 102:
+                            mat.specularMethod = new SpecularPhongMethod();
+                            debugString += " | SpecularPhongMethod";
+                            break;
+                        case 103:
+                            mat.specularMethod = new SpecularCelMethod(props.get(101, 0.5), mat.specularMethod);
+                            mat.specularMethod.smoothness = props.get(102, 0.1);
+                            debugString += " | SpecularCelMethod";
+                            break;
+                        case 104:
+                            mat.specularMethod = new SpecularFresnelMethod(props.get(701, true), mat.specularMethod);
+                            mat.specularMethod.fresnelPower = props.get(101, 5);
+                            mat.specularMethod.normalReflectance = props.get(102, 0.1);
+                            debugString += " | SpecularFresnelMethod";
+                            break;
+                        case 151:
+                            break;
+                        case 152:
+                            targetID = props.get(1, 0);
+                            var thisTex = undefined;
+                            if (targetID > 0) {
+                                thisTex = this.awd_file_data.getAssetByID(targetID);
+                            }
+                            if (thisTex == undefined) {
+                                thisTex = DefaultMaterialManager.getDefaultTexture();
+                            }
+                            //if (!returnedArray[0])
+                            //	this.awd_file_data._blocks[blockID].addError("Could not find the SecoundNormalMap (ID = " + targetID + " ) for this.awd_file_data SimpleWaterNormalMethod");
+                            //if (!mat.normalMap)
+                            //	this.awd_file_data._blocks[blockID].addError("Could not find a normal Map on this.awd_file_data Material to use with this.awd_file_data SimpleWaterNormalMethod");
+                            mat.normalMethod = new NormalSimpleWaterMethod(mat.normalMethod.texture || thisTex, thisTex);
+                            debugString += " | NormalSimpleWaterMethod | Second-NormalTexture-Name = " + thisTex.name;
+                            break;
+                    }
+                    this.awd_file_data.parseUserAttributes();
+                    methods_parsed += 1;
+                }
+            }
+        }
+        else if ((type >= 3) && (type <= 7)) {
+            // if this.awd_file_data is a curve material, we create it, finalize it, assign it to block-cache and return and return.
+            var color = props.get(1, 0xcccccc);
+            debugString += color;
+            var diffuseTex_addr = props.get(2, 0);
+            var diffuseTexture = undefined;
+            if (diffuseTex_addr > 0) {
+                diffuseTexture = this.awd_file_data.getAssetByID(diffuseTex_addr);
+            }
+            if (diffuseTex_addr == undefined) {
+                diffuseTexture = DefaultMaterialManager.getDefaultTexture();
+            }
+            var basic_mat = new BasicMaterial();
+            basic_mat.texture = diffuseTexture;
+            //debugString+= " alpha = "+props.get(10, 1.0)+" ";
+            debugString += " texture = " + diffuseTex_addr + " ";
+            basic_mat.bothSides = true;
+            basic_mat.preserveAlpha = true;
+            basic_mat.alphaBlending = true;
+            basic_mat.extra = this.awd_file_data.parseUserAttributes();
+            if (this.awd_file_data.debug)
+                console.log(debugString);
+            this.awd_file_data.cur_block.data = basic_mat;
+            return;
+        }
+        mat.extra = this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = mat;
+        if (this.awd_file_data.debug) {
+            console.log(debugString);
+        }
+    };
+    return MaterialAWDParser;
+})(AWDBlockParserBase);
+module.exports = MaterialAWDParser;
+
+},{"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser":[function(require,module,exports){
+/**
+ * Created by 80prozent on 4/18/2015.
+ */
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var Mesh = require("awayjs-display/lib/entities/Mesh");
+var Geometry = require("awayjs-display/lib/base/Geometry");
+var Vector3D = require("awayjs-core/lib/geom/Vector3D");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+var MeshAWDParser = (function (_super) {
+    __extends(MeshAWDParser, _super);
+    function MeshAWDParser() {
+        _super.call(this);
+    }
+    MeshAWDParser.prototype.parseFromBytes = function () {
+        var num_materials;
+        var materials_parsed;
+        if (this.awd_file_data.cur_block.type == 23) {
+            var par_id = this.awd_file_data.newBlockBytes.readUnsignedInt();
+            var mtx = this.awd_file_data.parseMatrix3D();
+        }
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        var parentName = "Root (TopLevel)";
+        var data_id = this.awd_file_data.newBlockBytes.readUnsignedInt();
+        var geom = this.awd_file_data.getAssetByID(data_id);
+        if (geom == undefined) {
+            geom = new Geometry();
+        }
+        this.awd_file_data.cur_block.geoID = data_id;
+        var materials = new Array();
+        num_materials = this.awd_file_data.newBlockBytes.readUnsignedShort();
+        var materialNames = new Array();
+        materials_parsed = 0;
+        while (materials_parsed < num_materials) {
+            var mat_id;
+            mat_id = this.awd_file_data.newBlockBytes.readUnsignedInt();
+            var m = this.awd_file_data.getAssetByID(mat_id);
+            if (m != undefined) {
+                materials.push(m);
+                materialNames.push(m.name);
+            }
+            materials_parsed++;
+        }
+        var mesh = new Mesh(geom, null);
+        if (this.awd_file_data.cur_block.type == 23) {
+            mesh.transform.matrix3D = mtx;
+            if (par_id > 0) {
+                var parent = this.awd_file_data.getAssetByID(par_id);
+                if (parent != undefined) {
+                    parent.addChild(mesh);
+                    parentName = parent.name;
+                }
+            }
+        }
+        if (materials.length >= 1 && mesh.subMeshes.length == 1) {
+            mesh.material = materials[0];
+        }
+        else if (materials.length > 1) {
+            var i;
+            for (i = 0; i < mesh.subMeshes.length; i++) {
+                mesh.subMeshes[i].material = materials[Math.min(materials.length - 1, i)];
+            }
+        }
+        if ((this.awd_file_data.major_version > 2) || ((this.awd_file_data.major_version >= 2) && (this.awd_file_data.minor_version == 1))) {
+            var props = this.awd_file_data.parseProperties({ 1: this.awd_file_data.matrixNrType, 2: this.awd_file_data.matrixNrType, 3: this.awd_file_data.matrixNrType, 4: AWD3Utils.UINT8, 5: AWD3Utils.BOOL });
+            mesh.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
+            mesh.castsShadows = props.get(5, true);
+        }
+        else {
+            this.awd_file_data.parseProperties(null);
+        }
+        mesh.extra = this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = mesh;
+        if (this.awd_file_data.debug) {
+            console.log("Parsed a Mesh: Name = '" + name + "' | Parent-Name = " + parentName + "| Geometry-Name = " + geom.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames.toString());
+        }
+    };
+    return MeshAWDParser;
+})(AWDBlockParserBase);
+module.exports = MeshAWDParser;
+
+},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3BlockParsers/MetadataAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+var MetadataAWDParser = (function (_super) {
+    __extends(MetadataAWDParser, _super);
+    function MetadataAWDParser() {
+        _super.call(this);
+    }
+    MetadataAWDParser.prototype.parseFromBytes = function () {
+        this.awd_file_data.cur_block.state = AWD3Utils.BLOCKSTATE_NO_ASSET;
+        var props = this.awd_file_data.parseProperties({ 1: AWD3Utils.UINT32, 2: AWD3Utils.AWDSTRING, 3: AWD3Utils.AWDSTRING, 4: AWD3Utils.AWDSTRING, 5: AWD3Utils.AWDSTRING });
+        if (this.awd_file_data.debug) {
+            console.log("Parsed a MetaDataBlock: TimeStamp         = " + props.get(1, 0));
+            console.log("                        EncoderName       = " + props.get(2, "unknown"));
+            console.log("                        EncoderVersion    = " + props.get(3, "unknown"));
+            console.log("                        GeneratorName     = " + props.get(4, "unknown"));
+            console.log("                        GeneratorVersion  = " + props.get(5, "unknown"));
+        }
+    };
+    return MetadataAWDParser;
+})(AWDBlockParserBase);
+module.exports = MetadataAWDParser;
+
+},{"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3BlockParsers/MovieClipAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var AWDBitFlags = require("awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags");
+var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+var Timeline = require("awayjs-display/lib/base/Timeline");
+var Vector3D = require("awayjs-core/lib/geom/Vector3D");
+var TextField = require("awayjs-display/lib/entities/TextField");
+var AS2SceneGraphFactory = require("awayjs-player/lib/factories/AS2SceneGraphFactory");
+var MovieClipAWDParser = (function (_super) {
+    __extends(MovieClipAWDParser, _super);
+    function MovieClipAWDParser(view) {
+        if (view === void 0) { view = null; }
+        _super.call(this);
+        this.factory = new AS2SceneGraphFactory(view);
+    }
+    MovieClipAWDParser.prototype.parseFromBytes = function () {
+        var i;
+        var j;
+        var c;
+        var new_timeline = new Timeline();
+        var new_mc = this.factory.createMovieClip(new_timeline);
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        var isScene = !!this.awd_file_data.newBlockBytes.readUnsignedByte();
+        var sceneID = this.awd_file_data.newBlockBytes.readUnsignedByte();
+        var fps = this.awd_file_data.newBlockBytes.readFloat();
+        //console.log("fps = "+fps);
+        //new_mc.fps=fps;
+        var ms_per_frame = 1000 / fps;
+        var num_instances = 0;
+        var num_all_display_instances = 0;
+        // register list of potential childs
+        // a potential child can be reused on a timeline (added / removed / added)
+        // However, for each potential child, we need to register the max-number of instances that a frame contains
+        // we parse 2 lists of potential-childs:
+        // -	the first list contains potential-childs that are only ever instanced once per frame.
+        // -	the second list contains potential-childs that are instanced multiple times on some frames.
+        // on registering a child, the child gets a incremental-id assigned. This is the id, that the commands are using to access the childs.
+        // hence we need to be careful to register all objects in correct order.
+        var num_potential_childs = this.awd_file_data.newBlockBytes.readUnsignedShort();
+        for (i = 0; i < num_potential_childs; i++) {
+            resourceID = this.awd_file_data.newBlockBytes.readUnsignedInt();
+            var cmd_asset = this.awd_file_data.getAssetByID(resourceID);
+            if (cmd_asset != null) {
+                new_timeline.registerPotentialChild(cmd_asset);
+            }
+            else {
+                //todo: register a default display object on timeline, so we do not mess up the incremental obj-id
+                //new_mc.registerPotentialChild(cmd_asset);
+                console.log("ERROR when collecting objects for timeline");
+            }
+        }
+        num_all_display_instances += num_potential_childs;
+        var num_potential_childs_multi_instanced = this.awd_file_data.newBlockBytes.readUnsignedShort();
+        num_potential_childs += num_potential_childs_multi_instanced;
+        for (i = 0; i < num_potential_childs_multi_instanced; i++) {
+            resourceID = this.awd_file_data.newBlockBytes.readUnsignedInt();
+            num_instances = this.awd_file_data.newBlockBytes.readUnsignedShort();
+            num_all_display_instances += num_instances;
+            var cmd_asset = this.awd_file_data.getAssetByID(resourceID);
+            if (cmd_asset != null) {
+                for (j = 0; j < num_instances; j++) {
+                    new_timeline.registerPotentialChild(cmd_asset);
+                }
+            }
+            else {
+                for (j = 0; j < num_instances; j++) {
+                    //todo: register a default display object on timeline, so we do not mess up the incremental obj-id
+                    //new_mc.registerPotentialChild(cmd_asset);
+                    console.log("ERROR when collecting objects for timeline");
+                }
+            }
+        }
+        //console.log("Parsed "+num_potential_childs+" potential childs. They will be used by "+num_all_display_instances+" instances.");
+        // register list of potential sounds
+        // a potential child can be reused on a timeline (added / removed / added)
+        var num_potential_sounds = this.awd_file_data.newBlockBytes.readUnsignedShort();
+        for (i = 0; i < num_potential_sounds; i++) {
+            resourceID = this.awd_file_data.newBlockBytes.readUnsignedInt();
+            var cmd_asset = this.awd_file_data.getAssetByID(resourceID);
+            if (cmd_asset != null) {
+                //todo: register sound objects on movieclip
+                console.log("ERROR when collecting objects for timeline");
+            }
+            else {
+            }
+        }
+        //console.log("Parsed "+num_potential_sounds+" potential sounds");
+        var numFrames = this.awd_file_data.newBlockBytes.readUnsignedShort();
+        //console.log("numFrames "+numFrames);
+        var totalDuration = 0;
+        var frameDuration;
+        var numLabels;
+        var numCommands;
+        var objectID;
+        var target_depth;
+        var resourceID;
+        var number_of_obj;
+        var commandType;
+        //var frame:TimelineKeyFrame;
+        var hasDepthChanges;
+        var sessionCount = 0;
+        for (i = 0; i < numFrames; i++) {
+            // todo: remove the ms_per_frame to set the duration in frames
+            frameDuration = this.awd_file_data.newBlockBytes.readUnsignedInt() * ms_per_frame;
+            //frame = new TimelineKeyFrame(totalDuration, frameDuration);
+            totalDuration += frameDuration;
+            numLabels = this.awd_file_data.newBlockBytes.readUnsignedByte();
+            //for (j = 0; j < numLabels; j++)
+            //	new_timeline._labels[this.awd_file_data.parseVarStr()]=new_timeline.numKeyFrames();
+            numCommands = this.awd_file_data.newBlockBytes.readUnsignedShort();
+            //console.log("numCommands "+numCommands);
+            //traceString += "\n      Commands " + numCommands;
+            hasDepthChanges = false;
+            for (j = 0; j < numCommands; j++) {
+                commandType = this.awd_file_data.newBlockBytes.readUnsignedByte();
+                switch (commandType) {
+                    case 1:
+                        number_of_obj = this.awd_file_data.newBlockBytes.readUnsignedShort();
+                        //console.log("number_of_obj ", number_of_obj);
+                        var remove_depths = new Array();
+                        for (c = 0; c < number_of_obj; c++) {
+                            // Remove Object Command
+                            target_depth = this.awd_file_data.newBlockBytes.readShort();
+                            remove_depths.push(target_depth);
+                        }
+                        break;
+                    case 2:
+                    case 3:
+                        objectID = this.awd_file_data.newBlockBytes.readUnsignedShort();
+                        //console.log("add / update objectID ", objectID);
+                        if (commandType == 2) {
+                            hasDepthChanges = true;
+                            target_depth = this.awd_file_data.newBlockBytes.readShort();
+                            //console.log("target_depth ", target_depth);
+                            var potChild = new_timeline.getPotentialChildPrototype(objectID);
+                            if (potChild != undefined) {
+                                //frame.frameConstructCommands.push(new AddChildAtDepthCommand(objectID, target_depth, sessionCount));
+                                sessionCount++;
+                                // if the object is a tetfield, we set the textfield-name as instancename
+                                if (potChild.isAsset(TextField)) {
+                                }
+                            }
+                            else {
+                                console.log("ERROR: could not find the objectID ", objectID);
+                            }
+                        }
+                        var props_flag = this.awd_file_data.newBlockBytes.readUnsignedShort();
+                        /*	Props_flags
+                         1: read display matrix - 6 x float,
+                         2: read display matrix - read another UINT8-bitflag that determinates what matrix components to parse
+                         3: read color matrix - 4 x float, 4 x uint16
+                         4: read color matrix - read another UINT8-bitflag that determinates what matrix components to parse
+                         5: blendmode - uint8
+                         6: visible - boolean
+                         7: AWD3Parser.UINT8
+                         });*/
+                        // read display matrix
+                        if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG1)) {
+                            var thisMatrix = new Matrix3D();
+                            if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG2)) {
+                            }
+                            else {
+                                thisMatrix.rawData[0] = this.awd_file_data.newBlockBytes.readFloat();
+                                thisMatrix.rawData[1] = this.awd_file_data.newBlockBytes.readFloat();
+                                thisMatrix.rawData[4] = this.awd_file_data.newBlockBytes.readFloat();
+                                thisMatrix.rawData[5] = this.awd_file_data.newBlockBytes.readFloat();
+                                thisMatrix.position = new Vector3D(this.awd_file_data.newBlockBytes.readFloat(), this.awd_file_data.newBlockBytes.readFloat(), 0);
+                            }
+                        }
+                        // read colortransforms
+                        if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG3)) {
+                            var thisColorTransform = new ColorTransform();
+                            if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG4)) {
+                            }
+                            else {
+                                thisColorTransform.redMultiplier = this.awd_file_data.newBlockBytes.readFloat();
+                                thisColorTransform.greenMultiplier = this.awd_file_data.newBlockBytes.readFloat();
+                                thisColorTransform.blueMultiplier = this.awd_file_data.newBlockBytes.readFloat();
+                                thisColorTransform.alphaMultiplier = this.awd_file_data.newBlockBytes.readFloat();
+                                thisColorTransform.redOffset = this.awd_file_data.newBlockBytes.readShort();
+                                thisColorTransform.greenOffset = this.awd_file_data.newBlockBytes.readShort();
+                                thisColorTransform.blueOffset = this.awd_file_data.newBlockBytes.readShort();
+                                thisColorTransform.alphaOffset = this.awd_file_data.newBlockBytes.readShort();
+                            }
+                        }
+                        if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG5)) {
+                            var blendmode_int = this.awd_file_data.newBlockBytes.readUnsignedByte();
+                            var blendmode_string = this.awd_file_data.getBlendModeStringFromEnum(blendmode_int);
+                        }
+                        if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG6)) {
+                        }
+                        if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG7)) {
+                            var instanceName = this.awd_file_data.parseVarStr();
+                            if (instanceName.length) {
+                            }
+                        }
+                        if (AWDBitFlags.test(props_flag, AWDBitFlags.FLAG8)) {
+                            var mask_id_nums = this.awd_file_data.newBlockBytes.readUnsignedShort();
+                            var mask_ids = new Array();
+                            for (var mi_cnt = 0; mi_cnt < mask_id_nums; mi_cnt++) {
+                                mask_ids.push(this.awd_file_data.newBlockBytes.readShort());
+                            }
+                            if (mask_ids.length > 0) {
+                                if ((mask_ids.length == 1) && (mask_ids[0] == -1)) {
+                                }
+                            }
+                        }
+                        break;
+                    case 4:
+                        // Add Sound Command
+                        // TODO: create CommandPropsSound and check which asset to use
+                        objectID = this.awd_file_data.newBlockBytes.readUnsignedInt();
+                        resourceID = this.awd_file_data.newBlockBytes.readUnsignedInt();
+                        break;
+                    default:
+                        break;
+                }
+            }
+            if (hasDepthChanges) {
+                // only want to do this.awd_file_data once after all children's depth values are updated
+                //frame.frameConstructCommands.push(new ApplyAS2DepthsCommand());
+                hasDepthChanges = false;
+            }
+            var length_code = this.awd_file_data.newBlockBytes.readUnsignedInt();
+            if (length_code > 0) {
+            }
+            //traceString += commandString;
+            //trace("length_code = "+length_code+" frame_code = "+frame_code);
+            this.awd_file_data.newBlockBytes.readUnsignedInt(); // user attributes - skip for now
+        }
+        this.awd_file_data.parseProperties(null);
+        this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = new_mc;
+        if (this.awd_file_data.debug)
+            console.log("Parsed a TIMELINE: Name = " + name + "| isScene = " + isScene + "| sceneID = " + sceneID + "| numFrames = " + numFrames);
+    };
+    return MovieClipAWDParser;
+})(AWDBlockParserBase);
+module.exports = MovieClipAWDParser;
+
+},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/base/Timeline":undefined,"awayjs-display/lib/entities/TextField":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags":"awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined}],"awayjs-parsers/lib/AWD3BlockParsers/PrefabAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+var PrefabBase = require("awayjs-display/lib/prefabs/PrefabBase");
+var PrimitiveCapsulePrefab = require("awayjs-display/lib/prefabs/PrimitiveCapsulePrefab");
+var PrimitiveConePrefab = require("awayjs-display/lib/prefabs/PrimitiveConePrefab");
+var PrimitiveCubePrefab = require("awayjs-display/lib/prefabs/PrimitiveCubePrefab");
+var PrimitiveCylinderPrefab = require("awayjs-display/lib/prefabs/PrimitiveCylinderPrefab");
+var PrimitivePlanePrefab = require("awayjs-display/lib/prefabs/PrimitivePlanePrefab");
+var PrimitiveSpherePrefab = require("awayjs-display/lib/prefabs/PrimitiveSpherePrefab");
+var PrimitiveTorusPrefab = require("awayjs-display/lib/prefabs/PrimitiveTorusPrefab");
+var PrefabAWDParser = (function (_super) {
+    __extends(PrefabAWDParser, _super);
+    function PrefabAWDParser() {
+        _super.call(this);
+    }
+    PrefabAWDParser.prototype.parseFromBytes = function () {
+        var name;
+        var prefab;
+        var primType;
+        var subs_parsed;
+        var props;
+        var bsm;
+        // Read name and sub count
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        primType = this.awd_file_data.newBlockBytes.readUnsignedByte();
+        props = this.awd_file_data.parseProperties({ 101: this.awd_file_data.geoNrType, 102: this.awd_file_data.geoNrType, 103: this.awd_file_data.geoNrType, 110: this.awd_file_data.geoNrType, 111: this.awd_file_data.geoNrType, 301: AWD3Utils.UINT16, 302: AWD3Utils.UINT16, 303: AWD3Utils.UINT16, 701: AWD3Utils.BOOL, 702: AWD3Utils.BOOL, 703: AWD3Utils.BOOL, 704: AWD3Utils.BOOL });
+        var primitiveTypes = ["Unsupported Type-ID", "PrimitivePlanePrefab", "PrimitiveCubePrefab", "PrimitiveSpherePrefab", "PrimitiveCylinderPrefab", "PrimitivesConePrefab", "PrimitivesCapsulePrefab", "PrimitivesTorusPrefab"];
+        switch (primType) {
+            case 1:
+                prefab = new PrimitivePlanePrefab(props.get(101, 100), props.get(102, 100), props.get(301, 1), props.get(302, 1), props.get(701, true), props.get(702, false));
+                break;
+            case 2:
+                prefab = new PrimitiveCubePrefab(props.get(101, 100), props.get(102, 100), props.get(103, 100), props.get(301, 1), props.get(302, 1), props.get(303, 1), props.get(701, true));
+                break;
+            case 3:
+                prefab = new PrimitiveSpherePrefab(props.get(101, 50), props.get(301, 16), props.get(302, 12), props.get(701, true));
+                break;
+            case 4:
+                prefab = new PrimitiveCylinderPrefab(props.get(101, 50), props.get(102, 50), props.get(103, 100), props.get(301, 16), props.get(302, 1), true, true, true); // bool701, bool702, bool703, bool704);
+                if (!props.get(701, true))
+                    prefab.topClosed = false;
+                if (!props.get(702, true))
+                    prefab.bottomClosed = false;
+                if (!props.get(703, true))
+                    prefab.yUp = false;
+                break;
+            case 5:
+                prefab = new PrimitiveConePrefab(props.get(101, 50), props.get(102, 100), props.get(301, 16), props.get(302, 1), props.get(701, true), props.get(702, true));
+                break;
+            case 6:
+                prefab = new PrimitiveCapsulePrefab(props.get(101, 50), props.get(102, 100), props.get(301, 16), props.get(302, 15), props.get(701, true));
+                break;
+            case 7:
+                prefab = new PrimitiveTorusPrefab(props.get(101, 50), props.get(102, 50), props.get(301, 16), props.get(302, 8), props.get(701, true));
+                break;
+            default:
+                prefab = new PrefabBase();
+                console.log("ERROR: UNSUPPORTED PREFAB_TYPE");
+                break;
+        }
+        if ((props.get(110, 1) != 1) || (props.get(111, 1) != 1)) {
+        }
+        this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = prefab;
+        if (this.awd_file_data.debug) {
+            if ((primType < 0) || (primType > 7)) {
+                primType = 0;
+            }
+            console.log("Parsed a Primivite: Name = " + this.awd_file_data.cur_block.name + "| type = " + primitiveTypes[primType]);
+        }
+    };
+    return PrefabAWDParser;
+})(AWDBlockParserBase);
+module.exports = PrefabAWDParser;
+
+},{"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3BlockParsers/ShadowMethodAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+var ShadowDitheredMethod = require("awayjs-methodmaterials/lib/methods/ShadowDitheredMethod");
+var ShadowFilteredMethod = require("awayjs-methodmaterials/lib/methods/ShadowFilteredMethod");
+var ShadowHardMethod = require("awayjs-methodmaterials/lib/methods/ShadowHardMethod");
+var ShadowNearMethod = require("awayjs-methodmaterials/lib/methods/ShadowNearMethod");
+var ShadowSoftMethod = require("awayjs-methodmaterials/lib/methods/ShadowSoftMethod");
+var ShadowMethodAWDParser = (function (_super) {
+    __extends(ShadowMethodAWDParser, _super);
+    function ShadowMethodAWDParser() {
+        _super.call(this);
+    }
+    ShadowMethodAWDParser.prototype.parseFromBytes = function () {
+        var type;
+        var data_len;
+        var asset;
+        var shadowLightID;
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        shadowLightID = this.awd_file_data.newBlockBytes.readUnsignedInt();
+        var light = this.awd_file_data.getAssetByID(shadowLightID);
+        if (light == undefined) {
+            //this.awd_file_data._blocks[blockID].addError("Could not find the TargetLight (ID = " + shadowLightID + " ) for this.awd_file_data ShadowMethod - ShadowMethod not created");
+            return;
+        }
+        asset = this.parseShadowMethodList(light);
+        if (!asset)
+            return;
+        this.awd_file_data.parseUserAttributes(); // Ignore for now
+        this.awd_file_data.cur_block.data = asset;
+        if (this.awd_file_data.debug) {
+            console.log("Parsed a ShadowMapMethodMethod: Name = " + asset.name + " | Type = " + asset + " | Light-Name = ", light.name);
+        }
+    };
+    // this.awd_file_data functions reads and creates a ShadowMethodMethod
+    ShadowMethodAWDParser.prototype.parseShadowMethodList = function (light) {
+        var methodType = this.awd_file_data.newBlockBytes.readUnsignedShort();
+        var shadowMethod;
+        var props = this.awd_file_data.parseProperties({ 1: AWD3Utils.BADDR, 2: AWD3Utils.BADDR, 3: AWD3Utils.BADDR, 101: this.awd_file_data.propsNrType, 102: this.awd_file_data.propsNrType, 103: this.awd_file_data.propsNrType, 201: AWD3Utils.UINT32, 202: AWD3Utils.UINT32, 301: AWD3Utils.UINT16, 302: AWD3Utils.UINT16, 401: AWD3Utils.UINT8, 402: AWD3Utils.UINT8, 601: AWD3Utils.COLOR, 602: AWD3Utils.COLOR, 701: AWD3Utils.BOOL, 702: AWD3Utils.BOOL, 801: AWD3Utils.MTX4x4 });
+        var targetID;
+        var returnedArray;
+        switch (methodType) {
+            case 1002:
+                targetID = props.get(1, 0);
+                var shadow_meth = this.awd_file_data.getAssetByID(targetID);
+                if (shadow_meth == undefined) {
+                    //this.awd_file_data._blocks[blockID].addError("Could not find the ShadowBaseMethod (ID = " + targetID + " ) for this.awd_file_data ShadowNearMethod - ShadowMethod not created");
+                    return shadowMethod;
+                }
+                shadowMethod = new ShadowNearMethod(shadow_meth);
+                break;
+            case 1101:
+                shadowMethod = new ShadowFilteredMethod(light);
+                shadowMethod.alpha = props.get(101, 1);
+                shadowMethod.epsilon = props.get(102, 0.002);
+                break;
+            case 1102:
+                shadowMethod = new ShadowDitheredMethod(light, props.get(201, 5));
+                shadowMethod.alpha = props.get(101, 1);
+                shadowMethod.epsilon = props.get(102, 0.002);
+                shadowMethod.range = props.get(103, 1);
+                break;
+            case 1103:
+                shadowMethod = new ShadowSoftMethod(light, props.get(201, 5));
+                shadowMethod.alpha = props.get(101, 1);
+                shadowMethod.epsilon = props.get(102, 0.002);
+                shadowMethod.range = props.get(103, 1);
+                break;
+            case 1104:
+                shadowMethod = new ShadowHardMethod(light);
+                shadowMethod.alpha = props.get(101, 1);
+                shadowMethod.epsilon = props.get(102, 0.002);
+                break;
+        }
+        this.awd_file_data.parseUserAttributes();
+        return shadowMethod;
+    };
+    return ShadowMethodAWDParser;
+})(AWDBlockParserBase);
+module.exports = ShadowMethodAWDParser;
+
+},{"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3BlockParsers/SharedMethodAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+var EffectColorMatrixMethod = require("awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod");
+var EffectColorTransformMethod = require("awayjs-methodmaterials/lib/methods/EffectColorTransformMethod");
+var EffectFogMethod = require("awayjs-methodmaterials/lib/methods/EffectFogMethod");
+var EffectRimLightMethod = require("awayjs-methodmaterials/lib/methods/EffectRimLightMethod");
+var SharedMethodAWDParser = (function (_super) {
+    __extends(SharedMethodAWDParser, _super);
+    function SharedMethodAWDParser() {
+        _super.call(this);
+    }
+    SharedMethodAWDParser.prototype.parseFromBytes = function () {
+        var asset;
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        asset = this.parseSharedMethodList();
+        this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = asset;
+        if (this.awd_file_data.debug) {
+            console.log("Parsed a EffectMethod: Name = " + asset.name + " Type = " + asset);
+        }
+    };
+    // this.awd_file_data functions reads and creates a EffectMethod
+    SharedMethodAWDParser.prototype.parseSharedMethodList = function () {
+        var methodType = this.awd_file_data.newBlockBytes.readUnsignedShort();
+        var effectMethodReturn;
+        var props = this.awd_file_data.parseProperties({ 1: AWD3Utils.BADDR, 2: AWD3Utils.BADDR, 3: AWD3Utils.BADDR, 101: this.awd_file_data.propsNrType, 102: this.awd_file_data.propsNrType, 103: this.awd_file_data.propsNrType, 104: this.awd_file_data.propsNrType, 105: this.awd_file_data.propsNrType, 106: this.awd_file_data.propsNrType, 107: this.awd_file_data.propsNrType, 201: AWD3Utils.UINT32, 202: AWD3Utils.UINT32, 301: AWD3Utils.UINT16, 302: AWD3Utils.UINT16, 401: AWD3Utils.UINT8, 402: AWD3Utils.UINT8, 601: AWD3Utils.COLOR, 602: AWD3Utils.COLOR, 701: AWD3Utils.BOOL, 702: AWD3Utils.BOOL });
+        var targetID;
+        var returnedArray;
+        switch (methodType) {
+            case 401:
+                effectMethodReturn = new EffectColorMatrixMethod(props.get(101, new Array(0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)));
+                break;
+            case 402:
+                effectMethodReturn = new EffectColorTransformMethod();
+                var offCol = props.get(601, 0x00000000);
+                effectMethodReturn.colorTransform = new ColorTransform(props.get(102, 1), props.get(103, 1), props.get(104, 1), props.get(101, 1), ((offCol >> 16) & 0xFF), ((offCol >> 8) & 0xFF), (offCol & 0xFF), ((offCol >> 24) & 0xFF));
+                break;
+            case 403:
+                break;
+            case 404:
+                break;
+            case 406:
+                effectMethodReturn = new EffectRimLightMethod(props.get(601, 0xffffff), props.get(101, 0.4), props.get(101, 2)); //blendMode
+                break;
+            case 407:
+                break;
+            case 410:
+                break;
+            case 411:
+                effectMethodReturn = new EffectFogMethod(props.get(101, 0), props.get(102, 1000), props.get(601, 0x808080));
+                break;
+        }
+        this.awd_file_data.parseUserAttributes();
+        return effectMethodReturn;
+    };
+    return SharedMethodAWDParser;
+})(AWDBlockParserBase);
+module.exports = SharedMethodAWDParser;
+
+},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3BlockParsers/Single2DTextureAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var ByteArray = require("awayjs-core/lib/utils/ByteArray");
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+var Single2DTextureAWDParser = (function (_super) {
+    __extends(Single2DTextureAWDParser, _super);
+    function Single2DTextureAWDParser() {
+        _super.call(this);
+    }
+    Single2DTextureAWDParser.prototype.parseFromBytes = function () {
+        var asset;
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        var type = this.awd_file_data.newBlockBytes.readUnsignedByte();
+        var data_len;
+        //this.awd_file_data._texture_users[this.awd_file_data._cur_block_id.toString()] = [];
+        // External
+        if (type == 0) {
+            data_len = this.awd_file_data.newBlockBytes.readUnsignedInt();
+            var url;
+            url = this.awd_file_data.newBlockBytes.readUTFBytes(data_len);
+            this.awd_file_data.cur_block.dependencies_urls.push(url);
+        }
+        else {
+            data_len = this.awd_file_data.newBlockBytes.readUnsignedInt();
+            var data;
+            data = new ByteArray();
+            this.awd_file_data.newBlockBytes.readBytes(data, 0, data_len);
+            this.awd_file_data.cur_block.dependencies_data.push(data);
+        }
+        this.awd_file_data.cur_block.state = AWD3Utils.BLOCKSTATE_LOAD_DEPENDENICES;
+        // Ignore for now
+        this.awd_file_data.parseProperties(null);
+        this.awd_file_data.parseUserAttributes();
+        if (this.awd_file_data.debug) {
+            var textureStylesNames = ["external", "embed"];
+            console.log("Start parsing a " + textureStylesNames[type] + " Bitmap for Texture");
+        }
+    };
+    return Single2DTextureAWDParser;
+})(AWDBlockParserBase);
+module.exports = Single2DTextureAWDParser;
+
+},{"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3BlockParsers/SingleCubeTextureAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var ByteArray = require("awayjs-core/lib/utils/ByteArray");
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+var SingleCubeTextureAWDParser = (function (_super) {
+    __extends(SingleCubeTextureAWDParser, _super);
+    function SingleCubeTextureAWDParser() {
+        _super.call(this);
+    }
+    SingleCubeTextureAWDParser.prototype.parseFromBytes = function () {
+        var data_len;
+        var i;
+        //this.awd_file_data._cubeTextures = new Array<any>();
+        //this.awd_file_data._texture_users[ this.awd_file_data._cur_block_id.toString() ] = [];
+        var type = this.awd_file_data.newBlockBytes.readUnsignedByte();
+        //this.awd_file_data._blocks[blockID].name =
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        for (i = 0; i < 6; i++) {
+            //this.awd_file_data.texture_users[this.awd_file_data.cur_block_id.toString()] = [];
+            //this.awd_file_data.cubeTextures.push(null);
+            // External
+            if (type == 0) {
+                data_len = this.awd_file_data.newBlockBytes.readUnsignedInt();
+                var url;
+                url = this.awd_file_data.newBlockBytes.readUTFBytes(data_len);
+                this.awd_file_data.cur_block.dependencies_urls.push(url);
+            }
+            else {
+                data_len = this.awd_file_data.newBlockBytes.readUnsignedInt();
+                var data;
+                data = new ByteArray();
+                this.awd_file_data.newBlockBytes.readBytes(data, 0, data_len);
+                this.awd_file_data.cur_block.dependencies_data.push(data);
+            }
+        }
+        this.awd_file_data.cur_block.state = AWD3Utils.BLOCKSTATE_LOAD_DEPENDENICES;
+        // Ignore for now
+        this.awd_file_data.parseProperties(null);
+        this.awd_file_data.parseUserAttributes();
+        //this.awd_file_data._pPauseAndRetrieveDependencies();
+        //this.awd_file_data._blocks[blockID].data = asset;
+        if (this.awd_file_data.debug) {
+            var textureStylesNames = ["external", "embed"];
+            console.log("Start parsing 6 " + textureStylesNames[type] + " Bitmaps for CubeTexture");
+        }
+    };
+    return SingleCubeTextureAWDParser;
+})(AWDBlockParserBase);
+module.exports = SingleCubeTextureAWDParser;
+
+},{"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3BlockParsers/SkeletonAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var Skeleton = require("awayjs-renderergl/lib/animators/data/Skeleton");
+var SkeletonJoint = require("awayjs-renderergl/lib/animators/data/SkeletonJoint");
+var SkeletonAWDParser = (function (_super) {
+    __extends(SkeletonAWDParser, _super);
+    function SkeletonAWDParser() {
+        _super.call(this);
+    }
+    SkeletonAWDParser.prototype.parseFromBytes = function () {
+        var skeleton = new Skeleton();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        var num_joints = this.awd_file_data.newBlockBytes.readUnsignedShort();
+        this.awd_file_data.parseProperties(null); // Discard properties for now
+        var joints_parsed = 0;
+        while (joints_parsed < num_joints) {
+            var joint;
+            var ibp;
+            // Ignore joint id
+            this.awd_file_data.newBlockBytes.readUnsignedShort();
+            joint = new SkeletonJoint();
+            joint.parentIndex = this.awd_file_data.newBlockBytes.readUnsignedShort() - 1; // 0=null in AWD
+            joint.name = this.awd_file_data.parseVarStr();
+            ibp = this.awd_file_data.parseMatrix3D();
+            joint.inverseBindPose = ibp.rawData;
+            // Ignore joint props/attributes for now
+            this.awd_file_data.parseProperties(null);
+            this.awd_file_data.parseUserAttributes();
+            skeleton.joints.push(joint);
+            joints_parsed++;
+        }
+        // Discard attributes for now
+        this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = skeleton;
+        if (this.awd_file_data.debug)
+            console.log("Parsed a Skeleton: Name = " + this.awd_file_data.cur_block.name + " | Number of Joints = " + joints_parsed);
+    };
+    return SkeletonAWDParser;
+})(AWDBlockParserBase);
+module.exports = SkeletonAWDParser;
+
+},{"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined}],"awayjs-parsers/lib/AWD3BlockParsers/SkeletonAnimClipAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var SkeletonClipNode = require("awayjs-renderergl/lib/animators/nodes/SkeletonClipNode");
+var SkeletonAnimClipAWDParser = (function (_super) {
+    __extends(SkeletonAnimClipAWDParser, _super);
+    function SkeletonAnimClipAWDParser() {
+        _super.call(this);
+    }
+    SkeletonAnimClipAWDParser.prototype.parseFromBytes = function () {
+        var frame_dur;
+        var pose_addr /*uint*/;
+        var clip = new SkeletonClipNode();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        var num_frames = this.awd_file_data.newBlockBytes.readUnsignedShort();
+        this.awd_file_data.parseProperties(null); // Ignore properties for now
+        var frames_parsed = 0;
+        while (frames_parsed < num_frames) {
+            pose_addr = this.awd_file_data.newBlockBytes.readUnsignedInt();
+            frame_dur = this.awd_file_data.newBlockBytes.readUnsignedShort();
+            var skel_pose = this.awd_file_data.getAssetByID(pose_addr);
+            if (skel_pose != undefined) {
+                clip.addFrame(skel_pose, frame_dur);
+            }
+            frames_parsed++;
+        }
+        // Ignore attributes for now
+        this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = clip;
+        if (this.awd_file_data.debug)
+            console.log("Parsed a SkeletonClipNode: Name = " + this.awd_file_data.cur_block.name + " | Number of Frames = " + clip.frames.length);
+    };
+    return SkeletonAnimClipAWDParser;
+})(AWDBlockParserBase);
+module.exports = SkeletonAnimClipAWDParser;
+
+},{"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined}],"awayjs-parsers/lib/AWD3BlockParsers/SkeletonPoseAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var SkeletonPose = require("awayjs-renderergl/lib/animators/data/SkeletonPose");
+var JointPose = require("awayjs-renderergl/lib/animators/data/JointPose");
+var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+var SkeletonPoseAWDParser = (function (_super) {
+    __extends(SkeletonPoseAWDParser, _super);
+    function SkeletonPoseAWDParser() {
+        _super.call(this);
+    }
+    SkeletonPoseAWDParser.prototype.parseFromBytes = function () {
+        var pose = new SkeletonPose();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        var num_joints = this.awd_file_data.newBlockBytes.readUnsignedShort();
+        this.awd_file_data.parseProperties(null); // Ignore properties for now
+        var joints_parsed = 0;
+        while (joints_parsed < num_joints) {
+            var joint_pose;
+            var has_transform /*uint*/;
+            joint_pose = new JointPose();
+            has_transform = this.awd_file_data.newBlockBytes.readUnsignedByte();
+            if (has_transform == 1) {
+                var mtx_data = this.awd_file_data.parseMatrix43RawData();
+                var mtx = new Matrix3D(mtx_data);
+                joint_pose.orientation.fromMatrix(mtx);
+                joint_pose.translation.copyFrom(mtx.position);
+                pose.jointPoses[joints_parsed] = joint_pose;
+            }
+            joints_parsed++;
+        }
+        // Skip attributes for now
+        this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = pose;
+        if (this.awd_file_data.debug)
+            console.log("Parsed a SkeletonPose: Name = " + this.awd_file_data.cur_block.name + " | Number of Joints = " + joints_parsed);
+    };
+    return SkeletonPoseAWDParser;
+})(AWDBlockParserBase);
+module.exports = SkeletonPoseAWDParser;
+
+},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined}],"awayjs-parsers/lib/AWD3BlockParsers/SkyboxAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var Skybox = require("awayjs-display/lib/entities/Skybox");
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var SkyboxAWDParser = (function (_super) {
+    __extends(SkyboxAWDParser, _super);
+    function SkyboxAWDParser() {
+        _super.call(this);
+    }
+    SkyboxAWDParser.prototype.parseFromBytes = function () {
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        var cubeTexAddr = this.awd_file_data.newBlockBytes.readUnsignedInt();
+        var cube_tex = undefined;
+        if (cubeTexAddr > 0) {
+            cube_tex = this.awd_file_data.getAssetByID(cubeTexAddr);
+        }
+        if (cube_tex == undefined) {
+            cube_tex = this.awd_file_data.getDefaultCubeTexture();
+        }
+        //if ((!returnedArrayCubeTex[0]) && (cubeTexAddr != 0))
+        //this.awd_file_data._blocks[blockID].addError("Could not find the Cubetexture (ID = " + cubeTexAddr + " ) for this.awd_file_data Skybox");
+        var new_skybox = new Skybox();
+        new_skybox.texture = cube_tex;
+        this.awd_file_data.parseProperties(null);
+        new_skybox.extra = this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = new_skybox;
+        if (this.awd_file_data.debug)
+            console.log("Parsed a Skybox: Name = '" + this.awd_file_data.cur_block.name + "' | CubeTexture-Name = " + cube_tex.name);
+    };
+    return SkyboxAWDParser;
+})(AWDBlockParserBase);
+module.exports = SkyboxAWDParser;
+
+},{"awayjs-display/lib/entities/Skybox":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase"}],"awayjs-parsers/lib/AWD3BlockParsers/TesselatedFontAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var Font = require("awayjs-display/lib/text/Font");
+var CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
+var TesselatedFontAWDParser = (function (_super) {
+    __extends(TesselatedFontAWDParser, _super);
+    function TesselatedFontAWDParser() {
+        _super.call(this);
+    }
+    TesselatedFontAWDParser.prototype.parseFromBytes = function () {
+        var new_font = new Font();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        var font_style_cnt = this.awd_file_data.newBlockBytes.readUnsignedInt();
+        for (var i = 0; i < font_style_cnt; ++i) {
+            var font_style_name = this.awd_file_data.parseVarStr();
+            //console.log("Font font_style_name = "+font_style_name);
+            var new_font_style = new_font.get_font_table(font_style_name);
+            new_font_style.set_font_em_size(this.awd_file_data.newBlockBytes.readUnsignedInt());
+            //console.log("Font new_font_style.font_em_size = "+new_font_style.get_font_em_size);
+            var font_style_char_cnt = this.awd_file_data.newBlockBytes.readUnsignedInt();
+            for (var i = 0; i < font_style_char_cnt; ++i) {
+                var font_style_char = this.awd_file_data.newBlockBytes.readUnsignedInt();
+                //console.log("Font font_style_char = "+font_style_char);
+                // todo: this.awd_file_data is basically a simplified version of the subgeom-parsing done in parseTriangleGeometry. Make a parseSubGeom() instead (?)
+                var sm_len = this.awd_file_data.newBlockBytes.readUnsignedInt();
+                var sm_end = this.awd_file_data.newBlockBytes.position + sm_len;
+                while (this.awd_file_data.newBlockBytes.position < sm_end) {
+                    var idx = 0;
+                    var str_ftype, str_type, str_len, str_end;
+                    // Type, field type, length
+                    str_type = this.awd_file_data.newBlockBytes.readUnsignedByte();
+                    str_ftype = this.awd_file_data.newBlockBytes.readUnsignedByte();
+                    str_len = this.awd_file_data.newBlockBytes.readUnsignedInt();
+                    str_end = this.awd_file_data.newBlockBytes.position + str_len;
+                    if (str_type == 2) {
+                        var indices = new Array();
+                        while (this.awd_file_data.newBlockBytes.position < str_end) {
+                            indices[idx++] = this.awd_file_data.newBlockBytes.readUnsignedShort();
+                        }
+                    }
+                    else if (str_type == 10) {
+                        var idx_pos = 0;
+                        var idx_curves = 0;
+                        var idx_uvs = 0;
+                        var positions = new Array();
+                        var curveData = new Array();
+                        var uvs = new Array();
+                        while (this.awd_file_data.newBlockBytes.position < str_end) {
+                            positions[idx_pos++] = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo); // x
+                            positions[idx_pos++] = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo); // y
+                            positions[idx_pos++] = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo); // type
+                            curveData[idx_curves++] = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo); // curve value 1
+                            curveData[idx_curves++] = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo); // curve value 2
+                            uvs[idx_uvs++] = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo); // curve value 1
+                            uvs[idx_uvs++] = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo); // curve value 1
+                        }
+                    }
+                    else {
+                        this.awd_file_data.newBlockBytes.position = str_end;
+                    }
+                }
+                //this.awd_file_data.parseProperties(null);// no attributes for font-table subgeos
+                var curve_sub_geom = new CurveSubGeometry(new AttributesBuffer());
+                curve_sub_geom.setIndices(indices);
+                curve_sub_geom.setPositions(positions);
+                curve_sub_geom.setCurves(curveData);
+                curve_sub_geom.setUVs(uvs);
+                new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
+            }
+        }
+        //console.log("Parsed a font");
+        this.awd_file_data.parseProperties(null);
+        this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = new_font;
+        if (this.awd_file_data.debug) {
+            console.log("Parsed a font: Name = '" + this.awd_file_data.cur_block.name);
+        }
+    };
+    return TesselatedFontAWDParser;
+})(AWDBlockParserBase);
+module.exports = TesselatedFontAWDParser;
+
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-display/lib/base/CurveSubGeometry":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase"}],"awayjs-parsers/lib/AWD3BlockParsers/TextfieldAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+var TextFormat = require("awayjs-display/lib/text/TextFormat");
+var AS2SceneGraphFactory = require("awayjs-player/lib/factories/AS2SceneGraphFactory");
+var TextfieldAWDParser = (function (_super) {
+    __extends(TextfieldAWDParser, _super);
+    function TextfieldAWDParser(view) {
+        if (view === void 0) { view = null; }
+        _super.call(this);
+        this.factory = new AS2SceneGraphFactory(view);
+    }
+    TextfieldAWDParser.prototype.parseFromBytes = function () {
+        var newTextField = this.factory.createTextField();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        var text_field_type = this.awd_file_data.newBlockBytes.readUnsignedByte();
+        if (text_field_type == 0) {
+            newTextField.type = "static";
+        }
+        else if (text_field_type == 1) {
+            newTextField.type = "dynamic";
+        }
+        else if (text_field_type == 2) {
+            newTextField.type = "input";
+        }
+        else if (text_field_type == 3) {
+            newTextField.type = "input";
+            newTextField.displayAsPassword = true;
+        }
+        newTextField.width = this.awd_file_data.newBlockBytes.readFloat();
+        newTextField.height = this.awd_file_data.newBlockBytes.readFloat();
+        var num_paragraphs = this.awd_file_data.newBlockBytes.readUnsignedInt();
+        var complete_text = "";
+        //console.log("num_paragraphs  '" + num_paragraphs);
+        var text_format;
+        for (var paracnt = 0; paracnt < num_paragraphs; paracnt++) {
+            var num_textruns = this.awd_file_data.newBlockBytes.readUnsignedInt();
+            for (var textrun_cnt = 0; textrun_cnt < num_textruns; textrun_cnt++) {
+                var format_id = this.awd_file_data.newBlockBytes.readUnsignedInt();
+                //console.log("format_id  '" + format_id);
+                var textFormat = this.awd_file_data.getAssetByID(format_id);
+                if (textFormat == undefined) {
+                    text_format = new TextFormat();
+                }
+                //console.log("text_format  '" + text_format.name);
+                var txt_length = this.awd_file_data.newBlockBytes.readUnsignedInt();
+                //console.log("txt_length  '" + txt_length);
+                if (txt_length > 0) {
+                    var this_txt = this.awd_file_data.newBlockBytes.readUTFBytes(txt_length);
+                    //newTextField.appendText(this_txt, text_format);
+                    complete_text += this_txt;
+                }
+            }
+        }
+        newTextField.textFormat = text_format;
+        newTextField.text = complete_text;
+        //newTextField.construct_geometry();
+        // todo: optional matrix etc can be put in properties.
+        var props = this.awd_file_data.parseProperties({ 1: AWD3Utils.BOOL, 3: AWD3Utils.BOOL, 4: AWD3Utils.BOOL, 5: AWD3Utils.BOOL, 7: AWD3Utils.UINT8, 8: AWD3Utils.UINT8, 9: AWD3Utils.UINT8 });
+        newTextField.selectable = props.get(1, false);
+        newTextField.border = props.get(3, false);
+        //newTextField.renderHTML =  props.get(4, false);
+        //newTextField.scrollable =  props.get(5, false);
+        //newTextField.text_flow =  props.get(7, 0);
+        //newTextField.orientationMode =  props.get(8, 0);
+        //newTextField.line_mode =  props.get(9, 0);
+        newTextField.extra = this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = newTextField;
+        if (this.awd_file_data.debug) {
+            console.log("Parsed a TextField: Name = '" + newTextField.name + "| text  = " + complete_text);
+        }
+    };
+    return TextfieldAWDParser;
+})(AWDBlockParserBase);
+module.exports = TextfieldAWDParser;
+
+},{"awayjs-display/lib/text/TextFormat":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined}],"awayjs-parsers/lib/AWD3BlockParsers/TextformatAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+var TextFormat = require("awayjs-display/lib/text/TextFormat");
+var Font = require("awayjs-display/lib/text/Font");
+var BasicMaterial = require("awayjs-display/lib/materials/BasicMaterial");
+var TextformatAWDParser = (function (_super) {
+    __extends(TextformatAWDParser, _super);
+    function TextformatAWDParser() {
+        _super.call(this);
+    }
+    TextformatAWDParser.prototype.parseFromBytes = function () {
+        var newTextFormat = new TextFormat();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        //console.log("this.awd_file_data._blocks[blockID].name  '" + this.awd_file_data._blocks[blockID].name );
+        var font_id = this.awd_file_data.newBlockBytes.readUnsignedInt();
+        //console.log("font_id  '" + font_id);
+        var font_style_name = this.awd_file_data.parseVarStr();
+        //console.log("font_style_name  '" + font_style_name);
+        var font = this.awd_file_data.getAssetByID(font_id);
+        if (font == undefined) {
+            font = new Font();
+        }
+        newTextFormat.font_name = font.name;
+        var font_table = font.get_font_table(font_style_name);
+        if (font_table != null) {
+            newTextFormat.font_style = font_style_name;
+            newTextFormat.font_table = font_table;
+        }
+        var data_id = this.awd_file_data.newBlockBytes.readUnsignedInt();
+        //console.log("mat  '" + data_id);
+        var mat = this.awd_file_data.getAssetByID(data_id);
+        if (mat == undefined) {
+            mat = new BasicMaterial();
+        }
+        mat.bothSides = true;
+        var num_uv_values = this.awd_file_data.newBlockBytes.readUnsignedByte();
+        //console.log("num_uv_values  '" + num_uv_values);
+        var uv_values = [];
+        for (var uvcnt = 0; uvcnt < num_uv_values; uvcnt++) {
+            var uv_value = this.awd_file_data.newBlockBytes.readFloat();
+            uv_values.push(uv_value);
+        }
+        newTextFormat.uv_values = uv_values;
+        var format_props = this.awd_file_data.parseProperties({ 1: AWD3Utils.UINT16, 2: AWD3Utils.UINT16, 3: AWD3Utils.UINT8, 4: AWD3Utils.UINT8, 5: AWD3Utils.UINT8, 6: AWD3Utils.UINT8, 7: AWD3Utils.UINT16, 8: AWD3Utils.UINT16, 9: AWD3Utils.UINT16, 10: AWD3Utils.UINT16 });
+        newTextFormat.size = format_props.get(1, 12);
+        newTextFormat.letterSpacing = format_props.get(2, 0);
+        //newTextFormat.rotated = format_props.get(3,false);
+        newTextFormat.kerning = format_props.get(4, true);
+        //newTextFormat.baseline_shift = format_props.get(5,1);
+        //newTextFormat.align = format_props.get(6,0);
+        newTextFormat.indent = format_props.get(7, 0);
+        newTextFormat.leftMargin = format_props.get(8, 0);
+        newTextFormat.rightMargin = format_props.get(9, 0);
+        //newTextFormat.linespacing = format_props.get(10,0);
+        newTextFormat.size = format_props.get(1, 12);
+        newTextFormat.letterSpacing = format_props.get(2, 0);
+        //newTextFormat.rotated = format_props.get(3,false);
+        newTextFormat.kerning = format_props.get(4, true);
+        //newTextFormat.baseline_shift = format_props.get(5,1);
+        newTextFormat.material = mat;
+        this.awd_file_data.parseUserAttributes(); // textformat has no extra-properties
+        //newTextFormat.extra =
+        this.awd_file_data.cur_block.data = newTextFormat;
+        if (this.awd_file_data.debug) {
+            console.log("Parsed a TextFormat: Name = '" + name + " font: " + font.name);
+        }
+    };
+    return TextformatAWDParser;
+})(AWDBlockParserBase);
+module.exports = TextformatAWDParser;
+
+},{"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-display/lib/text/TextFormat":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3BlockParsers/VertexAnimClipAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+var VertexClipNode = require("awayjs-renderergl/lib/animators/nodes/VertexClipNode");
+var TriangleSubGeometry = require("awayjs-display/lib/base/TriangleSubGeometry");
+var Geometry = require("awayjs-display/lib/base/Geometry");
+var VertexAnimClipAWDParser = (function (_super) {
+    __extends(VertexAnimClipAWDParser, _super);
+    function VertexAnimClipAWDParser() {
+        _super.call(this);
+    }
+    VertexAnimClipAWDParser.prototype.parseFromBytes = function () {
+        var poseOnly = false;
+        if (this.awd_file_data.cur_block.type == 111) {
+            poseOnly = true;
+        }
+        var num_frames = 1;
+        var num_submeshes /*uint*/;
+        var frames_parsed /*uint*/;
+        var subMeshParsed /*uint*/;
+        var frame_dur;
+        var x;
+        var y;
+        var z;
+        var str_len;
+        var str_end;
+        var geometry;
+        var subGeom;
+        var idx = 0;
+        var indices;
+        var verts;
+        var num_Streams = 0;
+        var streamsParsed = 0;
+        var streamtypes = new Array() /*int*/;
+        var props;
+        var thisGeo;
+        var clip = new VertexClipNode();
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        var geoAdress = this.awd_file_data.newBlockBytes.readUnsignedInt();
+        var geom = this.awd_file_data.getAssetByID(geoAdress);
+        if (geom == undefined) {
+            //this.awd_file_data._blocks[blockID].addError("Could not find the target-Geometry-Object " + geoAdress + " ) for this.awd_file_data VertexClipNode");
+            return;
+        }
+        var uvs = this.awd_file_data.getUVForVertexAnimation(geoAdress);
+        if (!poseOnly)
+            num_frames = this.awd_file_data.newBlockBytes.readUnsignedShort();
+        num_submeshes = this.awd_file_data.newBlockBytes.readUnsignedShort();
+        num_Streams = this.awd_file_data.newBlockBytes.readUnsignedShort();
+        streamsParsed = 0;
+        while (streamsParsed < num_Streams) {
+            streamtypes.push(this.awd_file_data.newBlockBytes.readUnsignedShort());
+            streamsParsed++;
+        }
+        props = this.awd_file_data.parseProperties({ 1: AWD3Utils.BOOL, 2: AWD3Utils.BOOL });
+        clip.looping = props.get(1, true);
+        clip.stitchFinalFrame = props.get(2, false);
+        frames_parsed = 0;
+        while (frames_parsed < num_frames) {
+            frame_dur = this.awd_file_data.newBlockBytes.readUnsignedShort();
+            geometry = new Geometry();
+            subMeshParsed = 0;
+            while (subMeshParsed < num_submeshes) {
+                streamsParsed = 0;
+                str_len = this.awd_file_data.newBlockBytes.readUnsignedInt();
+                str_end = this.awd_file_data.newBlockBytes.position + str_len;
+                while (streamsParsed < num_Streams) {
+                    if (streamtypes[streamsParsed] == 1) {
+                        indices = geom.subGeometries[subMeshParsed].indices;
+                        verts = new Array();
+                        idx = 0;
+                        while (this.awd_file_data.newBlockBytes.position < str_end) {
+                            x = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo);
+                            y = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo);
+                            z = this.awd_file_data.readNumber(this.awd_file_data.accuracyGeo);
+                            verts[idx++] = x;
+                            verts[idx++] = y;
+                            verts[idx++] = z;
+                        }
+                        subGeom = new TriangleSubGeometry(new AttributesBuffer());
+                        subGeom.setIndices(indices);
+                        subGeom.setPositions(verts);
+                        subGeom.setUVs(uvs[subMeshParsed]);
+                        subGeom.setNormals(null);
+                        subGeom.setTangents(null);
+                        subGeom.autoDeriveNormals = false;
+                        subGeom.autoDeriveTangents = false;
+                        subMeshParsed++;
+                        geometry.addSubGeometry(subGeom);
+                    }
+                    else
+                        this.awd_file_data.newBlockBytes.position = str_end;
+                    streamsParsed++;
+                }
+            }
+            clip.addFrame(geometry, frame_dur);
+            frames_parsed++;
+        }
+        this.awd_file_data.parseUserAttributes();
+        this.awd_file_data.cur_block.data = clip;
+        if (this.awd_file_data.debug)
+            console.log("Parsed a VertexClipNode: Name = " + clip.name + " | Target-Geometry-Name = " + geom.name + " | Number of Frames = " + clip.frames.length);
+    };
+    return VertexAnimClipAWDParser;
+})(AWDBlockParserBase);
+module.exports = VertexAnimClipAWDParser;
+
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils","awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/AWD3BlockParsers/VertexAnimationSetAWDParser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+var SkeletonClipNode = require("awayjs-renderergl/lib/animators/nodes/SkeletonClipNode");
+var VertexClipNode = require("awayjs-renderergl/lib/animators/nodes/VertexClipNode");
+var VertexAnimationSet = require("awayjs-renderergl/lib/animators/VertexAnimationSet");
+var SkeletonAnimationSet = require("awayjs-renderergl/lib/animators/SkeletonAnimationSet");
+var VertexAnimationSetAWDParser = (function (_super) {
+    __extends(VertexAnimationSetAWDParser, _super);
+    function VertexAnimationSetAWDParser() {
+        _super.call(this);
+    }
+    VertexAnimationSetAWDParser.prototype.parseFromBytes = function () {
+        var poseBlockAdress; /*int*/
+        this.awd_file_data.cur_block.name = this.awd_file_data.parseVarStr();
+        var num_frames = this.awd_file_data.newBlockBytes.readUnsignedShort();
+        var props = this.awd_file_data.parseProperties({ 1: AWD3Utils.UINT16 });
+        var frames_parsed = 0;
+        var skeletonFrames = new Array();
+        var vertexFrames = new Array();
+        while (frames_parsed < num_frames) {
+            poseBlockAdress = this.awd_file_data.newBlockBytes.readUnsignedInt();
+            var animNode = this.awd_file_data.getAssetByID(poseBlockAdress);
+            if (animNode == undefined) {
+            }
+            else {
+                if (animNode instanceof VertexClipNode)
+                    vertexFrames.push(animNode);
+                if (animNode instanceof SkeletonClipNode)
+                    skeletonFrames.push(animNode);
+            }
+            frames_parsed++;
+        }
+        if ((vertexFrames.length == 0) && (skeletonFrames.length == 0)) {
+            //this.awd_file_data._blocks[blockID].addError("Could not create this.awd_file_data AnimationSet, because it contains no animations");
+            return;
+        }
+        this.awd_file_data.parseUserAttributes();
+        if (vertexFrames.length > 0) {
+            var newVertexAnimationSet = new VertexAnimationSet();
+            for (var i = 0; i < vertexFrames.length; i++)
+                newVertexAnimationSet.addAnimation(vertexFrames[i]);
+            this.awd_file_data.cur_block.data = newVertexAnimationSet;
+            if (this.awd_file_data.debug)
+                console.log("Parsed a VertexAnimationSet: Name = " + newVertexAnimationSet.name + " | Animations = " + newVertexAnimationSet.animations.length + " | Animation-Names = " + newVertexAnimationSet.animationNames.toString());
+            return;
+        }
+        else if (skeletonFrames.length > 0) {
+            var newSkeletonAnimationSet = new SkeletonAnimationSet(props.get(1, 4)); //props.get(1,4));
+            for (var i = 0; i < skeletonFrames.length; i++)
+                newSkeletonAnimationSet.addAnimation(skeletonFrames[i]);
+            this.awd_file_data.cur_block.data = newSkeletonAnimationSet;
+            if (this.awd_file_data.debug)
+                console.log("Parsed a SkeletonAnimationSet: Name = " + newSkeletonAnimationSet.name + " | Animations = " + newSkeletonAnimationSet.animations.length + " | Animation-Names = " + newSkeletonAnimationSet.animationNames.toString());
+        }
+    };
+    return VertexAnimationSetAWDParser;
+})(AWDBlockParserBase);
+module.exports = VertexAnimationSetAWDParser;
+
+},{"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils","awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData":[function(require,module,exports){
+var BlendMode = require("awayjs-core/lib/image/BlendMode");
+var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
+var Mesh = require("awayjs-display/lib/entities/Mesh");
+var SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
+var Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
+var MethodMaterial = require("awayjs-methodmaterials/lib/MethodMaterial");
+var AWDProperties = require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
+var AWDBlock = require("awayjs-parsers/lib/AWD3ParserUtils/AWDBlock");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+/**
+ * AWD3FileData stores the data loaded for a AWD-file. It also gives access to some helper functions.
+ */
+var AWD3FileData = (function () {
+    /**
+     * Creates a new AWD3FileData object.
+     */
+    function AWD3FileData() {
+        //set to "true" to have some console.logs in the Console
+        this._debug = false;
+        this._accuracyOnBlocks = false;
+        this.major_version = 0;
+        this.minor_version = 0;
+        this._blocks = new Array();
+        this._blocks.push(new AWDBlock(255, 0));
+        this._cur_block = this._blocks[0];
+        this.blendModeDic = new Array(); // used to translate ints to blendMode-strings
+        this.blendModeDic.push(BlendMode.NORMAL);
+        this.blendModeDic.push(BlendMode.ADD);
+        this.blendModeDic.push(BlendMode.ALPHA);
+        this.blendModeDic.push(BlendMode.DARKEN);
+        this.blendModeDic.push(BlendMode.DIFFERENCE);
+        this.blendModeDic.push(BlendMode.ERASE);
+        this.blendModeDic.push(BlendMode.HARDLIGHT);
+        this.blendModeDic.push(BlendMode.INVERT);
+        this.blendModeDic.push(BlendMode.LAYER);
+        this.blendModeDic.push(BlendMode.LIGHTEN);
+        this.blendModeDic.push(BlendMode.MULTIPLY);
+        this.blendModeDic.push(BlendMode.NORMAL);
+        this.blendModeDic.push(BlendMode.OVERLAY);
+        this.blendModeDic.push(BlendMode.SCREEN);
+        this.blendModeDic.push(BlendMode.SHADER);
+        this.blendModeDic.push(BlendMode.OVERLAY);
+        this._depthSizeDic = new Array(); // used to translate ints to depthSize-values
+        this._depthSizeDic.push(256);
+        this._depthSizeDic.push(512);
+        this._depthSizeDic.push(2048);
+        this._depthSizeDic.push(1024);
+    }
+    AWD3FileData.prototype.getDepthSizeFromEnum = function (depthSize) {
+        return this._depthSizeDic[depthSize];
+    };
+    AWD3FileData.prototype.getBlendModeStringFromEnum = function (blendmode) {
+        return this.blendModeDic[blendmode];
+    };
+    AWD3FileData.prototype.dispose = function () {
+        for (var c in this._blocks) {
+            var b = this._blocks[c];
+            b.dispose();
+        }
+    };
+    Object.defineProperty(AWD3FileData.prototype, "accuracyOnBlocks", {
+        get: function () {
+            return this._accuracyOnBlocks;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AWD3FileData.prototype, "accuracyMatrix", {
+        get: function () {
+            return this._accuracyMatrix;
+        },
+        set: function (new_accuracyMatrix) {
+            this._accuracyMatrix = new_accuracyMatrix;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AWD3FileData.prototype, "accuracyProps", {
+        get: function () {
+            return this._accuracyProps;
+        },
+        set: function (new_accuracyProps) {
+            this._accuracyProps = new_accuracyProps;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AWD3FileData.prototype, "accuracyGeo", {
+        get: function () {
+            return this._accuracyGeo;
+        },
+        set: function (new_accuracyGeo) {
+            this._accuracyGeo = new_accuracyGeo;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AWD3FileData.prototype, "debug", {
+        get: function () {
+            return this._debug;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AWD3FileData.prototype, "matrixNrType", {
+        get: function () {
+            return this._matrixNrType;
+        },
+        set: function (newmatrixNrType) {
+            this._matrixNrType = newmatrixNrType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AWD3FileData.prototype, "propsNrType", {
+        get: function () {
+            return this._propsNrType;
+        },
+        set: function (new_props_nr) {
+            this._propsNrType = new_props_nr;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AWD3FileData.prototype, "geoNrType", {
+        get: function () {
+            return this._geoNrType;
+        },
+        set: function (new_geoNrType) {
+            this._geoNrType = new_geoNrType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AWD3FileData.prototype, "newBlockBytes", {
+        get: function () {
+            return this._newBlockBytes;
+        },
+        set: function (new_newBlockBytes) {
+            this._newBlockBytes = new_newBlockBytes;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    AWD3FileData.prototype.create_new_block = function (type, id) {
+        var new_block = new AWDBlock(this._blocks.length, type);
+        this._cur_block = new_block;
+        this._blocks[id] = new_block;
+    };
+    Object.defineProperty(AWD3FileData.prototype, "cur_block", {
+        get: function () {
+            return this._cur_block;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    AWD3FileData.prototype.block_cnt = function () {
+        return this._blocks.length;
+    };
+    //--Parser UTILS---------------------------------------------------------------------------
+    AWD3FileData.prototype.parseUserAttributes = function () {
+        var attributes;
+        var list_len;
+        var attibuteCnt;
+        list_len = this._newBlockBytes.readUnsignedInt();
+        if (list_len > 0) {
+            var list_end;
+            attributes = {};
+            list_end = this._newBlockBytes.position + list_len;
+            while (this._newBlockBytes.position < list_end) {
+                var ns_id;
+                var attr_key;
+                var attr_type;
+                var attr_len;
+                var attr_val;
+                // TODO: Properly tend to namespaces in attributes
+                ns_id = this._newBlockBytes.readUnsignedByte();
+                attr_key = this.parseVarStr();
+                attr_type = this._newBlockBytes.readUnsignedByte();
+                attr_len = this._newBlockBytes.readUnsignedInt();
+                if ((this._newBlockBytes.position + attr_len) > list_end) {
+                    console.log("           Error in reading attribute # " + attibuteCnt + " = skipped to end of attribute-list");
+                    this._newBlockBytes.position = list_end;
+                    return attributes;
+                }
+                switch (attr_type) {
+                    case AWD3Utils.AWDSTRING:
+                        attr_val = this._newBlockBytes.readUTFBytes(attr_len);
+                        break;
+                    case AWD3Utils.INT8:
+                        attr_val = this._newBlockBytes.readByte();
+                        break;
+                    case AWD3Utils.INT16:
+                        attr_val = this._newBlockBytes.readShort();
+                        break;
+                    case AWD3Utils.INT32:
+                        attr_val = this._newBlockBytes.readInt();
+                        break;
+                    case AWD3Utils.BOOL:
+                    case AWD3Utils.UINT8:
+                        attr_val = this._newBlockBytes.readUnsignedByte();
+                        break;
+                    case AWD3Utils.UINT16:
+                        attr_val = this._newBlockBytes.readUnsignedShort();
+                        break;
+                    case AWD3Utils.UINT32:
+                    case AWD3Utils.BADDR:
+                        attr_val = this._newBlockBytes.readUnsignedInt();
+                        break;
+                    case AWD3Utils.FLOAT32:
+                        attr_val = this._newBlockBytes.readFloat();
+                        break;
+                    case AWD3Utils.FLOAT64:
+                        attr_val = this._newBlockBytes.readDouble();
+                        break;
+                    default:
+                        attr_val = 'unimplemented attribute type ' + attr_type;
+                        this._newBlockBytes.position += attr_len;
+                        break;
+                }
+                if (this._debug) {
+                    console.log("attribute = name: " + attr_key + "  / value = " + attr_val);
+                }
+                attributes[attr_key] = attr_val;
+                attibuteCnt += 1;
+            }
+        }
+        return attributes;
+    };
+    AWD3FileData.prototype.parseProperties = function (expected) {
+        var list_end;
+        var list_len;
+        var propertyCnt = 0;
+        var props = new AWDProperties();
+        list_len = this._newBlockBytes.readUnsignedInt();
+        list_end = this._newBlockBytes.position + list_len;
+        if (expected) {
+            while (this._newBlockBytes.position < list_end) {
+                var len;
+                var key;
+                var type;
+                key = this._newBlockBytes.readUnsignedShort();
+                len = this._newBlockBytes.readUnsignedInt();
+                if ((this._newBlockBytes.position + len) > list_end) {
+                    console.log("           Error in reading property # " + propertyCnt + " = skipped to end of propertie-list");
+                    this._newBlockBytes.position = list_end;
+                    return props;
+                }
+                if (expected.hasOwnProperty(key.toString())) {
+                    type = expected[key];
+                    props.set(key, this.parseAttrValue(type, len));
+                }
+                else {
+                    this._newBlockBytes.position += len;
+                }
+                propertyCnt += 1;
+            }
+        }
+        else {
+            this._newBlockBytes.position = list_end;
+        }
+        return props;
+    };
+    AWD3FileData.prototype.parseAttrValue = function (type, len) {
+        var elem_len;
+        var read_func;
+        switch (type) {
+            case AWD3Utils.BOOL:
+            case AWD3Utils.INT8:
+                elem_len = 1;
+                read_func = this._newBlockBytes.readByte;
+                break;
+            case AWD3Utils.INT16:
+                elem_len = 2;
+                read_func = this._newBlockBytes.readShort;
+                break;
+            case AWD3Utils.INT32:
+                elem_len = 4;
+                read_func = this._newBlockBytes.readInt;
+                break;
+            case AWD3Utils.UINT8:
+                elem_len = 1;
+                read_func = this._newBlockBytes.readUnsignedByte;
+                break;
+            case AWD3Utils.UINT16:
+                elem_len = 2;
+                read_func = this._newBlockBytes.readUnsignedShort;
+                break;
+            case AWD3Utils.UINT32:
+            case AWD3Utils.COLOR:
+            case AWD3Utils.BADDR:
+                elem_len = 4;
+                read_func = this._newBlockBytes.readUnsignedInt;
+                break;
+            case AWD3Utils.FLOAT32:
+                elem_len = 4;
+                read_func = this._newBlockBytes.readFloat;
+                break;
+            case AWD3Utils.FLOAT64:
+                elem_len = 8;
+                read_func = this._newBlockBytes.readDouble;
+                break;
+            case AWD3Utils.AWDSTRING:
+                return this._newBlockBytes.readUTFBytes(len);
+            case AWD3Utils.VECTOR2x1:
+            case AWD3Utils.VECTOR3x1:
+            case AWD3Utils.VECTOR4x1:
+            case AWD3Utils.MTX3x2:
+            case AWD3Utils.MTX3x3:
+            case AWD3Utils.MTX4x3:
+            case AWD3Utils.MTX4x4:
+                elem_len = 8;
+                read_func = this._newBlockBytes.readDouble;
+                break;
+        }
+        if (elem_len < len) {
+            var list = [];
+            var num_read = 0;
+            var num_elems = len / elem_len;
+            while (num_read < num_elems) {
+                list.push(read_func.apply(this._newBlockBytes)); // list.push(read_func());
+                num_read++;
+            }
+            return list;
+        }
+        else {
+            var val = read_func.apply(this._newBlockBytes); //read_func();
+            return val;
+        }
+    };
+    // Helper - functions
+    AWD3FileData.prototype.getUVForVertexAnimation = function (meshID /*uint*/) {
+        if (this._blocks[meshID].data instanceof Mesh)
+            meshID = this._blocks[meshID].geoID;
+        if (this._blocks[meshID].uvsForVertexAnimation)
+            return this._blocks[meshID].uvsForVertexAnimation;
+        var geometry = this._blocks[meshID].data;
+        var geoCnt = 0;
+        var sub_geom;
+        this._blocks[meshID].uvsForVertexAnimation = new Array();
+        while (geoCnt < geometry.subGeometries.length) {
+            sub_geom = geometry.subGeometries[geoCnt];
+            this._blocks[meshID].uvsForVertexAnimation.push(sub_geom.uvs.get(sub_geom.numVertices));
+            geoCnt++;
+        }
+        return this._blocks[meshID].uvsForVertexAnimation;
+    };
+    AWD3FileData.prototype.parseVarStr = function () {
+        var len = this._newBlockBytes.readUnsignedShort();
+        return this._newBlockBytes.readUTFBytes(len);
+    };
+    AWD3FileData.prototype.getBlockByID = function (assetID) {
+        return this._blocks[assetID];
+    };
+    AWD3FileData.prototype.getAssetByID = function (assetID) {
+        return this._blocks[assetID].data;
+    };
+    AWD3FileData.prototype.getDefaultAsset = function (assetType) {
+        switch (true) {
+            case (assetType == SingleCubeTexture.assetType):
+                return this.getDefaultCubeTexture();
+                break;
+            case (assetType == Single2DTexture.assetType):
+                return DefaultMaterialManager.getDefaultTexture();
+                break;
+            case (assetType == MethodMaterial.assetType):
+                return DefaultMaterialManager.getDefaultMaterial();
+                break;
+            default:
+                break;
+        }
+        return null;
+    };
+    AWD3FileData.prototype.getDefaultCubeTexture = function () {
+        /*
+        if (!this._defaultCubeTexture) {
+            var defaultBitmap:BitmapImage2D = DefaultMaterialManager.createCheckeredBitmapImage2D();
+
+            var bitmapImageCube = new BitmapImageCube(defaultBitmap.width);
+
+            for (var i:number = 0; i < 6; i++)
+                bitmapImageCube.draw(i, defaultBitmap);
+
+
+            this._defaultCubeTexture = new SingleCubeTexture(bitmapImageCube);
+            this._defaultCubeTexture.name = "defaultCubeTexture";
+        }
+        */
+        return this._defaultCubeTexture;
+    };
+    AWD3FileData.prototype.readNumber = function (precision) {
+        if (precision === void 0) { precision = false; }
+        if (precision)
+            return this._newBlockBytes.readDouble();
+        return this._newBlockBytes.readFloat();
+    };
+    AWD3FileData.prototype.parseMatrix3D = function () {
+        return new Matrix3D(this.parseMatrix43RawData());
+    };
+    AWD3FileData.prototype.parseMatrix32RawData = function () {
+        var i;
+        var mtx_raw = new Array(6);
+        for (i = 0; i < 6; i++) {
+            mtx_raw[i] = this._newBlockBytes.readFloat();
+        }
+        return mtx_raw;
+    };
+    AWD3FileData.prototype.parseMatrix43RawData = function () {
+        var mtx_raw = new Float32Array(16);
+        mtx_raw[0] = this.readNumber(this._accuracyMatrix);
+        mtx_raw[1] = this.readNumber(this._accuracyMatrix);
+        mtx_raw[2] = this.readNumber(this._accuracyMatrix);
+        mtx_raw[3] = 0.0;
+        mtx_raw[4] = this.readNumber(this._accuracyMatrix);
+        mtx_raw[5] = this.readNumber(this._accuracyMatrix);
+        mtx_raw[6] = this.readNumber(this._accuracyMatrix);
+        mtx_raw[7] = 0.0;
+        mtx_raw[8] = this.readNumber(this._accuracyMatrix);
+        mtx_raw[9] = this.readNumber(this._accuracyMatrix);
+        mtx_raw[10] = this.readNumber(this._accuracyMatrix);
+        mtx_raw[11] = 0.0;
+        mtx_raw[12] = this.readNumber(this._accuracyMatrix);
+        mtx_raw[13] = this.readNumber(this._accuracyMatrix);
+        mtx_raw[14] = this.readNumber(this._accuracyMatrix);
+        mtx_raw[15] = 1.0;
+        //TODO: fix max exporter to remove NaN values in joint 0 inverse bind pose
+        if (isNaN(mtx_raw[0])) {
+            mtx_raw[0] = 1;
+            mtx_raw[1] = 0;
+            mtx_raw[2] = 0;
+            mtx_raw[4] = 0;
+            mtx_raw[5] = 1;
+            mtx_raw[6] = 0;
+            mtx_raw[8] = 0;
+            mtx_raw[9] = 0;
+            mtx_raw[10] = 1;
+            mtx_raw[12] = 0;
+            mtx_raw[13] = 0;
+            mtx_raw[14] = 0;
+        }
+        return mtx_raw;
+    };
+    return AWD3FileData;
+})();
+module.exports = AWD3FileData;
+
+},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils","awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-parsers/lib/AWD3ParserUtils/AWDProperties":"awayjs-parsers/lib/AWD3ParserUtils/AWDProperties"}],"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":[function(require,module,exports){
 var AWD3Utils = (function () {
     function AWD3Utils() {
     }
@@ -34,6 +2927,36 @@ var AWD3Utils = (function () {
 })();
 module.exports = AWD3Utils;
 
+},{}],"awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags":[function(require,module,exports){
+/**
+ *
+ */
+var AWDBitFlags = (function () {
+    function AWDBitFlags() {
+    }
+    AWDBitFlags.test = function (flags, testFlag) {
+        return (flags & testFlag) == testFlag;
+    };
+    AWDBitFlags.FLAG1 = 1;
+    AWDBitFlags.FLAG2 = 2;
+    AWDBitFlags.FLAG3 = 4;
+    AWDBitFlags.FLAG4 = 8;
+    AWDBitFlags.FLAG5 = 16;
+    AWDBitFlags.FLAG6 = 32;
+    AWDBitFlags.FLAG7 = 64;
+    AWDBitFlags.FLAG8 = 128;
+    AWDBitFlags.FLAG9 = 256;
+    AWDBitFlags.FLAG10 = 512;
+    AWDBitFlags.FLAG11 = 1024;
+    AWDBitFlags.FLAG12 = 2048;
+    AWDBitFlags.FLAG13 = 4096;
+    AWDBitFlags.FLAG14 = 8192;
+    AWDBitFlags.FLAG15 = 16384;
+    AWDBitFlags.FLAG16 = 32768;
+    return AWDBitFlags;
+})();
+module.exports = AWDBitFlags;
+
 },{}],"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":[function(require,module,exports){
 var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
 var AWDBlock = (function () {
@@ -63,7 +2986,377 @@ var AWDBlock = (function () {
 })();
 module.exports = AWDBlock;
 
-},{"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWDParser":[function(require,module,exports){
+},{"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWD3ParserUtils/AWDProperties":[function(require,module,exports){
+var AWDProperties = (function () {
+    function AWDProperties() {
+    }
+    AWDProperties.prototype.set = function (key, value) {
+        this[key.toString()] = value;
+    };
+    AWDProperties.prototype.get = function (key, fallback) {
+        if (this.hasOwnProperty(key.toString())) {
+            return this[key.toString()];
+        }
+        else {
+            return fallback;
+        }
+    };
+    return AWDProperties;
+})();
+module.exports = AWDProperties;
+
+},{}],"awayjs-parsers/lib/AWD3Parser":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var BitmapImageCube = require("awayjs-core/lib/image/BitmapImageCube");
+var URLLoaderDataFormat = require("awayjs-core/lib/net/URLLoaderDataFormat");
+var URLRequest = require("awayjs-core/lib/net/URLRequest");
+var ParserBase = require("awayjs-core/lib/parsers/ParserBase");
+var ParserUtils = require("awayjs-core/lib/parsers/ParserUtils");
+var ByteArray = require("awayjs-core/lib/utils/ByteArray");
+var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
+var SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
+var Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
+var AWDBitFlags = require("awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags");
+var AWDAssetParsers = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParsers");
+var AWD3FileData = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData");
+var AWD3Utils = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+/**
+ * AWD3Utils provides a parser for the AWD data type.
+ */
+var AWD3Parser = (function (_super) {
+    __extends(AWD3Parser, _super);
+    /**
+     * Creates a new AWD3Utils object.
+     * @param uri The url or id of the data or file to be parsed.
+     * @param extra The holder for extra contextual data that the parser might need.
+     */
+    function AWD3Parser(block_parser) {
+        if (block_parser === void 0) { block_parser = undefined; }
+        _super.call(this, URLLoaderDataFormat.ARRAY_BUFFER);
+        //set to "true" to have some console.logs in the Console
+        this._debug = false;
+        this._startedParsing = false;
+        this._parsed_header = false;
+        // temp for checking stats
+        this.total_time = 0;
+        this.geom_time = 0;
+        this.timeline_time = 0;
+        this._block_parser = block_parser;
+        if (this._block_parser == undefined) {
+            this._block_parser = new AWDAssetParsers();
+        }
+        this._awd_data = new AWD3FileData();
+        this._block_parser.init_parser(this._awd_data);
+    }
+    /**
+     * Indicates whether or not a given file extension is supported by the parser.
+     * @param extension The file extension of a potential file to be parsed.
+     * @return Whether or not the given file type is supported.
+     */
+    AWD3Parser.supportsType = function (extension) {
+        extension = extension.toLowerCase();
+        return extension == "awd";
+    };
+    /**
+     * Tests whether a data block can be parsed by the parser.
+     * @param data The data block to potentially be parsed.
+     * @return Whether or not the given data is supported.
+     */
+    AWD3Parser.supportsData = function (data) {
+        return (ParserUtils.toString(data, 3) == 'AWD');
+    };
+    /**
+     * @inheritDoc
+     */
+    AWD3Parser.prototype._iResolveDependency = function (resourceDependency) {
+        // this will be called when Dependency has finished loading.
+        // the ressource dependecniy has a id that point to the awd_block waiting for it.
+        if (resourceDependency.assets.length == 1) {
+            var this_block = this._awd_data.getBlockByID(parseInt(resourceDependency.id));
+            if (this_block.type == 82) {
+                var testure_asset = new Single2DTexture(resourceDependency.assets[0]);
+                this_block.data = testure_asset; // Store finished asset
+                // Finalize texture asset to dispatch texture event, which was
+                // previously suppressed while the dependency was loaded.
+                this._pFinalizeAsset(testure_asset, this_block.name);
+                if (this._debug) {
+                    console.log("Successfully loaded Bitmap for texture");
+                    console.log("Parsed texture: Name = " + this_block.name);
+                }
+            }
+            else if (this_block.type == 44) {
+                // todo: implement parsing of Audio block data
+                /*
+                 var audio_asset:AudioAsset = <AudioAsset> resourceDependency.assets[0];
+                 this_block.data = audio_asset; // Store finished asset
+                 // Finalize texture asset to dispatch texture event, which was
+                 // previously suppressed while the dependency was loaded.
+                 this._pFinalizeAsset(<IAsset> audio_asset, this_block.name);
+                 */
+                if (this._debug) {
+                    console.log("Successfully loaded Sound into AudioAsset");
+                    console.log("Loaded Sound: Name = " + this_block.name);
+                }
+            }
+            else if (this_block.type == 83) {
+                this_block.loaded_dependencies[resourceDependency.sub_id] = resourceDependency.assets[0];
+                this_block.loaded_dependencies_cnt++;
+                if (this_block.loaded_dependencies_cnt == 6) {
+                    if (this._debug) {
+                        console.log("Successfully loaded Bitmap " + resourceDependency.sub_id + " / 6 for Cubetexture");
+                    }
+                    var cube_image_asset = new BitmapImageCube(this_block.loaded_dependencies[0].width);
+                    for (var i = 0; i < 6; i++)
+                        cube_image_asset.draw(i, this_block.loaded_dependencies[i]);
+                    var cube_tex_asset = new SingleCubeTexture(cube_image_asset);
+                    this_block.data = cube_tex_asset; // Store finished asset
+                    this._pFinalizeAsset(cube_tex_asset, this_block.name);
+                    if (this._debug) {
+                        console.log("Parsed CubeTexture: Name = " + this_block.name);
+                    }
+                }
+            }
+        }
+    };
+    /**
+     * @inheritDoc
+     */
+    AWD3Parser.prototype._iResolveDependencyFailure = function (resourceDependency) {
+        //	not used - if a dependcy fails, the awaiting Texture or CubeTexture will never be finalized, and the default-bitmaps will be used.
+        // 	this means, that if one Bitmap of a CubeTexture fails, the CubeTexture will have the DefaultTexture applied for all six Bitmaps.
+    };
+    /**
+     * Resolve a dependency name
+     *
+     * @param resourceDependency The dependency to be resolved.
+     */
+    AWD3Parser.prototype._iResolveDependencyName = function (resourceDependency, asset) {
+        var oldName = asset.name;
+        if (asset) {
+            var block = this._awd_data.getBlockByID(parseInt(resourceDependency.id));
+            // Reset name of texture to the one defined in the AWD file,
+            // as opposed to whatever the image parser came up with.
+            asset.resetAssetPath(block.name, null, true);
+        }
+        var newName = asset.name;
+        asset.name = oldName;
+        return newName;
+    };
+    /**
+     * @inheritDoc
+     */
+    AWD3Parser.prototype._pProceedParsing = function () {
+        if (!this._startedParsing) {
+            this._byteData = this._pGetByteData(); //getByteData();
+            this._startedParsing = true;
+        }
+        if (!this._parsed_header) {
+            //----------------------------------------------------------------------------
+            // LITTLE_ENDIAN - Default for ArrayBuffer / Not implemented in ByteArray
+            //----------------------------------------------------------------------------
+            //this._byteData.endian = Endian.LITTLE_ENDIAN;
+            //----------------------------------------------------------------------------
+            //----------------------------------------------------------------------------
+            // Parse header and decompress body if needed
+            this.parseHeader();
+            switch (this._compression) {
+                case AWD3Utils.DEFLATE:
+                case AWD3Utils.LZMA:
+                    this._pDieWithError('Compressed AWD formats not yet supported');
+                    break;
+                case AWD3Utils.UNCOMPRESSED:
+                    this._body = this._byteData;
+                    break;
+            }
+            this._parsed_header = true;
+        }
+        if (this._body) {
+            while (this._body.getBytesAvailable() > 0 && !this.parsingPaused) {
+                this.parseNextBlock();
+            }
+            //----------------------------------------------------------------------------
+            // Return complete status
+            if (this._body.getBytesAvailable() == 0) {
+                this.dispose();
+                return ParserBase.PARSING_DONE;
+            }
+            else {
+                return ParserBase.MORE_TO_PARSE;
+            }
+        }
+        else {
+            switch (this._compression) {
+                case AWD3Utils.DEFLATE:
+                case AWD3Utils.LZMA:
+                    if (this._debug) {
+                        console.log("(!) AWD3Utils Error: Compressed AWD formats not yet supported (!)");
+                    }
+                    break;
+            }
+            // Error - most likely _body not set because we do not support compression.
+            return ParserBase.PARSING_DONE;
+        }
+    };
+    AWD3Parser.prototype._pStartParsing = function (frameLimit) {
+        _super.prototype._pStartParsing.call(this, frameLimit);
+        //create a content object for Loaders
+        this._pContent = new DisplayObjectContainer();
+    };
+    AWD3Parser.prototype.dispose = function () {
+        this._awd_data.dispose();
+    };
+    AWD3Parser.prototype.parseNextBlock = function () {
+        var block_id = this._body.readUnsignedInt();
+        var ns = this._body.readUnsignedByte();
+        var block_type = this._body.readUnsignedByte();
+        var flags = this._body.readUnsignedByte();
+        var len = this._body.readUnsignedInt();
+        var blockCompression = AWDBitFlags.test(flags, AWDBitFlags.FLAG4);
+        var blockCompressionLZMA = AWDBitFlags.test(flags, AWDBitFlags.FLAG5);
+        if (this._awd_data.accuracyOnBlocks) {
+            this._awd_data.accuracyMatrix = AWDBitFlags.test(flags, AWDBitFlags.FLAG1);
+            this._awd_data.accuracyGeo = AWDBitFlags.test(flags, AWDBitFlags.FLAG2);
+            this._awd_data.accuracyProps = AWDBitFlags.test(flags, AWDBitFlags.FLAG3);
+            this._awd_data.geoNrType = AWD3Utils.FLOAT32;
+            if (this._awd_data.accuracyGeo) {
+                this._awd_data.geoNrType = AWD3Utils.FLOAT64;
+            }
+            this._awd_data.matrixNrType = AWD3Utils.FLOAT32;
+            if (this._awd_data.accuracyMatrix) {
+                this._awd_data.matrixNrType = AWD3Utils.FLOAT64;
+            }
+            this._awd_data.propsNrType = AWD3Utils.FLOAT32;
+            if (this._awd_data.accuracyProps) {
+                this._awd_data.propsNrType = AWD3Utils.FLOAT64;
+            }
+        }
+        var blockEndAll = this._body.position + len;
+        if (len > this._body.getBytesAvailable()) {
+            this._pDieWithError('AWD2 block length is bigger than the bytes that are available!');
+            this._body.position += this._body.getBytesAvailable();
+            return;
+        }
+        var newBlockBytes = new ByteArray();
+        this._body.readBytes(newBlockBytes, 0, len);
+        this._awd_data.newBlockBytes = newBlockBytes;
+        //----------------------------------------------------------------------------
+        // Compressed AWD Formats not yet supported
+        if (blockCompression) {
+            this._pDieWithError('Compressed AWD formats not yet supported');
+        }
+        //----------------------------------------------------------------------------
+        // LITTLE_ENDIAN - Default for ArrayBuffer / Not implemented in ByteArray
+        //----------------------------------------------------------------------------
+        //this._newBlockBytes.endian = Endian.LITTLE_ENDIAN;
+        //----------------------------------------------------------------------------
+        this._awd_data.newBlockBytes.position = 0;
+        // we create AWDBlock for all exept the metadata. the metadata block has is the first awdblock in the list by default.
+        //if(block_type!=255)
+        this._awd_data.create_new_block(block_type, block_id);
+        if (blockCompression) {
+            this._pDieWithError('Compressed AWD formats not yet supported');
+        }
+        //if (this._debug) {
+        console.log("AWDBlock:  ID = " + block_id + " | TypeID = " + block_type + " | Compression = " + blockCompression + " | Matrix-Precision = " + this._awd_data.accuracyMatrix + " | Geometry-Precision = " + this._awd_data.accuracyGeo + " | Properties-Precision = " + this._awd_data.accuracyProps);
+        //}
+        var time_start = performance.now();
+        // first check if the block is any of the 3 blocks that does not produce a asset.
+        // this block contains a asset.
+        if (this._block_parser.parseAsset(block_type)) {
+            if (this._awd_data.cur_block.state == AWD3Utils.BLOCKSTATE_FINALIZE) {
+                this._pFinalizeAsset(this._awd_data.cur_block.data, this._awd_data.cur_block.name);
+                if (this._awd_data.cur_block.data instanceof DisplayObject) {
+                    if (this._awd_data.cur_block.data.parent == undefined) {
+                        this._pContent.addChild(this._awd_data.cur_block.data);
+                    }
+                }
+            }
+            else if (this._awd_data.cur_block.state == AWD3Utils.BLOCKSTATE_INVALID) {
+                console.log("ERROR while parsing block - type = ", block_type, " id = ", block_id);
+            }
+            else if (this._awd_data.cur_block.state == AWD3Utils.BLOCKSTATE_LOAD_DEPENDENICES) {
+                for (var r = 0; r < this._awd_data.cur_block.dependencies_urls.length; r++) {
+                    // load dependencies by url. let the parser system decide how to parse it
+                    this._pAddDependency(this._awd_data.cur_block.id.toString(), new URLRequest(this._awd_data.cur_block.dependencies_urls[r]), false, null, true, r);
+                }
+                for (var r = 0; r < this._awd_data.cur_block.dependencies_data.length; r++) {
+                    // load dependencies from data. need to prepare the data based on block_type (image vs audio).
+                    if ((block_type == 82) || (block_type == 83)) {
+                        this._pAddDependency(this._awd_data.cur_block.id.toString(), null, false, ParserUtils.byteArrayToImage(this._awd_data.cur_block.dependencies_data[r]), true, r);
+                    }
+                    else if (block_type == 44) {
+                    }
+                }
+                this._pPauseAndRetrieveDependencies();
+            }
+            else if (this._awd_data.cur_block.state == AWD3Utils.BLOCKSTATE_NO_ASSET) {
+            }
+        }
+        else {
+            console.log("Encountered unknown blocktype - type = ", block_type, " id = ", block_id);
+        }
+        var time_end = performance.now();
+        var thisTime = time_end - time_start;
+        this.total_time += thisTime;
+        if (block_type == 1) {
+            this.geom_time += thisTime;
+        }
+        else if (block_type == 133) {
+            this.timeline_time += thisTime;
+        }
+        console.log("'parsed '" + block_type + "'  block in " + thisTime + " ms", " total: ", this.total_time, " geom: ", this.geom_time, "timelines:", this.timeline_time);
+        this._body.position = blockEndAll;
+        this._awd_data.newBlockBytes = null;
+    };
+    AWD3Parser.prototype.parseHeader = function () {
+        var flags;
+        var body_len;
+        this._byteData.position = 3; // Skip magic string and parse version
+        this._awd_data.major_version = this._byteData.readUnsignedByte();
+        this._awd_data.minor_version = this._byteData.readUnsignedByte();
+        flags = this._byteData.readUnsignedShort(); // Parse bit flags
+        this._streaming = AWDBitFlags.test(flags, AWDBitFlags.FLAG1);
+        if ((this._awd_data.major_version == 2) && (this._awd_data.minor_version == 1)) {
+            this._awd_data.accuracyMatrix = AWDBitFlags.test(flags, AWDBitFlags.FLAG2);
+            this._awd_data.accuracyGeo = AWDBitFlags.test(flags, AWDBitFlags.FLAG3);
+            this._awd_data.accuracyProps = AWDBitFlags.test(flags, AWDBitFlags.FLAG4);
+        }
+        // if we set _accuracyOnBlocks, the precision-values are read from each block-header.
+        // set storagePrecision types
+        this._awd_data.geoNrType = AWD3Utils.FLOAT32;
+        if (this._awd_data.accuracyGeo) {
+            this._awd_data.geoNrType = AWD3Utils.FLOAT64;
+        }
+        this._awd_data.matrixNrType = AWD3Utils.FLOAT32;
+        if (this._awd_data.accuracyMatrix) {
+            this._awd_data.matrixNrType = AWD3Utils.FLOAT64;
+        }
+        this._awd_data.propsNrType = AWD3Utils.FLOAT32;
+        if (this._awd_data.accuracyProps) {
+            this._awd_data.propsNrType = AWD3Utils.FLOAT64;
+        }
+        this._compression = this._byteData.readUnsignedByte(); // compression
+        if (this._debug) {
+            console.log("Import AWDFile of version = " + this._awd_data.major_version + " - " + this._awd_data.minor_version);
+            console.log("Global Settings = Compression = " + this._compression + " | Streaming = " + this._streaming + " | Matrix-Precision = " + this._awd_data.accuracyMatrix + " | Geometry-Precision = " + this._awd_data.accuracyGeo + " | Properties-Precision = " + this._awd_data.accuracyProps);
+        }
+        // Check file integrity
+        body_len = this._byteData.readUnsignedInt();
+        if (!this._streaming && body_len != this._byteData.getBytesAvailable()) {
+            this._pDieWithError('AWD2 body length does not match header integrity field');
+        }
+    };
+    return AWD3Parser;
+})(ParserBase);
+module.exports = AWD3Parser;
+
+},{"awayjs-core/lib/image/BitmapImageCube":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/DisplayObject":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParsers":"awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParsers","awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData":"awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData","awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils","awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags":"awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags"}],"awayjs-parsers/lib/AWDParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -71,7 +3364,6 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
-var Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
 var Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
 var BitmapImageCube = require("awayjs-core/lib/image/BitmapImageCube");
 var BlendMode = require("awayjs-core/lib/image/BlendMode");
@@ -88,8 +3380,9 @@ var OrthographicProjection = require("awayjs-core/lib/projections/OrthographicPr
 var OrthographicOffCenterProjection = require("awayjs-core/lib/projections/OrthographicOffCenterProjection");
 var ByteArray = require("awayjs-core/lib/utils/ByteArray");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-var Graphics = require("awayjs-display/lib/graphics/Graphics");
-var TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
+var Geometry = require("awayjs-display/lib/base/Geometry");
+var CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
+var TriangleSubGeometry = require("awayjs-display/lib/base/TriangleSubGeometry");
 var DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
 var PointLight = require("awayjs-display/lib/entities/PointLight");
 var Camera = require("awayjs-display/lib/entities/Camera");
@@ -157,7 +3450,6 @@ var Rectangle = require("awayjs-core/lib/geom/Rectangle");
 var Style = require("awayjs-display/lib/base/Style");
 var Matrix = require("awayjs-core/lib/geom/Matrix");
 var MappingMode = require("awayjs-display/lib/textures/MappingMode");
-var ElementsType = require("awayjs-display/lib/graphics/ElementsType");
 /**
  * AWDParser provides a parser for the AWD data type.
  */
@@ -178,8 +3470,8 @@ var AWDParser = (function (_super) {
         this._texture_users = {};
         this._parsed_header = false;
         this._time_all = 0;
-        this._time_graphics = 0;
-        this._time_graphics_bytes = 0;
+        this._time_geom = 0;
+        this._time_geom_bytes = 0;
         this._time_timeline = 0;
         this._time_fonts = 0;
         this._time_textfields = 0;
@@ -187,7 +3479,7 @@ var AWDParser = (function (_super) {
         this._time_textures = 0;
         this._time_materials = 0;
         this._time_meshes = 0;
-        this._num_graphics = 0;
+        this._num_geom = 0;
         this._num_timeline = 0;
         this._num_fonts = 0;
         this._num_textfields = 0;
@@ -393,7 +3685,7 @@ var AWDParser = (function (_super) {
             if (this._body.getBytesAvailable() == 0) {
                 this.dispose();
                 if (this._debugTimers)
-                    console.log("Parsing total: " + (this._time_all | 0) + "ms", " | graphics: " + this._num_graphics + ", " + (this._time_graphics | 0) + "ms", " | graphics bytes: " + this._num_graphics + ", " + (this._time_graphics_bytes | 0) + "ms", " | timelines: " + this._num_timeline + ", " + (this._time_timeline | 0) + "ms", " | fonts: " + this._num_fonts + ", " + (this._time_fonts | 0) + "ms", " | sounds: " + this._num_sounds + ", " + (this._time_sounds | 0) + "ms", " | mats: " + this._num_materials + ", " + (this._time_materials | 0) + "ms", " | textures: " + this._num_textures + ", " + (this._time_textures | 0) + "ms", " | meshes: " + this._num_meshes + ", " + (this._time_meshes | 0) + "ms");
+                    console.log("Parsing total: " + (this._time_all | 0) + "ms", " | geoms: " + this._num_geom + ", " + (this._time_geom | 0) + "ms", " | geoms bytes: " + this._num_geom + ", " + (this._time_geom_bytes | 0) + "ms", " | timelines: " + this._num_timeline + ", " + (this._time_timeline | 0) + "ms", " | fonts: " + this._num_fonts + ", " + (this._time_fonts | 0) + "ms", " | sounds: " + this._num_sounds + ", " + (this._time_sounds | 0) + "ms", " | mats: " + this._num_materials + ", " + (this._time_materials | 0) + "ms", " | textures: " + this._num_textures + ", " + (this._time_textures | 0) + "ms", " | meshes: " + this._num_meshes + ", " + (this._time_meshes | 0) + "ms");
                 return ParserBase.PARSING_DONE;
             }
             else {
@@ -475,7 +3767,7 @@ var AWDParser = (function (_super) {
             this._pDieWithError('Compressed AWD formats not yet supported');
         }
         if (this._debug)
-            console.log("AWDBlock:  ID = " + this._cur_block_id + " | TypeID = " + type + " | Compression = " + blockCompression + " | Matrix-Precision = " + this._accuracyMatrix + " | Graphics-Precision = " + this._accuracyGeo + " | Properties-Precision = " + this._accuracyProps);
+            console.log("AWDBlock:  ID = " + this._cur_block_id + " | TypeID = " + type + " | Compression = " + blockCompression + " | Matrix-Precision = " + this._accuracyMatrix + " | Geometry-Precision = " + this._accuracyGeo + " | Properties-Precision = " + this._accuracyProps);
         this._blocks[this._cur_block_id] = block;
         if ((this._version[0] == 3) && (this._version[1] == 0)) {
             // probably should contain some info about the type of animation
@@ -574,7 +3866,7 @@ var AWDParser = (function (_super) {
         if (isParsed == false) {
             switch (type) {
                 case 1:
-                    this.parseGraphics(this._cur_block_id);
+                    this.parseGeometry(this._cur_block_id);
                     break;
                 case 22:
                     this.parseContainer(this._cur_block_id);
@@ -631,8 +3923,8 @@ var AWDParser = (function (_super) {
         var time_delta = end_timing - this.start_timeing;
         this._time_all += time_delta;
         if (type == 1) {
-            this._time_graphics += time_delta;
-            this._num_graphics++;
+            this._time_geom += time_delta;
+            this._num_geom++;
         }
         else if (type == 133) {
             this._time_timeline += time_delta;
@@ -696,7 +3988,7 @@ var AWDParser = (function (_super) {
             //console.log(new_font_style.get_whitespace_width());
             font_style_char_cnt = this._newBlockBytes.readUnsignedInt();
             for (var j = 0; j < font_style_char_cnt; ++j) {
-                // todo: this is basically a simplified version of the elements-parsing done in parseGraphics. Make a parseElements() instead (?)
+                // todo: this is basically a simplified version of the subgeom-parsing done in parseGeometry. Make a parseSubGeom() instead (?)
                 font_style_char = this._newBlockBytes.readUnsignedInt();
                 sm_len = this._newBlockBytes.readUnsignedInt();
                 sm_end = this._newBlockBytes.position + sm_len;
@@ -728,13 +4020,11 @@ var AWDParser = (function (_super) {
                 if (curveData) {
                     var vertexBuffer = new AttributesBuffer(attr_count, str_len / attr_count);
                     vertexBuffer.bufferView = new Uint8Array(curveData.arraybytes);
-                    var curve_elements = new TriangleElements(vertexBuffer);
-                    curve_elements.setPositions(new Float2Attributes(vertexBuffer));
-                    curve_elements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
-                    //add UVs if they exist in the data
-                    if (attr_count == 28)
-                        curve_elements.setUVs(new Float2Attributes(vertexBuffer));
-                    new_font_style.setChar(font_style_char.toString(), curve_elements);
+                    var curve_sub_geom = new CurveSubGeometry(vertexBuffer);
+                    if (attr_count == 28) {
+                        curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
+                    }
+                    new_font_style.set_subgeo_for_char(font_style_char.toString(), curve_sub_geom);
                 }
             }
         }
@@ -819,7 +4109,7 @@ var AWDParser = (function (_super) {
         }
         newTextField.textFormat = text_format;
         newTextField.text = complete_text;
-        //newTextField.construct_graphics();
+        //newTextField.construct_geometry();
         // todo: optional matrix etc can be put in properties.
         var props = this.parseProperties(AWDParser.textFieldProperties);
         newTextField.selectable = props.get(1, false);
@@ -854,7 +4144,7 @@ var AWDParser = (function (_super) {
     AWDParser.prototype.parseMeshLibraryBlock = function (blockID) {
         var name = this.parseVarStr();
         var data_id = this._newBlockBytes.readUnsignedInt();
-        var graphics = this._blocks[data_id].data;
+        var geom = this._blocks[data_id].data;
         this._blocks[blockID].geoID = data_id;
         var num_materials = this._newBlockBytes.readUnsignedShort();
         var materials = new Array();
@@ -869,34 +4159,60 @@ var AWDParser = (function (_super) {
             materialNames[materials_parsed] = mat.name;
         }
         var start_timeing = performance.now();
-        var mesh = new Mesh();
-        graphics.copyTo(mesh.graphics);
+        var mesh = new Mesh(geom, null);
         var end_timing = performance.now();
         var time_delta = end_timing - start_timeing;
-        this._time_graphics_bytes += time_delta;
-        if (materials.length >= 1 && mesh.graphics.count == 1) {
+        this._time_geom_bytes += time_delta;
+        if (materials.length >= 1 && mesh.subMeshes.length == 1) {
             mesh.material = materials[0];
         }
         else if (materials.length > 1) {
-            for (var i = 0; i < mesh.graphics.count; i++)
-                mesh.graphics.getGraphicAt(i).material = materials[Math.min(materials.length - 1, i)];
+            for (var i = 0; i < mesh.subMeshes.length; i++)
+                mesh.subMeshes[i].material = materials[Math.min(materials.length - 1, i)];
         }
-        var count = this._newBlockBytes.readUnsignedShort();
-        if (count != mesh.graphics.count)
-            throw new Error("num elements does not match num submeshes");
-        for (var i = 0; i < count; i++) {
+        var num_subgeoms = this._newBlockBytes.readUnsignedShort();
+        if (num_subgeoms != mesh.subMeshes.length) {
+        }
+        var subMesh;
+        for (var i = 0; i < num_subgeoms; i++) {
+            subMesh = null;
+            if (mesh.subMeshes.length > i) {
+                subMesh = mesh.subMeshes[i];
+            }
             var type = this._newBlockBytes.readUnsignedByte();
             var sampler = new Sampler2D();
-            var graphic = mesh.graphics.getGraphicAt(i);
-            graphic.style = new Style();
-            graphic.style.addSamplerAt(sampler, graphic.material.getTextureAt(0));
+            if (subMesh) {
+                subMesh.style = new Style();
+                subMesh.style.addSamplerAt(sampler, mesh.subMeshes[i].material.getTextureAt(0));
+            }
             if (type == 3) {
-                graphic.material.animateUVs = true;
-                graphic.uvTransform = new Matrix(0, 0, 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+                if (subMesh) {
+                    subMesh.material.animateUVs = true;
+                    subMesh.uvTransform = new Matrix(0, 0, 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+                }
+                else {
+                    this._newBlockBytes.readFloat();
+                    this._newBlockBytes.readFloat();
+                }
+            }
+            else if (type == 4) {
+                var matrix = this.parseMatrix32RawData();
+                if (subMesh) {
+                    subMesh.material.animateUVs = true;
+                    subMesh.uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+                }
             }
             else if (type == 5) {
-                graphic.material.animateUVs = true;
-                graphic.uvTransform = new Matrix(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+                if (subMesh) {
+                    subMesh.material.animateUVs = true;
+                    subMesh.uvTransform = new Matrix(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+                }
+                else {
+                    this._newBlockBytes.readFloat();
+                    this._newBlockBytes.readFloat();
+                    this._newBlockBytes.readFloat();
+                    this._newBlockBytes.readFloat();
+                }
             }
             else if (type == 6) {
                 var x = this._newBlockBytes.readFloat();
@@ -904,14 +4220,13 @@ var AWDParser = (function (_super) {
                 var width = this._newBlockBytes.readFloat();
                 var height = this._newBlockBytes.readFloat();
                 sampler.imageRect = new Rectangle(x, y, width, height);
-                graphic.material.imageRect = true;
-                graphic.material.animateUVs = true;
                 var matrix = this.parseMatrix32RawData();
-                graphic.uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+                if (subMesh) {
+                    subMesh.material.imageRect = true;
+                    subMesh.material.animateUVs = true;
+                    subMesh.uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+                }
             }
-            //check if curves are needed
-            if (graphic.elements.getCustomAtributes("curves"))
-                graphic.material.curves = true;
             // todo: finish optional properties (spreadmode + focalpoint)
             this._newBlockBytes.readUnsignedInt();
         }
@@ -920,7 +4235,7 @@ var AWDParser = (function (_super) {
         this._pFinalizeAsset(mesh, name);
         this._blocks[blockID].data = mesh;
         if (this._debug)
-            console.log("Parsed a Library-Mesh: Name = '" + name + "| Graphics-Name = " + graphics.name + " | Graphics-Count = " + mesh.graphics.count + " | Mat-Names = " + materialNames);
+            console.log("Parsed a Library-Mesh: Name = '" + name + "| Geometry-Name = " + geom.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames);
     };
     AWDParser.prototype.parseAudioBlock = function (blockID, factory) {
         //var asset:Audio;todo create asset for audio
@@ -1145,24 +4460,24 @@ var AWDParser = (function (_super) {
             console.log("Parsed a TIMELINE: Name = " + name + "| isScene = " + isScene + "| sceneID = " + sceneID + "| numFrames = ");
     };
     //Block ID = 1
-    AWDParser.prototype.parseGraphics = function (blockID) {
-        var graphics = new Graphics(null);
+    AWDParser.prototype.parseGeometry = function (blockID) {
+        var geom = new Geometry();
         // Read name and sub count
         var name = this.parseVarStr();
-        var numElements = this._newBlockBytes.readUnsignedShort();
+        var num_subs = this._newBlockBytes.readUnsignedShort();
         // Read optional properties
-        var props = this.parseProperties(AWDParser.graphicsProperties);
+        var props = this.parseProperties(AWDParser.geometryProperties);
         var geoScaleU = props.get(1, 1);
         var geoScaleV = props.get(2, 1);
-        for (var elements_parsed = 0; elements_parsed < numElements; elements_parsed++) {
-            var is_curve_elements = false;
+        for (var subs_parsed = 0; subs_parsed < num_subs; subs_parsed++) {
+            var is_curve_geom = false;
             var attr_count = 0;
             var sm_len, sm_end;
             var w_indices;
             var weights;
             sm_len = this._newBlockBytes.readUnsignedInt();
             sm_end = this._newBlockBytes.position + sm_len;
-            var elementsProps = this.parseProperties(AWDParser.elementsProperties);
+            var subProps = this.parseProperties(AWDParser.subGeometryProperties);
             while (this._newBlockBytes.position < sm_end) {
                 var idx = 0;
                 var str_ftype, str_type, str_len, str_end;
@@ -1215,13 +4530,13 @@ var AWDParser = (function (_super) {
                     this._newBlockBytes.position = str_end;
                 }
                 else if (str_type == 10) {
-                    is_curve_elements = true;
+                    is_curve_geom = true;
                     attr_count = 28;
                     var curveData = new ByteArray(str_len);
                     this._newBlockBytes.readBytes(curveData, 0, str_len);
                 }
                 else if (str_type == 11) {
-                    is_curve_elements = true;
+                    is_curve_geom = true;
                     attr_count = 20;
                     var curveData = new ByteArray(str_len);
                     this._newBlockBytes.readBytes(curveData, 0, str_len);
@@ -1231,60 +4546,62 @@ var AWDParser = (function (_super) {
                 }
             }
             this.parseUserAttributes(); // Ignore sub-mesh attributes for now
-            if (is_curve_elements) {
+            if (is_curve_geom) {
                 var vertexBuffer = new AttributesBuffer(attr_count, str_len / attr_count);
                 vertexBuffer.bufferView = new Uint8Array(curveData.arraybytes);
-                var curve_elements = new TriangleElements(vertexBuffer);
-                curve_elements.setPositions(new Float2Attributes(vertexBuffer));
-                curve_elements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
-                if (attr_count == 28)
-                    curve_elements.setUVs(new Float2Attributes(vertexBuffer));
-                graphics.addGraphic(curve_elements);
+                var curve_sub_geom = new CurveSubGeometry(vertexBuffer);
+                if (attr_count == 28) {
+                    curve_sub_geom.setUVs(new Float2Attributes(vertexBuffer));
+                }
+                geom.addSubGeometry(curve_sub_geom);
                 if (this._debug)
-                    console.log("Parsed a TriangleElements with curves");
+                    console.log("Parsed a CurveSubGeometry");
             }
             else {
-                var triangle_elements = new TriangleElements(new AttributesBuffer());
+                var triangle_sub_geom = new TriangleSubGeometry(new AttributesBuffer());
                 if (weights)
-                    triangle_elements.jointsPerVertex = weights.length / (verts.length / 3);
+                    triangle_sub_geom.jointsPerVertex = weights.length / (verts.length / 3);
                 if (normals)
-                    triangle_elements.autoDeriveNormals = false;
-                triangle_elements.autoDeriveTangents = true;
-                triangle_elements.setIndices(indices);
-                triangle_elements.setPositions(verts);
-                triangle_elements.setNormals(normals);
-                triangle_elements.setUVs(uvs);
-                triangle_elements.setJointWeights(weights);
-                triangle_elements.setJointIndices(w_indices);
-                var scaleU = elementsProps.get(1, 1);
-                var scaleV = elementsProps.get(2, 1);
-                var setSubUVs = false; //this should remain false atm, because in AwayBuilder the uv is only scaled by the graphics
+                    triangle_sub_geom.autoDeriveNormals = false;
+                if (uvs)
+                    triangle_sub_geom.autoDeriveUVs = false;
+                triangle_sub_geom.autoDeriveTangents = true;
+                triangle_sub_geom.setIndices(indices);
+                triangle_sub_geom.setPositions(verts);
+                triangle_sub_geom.setNormals(normals);
+                triangle_sub_geom.setUVs(uvs);
+                triangle_sub_geom.setTangents(null);
+                triangle_sub_geom.setJointWeights(weights);
+                triangle_sub_geom.setJointIndices(w_indices);
+                var scaleU = subProps.get(1, 1);
+                var scaleV = subProps.get(2, 1);
+                var setSubUVs = false; //this should remain false atm, because in AwayBuilder the uv is only scaled by the geometry
                 if ((geoScaleU != scaleU) || (geoScaleV != scaleV)) {
                     setSubUVs = true;
                     scaleU = geoScaleU / scaleU;
                     scaleV = geoScaleV / scaleV;
                 }
                 if (setSubUVs)
-                    triangle_elements.scaleUV(scaleU, scaleV);
-                graphics.addGraphic(triangle_elements);
+                    triangle_sub_geom.scaleUV(scaleU, scaleV);
+                geom.addSubGeometry(triangle_sub_geom);
                 if (this._debug)
-                    console.log("Parsed a TriangleElements");
+                    console.log("Parsed a TriangleSubGeometry");
             }
         }
         if ((geoScaleU != 1) || (geoScaleV != 1))
-            graphics.scaleUV(geoScaleU, geoScaleV);
+            geom.scaleUV(geoScaleU, geoScaleV);
         this.parseUserAttributes();
-        this._pFinalizeAsset(graphics, name);
-        this._blocks[blockID].data = graphics;
+        this._pFinalizeAsset(geom, name);
+        this._blocks[blockID].data = geom;
         if (this._debug)
-            console.log("Parsed Graphics: Name = " + name);
+            console.log("Parsed a TriangleGeometry: Name = " + name);
     };
     //Block ID = 11
     AWDParser.prototype.parsePrimitves = function (blockID) {
         var name;
         var prefab;
         var primType;
-        var elements_parsed;
+        var subs_parsed;
         var props;
         var bsm;
         // Read name and sub count
@@ -1293,16 +4610,16 @@ var AWDParser = (function (_super) {
         props = this.parseProperties(AWDParser.primitiveProperties);
         switch (primType) {
             case 1:
-                prefab = new PrimitivePlanePrefab(null, ElementsType.TRIANGLE, props.get(101, 100), props.get(102, 100), props.get(301, 1), props.get(302, 1), props.get(701, true), props.get(702, false));
+                prefab = new PrimitivePlanePrefab(props.get(101, 100), props.get(102, 100), props.get(301, 1), props.get(302, 1), props.get(701, true), props.get(702, false));
                 break;
             case 2:
-                prefab = new PrimitiveCubePrefab(null, ElementsType.TRIANGLE, props.get(101, 100), props.get(102, 100), props.get(103, 100), props.get(301, 1), props.get(302, 1), props.get(303, 1), props.get(701, true));
+                prefab = new PrimitiveCubePrefab(props.get(101, 100), props.get(102, 100), props.get(103, 100), props.get(301, 1), props.get(302, 1), props.get(303, 1), props.get(701, true));
                 break;
             case 3:
-                prefab = new PrimitiveSpherePrefab(null, ElementsType.TRIANGLE, props.get(101, 50), props.get(301, 16), props.get(302, 12), props.get(701, true));
+                prefab = new PrimitiveSpherePrefab(props.get(101, 50), props.get(301, 16), props.get(302, 12), props.get(701, true));
                 break;
             case 4:
-                prefab = new PrimitiveCylinderPrefab(null, ElementsType.TRIANGLE, props.get(101, 50), props.get(102, 50), props.get(103, 100), props.get(301, 16), props.get(302, 1), true, true, true); // bool701, bool702, bool703, bool704);
+                prefab = new PrimitiveCylinderPrefab(props.get(101, 50), props.get(102, 50), props.get(103, 100), props.get(301, 16), props.get(302, 1), true, true, true); // bool701, bool702, bool703, bool704);
                 if (!props.get(701, true))
                     prefab.topClosed = false;
                 if (!props.get(702, true))
@@ -1311,13 +4628,13 @@ var AWDParser = (function (_super) {
                     prefab.yUp = false;
                 break;
             case 5:
-                prefab = new PrimitiveConePrefab(null, ElementsType.TRIANGLE, props.get(101, 50), props.get(102, 100), props.get(301, 16), props.get(302, 1), props.get(701, true), props.get(702, true));
+                prefab = new PrimitiveConePrefab(props.get(101, 50), props.get(102, 100), props.get(301, 16), props.get(302, 1), props.get(701, true), props.get(702, true));
                 break;
             case 6:
-                prefab = new PrimitiveCapsulePrefab(null, ElementsType.TRIANGLE, props.get(101, 50), props.get(102, 100), props.get(301, 16), props.get(302, 15), props.get(701, true));
+                prefab = new PrimitiveCapsulePrefab(props.get(101, 50), props.get(102, 100), props.get(301, 16), props.get(302, 15), props.get(701, true));
                 break;
             case 7:
-                prefab = new PrimitiveTorusPrefab(null, ElementsType.TRIANGLE, props.get(101, 50), props.get(102, 50), props.get(301, 16), props.get(302, 8), props.get(701, true));
+                prefab = new PrimitiveTorusPrefab(props.get(101, 50), props.get(102, 50), props.get(301, 16), props.get(302, 8), props.get(701, true));
                 break;
             default:
                 prefab = new PrefabBase();
@@ -1377,11 +4694,11 @@ var AWDParser = (function (_super) {
         var name = this.parseVarStr();
         var data_id = this._newBlockBytes.readUnsignedInt();
         var asset = this._blocks[data_id].data;
-        var graphics;
+        var geom;
         var prefab;
         var isPrefab = false;
-        if (asset.isAsset(Graphics)) {
-            graphics = asset;
+        if (asset.isAsset(Geometry)) {
+            geom = asset;
         }
         else {
             isPrefab = true;
@@ -1397,14 +4714,7 @@ var AWDParser = (function (_super) {
             materials[materials_parsed] = mat;
             materialNames[materials_parsed] = mat.name;
         }
-        var mesh;
-        if (isPrefab) {
-            mesh = prefab.getNewObject();
-        }
-        else {
-            mesh = new Mesh();
-            graphics.copyTo(mesh.graphics);
-        }
+        var mesh = isPrefab ? prefab.getNewObject() : new Mesh(geom, null);
         mesh.transform.matrix3D = mtx;
         var parentName = "Root (TopLevel)";
         if (parent) {
@@ -1415,12 +4725,12 @@ var AWDParser = (function (_super) {
             //add to the content property
             this._pContent.addChild(mesh);
         }
-        if (materials.length >= 1 && mesh.graphics.count == 1) {
+        if (materials.length >= 1 && mesh.subMeshes.length == 1) {
             mesh.material = materials[0];
         }
         else if (materials.length > 1) {
-            for (var i = 0; i < mesh.graphics.count; i++)
-                mesh.graphics.getGraphicAt(i).material = materials[Math.min(materials.length - 1, i)];
+            for (var i = 0; i < mesh.subMeshes.length; i++)
+                mesh.subMeshes[i].material = materials[Math.min(materials.length - 1, i)];
         }
         if ((this._version[0] == 2) && (this._version[1] == 1)) {
             var props = this.parseProperties(AWDParser.meshInstanceProperties);
@@ -1435,9 +4745,9 @@ var AWDParser = (function (_super) {
         this._blocks[blockID].data = mesh;
         if (this._debug) {
             if (isPrefab)
-                console.log("Parsed a Mesh for Prefab: Name = '" + name + "' | Parent-Name = " + parentName + "| Prefab-Name = " + prefab.name + " | Graphics-Count = " + mesh.graphics.count + " | Mat-Names = " + materialNames);
+                console.log("Parsed a Mesh for Prefab: Name = '" + name + "' | Parent-Name = " + parentName + "| Prefab-Name = " + prefab.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames);
             else
-                console.log("Parsed a Mesh for Graphics: Name = '" + name + "' | Parent-Name = " + parentName + "| Graphics-Name = " + graphics.name + " | Graphics-Count = " + mesh.graphics.count + " | Mat-Names = " + materialNames);
+                console.log("Parsed a Mesh for Geometry: Name = '" + name + "' | Parent-Name = " + parentName + "| Geometry-Name = " + geom.name + " | SubMeshes = " + mesh.subMeshes.length + " | Mat-Names = " + materialNames);
         }
     };
     //Block ID 31
@@ -1647,9 +4957,9 @@ var AWDParser = (function (_super) {
     // Block ID = 81 AWD2.1
     AWDParser.prototype.parseMaterial_v1 = function (blockID) {
         var mat;
-        var diffuseImage;
-        var normalImage;
-        var specImage;
+        var diffuseTexture;
+        var normalTexture;
+        var specTexture;
         var name = this.parseVarStr();
         var type = this._newBlockBytes.readUnsignedByte();
         var num_methods = this._newBlockBytes.readUnsignedByte();
@@ -1693,25 +5003,25 @@ var AWDParser = (function (_super) {
                         debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + name + "'" + (texture ? " | Texture-Name = " + texture.name : "");
                     }
                 }
-                diffuseImage = this._blocks[props.get(17, 0)].data;
-                normalImage = this._blocks[props.get(3, 0)].data;
-                specImage = this._blocks[props.get(21, 0)].data;
+                diffuseTexture = new Single2DTexture(this._blocks[props.get(17, 0)].data);
+                normalTexture = this._blocks[props.get(3, 0)].data;
+                specTexture = this._blocks[props.get(21, 0)].data;
                 mat.lightPicker = this._blocks[props.get(22, 0)].data;
                 mat.style.sampler = new Sampler2D(props.get(13, false), props.get(5, true), props.get(6, true));
                 mat.bothSides = props.get(7, false);
                 mat.alphaPremultiplied = props.get(8, false);
                 mat.blendMode = this.blendModeDic[props.get(9, 0)];
-                if (diffuseImage) {
-                    mat.diffuseTexture = new Single2DTexture(diffuseImage);
-                    debugString += " | DiffuseTexture-Name = " + diffuseImage.name;
+                if (diffuseTexture) {
+                    mat.diffuseTexture = diffuseTexture;
+                    debugString += " | DiffuseTexture-Name = " + diffuseTexture.name;
                 }
-                if (normalImage) {
-                    mat.normalMethod.texture = new Single2DTexture(normalImage);
-                    debugString += " | NormalTexture-Name = " + normalImage.name;
+                if (normalTexture) {
+                    mat.normalMethod.texture = normalTexture;
+                    debugString += " | NormalTexture-Name = " + normalTexture.name;
                 }
-                if (specImage) {
-                    mat.specularMethod.texture = new Single2DTexture(specImage);
-                    debugString += " | SpecularTexture-Name = " + specImage.name;
+                if (specTexture) {
+                    mat.specularMethod.texture = specTexture;
+                    debugString += " | SpecularTexture-Name = " + specTexture.name;
                 }
                 mat.alphaThreshold = props.get(12, 0.0);
                 mat.ambientMethod.strength = props.get(15, 1.0);
@@ -1810,7 +5120,7 @@ var AWDParser = (function (_super) {
             var basic_mat = new BasicMaterial();
             basic_mat.texture = diffuseTexture;
             basic_mat.bothSides = true;
-            //basic_mat.preserveAlpha = true;
+            basic_mat.preserveAlpha = true;
             basic_mat.alphaBlending = true;
             basic_mat.extra = this.parseUserAttributes();
             this._pFinalizeAsset(basic_mat, name);
@@ -2078,7 +5388,7 @@ var AWDParser = (function (_super) {
         var z;
         var str_len;
         var str_end;
-        var elements;
+        var subGeom;
         var idx = 0;
         var clip = new VertexClipNode();
         var indices;
@@ -2087,7 +5397,7 @@ var AWDParser = (function (_super) {
         var props;
         var name = this.parseVarStr();
         var geo_id = this._newBlockBytes.readUnsignedInt();
-        var graphics = this._blocks[geo_id].data;
+        var geometry = this._blocks[geo_id].data;
         var uvs = this.getUVForVertexAnimation(geo_id);
         var num_frames = (!poseOnly) ? this._newBlockBytes.readUnsignedShort() : 1;
         var num_submeshes = this._newBlockBytes.readUnsignedShort();
@@ -2100,7 +5410,7 @@ var AWDParser = (function (_super) {
         var frame_dur;
         for (var frames_parsed = 0; frames_parsed < num_frames; frames_parsed++) {
             frame_dur = this._newBlockBytes.readUnsignedShort();
-            graphics = new Graphics(null);
+            geometry = new Geometry();
             subMeshParsed = 0;
             while (subMeshParsed < num_submeshes) {
                 streamsParsed = 0;
@@ -2108,7 +5418,7 @@ var AWDParser = (function (_super) {
                 str_end = this._newBlockBytes.position + str_len;
                 while (streamsParsed < num_Streams) {
                     if (streamtypes[streamsParsed] == 1) {
-                        indices = graphics.getGraphicAt(subMeshParsed).elements.indices;
+                        indices = geometry.subGeometries[subMeshParsed].indices;
                         verts = new Array();
                         idx = 0;
                         while (this._newBlockBytes.position < str_end) {
@@ -2119,29 +5429,29 @@ var AWDParser = (function (_super) {
                             verts[idx++] = y;
                             verts[idx++] = z;
                         }
-                        elements = new TriangleElements(new AttributesBuffer());
-                        elements.setIndices(indices);
-                        elements.setPositions(verts);
-                        elements.setUVs(uvs[subMeshParsed]);
-                        elements.setNormals(null);
-                        elements.setTangents(null);
-                        elements.autoDeriveNormals = false;
-                        elements.autoDeriveTangents = false;
+                        subGeom = new TriangleSubGeometry(new AttributesBuffer());
+                        subGeom.setIndices(indices);
+                        subGeom.setPositions(verts);
+                        subGeom.setUVs(uvs[subMeshParsed]);
+                        subGeom.setNormals(null);
+                        subGeom.setTangents(null);
+                        subGeom.autoDeriveNormals = false;
+                        subGeom.autoDeriveTangents = false;
                         subMeshParsed++;
-                        graphics.addGraphic(elements);
+                        geometry.addSubGeometry(subGeom);
                     }
                     else
                         this._newBlockBytes.position = str_end;
                     streamsParsed++;
                 }
             }
-            clip.addFrame(graphics, frame_dur);
+            clip.addFrame(geometry, frame_dur);
         }
         this.parseUserAttributes();
         this._pFinalizeAsset(clip, name);
         this._blocks[blockID].data = clip;
         if (this._debug)
-            console.log("Parsed a VertexClipNode: Name = " + clip.name + " | Target-Graphics-Name = " + graphics.name + " | Number of Frames = " + clip.frames.length);
+            console.log("Parsed a VertexClipNode: Name = " + clip.name + " | Target-Geometry-Name = " + geometry.name + " | Number of Frames = " + clip.frames.length);
     };
     //BlockID 113
     AWDParser.prototype.parseVertexAnimationSet = function (blockID /*uint*/) {
@@ -2438,7 +5748,7 @@ var AWDParser = (function (_super) {
         this._compression = this._byteData.readUnsignedByte(); // compression
         if (this._debug) {
             console.log("Import AWDFile of version = " + this._version[0] + " - " + this._version[1]);
-            console.log("Global Settings = Compression = " + this._compression + " | Streaming = " + this._streaming + " | Matrix-Precision = " + this._accuracyMatrix + " | Graphics-Precision = " + this._accuracyGeo + " | Properties-Precision = " + this._accuracyProps);
+            console.log("Global Settings = Compression = " + this._compression + " | Streaming = " + this._streaming + " | Matrix-Precision = " + this._accuracyMatrix + " | Geometry-Precision = " + this._accuracyGeo + " | Properties-Precision = " + this._accuracyProps);
         }
         // Check file integrity
         var body_len = this._byteData.readUnsignedInt();
@@ -2451,13 +5761,13 @@ var AWDParser = (function (_super) {
             meshID = this._blocks[meshID].geoID;
         if (this._blocks[meshID].uvsForVertexAnimation)
             return this._blocks[meshID].uvsForVertexAnimation;
-        var graphics = this._blocks[meshID].data;
-        var elements;
+        var geometry = this._blocks[meshID].data;
+        var sub_geom;
         var uvsForVertexAnimation = this._blocks[meshID].uvsForVertexAnimation = new Array();
-        var len = graphics.count;
+        var len = geometry.subGeometries.length;
         for (var geoCnt = 0; geoCnt < len; geoCnt++) {
-            elements = graphics.getGraphicAt(geoCnt).elements;
-            uvsForVertexAnimation[geoCnt] = elements.uvs.get(elements.numVertices);
+            sub_geom = geometry.subGeometries[geoCnt];
+            uvsForVertexAnimation[geoCnt] = sub_geom.uvs.get(sub_geom.numVertices);
         }
         return this._blocks[meshID].uvsForVertexAnimation;
     };
@@ -2563,11 +5873,11 @@ var AWDParser = (function (_super) {
         9: AWDParser.UINT8
     };
     AWDParser.textFieldTypes = ["static", "dynamic", "input", "input"];
-    AWDParser.graphicsProperties = {
+    AWDParser.geometryProperties = {
         1: AWDParser.GEO_NUMBER,
         2: AWDParser.GEO_NUMBER
     };
-    AWDParser.elementsProperties = {
+    AWDParser.subGeometryProperties = {
         1: AWDParser.GEO_NUMBER,
         2: AWDParser.GEO_NUMBER
     };
@@ -2719,7 +6029,7 @@ var BitFlags = (function () {
 })();
 module.exports = AWDParser;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/image/BitmapImageCube":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-core/lib/library/AssetLibrary":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/Style":undefined,"awayjs-display/lib/base/Timeline":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Billboard":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/graphics/ElementsType":undefined,"awayjs-display/lib/graphics/Graphics":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-display/lib/text/TextFormat":undefined,"awayjs-display/lib/textures/MappingMode":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/image/BitmapImageCube":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-core/lib/library/AssetLibrary":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/CurveSubGeometry":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/Style":undefined,"awayjs-display/lib/base/Timeline":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Billboard":undefined,"awayjs-display/lib/entities/Camera":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/entities/Skybox":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-display/lib/text/TextFormat":undefined,"awayjs-display/lib/textures/MappingMode":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -2731,8 +6041,8 @@ var URLLoaderDataFormat = require("awayjs-core/lib/net/URLLoaderDataFormat");
 var URLRequest = require("awayjs-core/lib/net/URLRequest");
 var ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 var ParserUtils = require("awayjs-core/lib/parsers/ParserUtils");
-var Graphics = require("awayjs-display/lib/graphics/Graphics");
-var TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
+var Geometry = require("awayjs-display/lib/base/Geometry");
+var TriangleSubGeometry = require("awayjs-display/lib/base/TriangleSubGeometry");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
 var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
@@ -2755,10 +6065,10 @@ var MD2Parser = (function (_super) {
         if (ignoreTexturePath === void 0) { ignoreTexturePath = true; }
         _super.call(this, URLLoaderDataFormat.ARRAY_BUFFER);
         this._clipNodes = new Object();
-        // the current elements being built
+        // the current subgeom being built
         this._animationSet = new VertexAnimationSet();
         this.materialFinal = false;
-        this.graphicsCreated = false;
+        this.geoCreated = false;
         this._textureType = textureType;
         this._ignoreTexturePath = ignoreTexturePath;
     }
@@ -2793,7 +6103,7 @@ var MD2Parser = (function (_super) {
         material.name = this._mesh.material.name;
         this._mesh.material = material;
         this._pFinalizeAsset(material);
-        this._pFinalizeAsset(this._mesh.graphics);
+        this._pFinalizeAsset(this._mesh.geometry);
         this._pFinalizeAsset(this._mesh);
         this.materialFinal = true;
     };
@@ -2811,7 +6121,7 @@ var MD2Parser = (function (_super) {
         }
         //add to the content property
         this._pContent.addChild(this._mesh);
-        this._pFinalizeAsset(this._mesh.graphics);
+        this._pFinalizeAsset(this._mesh.geometry);
         this._pFinalizeAsset(this._mesh);
         this.materialFinal = true;
     };
@@ -2834,8 +6144,8 @@ var MD2Parser = (function (_super) {
                 //this._byteData.endian = Endian.LITTLE_ENDIAN;
                 // TODO: Create a mesh only when encountered (if it makes sense
                 // for this file format) and return it using this._pFinalizeAsset()
-                this._mesh = new Mesh();
-                this._graphics = this._mesh.graphics;
+                this._geometry = new Geometry();
+                this._mesh = new Mesh(this._geometry, null);
                 if (this.materialMode < 2) {
                     this._mesh.material = DefaultMaterialManager.getDefaultMaterial();
                 }
@@ -2843,7 +6153,7 @@ var MD2Parser = (function (_super) {
                     this._mesh.material = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
                     this._mesh.material.mode = MethodMaterialMode.MULTI_PASS;
                 }
-                //_graphics.animation = new VertexAnimation(2, VertexAnimationMode.ABSOLUTE);
+                //_geometry.animation = new VertexAnimation(2, VertexAnimationMode.ABSOLUTE);
                 //_animator = new VertexAnimator(VertexAnimationState(_mesh.animationState));
                 // Parse header and decompress body
                 this.parseHeader();
@@ -2858,19 +6168,19 @@ var MD2Parser = (function (_super) {
             else if (!this._parsedFrames) {
                 this.parseFrames();
             }
-            else if ((this.graphicsCreated) && (this.materialFinal)) {
+            else if ((this.geoCreated) && (this.materialFinal)) {
                 return ParserBase.PARSING_DONE;
             }
-            else if (!this.graphicsCreated) {
-                this.graphicsCreated = true;
-                //create default subgraphics
-                this._graphics.addGraphic(this._firstElements.clone());
+            else if (!this.geoCreated) {
+                this.geoCreated = true;
+                //create default subgeometry
+                this._geometry.addSubGeometry(this._firstSubGeom.clone());
                 // Force name to be chosen by this._pFinalizeAsset()
                 this._mesh.name = "";
                 if (this.materialFinal) {
                     //add to the content property
                     this._pContent.addChild(this._mesh);
-                    this._pFinalizeAsset(this._mesh.graphics);
+                    this._pFinalizeAsset(this._mesh.geometry);
                     this._pFinalizeAsset(this._mesh);
                 }
                 this._pPauseAndRetrieveDependencies();
@@ -3019,13 +6329,13 @@ var MD2Parser = (function (_super) {
         return -1;
     };
     /**
-     * Parses all the frame elements.
+     * Parses all the frame geometries.
      */
     MD2Parser.prototype.parseFrames = function () {
         var sx, sy, sz;
         var tx, ty, tz;
-        var graphics;
-        var elements;
+        var geometry;
+        var subGeom;
         var vertLen = this._vertIndices.length;
         var fvertices;
         var tvertices;
@@ -3052,20 +6362,20 @@ var MD2Parser = (function (_super) {
                 fvertices[k++] = tvertices[this._vertIndices[j] * 3 + 2];
                 fvertices[k++] = tvertices[this._vertIndices[j] * 3 + 1];
             }
-            elements = new TriangleElements(new AttributesBuffer());
-            if (this._firstElements == null)
-                this._firstElements = elements;
-            graphics = new Graphics(null);
-            graphics.addGraphic(elements);
-            elements.setIndices(this._indices);
-            elements.setPositions(fvertices);
-            elements.setUVs(this._finalUV);
+            subGeom = new TriangleSubGeometry(new AttributesBuffer());
+            if (this._firstSubGeom == null)
+                this._firstSubGeom = subGeom;
+            geometry = new Geometry();
+            geometry.addSubGeometry(subGeom);
+            subGeom.setIndices(this._indices);
+            subGeom.setPositions(fvertices);
+            subGeom.setUVs(this._finalUV);
             // cause explicit updates
-            elements.setNormals(null);
-            elements.setTangents(null);
+            subGeom.setNormals(null);
+            subGeom.setTangents(null);
             // turn auto updates off because they may be animated and set explicitly
-            elements.autoDeriveNormals = false;
-            elements.autoDeriveTangents = false;
+            subGeom.autoDeriveNormals = false;
+            subGeom.autoDeriveTangents = false;
             var clip = this._clipNodes[name];
             if (!clip) {
                 // If another sequence was parsed before this one, starting
@@ -3081,7 +6391,7 @@ var MD2Parser = (function (_super) {
                 this._clipNodes[name] = clip;
                 prevClip = clip;
             }
-            clip.addFrame(graphics, 1000 / MD2Parser.FPS);
+            clip.addFrame(geometry, 1000 / MD2Parser.FPS);
         }
         // Finalize the last state
         if (prevClip) {
@@ -3109,7 +6419,7 @@ var MD2Parser = (function (_super) {
 })(ParserBase);
 module.exports = MD2Parser;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/graphics/Graphics":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD5AnimParser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD5AnimParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -3641,7 +6951,8 @@ var Quaternion = require("awayjs-core/lib/geom/Quaternion");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var URLLoaderDataFormat = require("awayjs-core/lib/net/URLLoaderDataFormat");
 var ParserBase = require("awayjs-core/lib/parsers/ParserBase");
-var TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
+var Geometry = require("awayjs-display/lib/base/Geometry");
+var TriangleSubGeometry = require("awayjs-display/lib/base/TriangleSubGeometry");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
 var SkeletonAnimationSet = require("awayjs-renderergl/lib/animators/SkeletonAnimationSet");
@@ -3649,7 +6960,7 @@ var Skeleton = require("awayjs-renderergl/lib/animators/data/Skeleton");
 var SkeletonJoint = require("awayjs-renderergl/lib/animators/data/SkeletonJoint");
 // todo: create animation system, parse skeleton
 /**
- * MD5MeshParser provides a parser for the md5mesh data type, providing the graphics of the md5 format.
+ * MD5MeshParser provides a parser for the md5mesh data type, providing the geometry of the md5 format.
  *
  * todo: optimize
  */
@@ -3733,15 +7044,15 @@ var MD5MeshParser = (function (_super) {
             if (this._reachedEOF) {
                 this.calculateMaxJointCount();
                 this._animationSet = new SkeletonAnimationSet(this._maxJointCount);
-                this._mesh = new Mesh();
-                this._graphics = this._mesh.graphics;
+                this._mesh = new Mesh(new Geometry(), null);
+                this._geometry = this._mesh.geometry;
                 for (var i = 0; i < this._meshData.length; ++i)
-                    this._graphics.addGraphic(this.translateElements(this._meshData[i].vertexData, this._meshData[i].weightData, this._meshData[i].indices));
-                //_graphics.animation = _animation;
+                    this._geometry.addSubGeometry(this.translateGeom(this._meshData[i].vertexData, this._meshData[i].weightData, this._meshData[i].indices));
+                //_geometry.animation = _animation;
                 //					_mesh.animationController = _animationController;
                 //add to the content property
                 this._pContent.addChild(this._mesh);
-                this._pFinalizeAsset(this._graphics);
+                this._pFinalizeAsset(this._geometry);
                 this._pFinalizeAsset(this._mesh);
                 this._pFinalizeAsset(this._skeleton);
                 this._pFinalizeAsset(this._animationSet);
@@ -3832,7 +7143,7 @@ var MD5MeshParser = (function (_super) {
         this._reachedEOF = this._parseIndex >= this._textData.length;
     };
     /**
-     * Parses the mesh graphics.
+     * Parses the mesh geometry.
      */
     MD5MeshParser.prototype.parseMesh = function () {
         var token = this.getNextToken();
@@ -3886,16 +7197,16 @@ var MD5MeshParser = (function (_super) {
      * @param vertexData The mesh's vertices.
      * @param weights The joint weights per vertex.
      * @param indices The indices for the faces.
-     * @return A TriangleElements instance containing all elements data for the current mesh.
+     * @return A SubGeometry instance containing all geometrical data for the current mesh.
      */
-    MD5MeshParser.prototype.translateElements = function (vertexData, weights, indices /*uint*/) {
+    MD5MeshParser.prototype.translateGeom = function (vertexData, weights, indices /*uint*/) {
         var len = vertexData.length;
         var v1 /*int*/, v2 /*int*/, v3 /*int*/;
         var vertex;
         var weight;
         var bindPose;
         var pos;
-        var elements = new TriangleElements(new AttributesBuffer());
+        var subGeom = new TriangleSubGeometry(new AttributesBuffer());
         var uvs = new Array(len * 2);
         var vertices = new Array(len * 3);
         var jointIndices = new Array(len * this._maxJointCount);
@@ -3931,19 +7242,19 @@ var MD5MeshParser = (function (_super) {
             uvs[v1++] = vertex.s;
             uvs[v1] = vertex.t;
         }
-        elements.jointsPerVertex = this._maxJointCount;
-        elements.setIndices(indices);
-        elements.setPositions(vertices);
-        elements.setUVs(uvs);
-        elements.setJointIndices(jointIndices);
-        elements.setJointWeights(jointWeights);
+        subGeom.jointsPerVertex = this._maxJointCount;
+        subGeom.setIndices(indices);
+        subGeom.setPositions(vertices);
+        subGeom.setUVs(uvs);
+        subGeom.setJointIndices(jointIndices);
+        subGeom.setJointWeights(jointWeights);
         // cause explicit updates
-        elements.setNormals(null);
-        elements.setTangents(null);
+        subGeom.setNormals(null);
+        subGeom.setTangents(null);
         // turn auto updates off because they may be animated and set explicitly
-        elements.autoDeriveTangents = false;
-        elements.autoDeriveNormals = false;
-        return elements;
+        subGeom.autoDeriveTangents = false;
+        subGeom.autoDeriveNormals = false;
+        return subGeom;
     };
     /**
      * Retrieve the next triplet of vertex indices that form a face.
@@ -4178,7 +7489,7 @@ var MeshData = (function () {
 })();
 module.exports = MD5MeshParser;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/geom/Quaternion":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined}],"awayjs-parsers/lib/Max3DSParser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/geom/Quaternion":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined}],"awayjs-parsers/lib/Max3DSParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -4193,7 +7504,8 @@ var URLLoaderDataFormat = require("awayjs-core/lib/net/URLLoaderDataFormat");
 var URLRequest = require("awayjs-core/lib/net/URLRequest");
 var ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 var ParserUtils = require("awayjs-core/lib/parsers/ParserUtils");
-var TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
+var Geometry = require("awayjs-display/lib/base/Geometry");
+var TriangleSubGeometry = require("awayjs-display/lib/base/TriangleSubGeometry");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
 var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
@@ -4557,7 +7869,7 @@ var Max3DSParser = (function (_super) {
         if (obj.type == Mesh.assetType) {
             var i /*uint*/;
             var sub;
-            var graphics;
+            var geom;
             var mat;
             var mesh;
             var mtx;
@@ -4595,23 +7907,20 @@ var Max3DSParser = (function (_super) {
                     obj.uvs[i * 2 + 1] = vertices[i].v;
                 }
             }
+            geom = new Geometry();
+            // Construct sub-geometries (potentially splitting buffers)
+            // and add them to geometry.
+            sub = new TriangleSubGeometry(new AttributesBuffer());
+            sub.setIndices(obj.indices);
+            sub.setPositions(obj.verts);
+            sub.setUVs(obj.uvs);
+            geom.addSubGeometry(sub);
             if (obj.materials.length > 0) {
                 var mname;
                 mname = obj.materials[0];
                 mat = this._materials[mname].material;
             }
-            // Build mesh and return it
-            mesh = new Mesh(mat);
-            mesh.transform.matrix3D = new Matrix3D(obj.transform);
-            graphics = mesh.graphics;
-            // Construct elements (potentially splitting buffers)
-            // and add them to graphics.
-            sub = new TriangleElements(new AttributesBuffer());
-            sub.setIndices(obj.indices);
-            sub.setPositions(obj.verts);
-            sub.setUVs(obj.uvs);
-            graphics.addGraphic(sub);
-            // Apply pivot translation to graphics if a pivot was
+            // Apply pivot translation to geometry if a pivot was
             // found while parsing the keyframe chunk earlier.
             if (pivot) {
                 if (obj.transform) {
@@ -4626,18 +7935,21 @@ var Max3DSParser = (function (_super) {
                 pivot.scaleBy(-1);
                 mtx = new Matrix3D();
                 mtx.appendTranslation(pivot.x, pivot.y, pivot.z);
-                graphics.applyTransformation(mtx);
+                geom.applyTransformation(mtx);
             }
-            // Apply transformation to graphics if a transformation
+            // Apply transformation to geometry if a transformation
             // was found while parsing the object chunk earlier.
             if (obj.transform) {
                 mtx = new Matrix3D(obj.transform);
                 mtx.invert();
-                graphics.applyTransformation(mtx);
+                geom.applyTransformation(mtx);
             }
-            // Final transform applied to graphics. Finalize the graphics,
+            // Final transform applied to geometry. Finalize the geometry,
             // which will no longer be modified after this point.
-            this._pFinalizeAsset(graphics, obj.name.concat('_graphics'));
+            this._pFinalizeAsset(geom, obj.name.concat('_geom'));
+            // Build mesh and return it
+            mesh = new Mesh(geom, mat);
+            mesh.transform.matrix3D = new Matrix3D(obj.transform);
             return mesh;
         }
         // If reached, unknown
@@ -4862,7 +8174,7 @@ var VertexVO = (function () {
 })();
 module.exports = Max3DSParser;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined}],"awayjs-parsers/lib/OBJParser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined}],"awayjs-parsers/lib/OBJParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -4876,7 +8188,8 @@ var URLLoaderDataFormat = require("awayjs-core/lib/net/URLLoaderDataFormat");
 var URLRequest = require("awayjs-core/lib/net/URLRequest");
 var ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 var ParserUtils = require("awayjs-core/lib/parsers/ParserUtils");
-var TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
+var TriangleSubGeometry = require("awayjs-display/lib/base/TriangleSubGeometry");
+var Geometry = require("awayjs-display/lib/base/Geometry");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
 var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
@@ -5086,26 +8399,26 @@ var OBJParser = (function (_super) {
             var numGroups = groups.length;
             var materialGroups;
             var numMaterialGroups;
-            var graphics;
+            var geometry;
             var mesh;
             var m;
             var sm;
             var bmMaterial;
             for (var g = 0; g < numGroups; ++g) {
+                geometry = new Geometry();
+                materialGroups = groups[g].materialGroups;
+                numMaterialGroups = materialGroups.length;
+                for (m = 0; m < numMaterialGroups; ++m)
+                    this.translateMaterialGroup(materialGroups[m], geometry);
+                if (geometry.subGeometries.length == 0)
+                    continue;
+                // Finalize and force type-based name
+                this._pFinalizeAsset(geometry); //, "");
                 bmMaterial = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
                 //check for multipass
                 if (this.materialMode >= 2)
                     bmMaterial.mode = MethodMaterialMode.MULTI_PASS;
-                mesh = new Mesh(bmMaterial);
-                graphics = mesh.graphics;
-                materialGroups = groups[g].materialGroups;
-                numMaterialGroups = materialGroups.length;
-                for (m = 0; m < numMaterialGroups; ++m)
-                    this.translateMaterialGroup(materialGroups[m], graphics);
-                if (graphics.count == 0)
-                    continue;
-                // Finalize and force type-based name
-                this._pFinalizeAsset(graphics); //, "");
+                mesh = new Mesh(geometry, bmMaterial);
                 if (this._objects[objIndex].name) {
                     // this is a full independent object ('o' tag in OBJ file)
                     mesh.name = this._objects[objIndex].name;
@@ -5124,9 +8437,9 @@ var OBJParser = (function (_super) {
                     bmMaterial.name = groups[g].materialID + "~" + mesh.name;
                 else
                     bmMaterial.name = this._lastMtlID + "~" + mesh.name;
-                if (mesh.graphics.count > 1) {
-                    for (sm = 1; sm < mesh.graphics.count; ++sm)
-                        mesh.graphics.getGraphicAt(sm).material = bmMaterial;
+                if (mesh.subMeshes.length > 1) {
+                    for (sm = 1; sm < mesh.subMeshes.length; ++sm)
+                        mesh.subMeshes[sm].material = bmMaterial;
                 }
                 //add to the content property
                 this._pContent.addChild(mesh);
@@ -5135,16 +8448,16 @@ var OBJParser = (function (_super) {
         }
     };
     /**
-     * Translates an obj's material group to a subgraphics.
+     * Translates an obj's material group to a subgeometry.
      * @param materialGroup The material group data to convert.
-     * @param graphics The Graphics to contain the converted Elements.
+     * @param geometry The Geometry to contain the converted SubGeometry.
      */
-    OBJParser.prototype.translateMaterialGroup = function (materialGroup, graphics) {
+    OBJParser.prototype.translateMaterialGroup = function (materialGroup, geometry) {
         var faces = materialGroup.faces;
         var face;
         var numFaces = faces.length;
         var numVerts;
-        var elements;
+        var sub;
         var vertices = new Array();
         var uvs = new Array();
         var normals = new Array();
@@ -5162,13 +8475,13 @@ var OBJParser = (function (_super) {
             }
         }
         if (vertices.length > 0) {
-            elements = new TriangleElements(new AttributesBuffer());
-            elements.autoDeriveNormals = normals.length ? false : true;
-            elements.setIndices(indices);
-            elements.setPositions(vertices);
-            elements.setNormals(normals);
-            elements.setUVs(uvs);
-            graphics.addGraphic(elements);
+            sub = new TriangleSubGeometry(new AttributesBuffer());
+            sub.autoDeriveNormals = normals.length ? false : true;
+            sub.setIndices(indices);
+            sub.setPositions(vertices);
+            sub.setNormals(normals);
+            sub.setUVs(uvs);
+            geometry.addSubGeometry(sub);
         }
     };
     OBJParser.prototype.translateVertexData = function (face, vertexIndex, vertices, uvs, indices /*uint*/, normals) {
@@ -5740,7 +9053,7 @@ var Vertex = (function () {
 })();
 module.exports = OBJParser;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/SpecularBasicMethod":undefined}],"awayjs-parsers/lib/Parsers":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/base/TriangleSubGeometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/entities/Mesh":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/SpecularBasicMethod":undefined}],"awayjs-parsers/lib/Parsers":[function(require,module,exports){
 var Loader = require("awayjs-core/lib/library/Loader");
 var AWDParser = require("awayjs-parsers/lib/AWDParser");
 var Max3DSParser = require("awayjs-parsers/lib/Max3DSParser");
