@@ -129,7 +129,7 @@ class ObjChiefTestDay
 					} else if (event.url =='assets/terrain.obj') {
 						this.terrain = <Mesh> d;
 						this.terrain.y = 98;
-						this.terrain.geometry.scaleUV(20, 20);
+						this.terrain.graphics.scaleUV(20, 20);
 						this.view.scene.addChild(this.terrain);
 					}
 

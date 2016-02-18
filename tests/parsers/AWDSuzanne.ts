@@ -8,7 +8,7 @@ import URLRequest					= require("awayjs-core/lib/net/URLRequest");
 import Debug						= require("awayjs-core/lib/utils/Debug");
 import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationFrame");
 
-import Geometry						= require("awayjs-display/lib/base/Geometry");
+import Graphics						= require("awayjs-display/lib/graphics/Graphics");
 import View							= require("awayjs-display/lib/containers/View");
 import DirectionalLight				= require("awayjs-display/lib/entities/DirectionalLight");
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
@@ -133,7 +133,7 @@ class AWDSuzanne
 
 					break;
 
-				case Geometry.assetType:
+				case Graphics.assetType:
 					break;
 
 				case MethodMaterial.assetType:

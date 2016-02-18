@@ -45,14 +45,12 @@ import OrthographicProjection		= require("awayjs-core/lib/projections/Orthograph
 import Keyboard						= require("awayjs-core/lib/ui/Keyboard");
 import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationFrame");
 
-import Geometry						= require("awayjs-display/lib/base/Geometry");
 import View							= require("awayjs-display/lib/containers/View");
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
 import MovieClip					= require("awayjs-display/lib/entities/MovieClip");
 import Container					= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import HoverController				= require("awayjs-display/lib/controllers/HoverController");
 import LoaderContainer				= require("awayjs-display/lib/containers/LoaderContainer");
-import SceneGraphPartition			= require("awayjs-display/lib/partition/SceneGraphPartition");
 import PrimitiveCubePrefab			= require("awayjs-display/lib/prefabs/PrimitiveCubePrefab");
 
 import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
@@ -65,6 +63,7 @@ import AWDParser					= require("awayjs-parsers/lib/AWDParser");
 import CoordinateSystem = require("awayjs-core/lib/projections/CoordinateSystem");
 import PerspectiveProjection = require("awayjs-core/lib/projections/PerspectiveProjection");
 import Camera = require("awayjs-display/lib/entities/Camera");
+import SceneGraphPartition = require("awayjs-display/lib/partition/SceneGraphPartition");
 
 class AWD3ParserTest
 {

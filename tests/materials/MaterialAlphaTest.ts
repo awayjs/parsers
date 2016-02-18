@@ -28,6 +28,7 @@ import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
 import MethodMaterial				= require("awayjs-methodmaterials/lib/MethodMaterial");
 
 import OBJParser					= require("awayjs-parsers/lib/OBJParser");
+import ElementsType = require("awayjs-display/lib/graphics/ElementsType");
 
 class MaterialAlphaTest
 {
@@ -161,9 +162,6 @@ class MaterialAlphaTest
 					if (this.loadedMesh)
 						this.loadedMesh.material = this.loadedMeshMaterial;
 
-					// Torus
-					var torus:PrimitiveTorusPrefab = new PrimitiveTorusPrefab(150 , 50 , 64 , 64);
-
 					// Torus Texture Material
 					this.torusTextureMaterial = new MethodMaterial(<BitmapImage2D> d);
 					this.torusTextureMaterial.style.sampler = new Sampler2D(true, true, false);
@@ -171,7 +169,8 @@ class MaterialAlphaTest
 					this.torusTextureMaterial.bothSides = true;
 					this.torusTextureMaterial.alpha = .8;
 
-					torus.material = this.torusTextureMaterial;
+					// Torus
+					var torus:PrimitiveTorusPrefab = new PrimitiveTorusPrefab(this.torusTextureMaterial, ElementsType.TRIANGLE, 150 , 50 , 64 , 64);
 
 					// Torus Mesh ( left )
 					var torusMesh:Mesh = <Mesh> torus.getNewObject();
@@ -180,15 +179,13 @@ class MaterialAlphaTest
 					this.meshes.push(torusMesh);
 					this.view.scene.addChild(torusMesh);
 
-					var cube:PrimitiveCubePrefab = new PrimitiveCubePrefab(300, 300, 300, 20, 20, 20);
-
 					// Torus Color Material
 					this.cubeColorMaterial = new MethodMaterial(0x0090ff);
 					this.cubeColorMaterial.lightPicker = this.staticLightPicker ;
 					this.cubeColorMaterial.alpha = .8;
 					this.cubeColorMaterial.bothSides = true;
 
-					cube.material = this.cubeColorMaterial;
+					var cube:PrimitiveCubePrefab = new PrimitiveCubePrefab(this.cubeColorMaterial, ElementsType.TRIANGLE, 300, 300, 300, 20, 20, 20);
 
 					// Torus Mesh ( right )
 					var cubeMesh:Mesh = <Mesh> cube.getNewObject();
@@ -200,9 +197,7 @@ class MaterialAlphaTest
 					this.capsuleColorMaterial = new MethodMaterial(0x00ffff);
 					this.capsuleColorMaterial.lightPicker = this.staticLightPicker;
 
-					var capsule:PrimitiveCapsulePrefab = new PrimitiveCapsulePrefab(100, 200);
-
-					capsule.material = this.capsuleColorMaterial;
+					var capsule:PrimitiveCapsulePrefab = new PrimitiveCapsulePrefab(this.capsuleColorMaterial, ElementsType.TRIANGLE, 100, 200);
 
 					// Torus Mesh ( right )
 					var capsuleMesh:Mesh = <Mesh> capsule.getNewObject();
