@@ -1,445 +1,3 @@
-declare module "awayjs-parsers/lib/AWD3BlockParsers/AnimatorAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class AnimatorAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = AnimatorAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/AudioAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class AudioAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = AudioAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase" {
-	import AWD3FileData = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData");
-	class AWDAssetParserBase {
-	    private _awd_file_data;
-	    constructor();
-	    awd_file_data: AWD3FileData;
-	    parseFromBytes(): void;
-	}
-	export = AWDAssetParserBase;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParsers" {
-	import AWDAssetParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	import AWD3FileData = require("awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData");
-	class AWDBlockParsers {
-	    private _supported_asset_blocks;
-	    private _all_block_parsers;
-	    constructor();
-	    add_block_parser(block_parser: AWDAssetParserBase, block_types: Array<number>): void;
-	    init_parser(file_data: AWD3FileData): void;
-	    parseAsset(type: number): boolean;
-	}
-	export = AWDBlockParsers;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/BillboardAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class BillboardAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = BillboardAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/BlockNameSpaceAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class BlockNameSpaceAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = BlockNameSpaceAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/CameraAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class CameraAWD3Parser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = CameraAWD3Parser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/CommandAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class CommandAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = CommandAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/DisplayObjectContainerAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class DisplayObjectContainerAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = DisplayObjectContainerAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/GeometryAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class GeometryAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = GeometryAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/LightAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class LightAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = LightAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/LightPickerAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class LightPickerAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = LightPickerAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/MaterialAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class MaterialAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = MaterialAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/MeshAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class MeshAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = MeshAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/MetadataAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class MetadataAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = MetadataAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/MovieClipAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	import View = require("awayjs-display/lib/containers/View");
-	class MovieClipAWDParser extends AWDBlockParserBase {
-	    private factory;
-	    constructor(view?: View);
-	    parseFromBytes(): void;
-	}
-	export = MovieClipAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/PrefabAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class PrefabAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = PrefabAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/ShadowMethodAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class ShadowMethodAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	    private parseShadowMethodList(light);
-	}
-	export = ShadowMethodAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/SharedMethodAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class SharedMethodAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	    private parseSharedMethodList();
-	}
-	export = SharedMethodAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/Single2DTextureAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class Single2DTextureAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = Single2DTextureAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/SingleCubeTextureAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class SingleCubeTextureAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = SingleCubeTextureAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/SkeletonAnimClipAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class SkeletonAnimClipAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = SkeletonAnimClipAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/SkeletonAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class SkeletonAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = SkeletonAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/SkeletonPoseAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class SkeletonPoseAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = SkeletonPoseAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/SkyboxAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class SkyboxAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = SkyboxAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/TesselatedFontAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class TesselatedFontAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = TesselatedFontAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/TextfieldAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	import View = require("awayjs-display/lib/containers/View");
-	class TextfieldAWDParser extends AWDBlockParserBase {
-	    private factory;
-	    constructor(view?: View);
-	    parseFromBytes(): void;
-	}
-	export = TextfieldAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/TextformatAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class TextformatAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = TextformatAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/VertexAnimationSetAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class VertexAnimationSetAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = VertexAnimationSetAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3BlockParsers/VertexAnimClipAWDParser" {
-	import AWDBlockParserBase = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParserBase");
-	class VertexAnimClipAWDParser extends AWDBlockParserBase {
-	    constructor();
-	    parseFromBytes(): void;
-	}
-	export = VertexAnimClipAWDParser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3Parser" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
-	import ResourceDependency = require("awayjs-core/lib/parsers/ResourceDependency");
-	import AWDAssetParsers = require("awayjs-parsers/lib/AWD3BlockParsers/AWDBlockParsers");
-	/**
-	 * AWD3Utils provides a parser for the AWD data type.
-	 */
-	class AWD3Parser extends ParserBase {
-	    private _debug;
-	    private _byteData;
-	    private _startedParsing;
-	    private _compression;
-	    private _streaming;
-	    private _parsed_header;
-	    private _body;
-	    private _awd_data;
-	    private _block_parser;
-	    total_time: number;
-	    geom_time: number;
-	    timeline_time: number;
-	    /**
-	     * Creates a new AWD3Utils object.
-	     * @param uri The url or id of the data or file to be parsed.
-	     * @param extra The holder for extra contextual data that the parser might need.
-	     */
-	    constructor(block_parser?: AWDAssetParsers);
-	    /**
-	     * Indicates whether or not a given file extension is supported by the parser.
-	     * @param extension The file extension of a potential file to be parsed.
-	     * @return Whether or not the given file type is supported.
-	     */
-	    static supportsType(extension: string): boolean;
-	    /**
-	     * Tests whether a data block can be parsed by the parser.
-	     * @param data The data block to potentially be parsed.
-	     * @return Whether or not the given data is supported.
-	     */
-	    static supportsData(data: any): boolean;
-	    /**
-	     * @inheritDoc
-	     */
-	    _iResolveDependency(resourceDependency: ResourceDependency): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    _iResolveDependencyFailure(resourceDependency: ResourceDependency): void;
-	    /**
-	     * Resolve a dependency name
-	     *
-	     * @param resourceDependency The dependency to be resolved.
-	     */
-	    _iResolveDependencyName(resourceDependency: ResourceDependency, asset: IAsset): string;
-	    /**
-	     * @inheritDoc
-	     */
-	    _pProceedParsing(): boolean;
-	    _pStartParsing(frameLimit: number): void;
-	    private dispose();
-	    private parseNextBlock();
-	    private parseHeader();
-	}
-	export = AWD3Parser;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3ParserUtils/AWD3FileData" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
-	import AWDProperties = require("awayjs-parsers/lib/AWD3ParserUtils/AWDProperties");
-	import AWDBlock = require("awayjs-parsers/lib/AWD3ParserUtils/AWDBlock");
-	/**
-	 * AWD3FileData stores the data loaded for a AWD-file. It also gives access to some helper functions.
-	 */
-	class AWD3FileData {
-	    private _debug;
-	    private _cur_block;
-	    private _blocks;
-	    private _newBlockBytes;
-	    major_version: number;
-	    minor_version: number;
-	    private _accuracyOnBlocks;
-	    private _accuracyMatrix;
-	    private _accuracyGeo;
-	    private _accuracyProps;
-	    private _matrixNrType;
-	    private _geoNrType;
-	    private _propsNrType;
-	    private blendModeDic;
-	    private _depthSizeDic;
-	    private _defaultCubeTexture;
-	    /**
-	     * Creates a new AWD3FileData object.
-	     */
-	    constructor();
-	    getDepthSizeFromEnum(depthSize: number): number;
-	    getBlendModeStringFromEnum(blendmode: number): string;
-	    dispose(): void;
-	    accuracyOnBlocks: boolean;
-	    accuracyMatrix: boolean;
-	    accuracyProps: boolean;
-	    accuracyGeo: boolean;
-	    debug: boolean;
-	    matrixNrType: number;
-	    propsNrType: number;
-	    geoNrType: number;
-	    newBlockBytes: ByteArray;
-	    create_new_block(type: number, id: number): void;
-	    cur_block: AWDBlock;
-	    block_cnt(): number;
-	    parseUserAttributes(): Object;
-	    parseProperties(expected: Object): AWDProperties;
-	    private parseAttrValue(type, len);
-	    getUVForVertexAnimation(meshID: number): Array<Float32Array>;
-	    parseVarStr(): string;
-	    getBlockByID(assetID: number): AWDBlock;
-	    getAssetByID(assetID: number): IAsset;
-	    private getDefaultAsset(assetType);
-	    getDefaultCubeTexture(): IAsset;
-	    readNumber(precision?: boolean): number;
-	    parseMatrix3D(): Matrix3D;
-	    private parseMatrix32RawData();
-	    parseMatrix43RawData(): Float32Array;
-	}
-	export = AWD3FileData;
-	
-}
-
 declare module "awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils" {
 	class AWD3Utils {
 	    static BLOCKSTATE_FINALIZE: number;
@@ -475,33 +33,6 @@ declare module "awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils" {
 	
 }
 
-declare module "awayjs-parsers/lib/AWD3ParserUtils/AWDBitFlags" {
-	/**
-	 *
-	 */
-	class AWDBitFlags {
-	    static FLAG1: number;
-	    static FLAG2: number;
-	    static FLAG3: number;
-	    static FLAG4: number;
-	    static FLAG5: number;
-	    static FLAG6: number;
-	    static FLAG7: number;
-	    static FLAG8: number;
-	    static FLAG9: number;
-	    static FLAG10: number;
-	    static FLAG11: number;
-	    static FLAG12: number;
-	    static FLAG13: number;
-	    static FLAG14: number;
-	    static FLAG15: number;
-	    static FLAG16: number;
-	    static test(flags: number, testFlag: number): boolean;
-	}
-	export = AWDBitFlags;
-	
-}
-
 declare module "awayjs-parsers/lib/AWD3ParserUtils/AWDBlock" {
 	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
 	class AWDBlock {
@@ -525,15 +56,6 @@ declare module "awayjs-parsers/lib/AWD3ParserUtils/AWDBlock" {
 	    addError(errorMsg: string): void;
 	}
 	export = AWDBlock;
-	
-}
-
-declare module "awayjs-parsers/lib/AWD3ParserUtils/AWDProperties" {
-	class AWDProperties {
-	    set(key: number, value: any): void;
-	    get(key: number, fallback: any): any;
-	}
-	export = AWDProperties;
 	
 }
 
@@ -595,8 +117,8 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private _depthSizeDic;
 	    private start_timeing;
 	    private _time_all;
-	    private _time_geom;
-	    private _time_geom_bytes;
+	    private _time_graphics;
+	    private _time_graphics_bytes;
 	    private _time_timeline;
 	    private _time_fonts;
 	    private _time_textfields;
@@ -604,7 +126,7 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private _time_textures;
 	    private _time_materials;
 	    private _time_meshes;
-	    private _num_geom;
+	    private _num_graphics;
 	    private _num_timeline;
 	    private _num_fonts;
 	    private _num_textfields;
@@ -662,9 +184,9 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private parseMeshLibraryBlock(blockID);
 	    private parseAudioBlock(blockID, factory);
 	    private parseTimeLine(blockID, factory);
-	    private static geometryProperties;
-	    private static subGeometryProperties;
-	    private parseGeometry(blockID);
+	    private static graphicsProperties;
+	    private static elementsProperties;
+	    private parseGraphics(blockID);
 	    private static primitiveProperties;
 	    private static primitiveTypes;
 	    private parsePrimitves(blockID);
@@ -722,73 +244,6 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	
 }
 
-declare module "awayjs-parsers/lib/Max3DSParser" {
-	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
-	import ResourceDependency = require("awayjs-core/lib/parsers/ResourceDependency");
-	/**
-	 * Max3DSParser provides a parser for the 3ds data type.
-	 */
-	class Max3DSParser extends ParserBase {
-	    private _byteData;
-	    private _textures;
-	    private _materials;
-	    private _unfinalized_objects;
-	    private _cur_obj_end;
-	    private _cur_obj;
-	    private _cur_mat_end;
-	    private _cur_mat;
-	    private _useSmoothingGroups;
-	    /**
-	     * Creates a new <code>Max3DSParser</code> object.
-	     *
-	     * @param useSmoothingGroups Determines whether the parser looks for smoothing groups in the 3ds file or assumes uniform smoothing. Defaults to true.
-	     */
-	    constructor(useSmoothingGroups?: boolean);
-	    /**
-	     * Indicates whether or not a given file extension is supported by the parser.
-	     * @param extension The file extension of a potential file to be parsed.
-	     * @return Whether or not the given file type is supported.
-	     */
-	    static supportsType(extension: string): boolean;
-	    /**
-	     * Tests whether a data block can be parsed by the parser.
-	     * @param data The data block to potentially be parsed.
-	     * @return Whether or not the given data is supported.
-	     */
-	    static supportsData(data: any): boolean;
-	    /**
-	     * @inheritDoc
-	     */
-	    _iResolveDependency(resourceDependency: ResourceDependency): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    _iResolveDependencyFailure(resourceDependency: ResourceDependency): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    _pProceedParsing(): boolean;
-	    _pStartParsing(frameLimit: number): void;
-	    private parseMaterial();
-	    private parseTexture(end);
-	    private parseVertexList();
-	    private parseFaceList();
-	    private parseSmoothingGroups();
-	    private parseUVList();
-	    private parseFaceMaterialList();
-	    private parseObjectAnimation(end);
-	    private constructObject(obj, pivot?);
-	    private prepareData(vertices, faces, obj);
-	    private applySmoothGroups(vertices, faces);
-	    private finalizeCurrentMaterial();
-	    private readNulTermstring();
-	    private readTransform();
-	    private readColor();
-	}
-	export = Max3DSParser;
-	
-}
-
 declare module "awayjs-parsers/lib/MD2Parser" {
 	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 	import ResourceDependency = require("awayjs-core/lib/parsers/ResourceDependency");
@@ -822,16 +277,16 @@ declare module "awayjs-parsers/lib/MD2Parser" {
 	    private _indices;
 	    private _vertIndices;
 	    private _animationSet;
-	    private _firstSubGeom;
+	    private _firstElements;
 	    private _uvs;
 	    private _finalUV;
 	    private _materialNames;
 	    private _textureType;
 	    private _ignoreTexturePath;
 	    private _mesh;
-	    private _geometry;
+	    private _graphics;
 	    private materialFinal;
-	    private geoCreated;
+	    private graphicsCreated;
 	    /**
 	     * Creates a new MD2Parser object.
 	     * @param textureType The extension of the texture (e.g. jpg/png/...)
@@ -895,7 +350,7 @@ declare module "awayjs-parsers/lib/MD2Parser" {
 	     */
 	    private findIndex(vertexIndex, uvIndex);
 	    /**
-	     * Parses all the frame geometries.
+	     * Parses all the frame elements.
 	     */
 	    private parseFrames();
 	    private readFrameName();
@@ -1056,7 +511,7 @@ declare module "awayjs-parsers/lib/MD5MeshParser" {
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 	/**
-	 * MD5MeshParser provides a parser for the md5mesh data type, providing the geometry of the md5 format.
+	 * MD5MeshParser provides a parser for the md5mesh data type, providing the graphics of the md5 format.
 	 *
 	 * todo: optimize
 	 */
@@ -1089,7 +544,7 @@ declare module "awayjs-parsers/lib/MD5MeshParser" {
 	    private _maxJointCount;
 	    private _meshData;
 	    private _bindPoses;
-	    private _geometry;
+	    private _graphics;
 	    private _skeleton;
 	    private _animationSet;
 	    private _rotationQuat;
@@ -1125,7 +580,7 @@ declare module "awayjs-parsers/lib/MD5MeshParser" {
 	     */
 	    private putBack();
 	    /**
-	     * Parses the mesh geometry.
+	     * Parses the mesh graphics.
 	     */
 	    private parseMesh();
 	    /**
@@ -1133,9 +588,9 @@ declare module "awayjs-parsers/lib/MD5MeshParser" {
 	     * @param vertexData The mesh's vertices.
 	     * @param weights The joint weights per vertex.
 	     * @param indices The indices for the faces.
-	     * @return A SubGeometry instance containing all geometrical data for the current mesh.
+	     * @return A TriangleElements instance containing all elements data for the current mesh.
 	     */
-	    private translateGeom(vertexData, weights, indices);
+	    private translateElements(vertexData, weights, indices);
 	    /**
 	     * Retrieve the next triplet of vertex indices that form a face.
 	     * @param indices The index list in which to store the read data.
@@ -1215,6 +670,73 @@ declare module "awayjs-parsers/lib/MD5MeshParser" {
 	
 }
 
+declare module "awayjs-parsers/lib/Max3DSParser" {
+	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
+	import ResourceDependency = require("awayjs-core/lib/parsers/ResourceDependency");
+	/**
+	 * Max3DSParser provides a parser for the 3ds data type.
+	 */
+	class Max3DSParser extends ParserBase {
+	    private _byteData;
+	    private _textures;
+	    private _materials;
+	    private _unfinalized_objects;
+	    private _cur_obj_end;
+	    private _cur_obj;
+	    private _cur_mat_end;
+	    private _cur_mat;
+	    private _useSmoothingGroups;
+	    /**
+	     * Creates a new <code>Max3DSParser</code> object.
+	     *
+	     * @param useSmoothingGroups Determines whether the parser looks for smoothing groups in the 3ds file or assumes uniform smoothing. Defaults to true.
+	     */
+	    constructor(useSmoothingGroups?: boolean);
+	    /**
+	     * Indicates whether or not a given file extension is supported by the parser.
+	     * @param extension The file extension of a potential file to be parsed.
+	     * @return Whether or not the given file type is supported.
+	     */
+	    static supportsType(extension: string): boolean;
+	    /**
+	     * Tests whether a data block can be parsed by the parser.
+	     * @param data The data block to potentially be parsed.
+	     * @return Whether or not the given data is supported.
+	     */
+	    static supportsData(data: any): boolean;
+	    /**
+	     * @inheritDoc
+	     */
+	    _iResolveDependency(resourceDependency: ResourceDependency): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    _iResolveDependencyFailure(resourceDependency: ResourceDependency): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    _pProceedParsing(): boolean;
+	    _pStartParsing(frameLimit: number): void;
+	    private parseMaterial();
+	    private parseTexture(end);
+	    private parseVertexList();
+	    private parseFaceList();
+	    private parseSmoothingGroups();
+	    private parseUVList();
+	    private parseFaceMaterialList();
+	    private parseObjectAnimation(end);
+	    private constructObject(obj, pivot?);
+	    private prepareData(vertices, faces, obj);
+	    private applySmoothGroups(vertices, faces);
+	    private finalizeCurrentMaterial();
+	    private readNulTermstring();
+	    private readTransform();
+	    private readColor();
+	}
+	export = Max3DSParser;
+	
+}
+
 declare module "awayjs-parsers/lib/OBJParser" {
 	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 	import ResourceDependency = require("awayjs-core/lib/parsers/ResourceDependency");
@@ -1291,11 +813,11 @@ declare module "awayjs-parsers/lib/OBJParser" {
 	     */
 	    private translate();
 	    /**
-	     * Translates an obj's material group to a subgeometry.
+	     * Translates an obj's material group to a subgraphics.
 	     * @param materialGroup The material group data to convert.
-	     * @param geometry The Geometry to contain the converted SubGeometry.
+	     * @param graphics The Graphics to contain the converted Elements.
 	     */
-	    private translateMaterialGroup(materialGroup, geometry);
+	    private translateMaterialGroup(materialGroup, graphics);
 	    private translateVertexData(face, vertexIndex, vertices, uvs, indices, normals);
 	    /**
 	     * Creates a new object group.
