@@ -63,7 +63,7 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 	import ResourceDependency = require("awayjs-core/lib/parsers/ResourceDependency");
-	import View = require("awayjs-display/lib/containers/View");
+	import View = require("awayjs-display/lib/View");
 	/**
 	 * AWDParser provides a parser for the AWD data type.
 	 */
