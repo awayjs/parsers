@@ -24,19 +24,19 @@ import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
 import Point							= require("awayjs-core/lib/geom/Point");
 
 import AnimationNodeBase				= require("awayjs-display/lib/animators/nodes/AnimationNodeBase");
-import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
-import View								= require("awayjs-display/lib/containers/View");
-import DisplayObject					= require("awayjs-display/lib/base/DisplayObject");
-import LightBase						= require("awayjs-display/lib/base/LightBase");
+import DisplayObjectContainer			= require("awayjs-display/lib/display/DisplayObjectContainer");
+import View								= require("awayjs-display/lib/View");
+import DisplayObject					= require("awayjs-display/lib/display/DisplayObject");
+import LightBase						= require("awayjs-display/lib/display/LightBase");
 import Graphics							= require("awayjs-display/lib/graphics/Graphics");
 import TriangleElements					= require("awayjs-display/lib/graphics/TriangleElements");
-import DirectionalLight					= require("awayjs-display/lib/entities/DirectionalLight");
-import PointLight						= require("awayjs-display/lib/entities/PointLight");
-import Camera							= require("awayjs-display/lib/entities/Camera");
-import Mesh								= require("awayjs-display/lib/entities/Mesh");
-import TextField						= require("awayjs-display/lib/entities/TextField");
-import Billboard						= require("awayjs-display/lib/entities/Billboard");
-import Skybox							= require("awayjs-display/lib/entities/Skybox");
+import DirectionalLight					= require("awayjs-display/lib/display/DirectionalLight");
+import PointLight						= require("awayjs-display/lib/display/PointLight");
+import Camera							= require("awayjs-display/lib/display/Camera");
+import Mesh								= require("awayjs-display/lib/display/Mesh");
+import TextField						= require("awayjs-display/lib/display/TextField");
+import Billboard						= require("awayjs-display/lib/display/Billboard");
+import Skybox							= require("awayjs-display/lib/display/Skybox");
 import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
 import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
 import LightPickerBase					= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
@@ -106,7 +106,7 @@ import BasicMaterial					= require("awayjs-display/lib/materials/BasicMaterial")
 
 import ITimelineSceneGraphFactory 	= require("awayjs-display/lib/factories/ITimelineSceneGraphFactory");
 import AS2SceneGraphFactory 		= require("awayjs-player/lib/factories/AS2SceneGraphFactory");
-import MovieClip 					= require("awayjs-display/lib/entities/MovieClip");
+import MovieClip 					= require("awayjs-display/lib/display/MovieClip");
 import Timeline			 			= require("awayjs-display/lib/base/Timeline");
 
 
@@ -1061,16 +1061,16 @@ class AWDParser extends ParserBase
 
 			if(type==3){// solid color fill - need tx and ty
 				graphic.material.animateUVs = true;
-				graphic.uvTransform = new Matrix(0, 0, 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+				graphic.style.uvMatrix = new Matrix(0, 0, 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
 			}
 			else if(type==4){// texture fill - need full matrix
 				var matrix:Array<number> = this.parseMatrix32RawData();
 				graphic.material.animateUVs = true;
-				graphic.uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+				graphic.style.uvMatrix = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
 			}
 			else if(type==5){// linear gradient fill - need a, c , tx and ty
 				graphic.material.animateUVs = true;
-				graphic.uvTransform = new Matrix(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+				graphic.style.uvMatrix = new Matrix(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
 			}
 			else if(type==6){// radial gradient fill - need image rectangle + full transform
 				var x:number = this._newBlockBytes.readFloat();
@@ -1081,7 +1081,7 @@ class AWDParser extends ParserBase
 				graphic.material.imageRect = true;
 				graphic.material.animateUVs = true;
 				var matrix:Array<number> = this.parseMatrix32RawData();
-				graphic.uvTransform = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+				graphic.style.uvMatrix = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
 			}
 
 			//check if curves are needed

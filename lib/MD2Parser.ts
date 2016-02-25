@@ -10,10 +10,10 @@ import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
 
 import Graphics							= require("awayjs-display/lib/graphics/Graphics");
 import TriangleElements					= require("awayjs-display/lib/graphics/TriangleElements");
-import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
-import DisplayObject					= require("awayjs-display/lib/base/DisplayObject");
-import Camera							= require("awayjs-display/lib/entities/Camera");
-import Mesh								= require("awayjs-display/lib/entities/Mesh");
+import DisplayObjectContainer			= require("awayjs-display/lib/display/DisplayObjectContainer");
+import DisplayObject					= require("awayjs-display/lib/display/DisplayObject");
+import Camera							= require("awayjs-display/lib/display/Camera");
+import Mesh								= require("awayjs-display/lib/display/Mesh");
 import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
 import Single2DTexture					= require("awayjs-display/lib/textures/Single2DTexture");
 

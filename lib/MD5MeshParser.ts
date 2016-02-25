@@ -7,8 +7,8 @@ import ParserBase						= require("awayjs-core/lib/parsers/ParserBase");
 
 import Graphics							= require("awayjs-display/lib/graphics/Graphics");
 import TriangleElements					= require("awayjs-display/lib/graphics/TriangleElements");
-import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
-import Mesh								= require("awayjs-display/lib/entities/Mesh");
+import DisplayObjectContainer			= require("awayjs-display/lib/display/DisplayObjectContainer");
+import Mesh								= require("awayjs-display/lib/display/Mesh");
 
 import SkeletonAnimationSet				= require("awayjs-renderergl/lib/animators/SkeletonAnimationSet");
 import Skeleton							= require("awayjs-renderergl/lib/animators/data/Skeleton");

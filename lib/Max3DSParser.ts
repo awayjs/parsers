@@ -12,8 +12,8 @@ import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
 
 import Graphics							= require("awayjs-display/lib/graphics/Graphics");
 import TriangleElements					= require("awayjs-display/lib/graphics/TriangleElements");
-import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
-import Mesh								= require("awayjs-display/lib/entities/Mesh");
+import DisplayObjectContainer			= require("awayjs-display/lib/display/DisplayObjectContainer");
+import Mesh								= require("awayjs-display/lib/display/Mesh");
 import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
 import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
 import Single2DTexture					= require("awayjs-display/lib/textures/Single2DTexture");
