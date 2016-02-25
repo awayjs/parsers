@@ -9,8 +9,8 @@ import Debug						= require("awayjs-core/lib/utils/Debug");
 import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationFrame");
 
 import Graphics						= require("awayjs-display/lib/graphics/Graphics");
-import View							= require("awayjs-display/lib/containers/View");
-import Mesh							= require("awayjs-display/lib/entities/Mesh");
+import View							= require("awayjs-display/lib/View");
+import Mesh							= require("awayjs-display/lib/display/Mesh");
 
 import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
 

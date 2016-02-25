@@ -9,10 +9,10 @@ import URLRequest					= require("awayjs-core/lib/net/URLRequest");
 import Debug						= require("awayjs-core/lib/utils/Debug");
 import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationFrame");
 
-import View							= require("awayjs-display/lib/containers/View");
-import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
-import DirectionalLight				= require("awayjs-display/lib/entities/DirectionalLight");
-import Mesh							= require("awayjs-display/lib/entities/Mesh");
+import View							= require("awayjs-display/lib/View");
+import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
+import DirectionalLight				= require("awayjs-display/lib/display/DirectionalLight");
+import Mesh							= require("awayjs-display/lib/display/Mesh");
 import StaticLightPicker			= require("awayjs-display/lib/materials/lightpickers/StaticLightPicker");
 import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
 
