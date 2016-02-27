@@ -125,7 +125,7 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private _time_sounds;
 	    private _time_textures;
 	    private _time_materials;
-	    private _time_meshes;
+	    private _time_sprites;
 	    private _num_graphics;
 	    private _num_timeline;
 	    private _num_fonts;
@@ -133,7 +133,7 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private _num_sounds;
 	    private _num_textures;
 	    private _num_materials;
-	    private _num_meshes;
+	    private _num_sprites;
 	    /**
 	     * Creates a new AWD3Parserutils object.
 	     * @param uri The url or id of the data or file to be parsed.
@@ -181,7 +181,7 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private static textFieldTypes;
 	    private parseTextField(blockID, factory);
 	    private parseBillBoardLibraryBlock(blockID);
-	    private parseMeshLibraryBlock(blockID);
+	    private parseSpriteLibraryBlock(blockID);
 	    private parseAudioBlock(blockID, factory);
 	    private parseTimeLine(blockID, factory);
 	    private static graphicsProperties;
@@ -192,8 +192,8 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private parsePrimitves(blockID);
 	    private static containerProperties;
 	    private parseContainer(blockID);
-	    private static meshInstanceProperties;
-	    private parseMeshInstance(blockID);
+	    private static spriteInstanceProperties;
+	    private parseSpriteInstance(blockID);
 	    private parseSkyboxInstance(blockID);
 	    private static lightProperties;
 	    private parseLight(blockID);
@@ -221,8 +221,8 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private parseSkeleton(blockID);
 	    private parseSkeletonPose(blockID);
 	    private parseSkeletonAnimation(blockID);
-	    private meshPoseAnimationProperties;
-	    private parseMeshPoseAnimation(blockID, poseOnly?);
+	    private spritePoseAnimationProperties;
+	    private parseSpritePoseAnimation(blockID, poseOnly?);
 	    private static vertexAnimationSetProperties;
 	    private parseVertexAnimationSet(blockID);
 	    private static animatorSetProperties;
@@ -233,7 +233,7 @@ declare module "awayjs-parsers/lib/AWDParser" {
 	    private parseProperties(expected);
 	    private parseAttrValue(type, len);
 	    private parseHeader();
-	    private getUVForVertexAnimation(meshID);
+	    private getUVForVertexAnimation(spriteID);
 	    private parseVarStr();
 	    private readNumber(precision?);
 	    private parseMatrix3D();
@@ -283,7 +283,7 @@ declare module "awayjs-parsers/lib/MD2Parser" {
 	    private _materialNames;
 	    private _textureType;
 	    private _ignoreTexturePath;
-	    private _mesh;
+	    private _sprite;
 	    private _graphics;
 	    private materialFinal;
 	    private graphicsCreated;
@@ -328,7 +328,7 @@ declare module "awayjs-parsers/lib/MD2Parser" {
 	     */
 	    private parseMaterialNames();
 	    /**
-	     * Parses the uv data for the mesh.
+	     * Parses the uv data for the sprite.
 	     */
 	    private parseUV();
 	    /**
@@ -346,7 +346,7 @@ declare module "awayjs-parsers/lib/MD2Parser" {
 	     * Finds the final index corresponding to the original MD2's vertex and uv indices. Returns -1 if it wasn't added yet.
 	     * @param vertexIndex The original index in the vertex list.
 	     * @param uvIndex The original index in the uv list.
-	     * @return The index of the final mesh corresponding to the original vertex and uv index. -1 if it doesn't exist yet.
+	     * @return The index of the final sprite corresponding to the original vertex and uv index. -1 if it doesn't exist yet.
 	     */
 	    private findIndex(vertexIndex, uvIndex);
 	    /**
@@ -539,10 +539,10 @@ declare module "awayjs-parsers/lib/MD5MeshParser" {
 	    private _version;
 	    private _numJoints;
 	    private _numMeshes;
-	    private _mesh;
+	    private _sprite;
 	    private _shaders;
 	    private _maxJointCount;
-	    private _meshData;
+	    private _elementsData;
 	    private _bindPoses;
 	    private _graphics;
 	    private _skeleton;
@@ -570,7 +570,7 @@ declare module "awayjs-parsers/lib/MD5MeshParser" {
 	    _pProceedParsing(): boolean;
 	    _pStartParsing(frameLimit: number): void;
 	    private calculateMaxJointCount();
-	    private countZeroWeightJoints(vertex, weights);
+	    private countZeroWeightJoints(position, weights);
 	    /**
 	     * Parses the skeleton's joints.
 	     */
@@ -584,15 +584,15 @@ declare module "awayjs-parsers/lib/MD5MeshParser" {
 	     */
 	    private parseMesh();
 	    /**
-	     * Converts the mesh data to a SkinnedSub instance.
-	     * @param vertexData The mesh's vertices.
-	     * @param weights The joint weights per vertex.
+	     * Converts the sprite data to a SkinnedSub instance.
+	     * @param positionData The sprite's positions.
+	     * @param weights The joint weights per position.
 	     * @param indices The indices for the faces.
-	     * @return A TriangleElements instance containing all elements data for the current mesh.
+	     * @return A TriangleElements instance containing all elements data for the current sprite.
 	     */
-	    private translateElements(vertexData, weights, indices);
+	    private translateElements(positionData, weights, indices);
 	    /**
-	     * Retrieve the next triplet of vertex indices that form a face.
+	     * Retrieve the next triplet of position indices that form a face.
 	     * @param indices The index list in which to store the read data.
 	     */
 	    private parseTri(indices);
@@ -602,15 +602,15 @@ declare module "awayjs-parsers/lib/MD5MeshParser" {
 	     */
 	    private parseJoint(weights);
 	    /**
-	     * Reads the data for a single vertex.
-	     * @param vertexData The list to contain the vertex data.
+	     * Reads the data for a single position.
+	     * @param positionData The list to contain the position data.
 	     */
-	    private parseVertex(vertexData);
+	    private parseVertex(positionData);
 	    /**
 	     * Reads the next uv coordinate.
-	     * @param vertexData The vertexData to contain the UV coordinates.
+	     * @param positionData The positionData to contain the UV coordinates.
 	     */
-	    private parseUV(vertexData);
+	    private parseUV(positionData);
 	    /**
 	     * Gets the next token in the data stream.
 	     */
@@ -756,7 +756,7 @@ declare module "awayjs-parsers/lib/OBJParser" {
 	    private _materialIDs;
 	    private _materialLoaded;
 	    private _materialSpecularData;
-	    private _meshes;
+	    private _sprites;
 	    private _lastMtlID;
 	    private _objectIndex;
 	    private _realIndices;
@@ -898,7 +898,7 @@ declare module "awayjs-parsers/lib/Parsers" {
 	     * <li>DXF (.dxf)</li>
 	     * <li>Quake 2 MD2 models (.md2)</li>
 	     * <li>Doom 3 MD5 animation clips (.md5anim)</li>
-	     * <li>Doom 3 MD5 meshes (.md5mesh)</li>
+	     * <li>Doom 3 MD5 sprites (.md5sprite)</li>
 	     * <li>Wavefront OBJ (.obj)</li>
 	     * <li>Collada (.dae)</li>
 	     * <li>Images (.jpg, .png)</li>

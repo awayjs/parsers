@@ -93,7 +93,7 @@ var TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
 var DirectionalLight = require("awayjs-display/lib/display/DirectionalLight");
 var PointLight = require("awayjs-display/lib/display/PointLight");
 var Camera = require("awayjs-display/lib/display/Camera");
-var Mesh = require("awayjs-display/lib/display/Mesh");
+var Sprite = require("awayjs-display/lib/display/Sprite");
 var Billboard = require("awayjs-display/lib/display/Billboard");
 var Skybox = require("awayjs-display/lib/display/Skybox");
 var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
@@ -186,7 +186,7 @@ var AWDParser = (function (_super) {
         this._time_sounds = 0;
         this._time_textures = 0;
         this._time_materials = 0;
-        this._time_meshes = 0;
+        this._time_sprites = 0;
         this._num_graphics = 0;
         this._num_timeline = 0;
         this._num_fonts = 0;
@@ -194,7 +194,7 @@ var AWDParser = (function (_super) {
         this._num_sounds = 0;
         this._num_textures = 0;
         this._num_materials = 0;
-        this._num_meshes = 0;
+        this._num_sprites = 0;
         //--Parser UTILS---------------------------------------------------------------------------
         this.shadowMethodListProperties = {
             1: AWDParser.BADDR,
@@ -215,7 +215,7 @@ var AWDParser = (function (_super) {
             702: AWDParser.BOOL,
             801: AWDParser.MTX4x4
         };
-        this.meshPoseAnimationProperties = {
+        this.spritePoseAnimationProperties = {
             1: AWDParser.BOOL,
             2: AWDParser.BOOL
         };
@@ -393,7 +393,7 @@ var AWDParser = (function (_super) {
             if (this._body.getBytesAvailable() == 0) {
                 this.dispose();
                 if (this._debugTimers)
-                    console.log("Parsing total: " + (this._time_all | 0) + "ms", " | graphics: " + this._num_graphics + ", " + (this._time_graphics | 0) + "ms", " | graphics bytes: " + this._num_graphics + ", " + (this._time_graphics_bytes | 0) + "ms", " | timelines: " + this._num_timeline + ", " + (this._time_timeline | 0) + "ms", " | fonts: " + this._num_fonts + ", " + (this._time_fonts | 0) + "ms", " | sounds: " + this._num_sounds + ", " + (this._time_sounds | 0) + "ms", " | mats: " + this._num_materials + ", " + (this._time_materials | 0) + "ms", " | textures: " + this._num_textures + ", " + (this._time_textures | 0) + "ms", " | meshes: " + this._num_meshes + ", " + (this._time_meshes | 0) + "ms");
+                    console.log("Parsing total: " + (this._time_all | 0) + "ms", " | graphics: " + this._num_graphics + ", " + (this._time_graphics | 0) + "ms", " | graphics bytes: " + this._num_graphics + ", " + (this._time_graphics_bytes | 0) + "ms", " | timelines: " + this._num_timeline + ", " + (this._time_timeline | 0) + "ms", " | fonts: " + this._num_fonts + ", " + (this._time_fonts | 0) + "ms", " | sounds: " + this._num_sounds + ", " + (this._time_sounds | 0) + "ms", " | mats: " + this._num_materials + ", " + (this._time_materials | 0) + "ms", " | textures: " + this._num_textures + ", " + (this._time_textures | 0) + "ms", " | sprites: " + this._num_sprites + ", " + (this._time_sprites | 0) + "ms");
                 return ParserBase.PARSING_DONE;
             }
             else {
@@ -482,7 +482,7 @@ var AWDParser = (function (_super) {
             var factory = new AS2SceneGraphFactory(this._view);
             switch (type) {
                 case 24:
-                    this.parseMeshLibraryBlock(this._cur_block_id);
+                    this.parseSpriteLibraryBlock(this._cur_block_id);
                     isParsed = true;
                     break;
                 case 25:
@@ -550,11 +550,11 @@ var AWDParser = (function (_super) {
                     isParsed = true;
                     break;
                 case 111:
-                    this.parseMeshPoseAnimation(this._cur_block_id, true);
+                    this.parseSpritePoseAnimation(this._cur_block_id, true);
                     isParsed = true;
                     break;
                 case 112:
-                    this.parseMeshPoseAnimation(this._cur_block_id);
+                    this.parseSpritePoseAnimation(this._cur_block_id);
                     isParsed = true;
                     break;
                 case 113:
@@ -580,7 +580,7 @@ var AWDParser = (function (_super) {
                     this.parseContainer(this._cur_block_id);
                     break;
                 case 23:
-                    this.parseMeshInstance(this._cur_block_id);
+                    this.parseSpriteInstance(this._cur_block_id);
                     break;
                 case 81:
                     this.parseMaterial(this._cur_block_id);
@@ -659,8 +659,8 @@ var AWDParser = (function (_super) {
             this._num_materials++;
         }
         else if (type == 24) {
-            this._time_meshes += time_delta;
-            this._num_meshes++;
+            this._time_sprites += time_delta;
+            this._num_sprites++;
         }
     };
     //--Parser Blocks---------------------------------------------------------------------------
@@ -851,7 +851,7 @@ var AWDParser = (function (_super) {
             console.log("Parsed a Library-Billboard: Name = '" + name + "| Material-Name = " + mat.name);
     };
     // Block ID = 24
-    AWDParser.prototype.parseMeshLibraryBlock = function (blockID) {
+    AWDParser.prototype.parseSpriteLibraryBlock = function (blockID) {
         var name = this.parseVarStr();
         var data_id = this._newBlockBytes.readUnsignedInt();
         var graphics = this._blocks[data_id].data;
@@ -869,25 +869,25 @@ var AWDParser = (function (_super) {
             materialNames[materials_parsed] = mat.name;
         }
         var start_timeing = performance.now();
-        var mesh = new Mesh();
-        graphics.copyTo(mesh.graphics);
+        var sprite = new Sprite();
+        graphics.copyTo(sprite.graphics);
         var end_timing = performance.now();
         var time_delta = end_timing - start_timeing;
         this._time_graphics_bytes += time_delta;
-        if (materials.length >= 1 && mesh.graphics.count == 1) {
-            mesh.material = materials[0];
+        if (materials.length >= 1 && sprite.graphics.count == 1) {
+            sprite.material = materials[0];
         }
         else if (materials.length > 1) {
-            for (var i = 0; i < mesh.graphics.count; i++)
-                mesh.graphics.getGraphicAt(i).material = materials[Math.min(materials.length - 1, i)];
+            for (var i = 0; i < sprite.graphics.count; i++)
+                sprite.graphics.getGraphicAt(i).material = materials[Math.min(materials.length - 1, i)];
         }
         var count = this._newBlockBytes.readUnsignedShort();
-        if (count != mesh.graphics.count)
-            throw new Error("num elements does not match num submeshes");
+        if (count != sprite.graphics.count)
+            throw new Error("num elements does not match num subsprites");
         for (var i = 0; i < count; i++) {
             var type = this._newBlockBytes.readUnsignedByte();
             var sampler = new Sampler2D();
-            var graphic = mesh.graphics.getGraphicAt(i);
+            var graphic = sprite.graphics.getGraphicAt(i);
             graphic.style = new Style();
             graphic.style.addSamplerAt(sampler, graphic.material.getTextureAt(0));
             if (type == 3) {
@@ -921,11 +921,11 @@ var AWDParser = (function (_super) {
             this._newBlockBytes.readUnsignedInt();
         }
         this.parseProperties(null);
-        mesh.extra = this.parseUserAttributes();
-        this._pFinalizeAsset(mesh, name);
-        this._blocks[blockID].data = mesh;
+        sprite.extra = this.parseUserAttributes();
+        this._pFinalizeAsset(sprite, name);
+        this._blocks[blockID].data = sprite;
         if (this._debug)
-            console.log("Parsed a Library-Mesh: Name = '" + name + "| Graphics-Name = " + graphics.name + " | Graphics-Count = " + mesh.graphics.count + " | Mat-Names = " + materialNames);
+            console.log("Parsed a Library-Sprite: Name = '" + name + "| Graphics-Name = " + graphics.name + " | Graphics-Count = " + sprite.graphics.count + " | Mat-Names = " + materialNames);
     };
     AWDParser.prototype.parseAudioBlock = function (blockID, factory) {
         //var asset:Audio;todo create asset for audio
@@ -1235,7 +1235,7 @@ var AWDParser = (function (_super) {
                     this._newBlockBytes.position = str_end;
                 }
             }
-            this.parseUserAttributes(); // Ignore sub-mesh attributes for now
+            this.parseUserAttributes(); // Ignore sub-sprite attributes for now
             if (is_curve_elements) {
                 var vertexBuffer = new AttributesBuffer(attr_count, str_len / attr_count);
                 vertexBuffer.bufferView = new Uint8Array(curveData.arraybytes);
@@ -1376,7 +1376,7 @@ var AWDParser = (function (_super) {
             console.log("Parsed a Container: Name = '" + name + "' | Parent-Name = " + parentName);
     };
     // Block ID = 23
-    AWDParser.prototype.parseMeshInstance = function (blockID) {
+    AWDParser.prototype.parseSpriteInstance = function (blockID) {
         var parent = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
         var mtx = this.parseMatrix3D();
         var name = this.parseVarStr();
@@ -1402,47 +1402,47 @@ var AWDParser = (function (_super) {
             materials[materials_parsed] = mat;
             materialNames[materials_parsed] = mat.name;
         }
-        var mesh;
+        var sprite;
         if (isPrefab) {
-            mesh = prefab.getNewObject();
+            sprite = prefab.getNewObject();
         }
         else {
-            mesh = new Mesh();
-            graphics.copyTo(mesh.graphics);
+            sprite = new Sprite();
+            graphics.copyTo(sprite.graphics);
         }
-        mesh.transform.matrix3D = mtx;
+        sprite.transform.matrix3D = mtx;
         var parentName = "Root (TopLevel)";
         if (parent) {
-            parent.addChild(mesh);
+            parent.addChild(sprite);
             parentName = parent.name;
         }
         else {
             //add to the content property
-            this._pContent.addChild(mesh);
+            this._pContent.addChild(sprite);
         }
-        if (materials.length >= 1 && mesh.graphics.count == 1) {
-            mesh.material = materials[0];
+        if (materials.length >= 1 && sprite.graphics.count == 1) {
+            sprite.material = materials[0];
         }
         else if (materials.length > 1) {
-            for (var i = 0; i < mesh.graphics.count; i++)
-                mesh.graphics.getGraphicAt(i).material = materials[Math.min(materials.length - 1, i)];
+            for (var i = 0; i < sprite.graphics.count; i++)
+                sprite.graphics.getGraphicAt(i).material = materials[Math.min(materials.length - 1, i)];
         }
         if ((this._version[0] == 2) && (this._version[1] == 1)) {
-            var props = this.parseProperties(AWDParser.meshInstanceProperties);
-            mesh.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
-            mesh.castsShadows = props.get(5, true);
+            var props = this.parseProperties(AWDParser.spriteInstanceProperties);
+            sprite.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
+            sprite.castsShadows = props.get(5, true);
         }
         else {
             this.parseProperties(null);
         }
-        mesh.extra = this.parseUserAttributes();
-        this._pFinalizeAsset(mesh, name);
-        this._blocks[blockID].data = mesh;
+        sprite.extra = this.parseUserAttributes();
+        this._pFinalizeAsset(sprite, name);
+        this._blocks[blockID].data = sprite;
         if (this._debug) {
             if (isPrefab)
-                console.log("Parsed a Mesh for Prefab: Name = '" + name + "' | Parent-Name = " + parentName + "| Prefab-Name = " + prefab.name + " | Graphics-Count = " + mesh.graphics.count + " | Mat-Names = " + materialNames);
+                console.log("Parsed a Sprite for Prefab: Name = '" + name + "' | Parent-Name = " + parentName + "| Prefab-Name = " + prefab.name + " | Graphics-Count = " + sprite.graphics.count + " | Mat-Names = " + materialNames);
             else
-                console.log("Parsed a Mesh for Graphics: Name = '" + name + "' | Parent-Name = " + parentName + "| Graphics-Name = " + graphics.name + " | Graphics-Count = " + mesh.graphics.count + " | Mat-Names = " + materialNames);
+                console.log("Parsed a Sprite for Graphics: Name = '" + name + "' | Parent-Name = " + parentName + "| Graphics-Name = " + graphics.name + " | Graphics-Count = " + sprite.graphics.count + " | Mat-Names = " + materialNames);
         }
     };
     //Block ID 31
@@ -2075,9 +2075,9 @@ var AWDParser = (function (_super) {
             console.log("Parsed a SkeletonClipNode: Name = " + clip.name + " | Number of Frames = " + clip.frames.length);
     };
     //Block ID = 111 /  Block ID = 112
-    AWDParser.prototype.parseMeshPoseAnimation = function (blockID /*uint*/, poseOnly) {
+    AWDParser.prototype.parseSpritePoseAnimation = function (blockID /*uint*/, poseOnly) {
         if (poseOnly === void 0) { poseOnly = false; }
-        var subMeshParsed /*uint*/;
+        var subSpriteParsed /*uint*/;
         var x;
         var y;
         var z;
@@ -2095,25 +2095,25 @@ var AWDParser = (function (_super) {
         var graphics = this._blocks[geo_id].data;
         var uvs = this.getUVForVertexAnimation(geo_id);
         var num_frames = (!poseOnly) ? this._newBlockBytes.readUnsignedShort() : 1;
-        var num_submeshes = this._newBlockBytes.readUnsignedShort();
+        var num_subsprites = this._newBlockBytes.readUnsignedShort();
         var num_Streams = this._newBlockBytes.readUnsignedShort();
         for (var streamsParsed = 0; streamsParsed < num_Streams; streamsParsed++)
             streamtypes.push(this._newBlockBytes.readUnsignedShort());
-        props = this.parseProperties(this.meshPoseAnimationProperties);
+        props = this.parseProperties(this.spritePoseAnimationProperties);
         clip.looping = props.get(1, true);
         clip.stitchFinalFrame = props.get(2, false);
         var frame_dur;
         for (var frames_parsed = 0; frames_parsed < num_frames; frames_parsed++) {
             frame_dur = this._newBlockBytes.readUnsignedShort();
             graphics = new Graphics(null);
-            subMeshParsed = 0;
-            while (subMeshParsed < num_submeshes) {
+            subSpriteParsed = 0;
+            while (subSpriteParsed < num_subsprites) {
                 streamsParsed = 0;
                 str_len = this._newBlockBytes.readUnsignedInt();
                 str_end = this._newBlockBytes.position + str_len;
                 while (streamsParsed < num_Streams) {
                     if (streamtypes[streamsParsed] == 1) {
-                        indices = graphics.getGraphicAt(subMeshParsed).elements.indices;
+                        indices = graphics.getGraphicAt(subSpriteParsed).elements.indices;
                         verts = new Array();
                         idx = 0;
                         while (this._newBlockBytes.position < str_end) {
@@ -2127,12 +2127,12 @@ var AWDParser = (function (_super) {
                         elements = new TriangleElements(new AttributesBuffer());
                         elements.setIndices(indices);
                         elements.setPositions(verts);
-                        elements.setUVs(uvs[subMeshParsed]);
+                        elements.setUVs(uvs[subSpriteParsed]);
                         elements.setNormals(null);
                         elements.setTangents(null);
                         elements.autoDeriveNormals = false;
                         elements.autoDeriveTangents = false;
-                        subMeshParsed++;
+                        subSpriteParsed++;
                         graphics.addGraphic(elements);
                     }
                     else
@@ -2193,10 +2193,10 @@ var AWDParser = (function (_super) {
         var type = this._newBlockBytes.readUnsignedShort();
         var props = this.parseProperties(AWDParser.animatorSetProperties);
         var targetAnimationSet = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
-        var targetMeshes = new Array();
-        var targetMeshLength = this._newBlockBytes.readUnsignedShort();
-        for (var i = 0; i < targetMeshLength; i++)
-            targetMeshes.push(this._blocks[this._newBlockBytes.readUnsignedInt()].data);
+        var targetSpritees = new Array();
+        var targetSpriteLength = this._newBlockBytes.readUnsignedShort();
+        for (var i = 0; i < targetSpriteLength; i++)
+            targetSpritees.push(this._blocks[this._newBlockBytes.readUnsignedInt()].data);
         var activeState = this._newBlockBytes.readUnsignedShort();
         var autoplay = (this._newBlockBytes.readUnsignedByte() == 1);
         this.parseUserAttributes();
@@ -2208,11 +2208,11 @@ var AWDParser = (function (_super) {
             thisAnimator = new VertexAnimator(targetAnimationSet);
         this._pFinalizeAsset(thisAnimator, name);
         this._blocks[blockID].data = thisAnimator;
-        for (i = 0; i < targetMeshes.length; i++) {
+        for (i = 0; i < targetSpritees.length; i++) {
             if (type == 1)
-                targetMeshes[i].animator = thisAnimator;
+                targetSpritees[i].animator = thisAnimator;
             else if (type == 2)
-                targetMeshes[i].animator = thisAnimator;
+                targetSpritees[i].animator = thisAnimator;
         }
         if (this._debug)
             console.log("Parsed a Animator: Name = " + name);
@@ -2451,20 +2451,20 @@ var AWDParser = (function (_super) {
             this._pDieWithError('AWD2 body length does not match header integrity field');
     };
     // Helper - functions
-    AWDParser.prototype.getUVForVertexAnimation = function (meshID /*uint*/) {
-        if (this._blocks[meshID].data instanceof Mesh)
-            meshID = this._blocks[meshID].geoID;
-        if (this._blocks[meshID].uvsForVertexAnimation)
-            return this._blocks[meshID].uvsForVertexAnimation;
-        var graphics = this._blocks[meshID].data;
+    AWDParser.prototype.getUVForVertexAnimation = function (spriteID /*uint*/) {
+        if (this._blocks[spriteID].data instanceof Sprite)
+            spriteID = this._blocks[spriteID].geoID;
+        if (this._blocks[spriteID].uvsForVertexAnimation)
+            return this._blocks[spriteID].uvsForVertexAnimation;
+        var graphics = this._blocks[spriteID].data;
         var elements;
-        var uvsForVertexAnimation = this._blocks[meshID].uvsForVertexAnimation = new Array();
+        var uvsForVertexAnimation = this._blocks[spriteID].uvsForVertexAnimation = new Array();
         var len = graphics.count;
         for (var geoCnt = 0; geoCnt < len; geoCnt++) {
             elements = graphics.getGraphicAt(geoCnt).elements;
             uvsForVertexAnimation[geoCnt] = elements.uvs.get(elements.numVertices);
         }
-        return this._blocks[meshID].uvsForVertexAnimation;
+        return this._blocks[spriteID].uvsForVertexAnimation;
     };
     AWDParser.prototype.parseVarStr = function () {
         return this._newBlockBytes.readUTFBytes(this._newBlockBytes.readUnsignedShort());
@@ -2597,7 +2597,7 @@ var AWDParser = (function (_super) {
         3: AWDParser.MATRIX_NUMBER,
         4: AWDParser.UINT8
     };
-    AWDParser.meshInstanceProperties = {
+    AWDParser.spriteInstanceProperties = {
         1: AWDParser.MATRIX_NUMBER,
         2: AWDParser.MATRIX_NUMBER,
         3: AWDParser.MATRIX_NUMBER,
@@ -2724,7 +2724,7 @@ var BitFlags = (function () {
 })();
 module.exports = AWDParser;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/image/BitmapImageCube":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-core/lib/library/AssetLibrary":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/Style":undefined,"awayjs-display/lib/base/Timeline":undefined,"awayjs-display/lib/display/Billboard":undefined,"awayjs-display/lib/display/Camera":undefined,"awayjs-display/lib/display/DirectionalLight":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/Mesh":undefined,"awayjs-display/lib/display/PointLight":undefined,"awayjs-display/lib/display/Skybox":undefined,"awayjs-display/lib/graphics/ElementsType":undefined,"awayjs-display/lib/graphics/Graphics":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-display/lib/text/TextFormat":undefined,"awayjs-display/lib/textures/MappingMode":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/image/BitmapImageCube":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-core/lib/library/AssetLibrary":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/Style":undefined,"awayjs-display/lib/base/Timeline":undefined,"awayjs-display/lib/display/Billboard":undefined,"awayjs-display/lib/display/Camera":undefined,"awayjs-display/lib/display/DirectionalLight":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/PointLight":undefined,"awayjs-display/lib/display/Skybox":undefined,"awayjs-display/lib/display/Sprite":undefined,"awayjs-display/lib/graphics/ElementsType":undefined,"awayjs-display/lib/graphics/Graphics":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-display/lib/text/TextFormat":undefined,"awayjs-display/lib/textures/MappingMode":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -2739,7 +2739,7 @@ var ParserUtils = require("awayjs-core/lib/parsers/ParserUtils");
 var Graphics = require("awayjs-display/lib/graphics/Graphics");
 var TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
 var DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
-var Mesh = require("awayjs-display/lib/display/Mesh");
+var Sprite = require("awayjs-display/lib/display/Sprite");
 var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
 var VertexClipNode = require("awayjs-renderergl/lib/animators/nodes/VertexClipNode");
 var VertexAnimationSet = require("awayjs-renderergl/lib/animators/VertexAnimationSet");
@@ -2794,12 +2794,12 @@ var MD2Parser = (function (_super) {
         if (this.materialMode >= 2)
             material.mode = MethodMaterialMode.MULTI_PASS;
         //add to the content property
-        this._pContent.addChild(this._mesh);
-        material.name = this._mesh.material.name;
-        this._mesh.material = material;
+        this._pContent.addChild(this._sprite);
+        material.name = this._sprite.material.name;
+        this._sprite.material = material;
         this._pFinalizeAsset(material);
-        this._pFinalizeAsset(this._mesh.graphics);
-        this._pFinalizeAsset(this._mesh);
+        this._pFinalizeAsset(this._sprite.graphics);
+        this._pFinalizeAsset(this._sprite);
         this.materialFinal = true;
     };
     /**
@@ -2808,16 +2808,16 @@ var MD2Parser = (function (_super) {
     MD2Parser.prototype._iResolveDependencyFailure = function (resourceDependency) {
         // apply system default
         if (this.materialMode < 2) {
-            this._mesh.material = DefaultMaterialManager.getDefaultMaterial();
+            this._sprite.material = DefaultMaterialManager.getDefaultMaterial();
         }
         else {
-            this._mesh.material = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
-            this._mesh.material.mode = MethodMaterialMode.MULTI_PASS;
+            this._sprite.material = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
+            this._sprite.material.mode = MethodMaterialMode.MULTI_PASS;
         }
         //add to the content property
-        this._pContent.addChild(this._mesh);
-        this._pFinalizeAsset(this._mesh.graphics);
-        this._pFinalizeAsset(this._mesh);
+        this._pContent.addChild(this._sprite);
+        this._pFinalizeAsset(this._sprite.graphics);
+        this._pFinalizeAsset(this._sprite);
         this.materialFinal = true;
     };
     /**
@@ -2837,19 +2837,19 @@ var MD2Parser = (function (_super) {
                 // LITTLE_ENDIAN - Default for ArrayBuffer / Not implemented in ByteArray
                 //----------------------------------------------------------------------------
                 //this._byteData.endian = Endian.LITTLE_ENDIAN;
-                // TODO: Create a mesh only when encountered (if it makes sense
+                // TODO: Create a sprite only when encountered (if it makes sense
                 // for this file format) and return it using this._pFinalizeAsset()
-                this._mesh = new Mesh();
-                this._graphics = this._mesh.graphics;
+                this._sprite = new Sprite();
+                this._graphics = this._sprite.graphics;
                 if (this.materialMode < 2) {
-                    this._mesh.material = DefaultMaterialManager.getDefaultMaterial();
+                    this._sprite.material = DefaultMaterialManager.getDefaultMaterial();
                 }
                 else {
-                    this._mesh.material = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
-                    this._mesh.material.mode = MethodMaterialMode.MULTI_PASS;
+                    this._sprite.material = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
+                    this._sprite.material.mode = MethodMaterialMode.MULTI_PASS;
                 }
                 //_graphics.animation = new VertexAnimation(2, VertexAnimationMode.ABSOLUTE);
-                //_animator = new VertexAnimator(VertexAnimationState(_mesh.animationState));
+                //_animator = new VertexAnimator(VertexAnimationState(_sprite.animationState));
                 // Parse header and decompress body
                 this.parseHeader();
                 this.parseMaterialNames();
@@ -2871,12 +2871,12 @@ var MD2Parser = (function (_super) {
                 //create default subgraphics
                 this._graphics.addGraphic(this._firstElements.clone());
                 // Force name to be chosen by this._pFinalizeAsset()
-                this._mesh.name = "";
+                this._sprite.name = "";
                 if (this.materialFinal) {
                     //add to the content property
-                    this._pContent.addChild(this._mesh);
-                    this._pFinalizeAsset(this._mesh.graphics);
-                    this._pFinalizeAsset(this._mesh);
+                    this._pContent.addChild(this._sprite);
+                    this._pFinalizeAsset(this._sprite.graphics);
+                    this._pFinalizeAsset(this._sprite);
                 }
                 this._pPauseAndRetrieveDependencies();
             }
@@ -2945,12 +2945,12 @@ var MD2Parser = (function (_super) {
                 this._pAddDependency(name, new URLRequest(url));
         }
         if (this._materialNames.length > 0)
-            this._mesh.material.name = this._materialNames[0];
+            this._sprite.material.name = this._materialNames[0];
         else
             this.materialFinal = true;
     };
     /**
-     * Parses the uv data for the mesh.
+     * Parses the uv data for the sprite.
      */
     MD2Parser.prototype.parseUV = function () {
         var j = 0;
@@ -3013,7 +3013,7 @@ var MD2Parser = (function (_super) {
      * Finds the final index corresponding to the original MD2's vertex and uv indices. Returns -1 if it wasn't added yet.
      * @param vertexIndex The original index in the vertex list.
      * @param uvIndex The original index in the uv list.
-     * @return The index of the final mesh corresponding to the original vertex and uv index. -1 if it doesn't exist yet.
+     * @return The index of the final sprite corresponding to the original vertex and uv index. -1 if it doesn't exist yet.
      */
     MD2Parser.prototype.findIndex = function (vertexIndex /*uint*/, uvIndex /*uint*/) {
         var len = this._vertIndices.length;
@@ -3114,7 +3114,7 @@ var MD2Parser = (function (_super) {
 })(ParserBase);
 module.exports = MD2Parser;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/Mesh":undefined,"awayjs-display/lib/graphics/Graphics":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD5AnimParser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/Sprite":undefined,"awayjs-display/lib/graphics/Graphics":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD5AnimParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -3648,7 +3648,7 @@ var URLLoaderDataFormat = require("awayjs-core/lib/net/URLLoaderDataFormat");
 var ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 var TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
 var DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
-var Mesh = require("awayjs-display/lib/display/Mesh");
+var Sprite = require("awayjs-display/lib/display/Sprite");
 var SkeletonAnimationSet = require("awayjs-renderergl/lib/animators/SkeletonAnimationSet");
 var Skeleton = require("awayjs-renderergl/lib/animators/data/Skeleton");
 var SkeletonJoint = require("awayjs-renderergl/lib/animators/data/SkeletonJoint");
@@ -3685,7 +3685,7 @@ var MD5MeshParser = (function (_super) {
      */
     MD5MeshParser.supportsType = function (extension) {
         extension = extension.toLowerCase();
-        return extension == "md5mesh";
+        return extension == "md5sprite";
     };
     /**
      * Tests whether a data block can be parsed by the parser.
@@ -3738,16 +3738,16 @@ var MD5MeshParser = (function (_super) {
             if (this._reachedEOF) {
                 this.calculateMaxJointCount();
                 this._animationSet = new SkeletonAnimationSet(this._maxJointCount);
-                this._mesh = new Mesh();
-                this._graphics = this._mesh.graphics;
-                for (var i = 0; i < this._meshData.length; ++i)
-                    this._graphics.addGraphic(this.translateElements(this._meshData[i].vertexData, this._meshData[i].weightData, this._meshData[i].indices));
+                this._sprite = new Sprite();
+                this._graphics = this._sprite.graphics;
+                for (var i = 0; i < this._elementsData.length; ++i)
+                    this._graphics.addGraphic(this.translateElements(this._elementsData[i].positionData, this._elementsData[i].weightData, this._elementsData[i].indices));
                 //_graphics.animation = _animation;
-                //					_mesh.animationController = _animationController;
+                //					_sprite.animationController = _animationController;
                 //add to the content property
-                this._pContent.addChild(this._mesh);
+                this._pContent.addChild(this._sprite);
                 this._pFinalizeAsset(this._graphics);
-                this._pFinalizeAsset(this._mesh);
+                this._pFinalizeAsset(this._sprite);
                 this._pFinalizeAsset(this._skeleton);
                 this._pFinalizeAsset(this._animationSet);
                 return ParserBase.PARSING_DONE;
@@ -3762,22 +3762,22 @@ var MD5MeshParser = (function (_super) {
     };
     MD5MeshParser.prototype.calculateMaxJointCount = function () {
         this._maxJointCount = 0;
-        var numMeshData = this._meshData.length;
-        for (var i = 0; i < numMeshData; ++i) {
-            var meshData = this._meshData[i];
-            var vertexData = meshData.vertexData;
-            var numVerts = vertexData.length;
+        var numElementsData = this._elementsData.length;
+        for (var i = 0; i < numElementsData; ++i) {
+            var elementsData = this._elementsData[i];
+            var positionData = elementsData.positionData;
+            var numVerts = positionData.length;
             for (var j = 0; j < numVerts; ++j) {
-                var zeroWeights = this.countZeroWeightJoints(vertexData[j], meshData.weightData);
-                var totalJoints = vertexData[j].countWeight - zeroWeights;
+                var zeroWeights = this.countZeroWeightJoints(positionData[j], elementsData.weightData);
+                var totalJoints = positionData[j].countWeight - zeroWeights;
                 if (totalJoints > this._maxJointCount)
                     this._maxJointCount = totalJoints;
             }
         }
     };
-    MD5MeshParser.prototype.countZeroWeightJoints = function (vertex, weights) {
-        var start = vertex.startWeight;
-        var end = vertex.startWeight + vertex.countWeight;
+    MD5MeshParser.prototype.countZeroWeightJoints = function (position, weights) {
+        var start = position.startWeight;
+        var end = position.startWeight + position.countWeight;
         var count = 0;
         var weight;
         for (var i = start; i < end; ++i) {
@@ -3842,7 +3842,7 @@ var MD5MeshParser = (function (_super) {
     MD5MeshParser.prototype.parseMesh = function () {
         var token = this.getNextToken();
         var ch;
-        var vertexData;
+        var positionData;
         var weights;
         var indices /*uint*/;
         if (token != "{")
@@ -3859,7 +3859,7 @@ var MD5MeshParser = (function (_super) {
                     this._shaders.push(this.parseLiteralstring());
                     break;
                 case MD5MeshParser.MESH_NUM_VERTS_TOKEN:
-                    vertexData = new Array(this.getNextInt());
+                    positionData = new Array(this.getNextInt());
                     break;
                 case MD5MeshParser.MESH_NUM_TRIS_TOKEN:
                     indices = new Array(this.getNextInt() * 3);
@@ -3868,7 +3868,7 @@ var MD5MeshParser = (function (_super) {
                     weights = new Array(this.getNextInt());
                     break;
                 case MD5MeshParser.MESH_VERT_TOKEN:
-                    this.parseVertex(vertexData);
+                    this.parseVertex(positionData);
                     break;
                 case MD5MeshParser.MESH_TRI_TOKEN:
                     this.parseTri(indices);
@@ -3878,50 +3878,50 @@ var MD5MeshParser = (function (_super) {
                     break;
             }
         }
-        if (this._meshData == null)
-            this._meshData = new Array();
-        var i = this._meshData.length;
-        this._meshData[i] = new MeshData();
-        this._meshData[i].vertexData = vertexData;
-        this._meshData[i].weightData = weights;
-        this._meshData[i].indices = indices;
+        if (this._elementsData == null)
+            this._elementsData = new Array();
+        var i = this._elementsData.length;
+        this._elementsData[i] = new ElementsData();
+        this._elementsData[i].positionData = positionData;
+        this._elementsData[i].weightData = weights;
+        this._elementsData[i].indices = indices;
     };
     /**
-     * Converts the mesh data to a SkinnedSub instance.
-     * @param vertexData The mesh's vertices.
-     * @param weights The joint weights per vertex.
+     * Converts the sprite data to a SkinnedSub instance.
+     * @param positionData The sprite's positions.
+     * @param weights The joint weights per position.
      * @param indices The indices for the faces.
-     * @return A TriangleElements instance containing all elements data for the current mesh.
+     * @return A TriangleElements instance containing all elements data for the current sprite.
      */
-    MD5MeshParser.prototype.translateElements = function (vertexData, weights, indices /*uint*/) {
-        var len = vertexData.length;
+    MD5MeshParser.prototype.translateElements = function (positionData, weights, indices /*uint*/) {
+        var len = positionData.length;
         var v1 /*int*/, v2 /*int*/, v3 /*int*/;
-        var vertex;
+        var position;
         var weight;
         var bindPose;
         var pos;
         var elements = new TriangleElements(new AttributesBuffer());
         var uvs = new Array(len * 2);
-        var vertices = new Array(len * 3);
+        var positions = new Array(len * 3);
         var jointIndices = new Array(len * this._maxJointCount);
         var jointWeights = new Array(len * this._maxJointCount);
         var l = 0;
         var nonZeroWeights /*int*/;
         for (var i = 0; i < len; ++i) {
-            vertex = vertexData[i];
-            v1 = vertex.index * 3;
+            position = positionData[i];
+            v1 = position.index * 3;
             v2 = v1 + 1;
             v3 = v1 + 2;
-            vertices[v1] = vertices[v2] = vertices[v3] = 0;
+            positions[v1] = positions[v2] = positions[v3] = 0;
             nonZeroWeights = 0;
-            for (var j = 0; j < vertex.countWeight; ++j) {
-                weight = weights[vertex.startWeight + j];
+            for (var j = 0; j < position.countWeight; ++j) {
+                weight = weights[position.startWeight + j];
                 if (weight.bias > 0) {
                     bindPose = this._bindPoses[weight.joint];
                     pos = bindPose.transformVector(weight.pos);
-                    vertices[v1] += pos.x * weight.bias;
-                    vertices[v2] += pos.y * weight.bias;
-                    vertices[v3] += pos.z * weight.bias;
+                    positions[v1] += pos.x * weight.bias;
+                    positions[v2] += pos.y * weight.bias;
+                    positions[v3] += pos.z * weight.bias;
                     // indices need to be multiplied by 3 (amount of matrix registers)
                     jointIndices[l] = weight.joint * 3;
                     jointWeights[l++] = weight.bias;
@@ -3932,13 +3932,13 @@ var MD5MeshParser = (function (_super) {
                 jointIndices[l] = 0;
                 jointWeights[l++] = 0;
             }
-            v1 = vertex.index << 1;
-            uvs[v1++] = vertex.s;
-            uvs[v1] = vertex.t;
+            v1 = position.index << 1;
+            uvs[v1++] = position.s;
+            uvs[v1] = position.t;
         }
         elements.jointsPerVertex = this._maxJointCount;
         elements.setIndices(indices);
-        elements.setPositions(vertices);
+        elements.setPositions(positions);
         elements.setUVs(uvs);
         elements.setJointIndices(jointIndices);
         elements.setJointWeights(jointWeights);
@@ -3951,7 +3951,7 @@ var MD5MeshParser = (function (_super) {
         return elements;
     };
     /**
-     * Retrieve the next triplet of vertex indices that form a face.
+     * Retrieve the next triplet of position indices that form a face.
      * @param indices The index list in which to store the read data.
      */
     MD5MeshParser.prototype.parseTri = function (indices /*uint*/) {
@@ -3973,28 +3973,28 @@ var MD5MeshParser = (function (_super) {
         weights[weight.index] = weight;
     };
     /**
-     * Reads the data for a single vertex.
-     * @param vertexData The list to contain the vertex data.
+     * Reads the data for a single position.
+     * @param positionData The list to contain the position data.
      */
-    MD5MeshParser.prototype.parseVertex = function (vertexData) {
-        var vertex = new VertexData();
-        vertex.index = this.getNextInt();
-        this.parseUV(vertex);
-        vertex.startWeight = this.getNextInt();
-        vertex.countWeight = this.getNextInt();
-        //			if (vertex.countWeight > _maxJointCount) _maxJointCount = vertex.countWeight;
-        vertexData[vertex.index] = vertex;
+    MD5MeshParser.prototype.parseVertex = function (positionData) {
+        var position = new PositionData();
+        position.index = this.getNextInt();
+        this.parseUV(position);
+        position.startWeight = this.getNextInt();
+        position.countWeight = this.getNextInt();
+        //			if (position.countWeight > _maxJointCount) _maxJointCount = position.countWeight;
+        positionData[position.index] = position;
     };
     /**
      * Reads the next uv coordinate.
-     * @param vertexData The vertexData to contain the UV coordinates.
+     * @param positionData The positionData to contain the UV coordinates.
      */
-    MD5MeshParser.prototype.parseUV = function (vertexData) {
+    MD5MeshParser.prototype.parseUV = function (positionData) {
         var ch = this.getNextToken();
         if (ch != "(")
             this.sendParseError("(");
-        vertexData.s = this.getNextNumber();
-        vertexData.t = this.getNextNumber();
+        positionData.s = this.getNextNumber();
+        positionData.t = this.getNextNumber();
         if (this.getNextToken() != ")")
             this.sendParseError(")");
     };
@@ -4166,24 +4166,24 @@ var MD5MeshParser = (function (_super) {
     MD5MeshParser.MESH_WEIGHT_TOKEN = "weight";
     return MD5MeshParser;
 })(ParserBase);
-var VertexData = (function () {
-    function VertexData() {
+var PositionData = (function () {
+    function PositionData() {
     }
-    return VertexData;
+    return PositionData;
 })();
 var JointData = (function () {
     function JointData() {
     }
     return JointData;
 })();
-var MeshData = (function () {
-    function MeshData() {
+var ElementsData = (function () {
+    function ElementsData() {
     }
-    return MeshData;
+    return ElementsData;
 })();
 module.exports = MD5MeshParser;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/geom/Quaternion":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/Mesh":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined}],"awayjs-parsers/lib/Max3DSParser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/geom/Quaternion":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/Sprite":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined}],"awayjs-parsers/lib/Max3DSParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -4200,7 +4200,7 @@ var ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 var ParserUtils = require("awayjs-core/lib/parsers/ParserUtils");
 var TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
 var DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
-var Mesh = require("awayjs-display/lib/display/Mesh");
+var Sprite = require("awayjs-display/lib/display/Sprite");
 var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
 var Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
 var MethodMaterial = require("awayjs-methodmaterials/lib/MethodMaterial");
@@ -4317,7 +4317,7 @@ var Max3DSParser = (function (_super) {
                         this._cur_obj.materialFaces = {};
                         break;
                     case 0x4100:
-                        this._cur_obj.type = Mesh.assetType;
+                        this._cur_obj.type = Sprite.assetType;
                         break;
                     case 0x4110:
                         this.parseVertexList();
@@ -4559,17 +4559,17 @@ var Max3DSParser = (function (_super) {
     };
     Max3DSParser.prototype.constructObject = function (obj, pivot) {
         if (pivot === void 0) { pivot = null; }
-        if (obj.type == Mesh.assetType) {
+        if (obj.type == Sprite.assetType) {
             var i /*uint*/;
             var sub;
             var graphics;
             var mat;
-            var mesh;
+            var sprite;
             var mtx;
             var vertices;
             var faces;
             if (obj.materials.length > 1)
-                console.log("The Away3D 3DS parser does not support multiple materials per mesh at this point.");
+                console.log("The Away3D 3DS parser does not support multiple materials per sprite at this point.");
             // Ignore empty objects
             if (!obj.indices || obj.indices.length == 0)
                 return null;
@@ -4605,10 +4605,10 @@ var Max3DSParser = (function (_super) {
                 mname = obj.materials[0];
                 mat = this._materials[mname].material;
             }
-            // Build mesh and return it
-            mesh = new Mesh(mat);
-            mesh.transform.matrix3D = new Matrix3D(obj.transform);
-            graphics = mesh.graphics;
+            // Build sprite and return it
+            sprite = new Sprite(mat);
+            sprite.transform.matrix3D = new Matrix3D(obj.transform);
+            graphics = sprite.graphics;
             // Construct elements (potentially splitting buffers)
             // and add them to graphics.
             sub = new TriangleElements(new AttributesBuffer());
@@ -4643,7 +4643,7 @@ var Max3DSParser = (function (_super) {
             // Final transform applied to graphics. Finalize the graphics,
             // which will no longer be modified after this point.
             this._pFinalizeAsset(graphics, obj.name.concat('_graphics'));
-            return mesh;
+            return sprite;
         }
         // If reached, unknown
         return null;
@@ -4867,7 +4867,7 @@ var VertexVO = (function () {
 })();
 module.exports = Max3DSParser;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/Mesh":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined}],"awayjs-parsers/lib/OBJParser":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/Sprite":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined}],"awayjs-parsers/lib/OBJParser":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -4883,7 +4883,7 @@ var ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 var ParserUtils = require("awayjs-core/lib/parsers/ParserUtils");
 var TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
 var DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
-var Mesh = require("awayjs-display/lib/display/Mesh");
+var Sprite = require("awayjs-display/lib/display/Sprite");
 var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
 var Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
 var MethodMaterial = require("awayjs-methodmaterials/lib/MethodMaterial");
@@ -4960,7 +4960,7 @@ var OBJParser = (function (_super) {
                 lm.materialID = resourceDependency.id;
                 lm.texture = new Single2DTexture(asset);
                 this._materialLoaded.push(lm);
-                if (this._meshes.length > 0) {
+                if (this._sprites.length > 0) {
                     this.applyMaterial(lm);
                 }
             }
@@ -4979,7 +4979,7 @@ var OBJParser = (function (_super) {
             lm.materialID = resourceDependency.id;
             this._materialLoaded.push(lm);
         }
-        if (this._meshes.length > 0)
+        if (this._sprites.length > 0)
             this.applyMaterial(lm);
     };
     /**
@@ -5003,7 +5003,7 @@ var OBJParser = (function (_super) {
             this._vertexNormals = new Array();
             this._materialIDs = new Array();
             this._materialLoaded = new Array();
-            this._meshes = new Array();
+            this._sprites = new Array();
             this._uvs = new Array();
             this._stringLength = this._textData.length;
             this._charIndex = this._textData.indexOf(creturn, 0);
@@ -5092,7 +5092,7 @@ var OBJParser = (function (_super) {
             var materialGroups;
             var numMaterialGroups;
             var graphics;
-            var mesh;
+            var sprite;
             var m;
             var sm;
             var bmMaterial;
@@ -5101,8 +5101,8 @@ var OBJParser = (function (_super) {
                 //check for multipass
                 if (this.materialMode >= 2)
                     bmMaterial.mode = MethodMaterialMode.MULTI_PASS;
-                mesh = new Mesh(bmMaterial);
-                graphics = mesh.graphics;
+                sprite = new Sprite(bmMaterial);
+                graphics = sprite.graphics;
                 materialGroups = groups[g].materialGroups;
                 numMaterialGroups = materialGroups.length;
                 for (m = 0; m < numMaterialGroups; ++m)
@@ -5113,29 +5113,29 @@ var OBJParser = (function (_super) {
                 this._pFinalizeAsset(graphics); //, "");
                 if (this._objects[objIndex].name) {
                     // this is a full independent object ('o' tag in OBJ file)
-                    mesh.name = this._objects[objIndex].name;
+                    sprite.name = this._objects[objIndex].name;
                 }
                 else if (groups[g].name) {
-                    // this is a group so the sub groups contain the actual mesh object names ('g' tag in OBJ file)
-                    mesh.name = groups[g].name;
+                    // this is a group so the sub groups contain the actual sprite object names ('g' tag in OBJ file)
+                    sprite.name = groups[g].name;
                 }
                 else {
                     // No name stored. Use empty string which will force it
                     // to be overridden by finalizeAsset() to type default.
-                    mesh.name = "";
+                    sprite.name = "";
                 }
-                this._meshes.push(mesh);
+                this._sprites.push(sprite);
                 if (groups[g].materialID != "")
-                    bmMaterial.name = groups[g].materialID + "~" + mesh.name;
+                    bmMaterial.name = groups[g].materialID + "~" + sprite.name;
                 else
-                    bmMaterial.name = this._lastMtlID + "~" + mesh.name;
-                if (mesh.graphics.count > 1) {
-                    for (sm = 1; sm < mesh.graphics.count; ++sm)
-                        mesh.graphics.getGraphicAt(sm).material = bmMaterial;
+                    bmMaterial.name = this._lastMtlID + "~" + sprite.name;
+                if (sprite.graphics.count > 1) {
+                    for (sm = 1; sm < sprite.graphics.count; ++sm)
+                        sprite.graphics.getGraphicAt(sm).material = bmMaterial;
                 }
                 //add to the content property
-                this._pContent.addChild(mesh);
-                this._pFinalizeAsset(mesh);
+                this._pContent.addChild(sprite);
+                this._pFinalizeAsset(sprite);
             }
         }
     };
@@ -5438,7 +5438,7 @@ var OBJParser = (function (_super) {
                 var lm = new LoadedMaterial();
                 lm.materialID = this._lastMtlID;
                 if (alpha == 0)
-                    console.log("Warning: an alpha value of 0 was found in mtl color tag (Tr or d) ref:" + this._lastMtlID + ", mesh(es) using it will be invisible!");
+                    console.log("Warning: an alpha value of 0 was found in mtl color tag (Tr or d) ref:" + this._lastMtlID + ", sprite(es) using it will be invisible!");
                 var cm = new MethodMaterial(color);
                 if (this.materialMode < 2) {
                     cm.alpha = alpha;
@@ -5453,7 +5453,7 @@ var OBJParser = (function (_super) {
                 }
                 lm.cm = cm;
                 this._materialLoaded.push(lm);
-                if (this._meshes.length > 0)
+                if (this._sprites.length > 0)
                     this.applyMaterial(lm);
             }
         }
@@ -5503,21 +5503,21 @@ var OBJParser = (function (_super) {
     };
     OBJParser.prototype.applyMaterial = function (lm) {
         var decomposeID;
-        var mesh;
+        var sprite;
         var tm;
         var j;
         var specularData;
-        for (var i = 0; i < this._meshes.length; ++i) {
-            mesh = this._meshes[i];
-            decomposeID = mesh.material.name.split("~");
+        for (var i = 0; i < this._sprites.length; ++i) {
+            sprite = this._sprites[i];
+            decomposeID = sprite.material.name.split("~");
             if (decomposeID[0] == lm.materialID) {
                 if (lm.cm) {
-                    if (mesh.material)
-                        mesh.material = null;
-                    mesh.material = lm.cm;
+                    if (sprite.material)
+                        sprite.material = null;
+                    sprite.material = lm.cm;
                 }
                 else if (lm.texture) {
-                    tm = mesh.material;
+                    tm = sprite.material;
                     tm.ambientMethod.texture = lm.texture;
                     tm.style.color = lm.color;
                     tm.alpha = lm.alpha;
@@ -5547,8 +5547,8 @@ var OBJParser = (function (_super) {
                         }
                     }
                 }
-                mesh.material.name = decomposeID[1] ? decomposeID[1] : decomposeID[0];
-                this._meshes.splice(i, 1);
+                sprite.material.name = decomposeID[1] ? decomposeID[1] : decomposeID[0];
+                this._sprites.splice(i, 1);
                 --i;
             }
         }
@@ -5745,7 +5745,7 @@ var Vertex = (function () {
 })();
 module.exports = OBJParser;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/Mesh":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/SpecularBasicMethod":undefined}],"awayjs-parsers/lib/Parsers":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/Sprite":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/SpecularBasicMethod":undefined}],"awayjs-parsers/lib/Parsers":[function(require,module,exports){
 var Loader = require("awayjs-core/lib/library/Loader");
 var AWDParser = require("awayjs-parsers/lib/AWDParser");
 var Max3DSParser = require("awayjs-parsers/lib/Max3DSParser");
@@ -5794,7 +5794,7 @@ var Parsers = (function () {
      * <li>DXF (.dxf)</li>
      * <li>Quake 2 MD2 models (.md2)</li>
      * <li>Doom 3 MD5 animation clips (.md5anim)</li>
-     * <li>Doom 3 MD5 meshes (.md5mesh)</li>
+     * <li>Doom 3 MD5 sprites (.md5sprite)</li>
      * <li>Wavefront OBJ (.obj)</li>
      * <li>Collada (.dae)</li>
      * <li>Images (.jpg, .png)</li>
