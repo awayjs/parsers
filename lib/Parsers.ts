@@ -35,7 +35,7 @@ class Parsers
 	 * <li>DXF (.dxf)</li>
 	 * <li>Quake 2 MD2 models (.md2)</li>
 	 * <li>Doom 3 MD5 animation clips (.md5anim)</li>
-	 * <li>Doom 3 MD5 meshes (.md5mesh)</li>
+	 * <li>Doom 3 MD5 sprites (.md5sprite)</li>
 	 * <li>Wavefront OBJ (.obj)</li>
 	 * <li>Collada (.dae)</li>
 	 * <li>Images (.jpg, .png)</li>

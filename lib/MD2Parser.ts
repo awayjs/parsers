@@ -13,7 +13,7 @@ import TriangleElements					= require("awayjs-display/lib/graphics/TriangleEleme
 import DisplayObjectContainer			= require("awayjs-display/lib/display/DisplayObjectContainer");
 import DisplayObject					= require("awayjs-display/lib/display/DisplayObject");
 import Camera							= require("awayjs-display/lib/display/Camera");
-import Mesh								= require("awayjs-display/lib/display/Mesh");
+import Sprite							= require("awayjs-display/lib/display/Sprite");
 import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
 import Single2DTexture					= require("awayjs-display/lib/textures/Single2DTexture");
 
@@ -69,7 +69,7 @@ class MD2Parser extends ParserBase
 	private _materialNames:Array<string>;
 	private _textureType:string;
 	private _ignoreTexturePath:boolean;
-	private _mesh:Mesh;
+	private _sprite:Sprite;
 	private _graphics:Graphics;
 
 	private materialFinal:boolean = false;
@@ -122,13 +122,13 @@ class MD2Parser extends ParserBase
 			material.mode = MethodMaterialMode.MULTI_PASS;
 
 		//add to the content property
-		(<DisplayObjectContainer> this._pContent).addChild(this._mesh);
+		(<DisplayObjectContainer> this._pContent).addChild(this._sprite);
 
-		material.name = this._mesh.material.name;
-		this._mesh.material = material;
+		material.name = this._sprite.material.name;
+		this._sprite.material = material;
 		this._pFinalizeAsset(material);
-		this._pFinalizeAsset(this._mesh.graphics);
-		this._pFinalizeAsset(this._mesh);
+		this._pFinalizeAsset(this._sprite.graphics);
+		this._pFinalizeAsset(this._sprite);
 
 		this.materialFinal = true;
 	}
@@ -140,17 +140,17 @@ class MD2Parser extends ParserBase
 	{
 		// apply system default
 		if (this.materialMode < 2) {
-			this._mesh.material = DefaultMaterialManager.getDefaultMaterial();
+			this._sprite.material = DefaultMaterialManager.getDefaultMaterial();
 		} else {
-			this._mesh.material = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
-			(<MethodMaterial> this._mesh.material).mode = MethodMaterialMode.MULTI_PASS;
+			this._sprite.material = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
+			(<MethodMaterial> this._sprite.material).mode = MethodMaterialMode.MULTI_PASS;
 		}
 
 		//add to the content property
-		(<DisplayObjectContainer> this._pContent).addChild(this._mesh);
+		(<DisplayObjectContainer> this._pContent).addChild(this._sprite);
 
-		this._pFinalizeAsset(this._mesh.graphics);
-		this._pFinalizeAsset(this._mesh);
+		this._pFinalizeAsset(this._sprite.graphics);
+		this._pFinalizeAsset(this._sprite);
 		this.materialFinal = true;
 
 	}
@@ -176,19 +176,19 @@ class MD2Parser extends ParserBase
 				//----------------------------------------------------------------------------
 				//this._byteData.endian = Endian.LITTLE_ENDIAN;
 
-				// TODO: Create a mesh only when encountered (if it makes sense
+				// TODO: Create a sprite only when encountered (if it makes sense
 				// for this file format) and return it using this._pFinalizeAsset()
-				this._mesh = new Mesh();
-				this._graphics = this._mesh.graphics;
+				this._sprite = new Sprite();
+				this._graphics = this._sprite.graphics;
 				if (this.materialMode < 2) {
-					this._mesh.material = DefaultMaterialManager.getDefaultMaterial();
+					this._sprite.material = DefaultMaterialManager.getDefaultMaterial();
 				} else {
-					this._mesh.material = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
-					(<MethodMaterial> this._mesh.material).mode = MethodMaterialMode.MULTI_PASS;
+					this._sprite.material = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
+					(<MethodMaterial> this._sprite.material).mode = MethodMaterialMode.MULTI_PASS;
 				}
 
 				//_graphics.animation = new VertexAnimation(2, VertexAnimationMode.ABSOLUTE);
-				//_animator = new VertexAnimator(VertexAnimationState(_mesh.animationState));
+				//_animator = new VertexAnimator(VertexAnimationState(_sprite.animationState));
 
 				// Parse header and decompress body
 				this.parseHeader();
@@ -206,13 +206,13 @@ class MD2Parser extends ParserBase
 				//create default subgraphics
 				this._graphics.addGraphic(this._firstElements.clone());
 				// Force name to be chosen by this._pFinalizeAsset()
-				this._mesh.name = "";
+				this._sprite.name = "";
 				if (this.materialFinal) {
 					//add to the content property
-					(<DisplayObjectContainer> this._pContent).addChild(this._mesh);
+					(<DisplayObjectContainer> this._pContent).addChild(this._sprite);
 
-					this._pFinalizeAsset(this._mesh.graphics);
-					this._pFinalizeAsset(this._mesh);
+					this._pFinalizeAsset(this._sprite.graphics);
+					this._pFinalizeAsset(this._sprite);
 				}
 
 				this._pPauseAndRetrieveDependencies();
@@ -294,13 +294,13 @@ class MD2Parser extends ParserBase
 		}
 
 		if (this._materialNames.length > 0)
-			this._mesh.material.name = this._materialNames[0];
+			this._sprite.material.name = this._materialNames[0];
 		else
 			this.materialFinal = true;
 	}
 
 	/**
-	 * Parses the uv data for the mesh.
+	 * Parses the uv data for the sprite.
 	 */
 	private parseUV()
 	{
@@ -379,7 +379,7 @@ class MD2Parser extends ParserBase
 	 * Finds the final index corresponding to the original MD2's vertex and uv indices. Returns -1 if it wasn't added yet.
 	 * @param vertexIndex The original index in the vertex list.
 	 * @param uvIndex The original index in the uv list.
-	 * @return The index of the final mesh corresponding to the original vertex and uv index. -1 if it doesn't exist yet.
+	 * @return The index of the final sprite corresponding to the original vertex and uv index. -1 if it doesn't exist yet.
 	 */
 	private findIndex(vertexIndex:number /*uint*/, uvIndex:number /*uint*/):number /*int*/
 	{

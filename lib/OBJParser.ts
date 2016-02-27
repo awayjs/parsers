@@ -14,7 +14,7 @@ import ResourceDependency				= require("awayjs-core/lib/parsers/ResourceDependen
 import Graphics							= require("awayjs-display/lib/graphics/Graphics");
 import TriangleElements					= require("awayjs-display/lib/graphics/TriangleElements");
 import DisplayObjectContainer			= require("awayjs-display/lib/display/DisplayObjectContainer");
-import Mesh								= require("awayjs-display/lib/display/Mesh");
+import Sprite							= require("awayjs-display/lib/display/Sprite");
 import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
 import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
 import Single2DTexture					= require("awayjs-display/lib/textures/Single2DTexture");
@@ -40,7 +40,7 @@ class OBJParser extends ParserBase
 	private _materialIDs:string[];
 	private _materialLoaded:Array<LoadedMaterial>;
 	private _materialSpecularData:Array<SpecularData>;
-	private _meshes:Array<Mesh>;
+	private _sprites:Array<Sprite>;
 	private _lastMtlID:string;
 	private _objectIndex:number;
 	private _realIndices;
@@ -129,7 +129,7 @@ class OBJParser extends ParserBase
 
 				this._materialLoaded.push(lm);
 
-				if (this._meshes.length > 0) {
+				if (this._sprites.length > 0) {
 					this.applyMaterial(lm);
 				}
 			}
@@ -150,7 +150,7 @@ class OBJParser extends ParserBase
 			this._materialLoaded.push(lm);
 		}
 
-		if (this._meshes.length > 0)
+		if (this._sprites.length > 0)
 			this.applyMaterial(lm);
 	}
 
@@ -179,7 +179,7 @@ class OBJParser extends ParserBase
 			this._vertexNormals = new Array<Vertex>();
 			this._materialIDs = new Array<string>();
 			this._materialLoaded = new Array<LoadedMaterial>();
-			this._meshes = new Array<Mesh>();
+			this._sprites = new Array<Sprite>();
 			this._uvs = new Array<UV>();
 			this._stringLength = this._textData.length;
 			this._charIndex = this._textData.indexOf(creturn, 0);
@@ -312,7 +312,7 @@ class OBJParser extends ParserBase
 			var materialGroups:Array<MaterialGroup>;
 			var numMaterialGroups:number;
 			var graphics:Graphics;
-			var mesh:Mesh;
+			var sprite:Sprite;
 
 			var m:number;
 			var sm:number;
@@ -325,8 +325,8 @@ class OBJParser extends ParserBase
 				if (this.materialMode >= 2)
 					bmMaterial.mode = MethodMaterialMode.MULTI_PASS;
 
-				mesh = new Mesh(bmMaterial);
-				graphics = mesh.graphics;
+				sprite = new Sprite(bmMaterial);
+				graphics = sprite.graphics;
 				materialGroups = groups[g].materialGroups;
 				numMaterialGroups = materialGroups.length;
 
@@ -341,34 +341,34 @@ class OBJParser extends ParserBase
 
 				if (this._objects[objIndex].name) {
 					// this is a full independent object ('o' tag in OBJ file)
-					mesh.name = this._objects[objIndex].name;
+					sprite.name = this._objects[objIndex].name;
 
 				} else if (groups[g].name) {
 
-					// this is a group so the sub groups contain the actual mesh object names ('g' tag in OBJ file)
-					mesh.name = groups[g].name;
+					// this is a group so the sub groups contain the actual sprite object names ('g' tag in OBJ file)
+					sprite.name = groups[g].name;
 
 				} else {
 					// No name stored. Use empty string which will force it
 					// to be overridden by finalizeAsset() to type default.
-					mesh.name = "";
+					sprite.name = "";
 				}
 
-				this._meshes.push(mesh);
+				this._sprites.push(sprite);
 
 				if (groups[g].materialID != "")
-					bmMaterial.name = groups[g].materialID + "~" + mesh.name; else
-					bmMaterial.name = this._lastMtlID + "~" + mesh.name;
+					bmMaterial.name = groups[g].materialID + "~" + sprite.name; else
+					bmMaterial.name = this._lastMtlID + "~" + sprite.name;
 
-				if (mesh.graphics.count > 1) {
-					for (sm = 1; sm < mesh.graphics.count; ++sm)
-						mesh.graphics.getGraphicAt(sm).material = bmMaterial;
+				if (sprite.graphics.count > 1) {
+					for (sm = 1; sm < sprite.graphics.count; ++sm)
+						sprite.graphics.getGraphicAt(sm).material = bmMaterial;
 				}
 
 				//add to the content property
-				(<DisplayObjectContainer> this._pContent).addChild(mesh);
+				(<DisplayObjectContainer> this._pContent).addChild(sprite);
 
-				this._pFinalizeAsset(<IAsset> mesh);
+				this._pFinalizeAsset(<IAsset> sprite);
 			}
 		}
 	}
@@ -753,7 +753,7 @@ class OBJParser extends ParserBase
 				lm.materialID = this._lastMtlID;
 
 				if (alpha == 0)
-					console.log("Warning: an alpha value of 0 was found in mtl color tag (Tr or d) ref:" + this._lastMtlID + ", mesh(es) using it will be invisible!");
+					console.log("Warning: an alpha value of 0 was found in mtl color tag (Tr or d) ref:" + this._lastMtlID + ", sprite(es) using it will be invisible!");
 
 				var cm:MethodMaterial = new MethodMaterial(color);
 
@@ -774,7 +774,7 @@ class OBJParser extends ParserBase
 
 				this._materialLoaded.push(lm);
 
-				if (this._meshes.length > 0)
+				if (this._sprites.length > 0)
 					this.applyMaterial(lm);
 
 			}
@@ -838,24 +838,24 @@ class OBJParser extends ParserBase
 	private applyMaterial(lm:LoadedMaterial)
 	{
 		var decomposeID;
-		var mesh:Mesh;
+		var sprite:Sprite;
 		var tm:MethodMaterial;
 		var j:number;
 		var specularData:SpecularData;
 
-		for (var i:number = 0; i < this._meshes.length; ++i) {
-			mesh = this._meshes[i];
-			decomposeID = mesh.material.name.split("~");
+		for (var i:number = 0; i < this._sprites.length; ++i) {
+			sprite = this._sprites[i];
+			decomposeID = sprite.material.name.split("~");
 
 			if (decomposeID[0] == lm.materialID) {
 
 				if (lm.cm) {
-					if (mesh.material)
-						mesh.material = null;
-					mesh.material = lm.cm;
+					if (sprite.material)
+						sprite.material = null;
+					sprite.material = lm.cm;
 
 				} else if (lm.texture) {
-					tm = <MethodMaterial > mesh.material;
+					tm = <MethodMaterial > sprite.material;
 
 					tm.ambientMethod.texture = lm.texture;
 					tm.style.color = lm.color;
@@ -892,8 +892,8 @@ class OBJParser extends ParserBase
 					}
 				}
 
-				mesh.material.name = decomposeID[1]? decomposeID[1] : decomposeID[0];
-				this._meshes.splice(i, 1);
+				sprite.material.name = decomposeID[1]? decomposeID[1] : decomposeID[0];
+				this._sprites.splice(i, 1);
 				--i;
 			}
 		}

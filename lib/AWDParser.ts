@@ -33,7 +33,7 @@ import TriangleElements					= require("awayjs-display/lib/graphics/TriangleEleme
 import DirectionalLight					= require("awayjs-display/lib/display/DirectionalLight");
 import PointLight						= require("awayjs-display/lib/display/PointLight");
 import Camera							= require("awayjs-display/lib/display/Camera");
-import Mesh								= require("awayjs-display/lib/display/Mesh");
+import Sprite							= require("awayjs-display/lib/display/Sprite");
 import TextField						= require("awayjs-display/lib/display/TextField");
 import Billboard						= require("awayjs-display/lib/display/Billboard");
 import Skybox							= require("awayjs-display/lib/display/Skybox");
@@ -193,7 +193,7 @@ class AWDParser extends ParserBase
 	private _time_sounds:number=0;
 	private _time_textures:number=0;
 	private _time_materials:number=0;
-	private _time_meshes:number=0;
+	private _time_sprites:number=0;
 	private _num_graphics:number=0;
 	private _num_timeline:number=0;
 	private _num_fonts:number=0;
@@ -201,7 +201,7 @@ class AWDParser extends ParserBase
 	private _num_sounds:number=0;
 	private _num_textures:number=0;
 	private _num_materials:number=0;
-	private _num_meshes:number=0;
+	private _num_sprites:number=0;
 
 
 	/**
@@ -437,7 +437,7 @@ class AWDParser extends ParserBase
 						" | sounds: "+this._num_sounds+", "+(this._time_sounds | 0)+"ms",
 						" | mats: "+this._num_materials+", "+(this._time_materials | 0)+"ms",
 						" | textures: "+this._num_textures+", "+(this._time_textures | 0)+"ms",
-						" | meshes: "+this._num_meshes+", "+(this._time_meshes | 0)+"ms");
+						" | sprites: "+this._num_sprites+", "+(this._time_sprites | 0)+"ms");
 
 				return  ParserBase.PARSING_DONE;
 			} else {
@@ -560,7 +560,7 @@ class AWDParser extends ParserBase
 
 			switch (type) {
 				case 24:
-					this.parseMeshLibraryBlock(this._cur_block_id);
+					this.parseSpriteLibraryBlock(this._cur_block_id);
 					isParsed = true;
 					break;
 				case 25:
@@ -635,11 +635,11 @@ class AWDParser extends ParserBase
 					isParsed = true;
 					break;
 				case 111:
-					this.parseMeshPoseAnimation(this._cur_block_id, true);
+					this.parseSpritePoseAnimation(this._cur_block_id, true);
 					isParsed = true;
 					break;
 				case 112:
-					this.parseMeshPoseAnimation(this._cur_block_id);
+					this.parseSpritePoseAnimation(this._cur_block_id);
 					isParsed = true;
 					break;
 				case 113:
@@ -666,7 +666,7 @@ class AWDParser extends ParserBase
 					this.parseContainer(this._cur_block_id);
 					break;
 				case 23:
-					this.parseMeshInstance(this._cur_block_id);
+					this.parseSpriteInstance(this._cur_block_id);
 					break;
 				case 81:
 					this.parseMaterial(this._cur_block_id);
@@ -749,8 +749,8 @@ class AWDParser extends ParserBase
 			this._time_materials += time_delta;
 			this._num_materials++;
 		} else if(type==24) {
-			this._time_meshes += time_delta;
-			this._num_meshes++;
+			this._time_sprites += time_delta;
+			this._num_sprites++;
 		}
 	}
 
@@ -1011,7 +1011,7 @@ class AWDParser extends ParserBase
 			console.log("Parsed a Library-Billboard: Name = '" + name + "| Material-Name = " + mat.name);
 	}
 	// Block ID = 24
-	private parseMeshLibraryBlock(blockID:number)
+	private parseSpriteLibraryBlock(blockID:number)
 	{
 		var name:string = this.parseVarStr();
 		var data_id:number = this._newBlockBytes.readUnsignedInt();
@@ -1032,30 +1032,30 @@ class AWDParser extends ParserBase
 		}
 
 		var start_timeing = performance.now();
-		var mesh:Mesh = new Mesh();
-		graphics.copyTo(mesh.graphics);
+		var sprite:Sprite = new Sprite();
+		graphics.copyTo(sprite.graphics);
 		var end_timing = performance.now();
 		var time_delta = end_timing - start_timeing;
 		this._time_graphics_bytes += time_delta;
 
-		if (materials.length >= 1 && mesh.graphics.count == 1) {
-			mesh.material = materials[0];
+		if (materials.length >= 1 && sprite.graphics.count == 1) {
+			sprite.material = materials[0];
 		} else if (materials.length > 1) {
-			// Assign each sub-mesh in the mesh a material from the list. If more sub-meshes
-			// than materials, repeat the last material for all remaining sub-meshes.
-			for (var i:number = 0; i < mesh.graphics.count; i++)
-				mesh.graphics.getGraphicAt(i).material = materials[Math.min(materials.length - 1, i)];
+			// Assign each sub-sprite in the sprite a material from the list. If more sub-sprites
+			// than materials, repeat the last material for all remaining sub-sprites.
+			for (var i:number = 0; i < sprite.graphics.count; i++)
+				sprite.graphics.getGraphicAt(i).material = materials[Math.min(materials.length - 1, i)];
 		}
 
 		var count:number = this._newBlockBytes.readUnsignedShort();
-		if(count != mesh.graphics.count)
-			throw new Error("num elements does not match num submeshes");
+		if(count != sprite.graphics.count)
+			throw new Error("num elements does not match num subsprites");
 
 		for (var i:number = 0; i < count; i++) {
 			var type:number = this._newBlockBytes.readUnsignedByte();
 
 			var sampler:Sampler2D = new Sampler2D();
-			var graphic:Graphic = mesh.graphics.getGraphicAt(i);
+			var graphic:Graphic = sprite.graphics.getGraphicAt(i);
 			graphic.style = new Style();
 			graphic.style.addSamplerAt(sampler, graphic.material.getTextureAt(0));
 
@@ -1093,14 +1093,14 @@ class AWDParser extends ParserBase
 		}
 
 		this.parseProperties(null);
-		mesh.extra = this.parseUserAttributes();
+		sprite.extra = this.parseUserAttributes();
 
-		this._pFinalizeAsset(<IAsset> mesh, name);
+		this._pFinalizeAsset(<IAsset> sprite, name);
 
-		this._blocks[blockID].data = mesh;
+		this._blocks[blockID].data = sprite;
 
 		if (this._debug)
-			console.log("Parsed a Library-Mesh: Name = '" + name + "| Graphics-Name = " + graphics.name + " | Graphics-Count = " + mesh.graphics.count + " | Mat-Names = " + materialNames);
+			console.log("Parsed a Library-Sprite: Name = '" + name + "| Graphics-Name = " + graphics.name + " | Graphics-Count = " + sprite.graphics.count + " | Mat-Names = " + materialNames);
 	}
 
 	private parseAudioBlock(blockID:number, factory:ITimelineSceneGraphFactory)
@@ -1369,7 +1369,7 @@ class AWDParser extends ParserBase
 		var geoScaleV:number = props.get(2, 1);
 
 		//console.log("numElements "+numElements);
-		// Loop through sub meshes
+		// Loop through sub sprites
 		for (var elements_parsed:number = 0;  elements_parsed < numElements; elements_parsed++) {
 			var is_curve_elements:boolean=false;
 			var attr_count:number=0;
@@ -1447,7 +1447,7 @@ class AWDParser extends ParserBase
 				}
 			}
 
-			this.parseUserAttributes(); // Ignore sub-mesh attributes for now
+			this.parseUserAttributes(); // Ignore sub-sprite attributes for now
 
 			if(is_curve_elements){
 				var vertexBuffer:AttributesBuffer = new AttributesBuffer(attr_count, str_len/attr_count);
@@ -1504,7 +1504,7 @@ class AWDParser extends ParserBase
 
 
 			// TODO: Somehow map in-sub to out-sub indices to enable look-up
-			// when creating meshes (and their material assignments.)
+			// when creating sprites (and their material assignments.)
 		}
 
 		if ((geoScaleU != 1) || (geoScaleV != 1))
@@ -1656,7 +1656,7 @@ class AWDParser extends ParserBase
 			console.log("Parsed a Container: Name = '" + name + "' | Parent-Name = " + parentName);
 	}
 
-	private static meshInstanceProperties:Object = {
+	private static spriteInstanceProperties:Object = {
 		1:AWDParser.MATRIX_NUMBER,
 		2:AWDParser.MATRIX_NUMBER,
 		3:AWDParser.MATRIX_NUMBER,
@@ -1664,7 +1664,7 @@ class AWDParser extends ParserBase
 		5:AWDParser.BOOL};
 
 	// Block ID = 23
-	private parseMeshInstance(blockID:number)
+	private parseSpriteInstance(blockID:number)
 	{
 		var parent:DisplayObjectContainer = <DisplayObjectContainer> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 		var mtx:Matrix3D = this.parseMatrix3D();
@@ -1693,52 +1693,52 @@ class AWDParser extends ParserBase
 			materialNames[materials_parsed] = mat.name;
 		}
 
-		var mesh:Mesh;
+		var sprite:Sprite;
 
 		if (isPrefab) {
-			mesh = <Mesh> prefab.getNewObject()
+			sprite = <Sprite> prefab.getNewObject()
 		} else {
-			mesh = new Mesh();
-			graphics.copyTo(mesh.graphics);
+			sprite = new Sprite();
+			graphics.copyTo(sprite.graphics);
 		}
 
-		mesh.transform.matrix3D = mtx;
+		sprite.transform.matrix3D = mtx;
 
 		var parentName:string = "Root (TopLevel)";
 		if (parent) {
-			parent.addChild(mesh);
+			parent.addChild(sprite);
 			parentName = parent.name;
 		} else {
 			//add to the content property
-			(<DisplayObjectContainer> this._pContent).addChild(mesh);
+			(<DisplayObjectContainer> this._pContent).addChild(sprite);
 		}
 
-		if (materials.length >= 1 && mesh.graphics.count == 1) {
-			mesh.material = materials[0];
+		if (materials.length >= 1 && sprite.graphics.count == 1) {
+			sprite.material = materials[0];
 		} else if (materials.length > 1) {
-			// Assign each sub-mesh in the mesh a material from the list. If more sub-meshes
-			// than materials, repeat the last material for all remaining sub-meshes.
-			for (var i:number = 0; i < mesh.graphics.count; i++)
-				mesh.graphics.getGraphicAt(i).material = materials[Math.min(materials.length - 1, i)];
+			// Assign each sub-sprite in the sprite a material from the list. If more sub-sprites
+			// than materials, repeat the last material for all remaining sub-sprites.
+			for (var i:number = 0; i < sprite.graphics.count; i++)
+				sprite.graphics.getGraphicAt(i).material = materials[Math.min(materials.length - 1, i)];
 		}
 		if ((this._version[0] == 2) && (this._version[1] == 1)) {
-			var props:AWDProperties = this.parseProperties(AWDParser.meshInstanceProperties);
-			mesh.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
-			mesh.castsShadows = props.get(5, true);
+			var props:AWDProperties = this.parseProperties(AWDParser.spriteInstanceProperties);
+			sprite.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
+			sprite.castsShadows = props.get(5, true);
 		} else {
 			this.parseProperties(null);
 		}
 
-		mesh.extra = this.parseUserAttributes();
+		sprite.extra = this.parseUserAttributes();
 
-		this._pFinalizeAsset(<IAsset> mesh, name);
-		this._blocks[blockID].data = mesh;
+		this._pFinalizeAsset(<IAsset> sprite, name);
+		this._blocks[blockID].data = sprite;
 
 		if (this._debug) {
 			if (isPrefab)
-				console.log("Parsed a Mesh for Prefab: Name = '" + name + "' | Parent-Name = " + parentName + "| Prefab-Name = " + prefab.name + " | Graphics-Count = " + mesh.graphics.count + " | Mat-Names = " + materialNames);
+				console.log("Parsed a Sprite for Prefab: Name = '" + name + "' | Parent-Name = " + parentName + "| Prefab-Name = " + prefab.name + " | Graphics-Count = " + sprite.graphics.count + " | Mat-Names = " + materialNames);
 			else
-				console.log("Parsed a Mesh for Graphics: Name = '" + name + "' | Parent-Name = " + parentName + "| Graphics-Name = " + graphics.name + " | Graphics-Count = " + mesh.graphics.count + " | Mat-Names = " + materialNames);
+				console.log("Parsed a Sprite for Graphics: Name = '" + name + "' | Parent-Name = " + parentName + "| Graphics-Name = " + graphics.name + " | Graphics-Count = " + sprite.graphics.count + " | Mat-Names = " + materialNames);
 		}
 	}
 
@@ -2660,14 +2660,14 @@ class AWDParser extends ParserBase
 			console.log("Parsed a SkeletonClipNode: Name = " + clip.name + " | Number of Frames = " + clip.frames.length);
 	}
 	
-	private meshPoseAnimationProperties:Object = {
+	private spritePoseAnimationProperties:Object = {
 		1:AWDParser.BOOL,
 		2:AWDParser.BOOL};
 
 	//Block ID = 111 /  Block ID = 112
-	private parseMeshPoseAnimation(blockID:number /*uint*/, poseOnly:boolean = false)
+	private parseSpritePoseAnimation(blockID:number /*uint*/, poseOnly:boolean = false)
 	{
-		var subMeshParsed:number /*uint*/;
+		var subSpriteParsed:number /*uint*/;
 		var x:number;
 		var y:number;
 		var z:number;
@@ -2688,12 +2688,12 @@ class AWDParser extends ParserBase
 
 		var num_frames:number = (!poseOnly)? this._newBlockBytes.readUnsignedShort() : 1;
 
-		var num_submeshes:number = this._newBlockBytes.readUnsignedShort();
+		var num_subsprites:number = this._newBlockBytes.readUnsignedShort();
 		var num_Streams:number = this._newBlockBytes.readUnsignedShort();
 		for (var streamsParsed:number = 0; streamsParsed < num_Streams; streamsParsed++)
 			streamtypes.push(this._newBlockBytes.readUnsignedShort());
 
-		props = this.parseProperties(this.meshPoseAnimationProperties);
+		props = this.parseProperties(this.spritePoseAnimationProperties);
 
 		clip.looping = props.get(1, true);
 		clip.stitchFinalFrame = props.get(2, false);
@@ -2702,14 +2702,14 @@ class AWDParser extends ParserBase
 		for (var frames_parsed:number = 0; frames_parsed < num_frames; frames_parsed++) {
 			frame_dur = this._newBlockBytes.readUnsignedShort();
 			graphics = new Graphics(null);
-			subMeshParsed = 0;
-			while (subMeshParsed < num_submeshes) {
+			subSpriteParsed = 0;
+			while (subSpriteParsed < num_subsprites) {
 				streamsParsed = 0;
 				str_len = this._newBlockBytes.readUnsignedInt();
 				str_end = this._newBlockBytes.position + str_len;
 				while (streamsParsed < num_Streams) {
 					if (streamtypes[streamsParsed] == 1) {
-						indices = graphics.getGraphicAt(subMeshParsed).elements.indices;
+						indices = graphics.getGraphicAt(subSpriteParsed).elements.indices;
 						verts = new Array<number>();
 						idx = 0;
 						while (this._newBlockBytes.position < str_end) {
@@ -2723,12 +2723,12 @@ class AWDParser extends ParserBase
 						elements = new TriangleElements(new AttributesBuffer());
 						elements.setIndices(indices);
 						elements.setPositions(verts);
-						elements.setUVs(uvs[subMeshParsed]);
+						elements.setUVs(uvs[subSpriteParsed]);
 						elements.setNormals(null);
 						elements.setTangents(null);
 						elements.autoDeriveNormals = false;
 						elements.autoDeriveTangents = false;
-						subMeshParsed++;
+						subSpriteParsed++;
 						graphics.addGraphic(elements);
 					} else
 						this._newBlockBytes.position = str_end;
@@ -2809,10 +2809,10 @@ class AWDParser extends ParserBase
 		var props:AWDProperties = this.parseProperties(AWDParser.animatorSetProperties);
 		var targetAnimationSet:AnimationSetBase = <AnimationSetBase> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 
-		var targetMeshes:Array<Mesh> = new Array<Mesh>();
-		var targetMeshLength:number /*uint*/ = this._newBlockBytes.readUnsignedShort();
-		for (var i:number /*int*/ = 0; i < targetMeshLength; i++)
-			targetMeshes.push(<Mesh> this._blocks[this._newBlockBytes.readUnsignedInt()].data);
+		var targetSpritees:Array<Sprite> = new Array<Sprite>();
+		var targetSpriteLength:number /*uint*/ = this._newBlockBytes.readUnsignedShort();
+		for (var i:number /*int*/ = 0; i < targetSpriteLength; i++)
+			targetSpritees.push(<Sprite> this._blocks[this._newBlockBytes.readUnsignedInt()].data);
 
 		var activeState:number /*uint*/ = this._newBlockBytes.readUnsignedShort();
 		var autoplay:boolean = ( this._newBlockBytes.readUnsignedByte() == 1 );
@@ -2828,11 +2828,11 @@ class AWDParser extends ParserBase
 		this._pFinalizeAsset(thisAnimator, name);
 		this._blocks[blockID].data = thisAnimator;
 
-		for (i = 0; i < targetMeshes.length; i++) {
+		for (i = 0; i < targetSpritees.length; i++) {
 			if (type == 1)
-				targetMeshes[i].animator = (<SkeletonAnimator> thisAnimator);
+				targetSpritees[i].animator = (<SkeletonAnimator> thisAnimator);
 			else if (type == 2)
-				targetMeshes[i].animator = (<VertexAnimator> thisAnimator);
+				targetSpritees[i].animator = (<VertexAnimator> thisAnimator);
 		}
 
 		if (this._debug)
@@ -3159,17 +3159,17 @@ class AWDParser extends ParserBase
 
 	}
 	// Helper - functions
-	private getUVForVertexAnimation(meshID:number /*uint*/):Array<Float32Array>
+	private getUVForVertexAnimation(spriteID:number /*uint*/):Array<Float32Array>
 	{
-		if (this._blocks[meshID].data instanceof Mesh)
-			meshID = this._blocks[meshID].geoID;
+		if (this._blocks[spriteID].data instanceof Sprite)
+			spriteID = this._blocks[spriteID].geoID;
 
-		if (this._blocks[meshID].uvsForVertexAnimation)
-			return this._blocks[meshID].uvsForVertexAnimation;
+		if (this._blocks[spriteID].uvsForVertexAnimation)
+			return this._blocks[spriteID].uvsForVertexAnimation;
 
-		var graphics:Graphics = (<Graphics> this._blocks[meshID].data);
+		var graphics:Graphics = (<Graphics> this._blocks[spriteID].data);
 		var elements:TriangleElements;
-		var uvsForVertexAnimation:Array<ArrayBufferView> = this._blocks[meshID].uvsForVertexAnimation = new Array<Float32Array>();
+		var uvsForVertexAnimation:Array<ArrayBufferView> = this._blocks[spriteID].uvsForVertexAnimation = new Array<Float32Array>();
 
 		var len:number = graphics.count;
 		for (var geoCnt:number= 0; geoCnt < len; geoCnt++) {
@@ -3177,7 +3177,7 @@ class AWDParser extends ParserBase
 			uvsForVertexAnimation[geoCnt] = elements.uvs.get(elements.numVertices);
 		}
 
-		return this._blocks[meshID].uvsForVertexAnimation;
+		return this._blocks[spriteID].uvsForVertexAnimation;
 	}
 
 	private parseVarStr():string

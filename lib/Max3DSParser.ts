@@ -13,7 +13,7 @@ import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
 import Graphics							= require("awayjs-display/lib/graphics/Graphics");
 import TriangleElements					= require("awayjs-display/lib/graphics/TriangleElements");
 import DisplayObjectContainer			= require("awayjs-display/lib/display/DisplayObjectContainer");
-import Mesh								= require("awayjs-display/lib/display/Mesh");
+import Sprite							= require("awayjs-display/lib/display/Sprite");
 import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
 import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
 import Single2DTexture					= require("awayjs-display/lib/textures/Single2DTexture");
@@ -181,7 +181,7 @@ class Max3DSParser extends ParserBase
 						break;
 
 					case 0x4100: // OBJ_TRIMESH
-						this._cur_obj.type = Mesh.assetType;
+						this._cur_obj.type = Sprite.assetType;
 						break;
 
 					case 0x4110: // TRI_VERTEXL
@@ -501,18 +501,18 @@ class Max3DSParser extends ParserBase
 
 	private constructObject(obj:ObjectVO, pivot:Vector3D = null):DisplayObjectContainer
 	{
-		if (obj.type == Mesh.assetType) {
+		if (obj.type == Sprite.assetType) {
 			var i:number /*uint*/;
 			var sub:TriangleElements;
 			var graphics:Graphics;
 			var mat:MaterialBase;
-			var mesh:Mesh;
+			var sprite:Sprite;
 			var mtx:Matrix3D;
 			var vertices:Array<VertexVO>;
 			var faces:Array<FaceVO>;
 
 			if (obj.materials.length > 1)
-				console.log("The Away3D 3DS parser does not support multiple materials per mesh at this point.");
+				console.log("The Away3D 3DS parser does not support multiple materials per sprite at this point.");
 
 			// Ignore empty objects
 			if (!obj.indices || obj.indices.length == 0)
@@ -557,11 +557,11 @@ class Max3DSParser extends ParserBase
 				mat = this._materials[mname].material;
 			}
 
-			// Build mesh and return it
-			mesh = new Mesh(mat);
-			mesh.transform.matrix3D = new Matrix3D(obj.transform);
+			// Build sprite and return it
+			sprite = new Sprite(mat);
+			sprite.transform.matrix3D = new Matrix3D(obj.transform);
 
-			graphics = mesh.graphics;
+			graphics = sprite.graphics;
 
 			// Construct elements (potentially splitting buffers)
 			// and add them to graphics.
@@ -604,7 +604,7 @@ class Max3DSParser extends ParserBase
 			// which will no longer be modified after this point.
 			this._pFinalizeAsset(graphics, obj.name.concat('_graphics'));
 
-			return mesh;
+			return sprite;
 		}
 
 		// If reached, unknown

@@ -8,7 +8,7 @@ import ParserBase						= require("awayjs-core/lib/parsers/ParserBase");
 import Graphics							= require("awayjs-display/lib/graphics/Graphics");
 import TriangleElements					= require("awayjs-display/lib/graphics/TriangleElements");
 import DisplayObjectContainer			= require("awayjs-display/lib/display/DisplayObjectContainer");
-import Mesh								= require("awayjs-display/lib/display/Mesh");
+import Sprite							= require("awayjs-display/lib/display/Sprite");
 
 import SkeletonAnimationSet				= require("awayjs-renderergl/lib/animators/SkeletonAnimationSet");
 import Skeleton							= require("awayjs-renderergl/lib/animators/data/Skeleton");
@@ -49,11 +49,11 @@ class MD5MeshParser extends ParserBase
 	private _numJoints:number /*int*/;
 	private _numMeshes:number /*int*/;
 
-	private _mesh:Mesh;
+	private _sprite:Sprite;
 	private _shaders:Array<string>;
 
 	private _maxJointCount:number /*int*/;
-	private _meshData:Array<MeshData>;
+	private _elementsData:Array<ElementsData>;
 	private _bindPoses:Array<Matrix3D>;
 	private _graphics:Graphics;
 
@@ -87,7 +87,7 @@ class MD5MeshParser extends ParserBase
 	public static supportsType(extension:string):boolean
 	{
 		extension = extension.toLowerCase();
-		return extension == "md5mesh";
+		return extension == "md5sprite";
 	}
 
 	/**
@@ -148,20 +148,20 @@ class MD5MeshParser extends ParserBase
 				this.calculateMaxJointCount();
 				this._animationSet = new SkeletonAnimationSet(this._maxJointCount);
 
-				this._mesh = new Mesh();
-				this._graphics = this._mesh.graphics;
+				this._sprite = new Sprite();
+				this._graphics = this._sprite.graphics;
 
-				for (var i:number /*int*/ = 0; i < this._meshData.length; ++i)
-					this._graphics.addGraphic(this.translateElements(this._meshData[i].vertexData, this._meshData[i].weightData, this._meshData[i].indices));
+				for (var i:number /*int*/ = 0; i < this._elementsData.length; ++i)
+					this._graphics.addGraphic(this.translateElements(this._elementsData[i].positionData, this._elementsData[i].weightData, this._elementsData[i].indices));
 
 				//_graphics.animation = _animation;
-				//					_mesh.animationController = _animationController;
+				//					_sprite.animationController = _animationController;
 
 				//add to the content property
-				(<DisplayObjectContainer> this._pContent).addChild(this._mesh);
+				(<DisplayObjectContainer> this._pContent).addChild(this._sprite);
 
 				this._pFinalizeAsset(this._graphics);
-				this._pFinalizeAsset(this._mesh);
+				this._pFinalizeAsset(this._sprite);
 				this._pFinalizeAsset(this._skeleton);
 				this._pFinalizeAsset(this._animationSet);
 				return ParserBase.PARSING_DONE;
@@ -182,25 +182,25 @@ class MD5MeshParser extends ParserBase
 	{
 		this._maxJointCount = 0;
 
-		var numMeshData:number /*int*/ = this._meshData.length;
-		for (var i:number /*int*/ = 0; i < numMeshData; ++i) {
-			var meshData:MeshData = this._meshData[i];
-			var vertexData:Array<VertexData> = meshData.vertexData;
-			var numVerts:number /*int*/ = vertexData.length;
+		var numElementsData:number /*int*/ = this._elementsData.length;
+		for (var i:number /*int*/ = 0; i < numElementsData; ++i) {
+			var elementsData:ElementsData = this._elementsData[i];
+			var positionData:Array<PositionData> = elementsData.positionData;
+			var numVerts:number /*int*/ = positionData.length;
 
 			for (var j:number /*int*/ = 0; j < numVerts; ++j) {
-				var zeroWeights:number /*int*/ = this.countZeroWeightJoints(vertexData[j], meshData.weightData);
-				var totalJoints:number /*int*/ = vertexData[j].countWeight - zeroWeights;
+				var zeroWeights:number /*int*/ = this.countZeroWeightJoints(positionData[j], elementsData.weightData);
+				var totalJoints:number /*int*/ = positionData[j].countWeight - zeroWeights;
 				if (totalJoints > this._maxJointCount)
 					this._maxJointCount = totalJoints;
 			}
 		}
 	}
 
-	private countZeroWeightJoints(vertex:VertexData, weights:Array<JointData>):number /*int*/
+	private countZeroWeightJoints(position:PositionData, weights:Array<JointData>):number /*int*/
 	{
-		var start:number /*int*/ = vertex.startWeight;
-		var end:number /*int*/ = vertex.startWeight + vertex.countWeight;
+		var start:number /*int*/ = position.startWeight;
+		var end:number /*int*/ = position.startWeight + position.countWeight;
 		var count:number /*int*/ = 0;
 		var weight:number;
 
@@ -282,7 +282,7 @@ class MD5MeshParser extends ParserBase
 	{
 		var token:string = this.getNextToken();
 		var ch:string;
-		var vertexData:Array<VertexData>;
+		var positionData:Array<PositionData>;
 		var weights:Array<JointData>;
 		var indices:Array<number> /*uint*/;
 
@@ -302,7 +302,7 @@ class MD5MeshParser extends ParserBase
 					this._shaders.push(this.parseLiteralstring());
 					break;
 				case MD5MeshParser.MESH_NUM_VERTS_TOKEN:
-					vertexData = new Array<VertexData>(this.getNextInt());
+					positionData = new Array<PositionData>(this.getNextInt());
 					break;
 				case MD5MeshParser.MESH_NUM_TRIS_TOKEN:
 					indices = new Array<number>(this.getNextInt()*3) /*uint*/;
@@ -311,7 +311,7 @@ class MD5MeshParser extends ParserBase
 					weights = new Array<JointData>(this.getNextInt());
 					break;
 				case MD5MeshParser.MESH_VERT_TOKEN:
-					this.parseVertex(vertexData);
+					this.parseVertex(positionData);
 					break;
 				case MD5MeshParser.MESH_TRI_TOKEN:
 					this.parseTri(indices);
@@ -322,55 +322,55 @@ class MD5MeshParser extends ParserBase
 			}
 		}
 
-		if (this._meshData == null)
-			this._meshData = new Array<MeshData>();
+		if (this._elementsData == null)
+			this._elementsData = new Array<ElementsData>();
 
-		var i:number /*uint*/ = this._meshData.length;
-		this._meshData[i] = new MeshData();
-		this._meshData[i].vertexData = vertexData;
-		this._meshData[i].weightData = weights;
-		this._meshData[i].indices = indices;
+		var i:number /*uint*/ = this._elementsData.length;
+		this._elementsData[i] = new ElementsData();
+		this._elementsData[i].positionData = positionData;
+		this._elementsData[i].weightData = weights;
+		this._elementsData[i].indices = indices;
 	}
 
 	/**
-	 * Converts the mesh data to a SkinnedSub instance.
-	 * @param vertexData The mesh's vertices.
-	 * @param weights The joint weights per vertex.
+	 * Converts the sprite data to a SkinnedSub instance.
+	 * @param positionData The sprite's positions.
+	 * @param weights The joint weights per position.
 	 * @param indices The indices for the faces.
-	 * @return A TriangleElements instance containing all elements data for the current mesh.
+	 * @return A TriangleElements instance containing all elements data for the current sprite.
 	 */
-	private translateElements(vertexData:Array<VertexData>, weights:Array<JointData>, indices:Array<number> /*uint*/):TriangleElements
+	private translateElements(positionData:Array<PositionData>, weights:Array<JointData>, indices:Array<number> /*uint*/):TriangleElements
 	{
-		var len:number /*int*/ = vertexData.length;
+		var len:number /*int*/ = positionData.length;
 		var v1:number /*int*/, v2:number /*int*/, v3:number /*int*/;
-		var vertex:VertexData;
+		var position:PositionData;
 		var weight:JointData;
 		var bindPose:Matrix3D;
 		var pos:Vector3D;
 		var elements:TriangleElements = new TriangleElements(new AttributesBuffer());
 		var uvs:Array<number> = new Array<number>(len*2);
-		var vertices:Array<number> = new Array<number>(len*3);
+		var positions:Array<number> = new Array<number>(len*3);
 		var jointIndices:Array<number> = new Array<number>(len*this._maxJointCount);
 		var jointWeights:Array<number> = new Array<number>(len*this._maxJointCount);
 		var l:number /*int*/ = 0;
 		var nonZeroWeights:number /*int*/;
 
 		for (var i:number /*int*/ = 0; i < len; ++i) {
-			vertex = vertexData[i];
-			v1 = vertex.index*3;
+			position = positionData[i];
+			v1 = position.index*3;
 			v2 = v1 + 1;
 			v3 = v1 + 2;
-			vertices[v1] = vertices[v2] = vertices[v3] = 0;
+			positions[v1] = positions[v2] = positions[v3] = 0;
 
 			nonZeroWeights = 0;
-			for (var j:number /*int*/ = 0; j < vertex.countWeight; ++j) {
-				weight = weights[vertex.startWeight + j];
+			for (var j:number /*int*/ = 0; j < position.countWeight; ++j) {
+				weight = weights[position.startWeight + j];
 				if (weight.bias > 0) {
 					bindPose = this._bindPoses[weight.joint];
 					pos = bindPose.transformVector(weight.pos);
-					vertices[v1] += pos.x*weight.bias;
-					vertices[v2] += pos.y*weight.bias;
-					vertices[v3] += pos.z*weight.bias;
+					positions[v1] += pos.x*weight.bias;
+					positions[v2] += pos.y*weight.bias;
+					positions[v3] += pos.z*weight.bias;
 
 					// indices need to be multiplied by 3 (amount of matrix registers)
 					jointIndices[l] = weight.joint*3;
@@ -384,14 +384,14 @@ class MD5MeshParser extends ParserBase
 				jointWeights[l++] = 0;
 			}
 
-			v1 = vertex.index << 1;
-			uvs[v1++] = vertex.s;
-			uvs[v1] = vertex.t;
+			v1 = position.index << 1;
+			uvs[v1++] = position.s;
+			uvs[v1] = position.t;
 		}
 
 		elements.jointsPerVertex = this._maxJointCount;
 		elements.setIndices(indices);
-		elements.setPositions(vertices);
+		elements.setPositions(positions);
 		elements.setUVs(uvs);
 		elements.setJointIndices(jointIndices);
 		elements.setJointWeights(jointWeights);
@@ -406,7 +406,7 @@ class MD5MeshParser extends ParserBase
 	}
 
 	/**
-	 * Retrieve the next triplet of vertex indices that form a face.
+	 * Retrieve the next triplet of position indices that form a face.
 	 * @param indices The index list in which to store the read data.
 	 */
 	private parseTri(indices:Array<number> /*uint*/):void
@@ -432,31 +432,31 @@ class MD5MeshParser extends ParserBase
 	}
 
 	/**
-	 * Reads the data for a single vertex.
-	 * @param vertexData The list to contain the vertex data.
+	 * Reads the data for a single position.
+	 * @param positionData The list to contain the position data.
 	 */
-	private parseVertex(vertexData:Array<VertexData>):void
+	private parseVertex(positionData:Array<PositionData>):void
 	{
-		var vertex:VertexData = new VertexData();
-		vertex.index = this.getNextInt();
-		this.parseUV(vertex);
-		vertex.startWeight = this.getNextInt();
-		vertex.countWeight = this.getNextInt();
-		//			if (vertex.countWeight > _maxJointCount) _maxJointCount = vertex.countWeight;
-		vertexData[vertex.index] = vertex;
+		var position:PositionData = new PositionData();
+		position.index = this.getNextInt();
+		this.parseUV(position);
+		position.startWeight = this.getNextInt();
+		position.countWeight = this.getNextInt();
+		//			if (position.countWeight > _maxJointCount) _maxJointCount = position.countWeight;
+		positionData[position.index] = position;
 	}
 
 	/**
 	 * Reads the next uv coordinate.
-	 * @param vertexData The vertexData to contain the UV coordinates.
+	 * @param positionData The positionData to contain the UV coordinates.
 	 */
-	private parseUV(vertexData:VertexData):void
+	private parseUV(positionData:PositionData):void
 	{
 		var ch:string = this.getNextToken();
 		if (ch != "(")
 			this.sendParseError("(");
-		vertexData.s = this.getNextNumber();
-		vertexData.t = this.getNextNumber();
+		positionData.s = this.getNextNumber();
+		positionData.t = this.getNextNumber();
 
 		if (this.getNextToken() != ")")
 			this.sendParseError(")");
@@ -660,7 +660,7 @@ class MD5MeshParser extends ParserBase
 export = MD5MeshParser;
 
 
-class VertexData
+class PositionData
 {
 	public index:number /*int*/;
 	public s:number;
@@ -677,9 +677,9 @@ class JointData
 	public pos:Vector3D;
 }
 
-class MeshData
+class ElementsData
 {
-	public vertexData:Array<VertexData>;
+	public positionData:Array<PositionData>;
 	public weightData:Array<JointData>;
 	public indices:Array<number> /*uint*/;
 }
