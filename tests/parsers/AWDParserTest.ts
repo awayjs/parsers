@@ -10,7 +10,7 @@ import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationF
 
 import Graphics						= require("awayjs-display/lib/graphics/Graphics");
 import View							= require("awayjs-display/lib/View");
-import Mesh							= require("awayjs-display/lib/display/Mesh");
+import Sprite						= require("awayjs-display/lib/display/Sprite");
 
 import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
 
@@ -23,7 +23,7 @@ class AWDParserTest
 
 	private _view:View;
 	private _timer:RequestAnimationFrame;
-	private _suzanne:Mesh;
+	private _suzanne:Sprite;
 
 	constructor()
 	{
@@ -83,9 +83,9 @@ class AWDParserTest
 			var asset:IAsset = loader.baseDependency.assets[i];
 
 			switch (asset.assetType) {
-				case Mesh.assetType:
+				case Sprite.assetType:
 
-					this._suzanne = <Mesh> asset;
+					this._suzanne = <Sprite> asset;
 					this._suzanne.transform.scaleTo(600, 600, 600);
 
 					this._view.scene.addChild(this._suzanne);

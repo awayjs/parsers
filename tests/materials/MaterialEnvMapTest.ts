@@ -10,7 +10,7 @@ import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationF
 
 import Graphics						= require("awayjs-display/lib/graphics/Graphics");
 import View							= require("awayjs-display/lib/View");
-import Mesh							= require("awayjs-display/lib/display/Mesh");
+import Sprite						= require("awayjs-display/lib/display/Sprite");
 import Skybox						= require("awayjs-display/lib/display/Skybox");
 
 import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
@@ -26,7 +26,7 @@ class MaterialEnvMapTest
 {
 	private _view:View;
 	private _timer:RequestAnimationFrame;
-	private _torus:Mesh;
+	private _torus:Sprite;
 
 	constructor()
 	{
@@ -95,9 +95,9 @@ class MaterialEnvMapTest
 					this._view.scene.addChild(skybox);
 					break;
 
-				case Mesh.assetType:
+				case Sprite.assetType:
 
-					this._torus = <Mesh> asset;
+					this._torus = <Sprite> asset;
 					this._view.scene.addChild(this._torus);
 
 					break;

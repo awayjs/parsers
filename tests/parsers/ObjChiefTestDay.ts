@@ -12,7 +12,7 @@ import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationF
 import View							= require("awayjs-display/lib/View");
 import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
 import DirectionalLight				= require("awayjs-display/lib/display/DirectionalLight");
-import Mesh							= require("awayjs-display/lib/display/Mesh");
+import Sprite						= require("awayjs-display/lib/display/Sprite");
 import StaticLightPicker			= require("awayjs-display/lib/materials/lightpickers/StaticLightPicker");
 import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
 
@@ -29,7 +29,7 @@ class ObjChiefTestDay
 {
 	private view:View;
 	private raf:RequestAnimationFrame;
-	private meshes:Array<Mesh> = new Array<Mesh>();
+	private sprites:Array<Sprite> = new Array<Sprite>();
 	private mat:MethodMaterial;
 
 	private terrainMaterial:MethodMaterial;
@@ -37,7 +37,7 @@ class ObjChiefTestDay
 	private light:DirectionalLight;
 
 	private spartan:DisplayObjectContainer = new DisplayObjectContainer();
-	private terrain:Mesh;
+	private terrain:Sprite;
 
 	private spartanFlag:boolean = false;
 
@@ -119,15 +119,15 @@ class ObjChiefTestDay
 			console.log( d.name , event.url);
 
 			switch (d.assetType) {
-				case Mesh.assetType:
+				case Sprite.assetType:
 					if (event.url =='assets/Halo_3_SPARTAN4.obj') {
-						var mesh:Mesh = <Mesh> d;
+						var sprite:Sprite = <Sprite> d;
 
-						this.spartan.addChild(mesh);
+						this.spartan.addChild(sprite);
 						this.spartanFlag = true;
-						this.meshes.push(mesh);
+						this.sprites.push(sprite);
 					} else if (event.url =='assets/terrain.obj') {
-						this.terrain = <Mesh> d;
+						this.terrain = <Sprite> d;
 						this.terrain.y = 98;
 						this.terrain.graphics.scaleUV(20, 20);
 						this.view.scene.addChild(this.terrain);
@@ -153,8 +153,8 @@ class ObjChiefTestDay
 			this.terrain.material = this.terrainMaterial;
 
 		if (this.mat && this.spartanFlag)
-			for (var c:number = 0; c < this.meshes.length; c++)
-				this.meshes[c].material = this.mat;
+			for (var c:number = 0; c < this.sprites.length; c++)
+				this.sprites[c].material = this.mat;
 
 		this.onResize();
 	}

@@ -8,7 +8,7 @@ import Debug						= require("awayjs-core/lib/utils/Debug");
 import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationFrame");
 
 import View							= require("awayjs-display/lib/View");
-import Mesh							= require("awayjs-display/lib/display/Mesh");
+import Sprite						= require("awayjs-display/lib/display/Sprite");
 
 import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
 
@@ -21,7 +21,7 @@ class ObjParserTest
 {
 	private _view:View;
 	private _timer:RequestAnimationFrame;
-	private _t800:Mesh;
+	private _t800:Sprite;
 
 	constructor()
 	{
@@ -75,7 +75,7 @@ class ObjParserTest
 
 		console.log(AssetLibrary.getAsset('Mesh_g0'));
 
-		this._t800 = <Mesh> AssetLibrary.getAsset('Mesh_g0');
+		this._t800 = <Sprite> AssetLibrary.getAsset('Mesh_g0');
 		this._t800.y = -200;
 		this._t800.transform.scaleTo(4, 4, 4);
 

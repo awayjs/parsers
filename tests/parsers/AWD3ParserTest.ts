@@ -46,7 +46,7 @@ import Keyboard						= require("awayjs-core/lib/ui/Keyboard");
 import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationFrame");
 
 import View							= require("awayjs-display/lib/View");
-import Mesh							= require("awayjs-display/lib/display/Mesh");
+import Sprite						= require("awayjs-display/lib/display/Sprite");
 import MovieClip					= require("awayjs-display/lib/display/MovieClip");
 import Container					= require("awayjs-display/lib/display/DisplayObjectContainer");
 import HoverController				= require("awayjs-display/lib/controllers/HoverController");

@@ -16,7 +16,7 @@ import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationF
 import Scene						= require("awayjs-display/lib/display/Scene");
 import View							= require("awayjs-display/lib/View");
 import DirectionalLight				= require("awayjs-display/lib/display/DirectionalLight");
-import Mesh							= require("awayjs-display/lib/display/Mesh");
+import Sprite						= require("awayjs-display/lib/display/Sprite");
 import StaticLightPicker			= require("awayjs-display/lib/materials/lightpickers/StaticLightPicker");
 import PrimitiveTorusPrefab			= require("awayjs-display/lib/prefabs/PrimitiveTorusPrefab");
 import PrimitiveCubePrefab			= require("awayjs-display/lib/prefabs/PrimitiveCubePrefab");
@@ -34,11 +34,11 @@ class MaterialAlphaTest
 {
 	private view:View;
 	private raf:RequestAnimationFrame;
-	private meshes  : Array<Mesh> = new Array<Mesh>();
-	private loadedMeshMaterial:MethodMaterial;
+	private sprites  : Array<Sprite> = new Array<Sprite>();
+	private loadedSpriteMaterial:MethodMaterial;
 	private light:DirectionalLight;
 	private lightB:DirectionalLight;
-	private loadedMesh:Mesh;
+	private loadedSprite:Sprite;
 
 	private aValues:Array<number> = Array<number>(0, .1, .5, .8, .9, .99, 1);
 	private aValuesP:number = 0;
@@ -96,7 +96,7 @@ class MaterialAlphaTest
 
 	private onMouseDown(event:MouseEvent)
 	{
-		this.cubeColorMaterial.alpha = this.torusTextureMaterial.alpha = this.loadedMeshMaterial.alpha = this.aValues[this.aValuesP];
+		this.cubeColorMaterial.alpha = this.torusTextureMaterial.alpha = this.loadedSpriteMaterial.alpha = this.aValues[this.aValuesP];
 
 		alert( 'Alpha: ' + this.aValues[this.aValuesP]);
 
@@ -108,9 +108,9 @@ class MaterialAlphaTest
 
 	private render(dt:number)
 	{
-		if (this.meshes)
-			for (var c:number = 0; c < this.meshes.length; c++)
-				this.meshes[c].rotationY += .35;
+		if (this.sprites)
+			for (var c:number = 0; c < this.sprites.length; c++)
+				this.sprites[c].rotationY += .35;
 
 		this.view.render();
 	}
@@ -127,24 +127,24 @@ class MaterialAlphaTest
 			console.log( d.name);
 
 			switch (d.assetType) {
-				case Mesh.assetType:
-					var mesh:Mesh = <Mesh> d;
+				case Sprite.assetType:
+					var sprite:Sprite = <Sprite> d;
 
-					this.loadedMesh = mesh;
+					this.loadedSprite = sprite;
 
-					if (d.name == 'Mesh_g0') {
-						this.loadedMesh = mesh;
-						mesh.y = -400;
-						mesh.transform.scaleTo(5, 5, 5);
+					if (d.name == 'Sprite_g0') {
+						this.loadedSprite = sprite;
+						sprite.y = -400;
+						sprite.transform.scaleTo(5, 5, 5);
 					} else {
-						mesh.transform.scaleTo(3.5, 3.5, 3.5);
+						sprite.transform.scaleTo(3.5, 3.5, 3.5);
 					}
 
-					if (this.loadedMeshMaterial)
-						mesh.material = this.loadedMeshMaterial;
+					if (this.loadedSpriteMaterial)
+						sprite.material = this.loadedSpriteMaterial;
 
-					this.view.scene.addChild(mesh);
-					this.meshes.push(mesh);
+					this.view.scene.addChild(sprite);
+					this.sprites.push(sprite);
 
 					this.raf.start();
 					break;
@@ -152,15 +152,15 @@ class MaterialAlphaTest
 					// Light Picker
 					this.staticLightPicker = new StaticLightPicker( [this.light , this.lightB ] );
 
-					// Material for loaded mesh
-					this.loadedMeshMaterial = new MethodMaterial(<BitmapImage2D> d);
-					this.loadedMeshMaterial.style.sampler = new Sampler2D(true, true, false);
-					this.loadedMeshMaterial.lightPicker = this.staticLightPicker;
-					this.loadedMeshMaterial.alpha = 1;
-					this.loadedMeshMaterial.bothSides = true;
+					// Material for loaded sprite
+					this.loadedSpriteMaterial = new MethodMaterial(<BitmapImage2D> d);
+					this.loadedSpriteMaterial.style.sampler = new Sampler2D(true, true, false);
+					this.loadedSpriteMaterial.lightPicker = this.staticLightPicker;
+					this.loadedSpriteMaterial.alpha = 1;
+					this.loadedSpriteMaterial.bothSides = true;
 
-					if (this.loadedMesh)
-						this.loadedMesh.material = this.loadedMeshMaterial;
+					if (this.loadedSprite)
+						this.loadedSprite.material = this.loadedSpriteMaterial;
 
 					// Torus Texture Material
 					this.torusTextureMaterial = new MethodMaterial(<BitmapImage2D> d);
@@ -172,12 +172,12 @@ class MaterialAlphaTest
 					// Torus
 					var torus:PrimitiveTorusPrefab = new PrimitiveTorusPrefab(this.torusTextureMaterial, ElementsType.TRIANGLE, 150 , 50 , 64 , 64);
 
-					// Torus Mesh ( left )
-					var torusMesh:Mesh = <Mesh> torus.getNewObject();
-					torusMesh.rotationX = 90;
-					torusMesh.x = 600;
-					this.meshes.push(torusMesh);
-					this.view.scene.addChild(torusMesh);
+					// Torus Sprite ( left )
+					var torusSprite:Sprite = <Sprite> torus.getNewObject();
+					torusSprite.rotationX = 90;
+					torusSprite.x = 600;
+					this.sprites.push(torusSprite);
+					this.view.scene.addChild(torusSprite);
 
 					// Torus Color Material
 					this.cubeColorMaterial = new MethodMaterial(0x0090ff);
@@ -187,24 +187,24 @@ class MaterialAlphaTest
 
 					var cube:PrimitiveCubePrefab = new PrimitiveCubePrefab(this.cubeColorMaterial, ElementsType.TRIANGLE, 300, 300, 300, 20, 20, 20);
 
-					// Torus Mesh ( right )
-					var cubeMesh:Mesh = <Mesh> cube.getNewObject();
-					cubeMesh.rotationX = 90;
-					cubeMesh.x = -600;
-					this.meshes.push(cubeMesh);
-					this.view.scene.addChild(cubeMesh);
+					// Torus Sprite ( right )
+					var cubeSprite:Sprite = <Sprite> cube.getNewObject();
+					cubeSprite.rotationX = 90;
+					cubeSprite.x = -600;
+					this.sprites.push(cubeSprite);
+					this.view.scene.addChild(cubeSprite);
 
 					this.capsuleColorMaterial = new MethodMaterial(0x00ffff);
 					this.capsuleColorMaterial.lightPicker = this.staticLightPicker;
 
 					var capsule:PrimitiveCapsulePrefab = new PrimitiveCapsulePrefab(this.capsuleColorMaterial, ElementsType.TRIANGLE, 100, 200);
 
-					// Torus Mesh ( right )
-					var capsuleMesh:Mesh = <Mesh> capsule.getNewObject();
-					this.meshes.push(capsuleMesh);
-					this.view.scene.addChild(capsuleMesh);
+					// Torus Sprite ( right )
+					var capsuleSprite:Sprite = <Sprite> capsule.getNewObject();
+					this.sprites.push(capsuleSprite);
+					this.view.scene.addChild(capsuleSprite);
 
-					this.cubeColorMaterial.alpha = this.torusTextureMaterial.alpha = this.loadedMeshMaterial.alpha = 1;
+					this.cubeColorMaterial.alpha = this.torusTextureMaterial.alpha = this.loadedSpriteMaterial.alpha = 1;
 
 					break;
 			}

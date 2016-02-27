@@ -11,7 +11,7 @@ import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationF
 import Graphics						= require("awayjs-display/lib/graphics/Graphics");
 import View							= require("awayjs-display/lib/View");
 import DirectionalLight				= require("awayjs-display/lib/display/DirectionalLight");
-import Mesh							= require("awayjs-display/lib/display/Mesh");
+import Sprite						= require("awayjs-display/lib/display/Sprite");
 import StaticLightPicker			= require("awayjs-display/lib/materials/lightpickers/StaticLightPicker");
 
 import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
@@ -24,7 +24,7 @@ class AWDSuzanne
 {
 	private _view:View;
 	private _timer:RequestAnimationFrame;
-	private _suzanne:Mesh;
+	private _suzanne:Sprite;
 	private _light:DirectionalLight;
 	private _lightPicker:StaticLightPicker;
 	private lookAtPosition:Vector3D = new Vector3D();
@@ -106,9 +106,9 @@ class AWDSuzanne
 			var asset:IAsset = loader.baseDependency.assets[i];
 
 			switch (asset.assetType) {
-				case Mesh.assetType:
+				case Sprite.assetType:
 
-					this._suzanne = <Mesh> asset;
+					this._suzanne = <Sprite> asset;
 
 					(<MethodMaterial> this._suzanne.material).lightPicker = this._lightPicker;
 					this._suzanne.y = -100;
@@ -117,7 +117,7 @@ class AWDSuzanne
 					for ( var c : number = 0 ; c < 80 ; c ++ )
 					{
 						var scale:number = this.getRandom( 50 , 200 );
-						var clone:Mesh = <Mesh> this._suzanne.clone();
+						var clone:Sprite = <Sprite> this._suzanne.clone();
 							clone.x = this.getRandom(-2000 , 2000);
 							clone.y = this.getRandom(-2000 , 2000);
 							clone.z = this.getRandom(-2000 , 2000);
