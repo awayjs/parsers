@@ -2,6 +2,8 @@ import AttributesBuffer					= require("awayjs-core/lib/attributes/AttributesBuff
 import Short3Attributes					= require("awayjs-core/lib/attributes/Short3Attributes");
 import Float3Attributes					= require("awayjs-core/lib/attributes/Float3Attributes");
 import Float2Attributes					= require("awayjs-core/lib/attributes/Float2Attributes");
+import Byte4Attributes					= require("awayjs-core/lib/attributes/Byte4Attributes");
+
 import BitmapImage2D					= require("awayjs-core/lib/image/BitmapImage2D");
 import BitmapImageCube					= require("awayjs-core/lib/image/BitmapImageCube");
 import BlendMode						= require("awayjs-core/lib/image/BlendMode");
@@ -572,7 +574,7 @@ class AWDParser extends ParserBase
 					isParsed = true;
 					break;
 				case 133:
-					this.parseTimeLine(this._cur_block_id, factory);
+					this.parseMovieClip(this._cur_block_id, factory);
 					isParsed = true;
 					break;
 				case 134:
@@ -790,11 +792,14 @@ class AWDParser extends ParserBase
 			new_font_style = new_font.get_font_table(font_style_name);
 			new_font_style.set_font_em_size(this._newBlockBytes.readUnsignedInt());
 			new_font_style.set_whitespace_width(this._newBlockBytes.readUnsignedInt());
+			new_font_style.ascent=this._newBlockBytes.readFloat();
+			new_font_style.descent=this._newBlockBytes.readFloat();
 			//console.log(new_font_style.get_whitespace_width());
 			font_style_char_cnt = this._newBlockBytes.readUnsignedInt();
 			for (var j:number = 0; j < font_style_char_cnt; ++j) {
 				// todo: this is basically a simplified version of the elements-parsing done in parseGraphics. Make a parseElements() instead (?)
 				font_style_char = this._newBlockBytes.readUnsignedInt();
+				var char_width=this._newBlockBytes.readFloat();
 				sm_len = this._newBlockBytes.readUnsignedInt();
 				sm_end = this._newBlockBytes.position + sm_len;
 
@@ -814,6 +819,10 @@ class AWDParser extends ParserBase
 						attr_count = 20;
 						var curveData:ByteArray = new ByteArray(str_len);
 						this._newBlockBytes.readBytes(curveData, 0, str_len);
+					} else if (str_type == 12) {// combined vertex2D stream 5 x float32 (position + curvedata)
+						attr_count = 12;
+						var curveData:ByteArray = new ByteArray(str_len);
+						this._newBlockBytes.readBytes(curveData, 0, str_len);
 					} else if (str_type == 10) {// combined vertex2D stream 7 x float32 (position + curvedata + uv)
 						attr_count = 28;
 						var curveData:ByteArray = new ByteArray(str_len);
@@ -829,7 +838,10 @@ class AWDParser extends ParserBase
 					var curve_elements:TriangleElements = new TriangleElements(vertexBuffer);
 
 					curve_elements.setPositions(new Float2Attributes(vertexBuffer));
-					curve_elements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
+					if (attr_count == 20)
+						curve_elements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
+					else if(attr_count == 12)
+						curve_elements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer));
 
 					//add UVs if they exist in the data
 					if (attr_count == 28)
@@ -853,16 +865,16 @@ class AWDParser extends ParserBase
 	}
 
 	private static textFormatProperties:Object = {
-		1:AWDParser.UINT16,
-		2:AWDParser.UINT16,
-		3:AWDParser.UINT8,
-		4:AWDParser.UINT8,
-		5:AWDParser.UINT8,
-		6:AWDParser.UINT8,
-		7:AWDParser.UINT16,
-		8:AWDParser.UINT16,
-		9:AWDParser.UINT16,
-		10:AWDParser.UINT16};
+		1:AWDParser.UINT16,		//fontsize
+		2:AWDParser.FLOAT32,		//letterspacing
+		3:AWDParser.UINT8,		//rotated
+		4:AWDParser.UINT8,		//auto-kerning
+		5:AWDParser.UINT8,		//baselineshift
+		6:AWDParser.UINT8,		//align
+		7:AWDParser.FLOAT32,		//intent
+		8:AWDParser.FLOAT32,		//left margin
+		9:AWDParser.FLOAT32,		//right margin
+		10:AWDParser.FLOAT32};	//line spacing
 
 	private parseTextFormat(blockID:number)
 	{
@@ -1048,46 +1060,58 @@ class AWDParser extends ParserBase
 		}
 
 		var count:number = this._newBlockBytes.readUnsignedShort();
-		if(count != sprite.graphics.count)
-			throw new Error("num elements does not match num subsprites");
+		//if(count != sprite.graphics.count)
+		//	throw new Error("num elements does not match num subsprites");
 
 		for (var i:number = 0; i < count; i++) {
 			var type:number = this._newBlockBytes.readUnsignedByte();
 
 			var sampler:Sampler2D = new Sampler2D();
 			var graphic:Graphic = sprite.graphics.getGraphicAt(i);
-			graphic.style = new Style();
-			graphic.style.addSamplerAt(sampler, graphic.material.getTextureAt(0));
-
-			if(type==3){// solid color fill - need tx and ty
-				graphic.material.animateUVs = true;
-				graphic.style.uvMatrix = new Matrix(0, 0, 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+			if(graphic) {
+				graphic.style = new Style();
+				graphic.style.addSamplerAt(sampler, graphic.material.getTextureAt(0));
 			}
-			else if(type==4){// texture fill - need full matrix
+			if (type == 3) {// solid color fill - need tx and ty
+				var tx:number=this._newBlockBytes.readFloat();
+				var ty:number=this._newBlockBytes.readFloat();
+				if(graphic) {
+					graphic.material.animateUVs = true;
+					graphic.style.uvMatrix = new Matrix(0, 0, 0, 0, tx, ty);
+				}
+			}
+			else if (type == 4) {// texture fill - need full matrix
 				var matrix:Array<number> = this.parseMatrix32RawData();
-				graphic.material.animateUVs = true;
-				graphic.style.uvMatrix = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+				if(graphic) {
+					graphic.material.animateUVs = true;
+					graphic.style.uvMatrix = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+				}
 			}
-			else if(type==5){// linear gradient fill - need a, c , tx and ty
-				graphic.material.animateUVs = true;
-				graphic.style.uvMatrix = new Matrix(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+			else if (type == 5) {// linear gradient fill - need a, c , tx and ty
+				var newMatrix:Matrix = new Matrix(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+				if(graphic) {
+					graphic.material.animateUVs = true;
+					graphic.style.uvMatrix = newMatrix;
+				}
 			}
-			else if(type==6){// radial gradient fill - need image rectangle + full transform
-				var x:number = this._newBlockBytes.readFloat();
-				var y:number = this._newBlockBytes.readFloat();
-				var width:number = this._newBlockBytes.readFloat();
-				var height:number = this._newBlockBytes.readFloat();
-				sampler.imageRect = new Rectangle(x, y, width, height);
-				graphic.material.imageRect = true;
-				graphic.material.animateUVs = true;
-				var matrix:Array<number> = this.parseMatrix32RawData();
-				graphic.style.uvMatrix = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+				else if (type == 6) {// radial gradient fill - need image rectangle + full transform
+					var x:number = this._newBlockBytes.readFloat();
+					var y:number = this._newBlockBytes.readFloat();
+					var width:number = this._newBlockBytes.readFloat();
+					var height:number = this._newBlockBytes.readFloat();
+					var matrix:Array<number> = this.parseMatrix32RawData();
+					if(graphic) {
+						sampler.imageRect = new Rectangle(x, y, width, height);
+						graphic.material.imageRect = true;
+						graphic.material.animateUVs = true;
+						graphic.style.uvMatrix = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+					}
+				}
+			if(graphic) {
+				//check if curves are needed
+				if (graphic.elements.getCustomAtributes("curves"))
+					graphic.material.curves = true;
 			}
-
-			//check if curves are needed
-			if (graphic.elements.getCustomAtributes("curves"))
-				graphic.material.curves = true;
-
 			// todo: finish optional properties (spreadmode + focalpoint)
 			this._newBlockBytes.readUnsignedInt();
 		}
@@ -1141,18 +1165,19 @@ class AWDParser extends ParserBase
 			console.log("Start parsing a " + ["external", "embed"][type] + " Audio file");
 	}
 
+	private static movieClipProperties:Object = {
+		1:AWDParser.FLOAT32,	//fps
+		2:AWDParser.UINT16,		// sceneID if not present or 0, mc is no scene
+		3:AWDParser.UINT8};		// scripting-language right now its always as2
 	//Block ID = 4
-	private parseTimeLine(blockID:number, factory:ITimelineSceneGraphFactory)
+	private parseMovieClip(blockID:number, factory:ITimelineSceneGraphFactory)
 	{
 		var i:number;
 		var j:number;
 		var cmd_asset:DisplayObject;
 		var new_timeline:Timeline = new Timeline();
-		var timeLineContainer = factory.createMovieClip(new_timeline);
+		var new_mc = factory.createMovieClip(new_timeline);
 		var name = this.parseVarStr();
-		var isScene = Boolean(this._newBlockBytes.readUnsignedByte());
-		var sceneID = this._newBlockBytes.readUnsignedByte();
-		var fps = this._newBlockBytes.readFloat();
 
 		// register list of potential childs
 		// a potential child can be reused on a timeline (added / removed / added)
@@ -1171,7 +1196,7 @@ class AWDParser extends ParserBase
 				new_timeline.registerPotentialChild(cmd_asset);
 			} else {
 				//todo: register a default display object on timeline, so we do not mess up the incremental obj-id
-				//timeLineContainer.registerPotentialChild(cmd_asset);
+				//new_mc.registerPotentialChild(cmd_asset);
 				console.log("ERROR when collecting objects for timeline");
 			}
 		}
@@ -1189,7 +1214,7 @@ class AWDParser extends ParserBase
 			} else {
 				for (j = 0; j < num_instances; j++) {
 					//todo: register a default display object on timeline, so we do not mess up the incremental obj-id
-					//timeLineContainer.registerPotentialChild(cmd_asset);
+					//new_mc.registerPotentialChild(cmd_asset);
 					console.log("ERROR when collecting objects for timeline");
 				}
 			}
@@ -1284,27 +1309,24 @@ class AWDParser extends ParserBase
 		str_cnt = this._newBlockBytes.readUnsignedByte();
 		for(i=0; i<str_cnt;i++){
 			str_type = this._newBlockBytes.readUnsignedByte();
+			str_len = this._newBlockBytes.readUnsignedInt();
 			switch(str_type) {
 				case 0://mtx_scale
-					str_len = this._newBlockBytes.readUnsignedInt();
 					float_array_data = new ByteArray(str_len);
 					this._newBlockBytes.readBytes(float_array_data, 0, str_len);
 					new_timeline.properties_stream_f32_mtx_scale_rot=new Float32Array(<ArrayBuffer> float_array_data.arraybytes);
 					break;
 				case 1://mtx_pos
-					str_len = this._newBlockBytes.readUnsignedInt();
 					float_array_data = new ByteArray(str_len);
 					this._newBlockBytes.readBytes(float_array_data, 0, str_len);
 					new_timeline.properties_stream_f32_mtx_pos=new Float32Array(<ArrayBuffer> float_array_data.arraybytes);
 					break;
 				case 2://mtx_all
-					str_len = this._newBlockBytes.readUnsignedInt();
 					float_array_data = new ByteArray(str_len);
 					this._newBlockBytes.readBytes(float_array_data, 0, str_len);
 					new_timeline.properties_stream_f32_mtx_all=new Float32Array(<ArrayBuffer> float_array_data.arraybytes);
 					break;
 				case 3://ct
-					str_len = this._newBlockBytes.readUnsignedInt();
 					float_array_data = new ByteArray(str_len);
 					this._newBlockBytes.readBytes(float_array_data, 0, str_len);
 					new_timeline.properties_stream_f32_ct=new Float32Array(<ArrayBuffer> float_array_data.arraybytes);
@@ -1336,14 +1358,17 @@ class AWDParser extends ParserBase
 			}
 		}
 		new_timeline.init();
-		this.parseProperties(null);
-		this.parseUserAttributes();
-		this._pFinalizeAsset(<IAsset>timeLineContainer, name);
 
-		this._blocks[blockID].data = timeLineContainer;
+		var sceneID:number = 0;
+		var fps:number = 25;
+		this.parseProperties(AWDParser.movieClipProperties);
+		this.parseUserAttributes();
+		this._pFinalizeAsset(<IAsset>new_mc, name);
+
+		this._blocks[blockID].data = new_mc;
 
 		if (this._debug)
-			console.log("Parsed a TIMELINE: Name = " + name + "| isScene = " + isScene + "| sceneID = " + sceneID + "| numFrames = ");
+			console.log("Parsed a TIMELINE: Name = " + name + "| sceneID = " + sceneID + "| numFrames = " + new_mc.timeline.numFrames);
 	}
 
 	private static graphicsProperties:Object = {
@@ -1357,7 +1382,7 @@ class AWDParser extends ParserBase
 	//Block ID = 1
 	private parseGraphics(blockID:number)
 	{
-		var graphics:Graphics = new Graphics(null);
+		var graphics:Graphics = new Graphics();
 
 		// Read name and sub count
 		var name:string = this.parseVarStr();
@@ -1442,7 +1467,12 @@ class AWDParser extends ParserBase
 					attr_count = 20;
 					var curveData:ByteArray = new ByteArray(str_len);
 					this._newBlockBytes.readBytes(curveData, 0, str_len);
-				} else {
+				} else if (str_type == 12) {// combined vertex2D stream 5 x float32 (2d pos + curvedata)
+					is_curve_elements = true;
+					attr_count = 12;
+					var curveData:ByteArray = new ByteArray(str_len);
+					this._newBlockBytes.readBytes(curveData, 0, str_len);
+				}else {
 					this._newBlockBytes.position = str_end;
 				}
 			}
@@ -1456,7 +1486,12 @@ class AWDParser extends ParserBase
 				var curve_elements:TriangleElements = new TriangleElements(vertexBuffer);
 
 				curve_elements.setPositions(new Float2Attributes(vertexBuffer));
-				curve_elements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
+				if(attr_count==20){
+					curve_elements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
+				}
+				else if(attr_count==12){
+					curve_elements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer));
+				}
 
 				if(attr_count==28)
 					curve_elements.setUVs(new Float2Attributes(vertexBuffer));
@@ -2701,7 +2736,7 @@ class AWDParser extends ParserBase
 		var frame_dur:number;
 		for (var frames_parsed:number = 0; frames_parsed < num_frames; frames_parsed++) {
 			frame_dur = this._newBlockBytes.readUnsignedShort();
-			graphics = new Graphics(null);
+			graphics = new Graphics();
 			subSpriteParsed = 0;
 			while (subSpriteParsed < num_subsprites) {
 				streamsParsed = 0;

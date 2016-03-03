@@ -444,7 +444,7 @@ class MD2Parser extends ParserBase
 			if (this._firstElements == null)
 				this._firstElements = elements;
 
-			graphics = new Graphics(null);
+			graphics = new Graphics();
 			graphics.addGraphic(elements);
 
 			elements.setIndices(this._indices);
