@@ -746,7 +746,7 @@ var AWDParser = (function (_super) {
                     //add UVs if they exist in the data
                     if (attr_count == 28)
                         curve_elements.setUVs(new Float2Attributes(vertexBuffer));
-                    new_font_style.setChar(font_style_char.toString(), curve_elements);
+                    new_font_style.setChar(font_style_char.toString(), curve_elements, char_width);
                 }
             }
         }
