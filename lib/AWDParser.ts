@@ -847,7 +847,7 @@ class AWDParser extends ParserBase
 					if (attr_count == 28)
 						curve_elements.setUVs(new Float2Attributes(vertexBuffer));
 
-					new_font_style.setChar(font_style_char.toString(), curve_elements);
+					new_font_style.setChar(font_style_char.toString(), curve_elements, char_width);
 				}
 			}
 		}
