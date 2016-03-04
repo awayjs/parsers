@@ -841,7 +841,7 @@ class AWDParser extends ParserBase
 					if (attr_count == 20)
 						curve_elements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
 					else if(attr_count == 12)
-						curve_elements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer));
+						curve_elements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
 
 					//add UVs if they exist in the data
 					if (attr_count == 28)
@@ -895,7 +895,7 @@ class AWDParser extends ParserBase
 
 		var mat:BasicMaterial = <BasicMaterial> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 		mat.bothSides = true;
-
+		mat.curves = true;
 		var num_uv_values:number = this._newBlockBytes.readUnsignedByte();
 		var uv_values:Array<number> = [];
 		for(var uvcnt:number = 0; uvcnt < num_uv_values; uvcnt++)
@@ -1490,7 +1490,7 @@ class AWDParser extends ParserBase
 					curve_elements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
 				}
 				else if(attr_count==12){
-					curve_elements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer));
+					curve_elements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
 				}
 
 				if(attr_count==28)
