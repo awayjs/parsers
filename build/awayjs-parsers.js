@@ -742,7 +742,7 @@ var AWDParser = (function (_super) {
                     if (attr_count == 20)
                         curve_elements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
                     else if (attr_count == 12)
-                        curve_elements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer));
+                        curve_elements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
                     //add UVs if they exist in the data
                     if (attr_count == 28)
                         curve_elements.setUVs(new Float2Attributes(vertexBuffer));
@@ -773,6 +773,7 @@ var AWDParser = (function (_super) {
         }
         var mat = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
         mat.bothSides = true;
+        mat.curves = true;
         var num_uv_values = this._newBlockBytes.readUnsignedByte();
         var uv_values = [];
         for (var uvcnt = 0; uvcnt < num_uv_values; uvcnt++)
@@ -1272,7 +1273,7 @@ var AWDParser = (function (_super) {
                     curve_elements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
                 }
                 else if (attr_count == 12) {
-                    curve_elements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer));
+                    curve_elements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
                 }
                 if (attr_count == 28)
                     curve_elements.setUVs(new Float2Attributes(vertexBuffer));
