@@ -1,34 +1,28 @@
-import BitmapImage2D				= require("awayjs-core/lib/image/BitmapImage2D");
-import Sampler2D					= require("awayjs-core/lib/image/Sampler2D");
-import BlendMode					= require("awayjs-core/lib/image/BlendMode");
-import LoaderEvent					= require("awayjs-core/lib/events/LoaderEvent");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
-import AssetLibrary					= require("awayjs-core/lib/library/AssetLibrary");
-import Loader						= require("awayjs-core/lib/library/Loader");
-import IAsset						= require("awayjs-core/lib/library/IAsset");
-import URLLoader					= require("awayjs-core/lib/net/URLLoader");
-import URLLoaderDataFormat			= require("awayjs-core/lib/net/URLLoaderDataFormat");
-import URLRequest					= require("awayjs-core/lib/net/URLRequest");
-import PerspectiveProjection		= require("awayjs-core/lib/projections/PerspectiveProjection");
-import Debug						= require("awayjs-core/lib/utils/Debug");
-import RequestAnimationFrame		= require("awayjs-core/lib/utils/RequestAnimationFrame");
+import BitmapImage2D				from "awayjs-core/lib/image/BitmapImage2D";
+import Sampler2D					from "awayjs-core/lib/image/Sampler2D";
+import LoaderEvent					from "awayjs-core/lib/events/LoaderEvent";
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import AssetLibrary					from "awayjs-core/lib/library/AssetLibrary";
+import Loader						from "awayjs-core/lib/library/Loader";
+import IAsset						from "awayjs-core/lib/library/IAsset";
+import URLRequest					from "awayjs-core/lib/net/URLRequest";
+import Debug						from "awayjs-core/lib/utils/Debug";
+import RequestAnimationFrame		from "awayjs-core/lib/utils/RequestAnimationFrame";
 
-import Scene						= require("awayjs-display/lib/display/Scene");
-import View							= require("awayjs-display/lib/View");
-import DirectionalLight				= require("awayjs-display/lib/display/DirectionalLight");
-import Sprite						= require("awayjs-display/lib/display/Sprite");
-import StaticLightPicker			= require("awayjs-display/lib/materials/lightpickers/StaticLightPicker");
-import PrimitiveTorusPrefab			= require("awayjs-display/lib/prefabs/PrimitiveTorusPrefab");
-import PrimitiveCubePrefab			= require("awayjs-display/lib/prefabs/PrimitiveCubePrefab");
-import PrimitiveCapsulePrefab		= require("awayjs-display/lib/prefabs/PrimitiveCapsulePrefab");
-import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
+import View							from "awayjs-display/lib/View";
+import DirectionalLight				from "awayjs-display/lib/display/DirectionalLight";
+import Sprite						from "awayjs-display/lib/display/Sprite";
+import ElementsType					from "awayjs-display/lib/graphics/ElementsType";
+import StaticLightPicker			from "awayjs-display/lib/materials/lightpickers/StaticLightPicker";
+import PrimitiveTorusPrefab			from "awayjs-display/lib/prefabs/PrimitiveTorusPrefab";
+import PrimitiveCubePrefab			from "awayjs-display/lib/prefabs/PrimitiveCubePrefab";
+import PrimitiveCapsulePrefab		from "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab";
 
-import DefaultRenderer				= require("awayjs-renderergl/lib/DefaultRenderer");
+import DefaultRenderer				from "awayjs-renderergl/lib/DefaultRenderer";
 
-import MethodMaterial				= require("awayjs-methodmaterials/lib/MethodMaterial");
+import MethodMaterial				from "awayjs-methodmaterials/lib/MethodMaterial";
 
-import OBJParser					= require("awayjs-parsers/lib/OBJParser");
-import ElementsType = require("awayjs-display/lib/graphics/ElementsType");
+import OBJParser					from "awayjs-parsers/lib/OBJParser";
 
 class MaterialAlphaTest
 {
