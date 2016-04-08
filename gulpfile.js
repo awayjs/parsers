@@ -12,6 +12,7 @@ var watchify = require('watchify');
 var livereload = require('gulp-livereload');
 
 var typescript = require('gulp-typescript');
+//var ts = require('typescript');
 
 var shell = require('gulp-shell');
 var git = require('gulp-git');
@@ -50,14 +51,12 @@ gulp.task('watch', ['package-watch'], function(){
 gulp.task('tests', function () {
 
     var tsProject = typescript.createProject({
-        declarationFiles: true,
-        noExternalResolve: true,
         target: 'ES5',
         module: 'commonjs',
-        sourceRoot: './'
+        moduleResolution: 'classic'
     });
 
-    var tsResult = gulp.src(['./tests/**/*.ts', './node_modules/awayjs-**/build/*.d.ts', './build/awayjs-parsers.d.ts'])
+    var tsResult = gulp.src(['./tests/**/*.ts'])
         .pipe(sourcemaps.init())
         .pipe(typescript(tsProject));
 
@@ -70,12 +69,13 @@ function browserifyShare(callback) {
     var b = browserify({
         debug: true,
         paths: ['../'],
+        entries: './index.ts',
         cache: {},
         packageCache: {},
-        fullPaths: true
+        fullPaths: false
     });
 
-    b.plugin('tsify', {target:'ES5', sourceRoot:'../', noExternalResolve: true, declarationFiles: './node_modules/awayjs-**/build/*.d.ts', declarationOutput: './build/awayjs-parsers.d.ts'});
+    b.plugin('tsify', {target:'ES5', sourceRoot:'../', noExternalResolve: true});
 
     glob('./node_modules/awayjs-**/lib/**/*.ts', {}, function (error, files) {
         files.forEach(function (file) {
@@ -151,8 +151,8 @@ gulp.task('version', ['commit'], function(callback){
         .pipe(shell([
             'npm version patch'
         ])).on('error', function(err) {
-            throw err;
-        }).on('end', callback);
+        throw err;
+    }).on('end', callback);
 });
 
 gulp.task('push', ['version'], function(callback){
@@ -160,8 +160,8 @@ gulp.task('push', ['version'], function(callback){
         .pipe(shell([
             'git push origin dev --tags'
         ])).on('error', function(err) {
-            throw err;
-        }).on('end', callback);
+        throw err;
+    }).on('end', callback);
 });
 
 gulp.task('publish', ['push'], function(callback){
@@ -169,8 +169,8 @@ gulp.task('publish', ['push'], function(callback){
         .pipe(shell([
             'npm publish'
         ])).on('error', function(err) {
-            throw err;
-        }).on('end', callback);
+        throw err;
+    }).on('end', callback);
 });
 gulp.task('compile', function() {
     var tsProject = typescript.createProject({
@@ -183,9 +183,9 @@ gulp.task('compile', function() {
     });
 
     var tsResult = gulp.src([
-        './lib/**/*.ts',
-        './node_modules/awayjs-**/build/*.d.ts'
-    ])
+            './lib/**/*.ts',
+            './node_modules/awayjs-**/build/*.d.ts'
+        ])
         //.pipe(sourcemaps.init())
         .pipe(typescript(tsProject));
 

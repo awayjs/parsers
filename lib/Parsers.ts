@@ -1,9 +1,9 @@
-import Loader							= require("awayjs-core/lib/library/Loader");
+import Loader							from "awayjs-core/lib/library/Loader";
 
-import AWDParser						= require("awayjs-parsers/lib/AWDParser");
-import Max3DSParser						= require("awayjs-parsers/lib/Max3DSParser");
-import MD2Parser						= require("awayjs-parsers/lib/MD2Parser");
-import OBJParser						= require("awayjs-parsers/lib/OBJParser");
+import AWDParser						from "awayjs-parsers/lib/AWDParser";
+import Max3DSParser						from "awayjs-parsers/lib/Max3DSParser";
+import MD2Parser						from "awayjs-parsers/lib/MD2Parser";
+import OBJParser						from "awayjs-parsers/lib/OBJParser";
 
 /**
  *
@@ -60,4 +60,4 @@ class Parsers
 	}
 }
 
-export = Parsers;
+export default Parsers;

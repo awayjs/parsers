@@ -29,4 +29,4 @@ class AWD3Utils {
 	public static MTX4x3:number = 46;
 	public static MTX4x4:number = 47;
 }
-export = AWD3Utils;
+export default AWD3Utils;

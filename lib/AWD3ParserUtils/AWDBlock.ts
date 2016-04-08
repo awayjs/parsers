@@ -1,5 +1,5 @@
-import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
-import AWD3Utils						= require("awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils");
+import ByteArray						from "awayjs-core/lib/utils/ByteArray";
+import AWD3Utils						from "awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils";
 
 
 class AWDBlock
@@ -51,4 +51,4 @@ class AWDBlock
 		this.errorMessages.push(errorMsg);
 	}
 }
-export = AWDBlock;
+export default AWDBlock;

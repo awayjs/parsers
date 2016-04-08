@@ -1,25 +1,25 @@
-import AttributesBuffer					= require("awayjs-core/lib/attributes/AttributesBuffer");
-import BitmapImage2D					= require("awayjs-core/lib/image/BitmapImage2D");
-import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
-import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
-import IAsset							= require("awayjs-core/lib/library/IAsset");
-import URLLoaderDataFormat				= require("awayjs-core/lib/net/URLLoaderDataFormat");
-import URLRequest						= require("awayjs-core/lib/net/URLRequest");
-import ParserBase						= require("awayjs-core/lib/parsers/ParserBase");
-import ParserUtils						= require("awayjs-core/lib/parsers/ParserUtils");
-import ResourceDependency				= require("awayjs-core/lib/parsers/ResourceDependency");
-import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
+import AttributesBuffer					from "awayjs-core/lib/attributes/AttributesBuffer";
+import BitmapImage2D					from "awayjs-core/lib/image/BitmapImage2D";
+import Matrix3D							from "awayjs-core/lib/geom/Matrix3D";
+import Vector3D							from "awayjs-core/lib/geom/Vector3D";
+import IAsset							from "awayjs-core/lib/library/IAsset";
+import URLLoaderDataFormat				from "awayjs-core/lib/net/URLLoaderDataFormat";
+import URLRequest						from "awayjs-core/lib/net/URLRequest";
+import ParserBase						from "awayjs-core/lib/parsers/ParserBase";
+import ParserUtils						from "awayjs-core/lib/parsers/ParserUtils";
+import ResourceDependency				from "awayjs-core/lib/parsers/ResourceDependency";
+import ByteArray						from "awayjs-core/lib/utils/ByteArray";
 
-import Graphics							= require("awayjs-display/lib/graphics/Graphics");
-import TriangleElements					= require("awayjs-display/lib/graphics/TriangleElements");
-import DisplayObjectContainer			= require("awayjs-display/lib/display/DisplayObjectContainer");
-import Sprite							= require("awayjs-display/lib/display/Sprite");
-import DefaultMaterialManager			= require("awayjs-display/lib/managers/DefaultMaterialManager");
-import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
-import Single2DTexture					= require("awayjs-display/lib/textures/Single2DTexture");
+import Graphics							from "awayjs-display/lib/graphics/Graphics";
+import TriangleElements					from "awayjs-display/lib/graphics/TriangleElements";
+import DisplayObjectContainer			from "awayjs-display/lib/display/DisplayObjectContainer";
+import Sprite							from "awayjs-display/lib/display/Sprite";
+import DefaultMaterialManager			from "awayjs-display/lib/managers/DefaultMaterialManager";
+import MaterialBase						from "awayjs-display/lib/materials/MaterialBase";
+import Single2DTexture					from "awayjs-display/lib/textures/Single2DTexture";
 
-import MethodMaterial					= require("awayjs-methodmaterials/lib/MethodMaterial");
-import MethodMaterialMode				= require("awayjs-methodmaterials/lib/MethodMaterialMode");
+import MethodMaterial					from "awayjs-methodmaterials/lib/MethodMaterial";
+import MethodMaterialMode				from "awayjs-methodmaterials/lib/MethodMaterialMode";
 
 /**
  * Max3DSParser provides a parser for the 3ds data type.
@@ -165,8 +165,7 @@ class Max3DSParser extends ParserBase
 						// instead we should progress to the next chunk, which
 						// will be the first sub-chunk of this one.
 						continue;
-						break;
-
+						
 					case 0xAFFF: // MATERIAL
 						this._cur_mat_end = end;
 						this._cur_mat = this.parseMaterial();
@@ -818,7 +817,7 @@ class Max3DSParser extends ParserBase
 	}
 }
 
-export = Max3DSParser;
+export default Max3DSParser;
 
 /**
  *
