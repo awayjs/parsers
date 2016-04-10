@@ -119,7 +119,7 @@ import TesselatedFontTable			from "awayjs-display/lib/text/TesselatedFontTable";
 import TextFormat					from "awayjs-display/lib/text/TextFormat";
 import TextFieldType				from "awayjs-display/lib/text/TextFieldType";
 
-import AWDBlock						from "awayjs-parsers/lib/AWD3ParserUtils/AWDBlock";
+import AWDBlock						from "./AWD3ParserUtils/AWDBlock";
 import Rectangle 					from "awayjs-core/lib/geom/Rectangle";
 import Style 						from "awayjs-display/lib/base/Style";
 import Matrix 						from "awayjs-core/lib/geom/Matrix";

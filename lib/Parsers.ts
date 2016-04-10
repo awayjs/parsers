@@ -1,9 +1,9 @@
 import Loader							from "awayjs-core/lib/library/Loader";
 
-import AWDParser						from "awayjs-parsers/lib/AWDParser";
-import Max3DSParser						from "awayjs-parsers/lib/Max3DSParser";
-import MD2Parser						from "awayjs-parsers/lib/MD2Parser";
-import OBJParser						from "awayjs-parsers/lib/OBJParser";
+import AWDParser						from "./AWDParser";
+import Max3DSParser						from "./Max3DSParser";
+import MD2Parser						from "./MD2Parser";
+import OBJParser						from "./OBJParser";
 
 /**
  *
