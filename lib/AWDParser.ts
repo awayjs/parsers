@@ -32,6 +32,7 @@ import DisplayObject					from "awayjs-display/lib/display/DisplayObject";
 import LightBase						from "awayjs-display/lib/display/LightBase";
 import Graphics							from "awayjs-display/lib/graphics/Graphics";
 import TriangleElements					from "awayjs-display/lib/graphics/TriangleElements";
+import ElementsBase						from "awayjs-display/lib/graphics/ElementsBase";
 import DirectionalLight					from "awayjs-display/lib/display/DirectionalLight";
 import PointLight						from "awayjs-display/lib/display/PointLight";
 import Camera							from "awayjs-display/lib/display/Camera";
@@ -1392,8 +1393,10 @@ class AWDParser extends ParserBase
 		var props:AWDProperties = this.parseProperties(AWDParser.graphicsProperties);
 		var geoScaleU:number = props.get(1, 1);
 		var geoScaleV:number = props.get(2, 1);
-
-		//console.log("numElements "+numElements);
+		var target_start_idx:number=0;
+		var target_vert_cnt:number=0;
+		var element_type:number = ElementType.STANDART_STREAMS;
+		var target_element:ElementsBase = null;
 		// Loop through sub sprites
 		for (var elements_parsed:number = 0;  elements_parsed < numElements; elements_parsed++) {
 			var is_curve_elements:boolean=false;
@@ -1401,10 +1404,12 @@ class AWDParser extends ParserBase
 			var sm_len:number, sm_end:number;
 			var w_indices:Array<number>;
 			var weights:Array<number>;
-
+			target_start_idx=0;
+			target_vert_cnt=0;
+			element_type = ElementType.STANDART_STREAMS;
+			target_element = null;
 			sm_len = this._newBlockBytes.readUnsignedInt();
 			sm_end = this._newBlockBytes.position + sm_len;
-
 			var elementsProps:AWDProperties = this.parseProperties(AWDParser.elementsProperties);
 			// Loop through data streams
 			while (this._newBlockBytes.position < sm_end) {
@@ -1458,28 +1463,37 @@ class AWDParser extends ParserBase
 				} else if (str_type == 9) {// combined vertex3D stream 13 x float32
 					this._newBlockBytes.position = str_end;
 				} else if (str_type == 10) {// combined vertex2D stream 7 x float32 (2d pos + uv + curvedata)
-					is_curve_elements = true;
+					element_type=ElementType.CONCENATED_STREAMS;
 					attr_count = 28;
 					var curveData:ByteArray = new ByteArray(str_len);
 					this._newBlockBytes.readBytes(curveData, 0, str_len);
 				} else if (str_type == 11) {// combined vertex2D stream 5 x float32 (2d pos + curvedata)
-					is_curve_elements = true;
+					element_type=ElementType.CONCENATED_STREAMS;
 					attr_count = 20;
 					var curveData:ByteArray = new ByteArray(str_len);
 					this._newBlockBytes.readBytes(curveData, 0, str_len);
 				} else if (str_type == 12) {// combined vertex2D stream 5 x float32 (2d pos + curvedata)
-					is_curve_elements = true;
+					element_type=ElementType.CONCENATED_STREAMS;
 					attr_count = 12;
 					var curveData:ByteArray = new ByteArray(str_len);
 					this._newBlockBytes.readBytes(curveData, 0, str_len);
-				}else {
+				} else if (str_type == 13) {// combined vertex2D stream 5 x float32 (2d pos + curvedata)else {
+					element_type=ElementType.SHARED_BUFFER;
+					var targetGraphic:Graphics=<Graphics>(this._blocks[this._newBlockBytes.readUnsignedInt()].data);
+					var element_idx:number=this._newBlockBytes.readUnsignedByte();
+					target_element = targetGraphic.getGraphicAt(element_idx).elements;
+					target_start_idx = this._newBlockBytes.readUnsignedInt();
+					target_vert_cnt = this._newBlockBytes.readUnsignedInt();
+				}else{
+					console.log("skipping unknown subgeom stream");
 					this._newBlockBytes.position = str_end;
 				}
 			}
 
 			this.parseUserAttributes(); // Ignore sub-sprite attributes for now
 
-			if(is_curve_elements){
+			if(element_type==ElementType.CONCENATED_STREAMS){
+				//console.log("str_len/attr_count = "+str_len/attr_count)
 				var vertexBuffer:AttributesBuffer = new AttributesBuffer(attr_count, str_len/attr_count);
 				vertexBuffer.bufferView = new Uint8Array(<ArrayBuffer> curveData.arraybytes);
 
@@ -1501,7 +1515,8 @@ class AWDParser extends ParserBase
 				if (this._debug)
 					console.log("Parsed a TriangleElements with curves");
 
-			} else {
+			}
+			else if(element_type==ElementType.STANDART_STREAMS){
 				var triangle_elements = new TriangleElements(new AttributesBuffer());
 
 				if (weights)
@@ -1536,7 +1551,15 @@ class AWDParser extends ParserBase
 				if (this._debug)
 					console.log("Parsed a TriangleElements");
 			}
+			else if(element_type==ElementType.SHARED_BUFFER){
+				console.log("Parsed a TriangleElements that shares buffer from target geom");
 
+				graphics.addGraphic(target_element);
+				//target_start_idx
+				//target_vert_cnt
+				// todo: instead of adding the target element, we need to create a new element,
+				// todo: that uses startoffset and vertcnt to use a part of the buffer stored in target_element
+			}
 
 			// TODO: Somehow map in-sub to out-sub indices to enable look-up
 			// when creating sprites (and their material assignments.)
@@ -3287,6 +3310,11 @@ class AWDParser extends ParserBase
 
 export default AWDParser;
 
+class ElementType {
+	public static STANDART_STREAMS:number = 0;
+	public static CONCENATED_STREAMS:number = 1;
+	public static SHARED_BUFFER:number = 2;
+}
 
 class AWDProperties
 {
