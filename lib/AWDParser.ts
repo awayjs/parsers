@@ -1554,7 +1554,9 @@ class AWDParser extends ParserBase
 			else if(element_type==ElementType.SHARED_BUFFER){
 				console.log("Parsed a TriangleElements that shares buffer from target geom");
 
-				graphics.addGraphic(target_element);
+				var graphic:Graphic = graphics.addGraphic(target_element);
+				graphic.offset = target_start_idx;
+				graphic.count = target_vert_cnt;
 				//target_start_idx
 				//target_vert_cnt
 				// todo: instead of adding the target element, we need to create a new element,
