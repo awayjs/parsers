@@ -1552,15 +1552,12 @@ class AWDParser extends ParserBase
 					console.log("Parsed a TriangleElements");
 			}
 			else if(element_type==ElementType.SHARED_BUFFER){
-				console.log("Parsed a TriangleElements that shares buffer from target geom");
 
 				var graphic:Graphic = graphics.addGraphic(target_element);
 				graphic.offset = target_start_idx;
 				graphic.count = target_vert_cnt;
-				//target_start_idx
-				//target_vert_cnt
-				// todo: instead of adding the target element, we need to create a new element,
-				// todo: that uses startoffset and vertcnt to use a part of the buffer stored in target_element
+				if (this._debug)
+					console.log("Parsed a TriangleElements that shares buffer from target geom");
 			}
 
 			// TODO: Somehow map in-sub to out-sub indices to enable look-up
