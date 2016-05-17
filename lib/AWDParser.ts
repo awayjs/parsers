@@ -1038,7 +1038,7 @@ class AWDParser extends ParserBase
 		for (var materials_parsed:number = 0; materials_parsed < num_materials; materials_parsed++) {
 			mat = <MethodMaterial> (this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager.getDefaultMaterial());
 			//mat.preserveAlpha = true;
-			mat.alphaBlending = true;
+			//mat.alphaBlending = true;
 			mat.useColorTransform = true;
 			materials[materials_parsed] = mat;
 			materialNames[materials_parsed] = mat.name;
@@ -2333,7 +2333,7 @@ class AWDParser extends ParserBase
 			basic_mat.texture = diffuseTexture;
 			basic_mat.bothSides = true;
 			//basic_mat.preserveAlpha = true;
-			basic_mat.alphaBlending = true;
+			//basic_mat.alphaBlending = true;
 			basic_mat.extra = this.parseUserAttributes();
 			this._pFinalizeAsset(<IAsset> basic_mat, name);
 			this._blocks[blockID].data = basic_mat;
