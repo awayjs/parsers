@@ -1,32 +1,32 @@
-import AttributesBuffer					from "awayjs-core/lib/attributes/AttributesBuffer";
-import BitmapImage2D					from "awayjs-core/lib/image/BitmapImage2D";
-import Vector3D							from "awayjs-core/lib/geom/Vector3D";
-import URLLoaderDataFormat				from "awayjs-core/lib/net/URLLoaderDataFormat";
-import URLRequest						from "awayjs-core/lib/net/URLRequest";
-import ParserBase						from "awayjs-core/lib/parsers/ParserBase";
-import ParserUtils						from "awayjs-core/lib/parsers/ParserUtils";
-import ResourceDependency				from "awayjs-core/lib/parsers/ResourceDependency";
-import ByteArray						from "awayjs-core/lib/utils/ByteArray";
+import {AttributesBuffer}					from "awayjs-core/lib/attributes/AttributesBuffer";
+import {BitmapImage2D}					from "awayjs-core/lib/image/BitmapImage2D";
+import {Vector3D}							from "awayjs-core/lib/geom/Vector3D";
+import {URLLoaderDataFormat}				from "awayjs-core/lib/net/URLLoaderDataFormat";
+import {URLRequest}						from "awayjs-core/lib/net/URLRequest";
+import {ParserBase}						from "awayjs-core/lib/parsers/ParserBase";
+import {ParserUtils}						from "awayjs-core/lib/parsers/ParserUtils";
+import {ResourceDependency}				from "awayjs-core/lib/parsers/ResourceDependency";
+import {ByteArray}						from "awayjs-core/lib/utils/ByteArray";
 
-import Graphics							from "awayjs-display/lib/graphics/Graphics";
-import TriangleElements					from "awayjs-display/lib/graphics/TriangleElements";
-import DisplayObjectContainer			from "awayjs-display/lib/display/DisplayObjectContainer";
-import DisplayObject					from "awayjs-display/lib/display/DisplayObject";
-import Camera							from "awayjs-display/lib/display/Camera";
-import Sprite							from "awayjs-display/lib/display/Sprite";
-import DefaultMaterialManager			from "awayjs-display/lib/managers/DefaultMaterialManager";
-import Single2DTexture					from "awayjs-display/lib/textures/Single2DTexture";
+import {Graphics}							from "awayjs-display/lib/graphics/Graphics";
+import {TriangleElements}					from "awayjs-display/lib/graphics/TriangleElements";
+import {DisplayObjectContainer}			from "awayjs-display/lib/display/DisplayObjectContainer";
+import {DisplayObject}					from "awayjs-display/lib/display/DisplayObject";
+import {Camera}							from "awayjs-display/lib/display/Camera";
+import {Sprite}							from "awayjs-display/lib/display/Sprite";
+import {DefaultMaterialManager}			from "awayjs-display/lib/managers/DefaultMaterialManager";
+import {Single2DTexture}					from "awayjs-display/lib/textures/Single2DTexture";
 
-import VertexClipNode					from "awayjs-renderergl/lib/animators/nodes/VertexClipNode";
-import VertexAnimationSet				from "awayjs-renderergl/lib/animators/VertexAnimationSet";
+import {VertexClipNode}					from "awayjs-renderergl/lib/animators/nodes/VertexClipNode";
+import {VertexAnimationSet}				from "awayjs-renderergl/lib/animators/VertexAnimationSet";
 
-import MethodMaterial					from "awayjs-methodmaterials/lib/MethodMaterial";
-import MethodMaterialMode				from "awayjs-methodmaterials/lib/MethodMaterialMode";
+import {MethodMaterial}					from "awayjs-methodmaterials/lib/MethodMaterial";
+import {MethodMaterialMode}				from "awayjs-methodmaterials/lib/MethodMaterialMode";
 
 /**
  * MD2Parser provides a parser for the MD2 data type.
  */
-class MD2Parser extends ParserBase
+export class MD2Parser extends ParserBase
 {
 	public static FPS:number /*int*/ = 6;
 
@@ -111,7 +111,7 @@ class MD2Parser extends ParserBase
 	/**
 	 * @inheritDoc
 	 */
-	public _iResolveDependency(resourceDependency:ResourceDependency)
+	public _iResolveDependency(resourceDependency:ResourceDependency):void
 	{
 		if (resourceDependency.assets.length != 1)
 			return;
@@ -136,7 +136,7 @@ class MD2Parser extends ParserBase
 	/**
 	 * @inheritDoc
 	 */
-	public _iResolveDependencyFailure(resourceDependency:ResourceDependency)
+	public _iResolveDependencyFailure(resourceDependency:ResourceDependency):void
 	{
 		// apply system default
 		if (this.materialMode < 2) {
@@ -222,7 +222,7 @@ class MD2Parser extends ParserBase
 		return ParserBase.MORE_TO_PARSE;
 	}
 
-	public _pStartParsing(frameLimit:number)
+	public _pStartParsing(frameLimit:number):void
 	{
 		//create a content object for Loaders
 		this._pContent = new DisplayObjectContainer();
@@ -234,7 +234,7 @@ class MD2Parser extends ParserBase
 	 * Reads in all that MD2 Header data that is declared as private variables.
 	 * I know its a lot, and it looks ugly, but only way to do it in Flash
 	 */
-	private parseHeader()
+	private parseHeader():void
 	{
 		this._ident = this._byteData.readInt();
 		this._version = this._byteData.readInt();
@@ -263,7 +263,7 @@ class MD2Parser extends ParserBase
 	/**
 	 * Parses the file names for the materials.
 	 */
-	private parseMaterialNames()
+	private parseMaterialNames():void
 	{
 		var url:string;
 		var name:string;
@@ -302,7 +302,7 @@ class MD2Parser extends ParserBase
 	/**
 	 * Parses the uv data for the sprite.
 	 */
-	private parseUV()
+	private parseUV():void
 	{
 		var j:number /*uint*/ = 0;
 
@@ -319,7 +319,7 @@ class MD2Parser extends ParserBase
 	/**
 	 * Parses unique indices for the faces.
 	 */
-	private parseFaces()
+	private parseFaces():void
 	{
 		var a:number /*uint*/, b:number /*uint*/, c:number /*uint*/, ta:number /*uint*/, tb:number /*uint*/, tc:number /*uint*/;
 		var i:number /*uint*/;
@@ -363,7 +363,7 @@ class MD2Parser extends ParserBase
 	 * @param vertexIndex The original index in the vertex list.
 	 * @param uvIndex The original index in the uv list.
 	 */
-	private addIndex(vertexIndex:number /*uint*/, uvIndex:number /*uint*/)
+	private addIndex(vertexIndex:number /*uint*/, uvIndex:number /*uint*/):void
 	{
 		var index:number /*int*/ = this.findIndex(vertexIndex, uvIndex);
 
@@ -396,7 +396,7 @@ class MD2Parser extends ParserBase
 	/**
 	 * Parses all the frame elements.
 	 */
-	private parseFrames()
+	private parseFrames():void
 	{
 		var sx:number, sy:number, sz:number;
 		var tx:number, ty:number, tz:number;
@@ -507,5 +507,3 @@ class MD2Parser extends ParserBase
 		return name;
 	}
 }
-
-export default MD2Parser;

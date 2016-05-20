@@ -1,18 +1,18 @@
-import Quaternion						from "awayjs-core/lib/geom/Quaternion";
-import Vector3D							from "awayjs-core/lib/geom/Vector3D";
-import URLLoaderDataFormat				from "awayjs-core/lib/net/URLLoaderDataFormat";
-import ParserBase						from "awayjs-core/lib/parsers/ParserBase";
+import {Quaternion}						from "awayjs-core/lib/geom/Quaternion";
+import {Vector3D}							from "awayjs-core/lib/geom/Vector3D";
+import {URLLoaderDataFormat}				from "awayjs-core/lib/net/URLLoaderDataFormat";
+import {ParserBase}						from "awayjs-core/lib/parsers/ParserBase";
 
-import JointPose						from "awayjs-renderergl/lib/animators/data/JointPose";
-import SkeletonPose						from "awayjs-renderergl/lib/animators/data/SkeletonPose";
-import SkeletonClipNode					from "awayjs-renderergl/lib/animators/nodes/SkeletonClipNode";
+import {JointPose}						from "awayjs-renderergl/lib/animators/data/JointPose";
+import {SkeletonPose}						from "awayjs-renderergl/lib/animators/data/SkeletonPose";
+import {SkeletonClipNode}					from "awayjs-renderergl/lib/animators/nodes/SkeletonClipNode";
 
 /**
  * MD5AnimParser provides a parser for the md5anim data type, providing an animation sequence for the md5 format.
  *
  * todo: optimize
  */
-class MD5AnimParser extends ParserBase
+export class MD5AnimParser extends ParserBase
 {
 	private _textData:string;
 	private _startedParsing:boolean;
@@ -599,13 +599,11 @@ class MD5AnimParser extends ParserBase
 	}
 }
 
-export default MD5AnimParser;
-
 
 /**
  *
  */
-class BaseFrameData
+export class BaseFrameData
 {
 	/**
 	 *
@@ -621,7 +619,7 @@ class BaseFrameData
 /**
  *
  */
-class BoundsData
+export class BoundsData
 {
 	/**
 	 *
@@ -637,7 +635,7 @@ class BoundsData
 /**
  *
  */
-class FrameData
+export class FrameData
 {
 	/**
 	 *
@@ -653,7 +651,7 @@ class FrameData
 /**
  *
  */
-class HierarchyData
+export class HierarchyData
 {
 	/**
 	 *

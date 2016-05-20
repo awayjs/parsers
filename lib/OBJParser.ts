@@ -1,32 +1,32 @@
-import Sampler2D					from "awayjs-core/lib/image/Sampler2D";
-import AttributesBuffer					from "awayjs-core/lib/attributes/AttributesBuffer";
-import BitmapImage2D					from "awayjs-core/lib/image/BitmapImage2D";
-import Matrix3D							from "awayjs-core/lib/geom/Matrix3D";
-import Quaternion						from "awayjs-core/lib/geom/Quaternion";
-import Vector3D							from "awayjs-core/lib/geom/Vector3D";
-import IAsset							from "awayjs-core/lib/library/IAsset";
-import URLLoaderDataFormat				from "awayjs-core/lib/net/URLLoaderDataFormat";
-import URLRequest						from "awayjs-core/lib/net/URLRequest";
-import ParserBase						from "awayjs-core/lib/parsers/ParserBase";
-import ParserUtils						from "awayjs-core/lib/parsers/ParserUtils";
-import ResourceDependency				from "awayjs-core/lib/parsers/ResourceDependency";
+import {Sampler2D}					from "awayjs-core/lib/image/Sampler2D";
+import {AttributesBuffer}					from "awayjs-core/lib/attributes/AttributesBuffer";
+import {BitmapImage2D}					from "awayjs-core/lib/image/BitmapImage2D";
+import {Matrix3D}							from "awayjs-core/lib/geom/Matrix3D";
+import {Quaternion}						from "awayjs-core/lib/geom/Quaternion";
+import {Vector3D}							from "awayjs-core/lib/geom/Vector3D";
+import {IAsset}							from "awayjs-core/lib/library/IAsset";
+import {URLLoaderDataFormat}				from "awayjs-core/lib/net/URLLoaderDataFormat";
+import {URLRequest}						from "awayjs-core/lib/net/URLRequest";
+import {ParserBase}						from "awayjs-core/lib/parsers/ParserBase";
+import {ParserUtils}						from "awayjs-core/lib/parsers/ParserUtils";
+import {ResourceDependency}				from "awayjs-core/lib/parsers/ResourceDependency";
 
-import Graphics							from "awayjs-display/lib/graphics/Graphics";
-import TriangleElements					from "awayjs-display/lib/graphics/TriangleElements";
-import DisplayObjectContainer			from "awayjs-display/lib/display/DisplayObjectContainer";
-import Sprite							from "awayjs-display/lib/display/Sprite";
-import DefaultMaterialManager			from "awayjs-display/lib/managers/DefaultMaterialManager";
-import MaterialBase						from "awayjs-display/lib/materials/MaterialBase";
-import Single2DTexture					from "awayjs-display/lib/textures/Single2DTexture";
+import {Graphics}							from "awayjs-display/lib/graphics/Graphics";
+import {TriangleElements}					from "awayjs-display/lib/graphics/TriangleElements";
+import {DisplayObjectContainer}			from "awayjs-display/lib/display/DisplayObjectContainer";
+import {Sprite}							from "awayjs-display/lib/display/Sprite";
+import {DefaultMaterialManager}			from "awayjs-display/lib/managers/DefaultMaterialManager";
+import {MaterialBase}						from "awayjs-display/lib/materials/MaterialBase";
+import {Single2DTexture}					from "awayjs-display/lib/textures/Single2DTexture";
 
-import MethodMaterial					from "awayjs-methodmaterials/lib/MethodMaterial";
-import MethodMaterialMode				from "awayjs-methodmaterials/lib/MethodMaterialMode";
-import SpecularBasicMethod				from "awayjs-methodmaterials/lib/methods/SpecularBasicMethod";
+import {MethodMaterial}					from "awayjs-methodmaterials/lib/MethodMaterial";
+import {MethodMaterialMode}				from "awayjs-methodmaterials/lib/MethodMaterialMode";
+import {SpecularBasicMethod}				from "awayjs-methodmaterials/lib/methods/SpecularBasicMethod";
 
 /**
  * OBJParser provides a parser for the OBJ data type.
  */
-class OBJParser extends ParserBase
+export class OBJParser extends ParserBase
 {
 	private _textData:string;
 	private _startedParsing:boolean;
@@ -106,7 +106,7 @@ class OBJParser extends ParserBase
 	/**
 	 * @inheritDoc
 	 */
-	public _iResolveDependency(resourceDependency:ResourceDependency)
+	public _iResolveDependency(resourceDependency:ResourceDependency):void
 	{
 		if (resourceDependency.id == 'mtl') {
 			var str:string = ParserUtils.toString(resourceDependency.data);
@@ -139,7 +139,7 @@ class OBJParser extends ParserBase
 	/**
 	 * @inheritDoc
 	 */
-	public _iResolveDependencyFailure(resourceDependency:ResourceDependency)
+	public _iResolveDependencyFailure(resourceDependency:ResourceDependency):void
 	{
 		if (resourceDependency.id == "mtl") {
 			this._mtlLib = false;
@@ -225,7 +225,7 @@ class OBJParser extends ParserBase
 		return ParserBase.MORE_TO_PARSE;
 	}
 
-	public _pStartParsing(frameLimit:number)
+	public _pStartParsing(frameLimit:number):void
 	{
 		//create a content object for Loaders
 		this._pContent = new DisplayObjectContainer();
@@ -236,7 +236,7 @@ class OBJParser extends ParserBase
 	/**
 	 * Parses a single line in the OBJ file.
 	 */
-	private parseLine(trunk)
+	private parseLine(trunk):void
 	{
 		switch (trunk[0]) {
 
@@ -304,7 +304,7 @@ class OBJParser extends ParserBase
 	/**
 	 * Converts the parsed data into an Away3D scenegraph structure
 	 */
-	private translate()
+	private translate():void
 	{
 		for (var objIndex:number = 0; objIndex < this._objects.length; ++objIndex) {
 			var groups:Array<Group> = this._objects[objIndex].groups;
@@ -378,7 +378,7 @@ class OBJParser extends ParserBase
 	 * @param materialGroup The material group data to convert.
 	 * @param graphics The Graphics to contain the converted Elements.
 	 */
-	private translateMaterialGroup(materialGroup:MaterialGroup, graphics:Graphics)
+	private translateMaterialGroup(materialGroup:MaterialGroup, graphics:Graphics):void
 	{
 		var faces:Array<FaceData> = materialGroup.faces;
 		var face:FaceData;
@@ -419,7 +419,7 @@ class OBJParser extends ParserBase
 		}
 	}
 
-	private translateVertexData(face:FaceData, vertexIndex:number, vertices:Array<number>, uvs:Array<number>, indices:Array<number> /*uint*/, normals:Array<number>)
+	private translateVertexData(face:FaceData, vertexIndex:number, vertices:Array<number>, uvs:Array<number>, indices:Array<number> /*uint*/, normals:Array<number>):void
 	{
 		var index:number;
 		var vertex:Vertex;
@@ -471,7 +471,7 @@ class OBJParser extends ParserBase
 	 * Creates a new object group.
 	 * @param trunk The data block containing the object tag and its parameters
 	 */
-	private createObject(trunk)
+	private createObject(trunk):void
 	{
 		this._currentGroup = null;
 		this._currentMaterialGroup = null;
@@ -485,7 +485,7 @@ class OBJParser extends ParserBase
 	 * Creates a new group.
 	 * @param trunk The data block containing the group tag and its parameters
 	 */
-	private createGroup(trunk)
+	private createGroup(trunk):void
 	{
 		if (!this._currentObject)
 			this.createObject(null);
@@ -504,7 +504,7 @@ class OBJParser extends ParserBase
 	 * Creates a new material group.
 	 * @param trunk The data block containing the material tag and its parameters
 	 */
-	private createMaterialGroup(trunk)
+	private createMaterialGroup(trunk):void
 	{
 		this._currentMaterialGroup = new MaterialGroup();
 		if (trunk)
@@ -516,7 +516,7 @@ class OBJParser extends ParserBase
 	 * Reads the next vertex coordinates.
 	 * @param trunk The data block containing the vertex tag and its parameters
 	 */
-	private parseVertex(trunk)
+	private parseVertex(trunk):void
 	{
 		//for the very rare cases of other delimiters/charcodes seen in some obj files
 
@@ -550,7 +550,7 @@ class OBJParser extends ParserBase
 	 * Reads the next uv coordinates.
 	 * @param trunk The data block containing the uv tag and its parameters
 	 */
-	private parseUV(trunk)
+	private parseUV(trunk):void
 	{
 		if (trunk.length > 3) {
 			var nTrunk = [];
@@ -572,7 +572,7 @@ class OBJParser extends ParserBase
 	 * Reads the next vertex normal coordinates.
 	 * @param trunk The data block containing the vertex normal tag and its parameters
 	 */
-	private parseVertexNormal(trunk)
+	private parseVertexNormal(trunk):void
 	{
 		if (trunk.length > 4) {
 			var nTrunk = [];
@@ -593,7 +593,7 @@ class OBJParser extends ParserBase
 	 * Reads the next face's indices.
 	 * @param trunk The data block containing the face tag and its parameters
 	 */
-	private parseFace(trunk)
+	private parseFace(trunk):void
 	{
 		var len:number = trunk.length;
 		var face:FaceData = new FaceData();
@@ -634,7 +634,7 @@ class OBJParser extends ParserBase
 			return index;
 	}
 
-	private parseMtl(data:string)
+	private parseMtl(data:string):void
 	{
 		var materialDefinitions = data.split('newmtl');
 		var lines;
@@ -827,7 +827,7 @@ class OBJParser extends ParserBase
 		return url;
 	}
 
-	private loadMtl(mtlurl:string)
+	private loadMtl(mtlurl:string):void
 	{
 		// Add raw-data dependency to queue and load dependencies now,
 		// which will pause the parsing in the meantime.
@@ -835,7 +835,7 @@ class OBJParser extends ParserBase
 		this._pPauseAndRetrieveDependencies();//
 	}
 
-	private applyMaterial(lm:LoadedMaterial)
+	private applyMaterial(lm:LoadedMaterial):void
 	{
 		var decomposeID;
 		var sprite:Sprite;
@@ -902,7 +902,7 @@ class OBJParser extends ParserBase
 			this._pFinalizeAsset(lm.cm || tm);
 	}
 
-	private applyMaterials()
+	private applyMaterials():void
 	{
 		if (this._materialLoaded.length == 0)
 			return;
@@ -912,28 +912,26 @@ class OBJParser extends ParserBase
 	}
 }
 
-export default OBJParser;
-
-class ObjectGroup
+export class ObjectGroup
 {
 	public name:string;
 	public groups:Group[] = new Array<Group>();
 }
 
-class Group
+export class Group
 {
 	public name:string;
 	public materialID:string;
 	public materialGroups:MaterialGroup[] = new Array<MaterialGroup>();
 }
 
-class MaterialGroup
+export class MaterialGroup
 {
 	public url:string;
 	public faces:FaceData[] = new Array<FaceData>();
 }
 
-class SpecularData
+export class SpecularData
 {
 	public materialID:string;
 	public basicSpecularMethod:SpecularBasicMethod;
@@ -941,7 +939,7 @@ class SpecularData
 	public alpha:number = 1;
 }
 
-class LoadedMaterial
+export class LoadedMaterial
 {
 	public materialID:string;
 	public texture:Single2DTexture;
@@ -951,7 +949,7 @@ class LoadedMaterial
 	public alpha:number = 1;
 }
 
-class FaceData
+export class FaceData
 {
 	public vertexIndices:Array<number> /*uint*/ = new Array<number>();
 	public uvIndices:Array<number> /*uint*/ = new Array<number>();
@@ -962,7 +960,7 @@ class FaceData
 /**
 * Texture coordinates value object.
 */
-class UV
+export class UV
 {
 	private _u:number;
 	private _v:number;
@@ -1022,7 +1020,7 @@ class UV
 	}
 }
 
-class Vertex
+export class Vertex
 {
 	private _x:number;
 	private _y:number;

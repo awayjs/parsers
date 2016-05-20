@@ -1,9 +1,9 @@
-import ByteArray						from "awayjs-core/lib/utils/ByteArray";
+import {ByteArray}						from "awayjs-core/lib/utils/ByteArray";
 
-import AWD3Utils						from "../AWD3ParserUtils/AWD3Utils";
+import {AWD3Utils}						from "../AWD3ParserUtils/AWD3Utils";
 
 
-class AWDBlock
+export class AWDBlock
 {
 	public id:number;
 	public name:string;
@@ -34,7 +34,7 @@ class AWDBlock
 		this.loaded_dependencies_cnt=0;
 	}
 
-	public dispose()
+	public dispose():void
 	{
 
 		this.id = null;
@@ -52,4 +52,3 @@ class AWDBlock
 		this.errorMessages.push(errorMsg);
 	}
 }
-export default AWDBlock;

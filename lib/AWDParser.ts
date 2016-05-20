@@ -1,136 +1,136 @@
-import AttributesBuffer					from "awayjs-core/lib/attributes/AttributesBuffer";
-import Short3Attributes					from "awayjs-core/lib/attributes/Short3Attributes";
-import Float3Attributes					from "awayjs-core/lib/attributes/Float3Attributes";
-import Float2Attributes					from "awayjs-core/lib/attributes/Float2Attributes";
-import Byte4Attributes					from "awayjs-core/lib/attributes/Byte4Attributes";
+import {AttributesBuffer}					from "awayjs-core/lib/attributes/AttributesBuffer";
+import {Short3Attributes}					from "awayjs-core/lib/attributes/Short3Attributes";
+import {Float3Attributes}					from "awayjs-core/lib/attributes/Float3Attributes";
+import {Float2Attributes}					from "awayjs-core/lib/attributes/Float2Attributes";
+import {Byte4Attributes}					from "awayjs-core/lib/attributes/Byte4Attributes";
 
-import BitmapImage2D					from "awayjs-core/lib/image/BitmapImage2D";
-import BitmapImageCube					from "awayjs-core/lib/image/BitmapImageCube";
-import BlendMode						from "awayjs-core/lib/image/BlendMode";
-import Sampler2D						from "awayjs-core/lib/image/Sampler2D";
-import WaveAudio						from "awayjs-core/lib/audio/WaveAudio";
-import ColorTransform					from "awayjs-core/lib/geom/ColorTransform";
-import Matrix3D							from "awayjs-core/lib/geom/Matrix3D";
-import Vector3D							from "awayjs-core/lib/geom/Vector3D";
-import URLLoaderDataFormat				from "awayjs-core/lib/net/URLLoaderDataFormat";
-import URLRequest						from "awayjs-core/lib/net/URLRequest";
-import IAsset							from "awayjs-core/lib/library/IAsset";
-import ParserBase						from "awayjs-core/lib/parsers/ParserBase";
-import ParserUtils						from "awayjs-core/lib/parsers/ParserUtils";
-import ResourceDependency				from "awayjs-core/lib/parsers/ResourceDependency";
-import ProjectionBase					from "awayjs-core/lib/projections/ProjectionBase";
-import PerspectiveProjection			from "awayjs-core/lib/projections/PerspectiveProjection";
-import OrthographicProjection			from "awayjs-core/lib/projections/OrthographicProjection";
-import OrthographicOffCenterProjection	from "awayjs-core/lib/projections/OrthographicOffCenterProjection";
-import ByteArray						from "awayjs-core/lib/utils/ByteArray";
-import Point							from "awayjs-core/lib/geom/Point";
+import {BitmapImage2D}					from "awayjs-core/lib/image/BitmapImage2D";
+import {BitmapImageCube}					from "awayjs-core/lib/image/BitmapImageCube";
+import {BlendMode}						from "awayjs-core/lib/image/BlendMode";
+import {Sampler2D}						from "awayjs-core/lib/image/Sampler2D";
+import {WaveAudio}						from "awayjs-core/lib/audio/WaveAudio";
+import {ColorTransform}					from "awayjs-core/lib/geom/ColorTransform";
+import {Matrix3D}							from "awayjs-core/lib/geom/Matrix3D";
+import {Vector3D}							from "awayjs-core/lib/geom/Vector3D";
+import {URLLoaderDataFormat}				from "awayjs-core/lib/net/URLLoaderDataFormat";
+import {URLRequest}						from "awayjs-core/lib/net/URLRequest";
+import {IAsset}							from "awayjs-core/lib/library/IAsset";
+import {ParserBase}						from "awayjs-core/lib/parsers/ParserBase";
+import {ParserUtils}						from "awayjs-core/lib/parsers/ParserUtils";
+import {ResourceDependency}				from "awayjs-core/lib/parsers/ResourceDependency";
+import {ProjectionBase}					from "awayjs-core/lib/projections/ProjectionBase";
+import {PerspectiveProjection}			from "awayjs-core/lib/projections/PerspectiveProjection";
+import {OrthographicProjection}			from "awayjs-core/lib/projections/OrthographicProjection";
+import {OrthographicOffCenterProjection}	from "awayjs-core/lib/projections/OrthographicOffCenterProjection";
+import {ByteArray}						from "awayjs-core/lib/utils/ByteArray";
+import {Point}							from "awayjs-core/lib/geom/Point";
 
-import AnimationNodeBase				from "awayjs-display/lib/animators/nodes/AnimationNodeBase";
-import DisplayObjectContainer			from "awayjs-display/lib/display/DisplayObjectContainer";
-import View								from "awayjs-display/lib/View";
-import DisplayObject					from "awayjs-display/lib/display/DisplayObject";
-import LightBase						from "awayjs-display/lib/display/LightBase";
-import Graphics							from "awayjs-display/lib/graphics/Graphics";
-import TriangleElements					from "awayjs-display/lib/graphics/TriangleElements";
-import ElementsBase						from "awayjs-display/lib/graphics/ElementsBase";
-import DirectionalLight					from "awayjs-display/lib/display/DirectionalLight";
-import PointLight						from "awayjs-display/lib/display/PointLight";
-import Camera							from "awayjs-display/lib/display/Camera";
-import Sprite							from "awayjs-display/lib/display/Sprite";
-import TextField						from "awayjs-display/lib/display/TextField";
-import Billboard						from "awayjs-display/lib/display/Billboard";
-import Skybox							from "awayjs-display/lib/display/Skybox";
-import DefaultMaterialManager			from "awayjs-display/lib/managers/DefaultMaterialManager";
-import MaterialBase						from "awayjs-display/lib/materials/MaterialBase";
-import LightPickerBase					from "awayjs-display/lib/materials/lightpickers/LightPickerBase";
-import StaticLightPicker				from "awayjs-display/lib/materials/lightpickers/StaticLightPicker";
-import CubeMapShadowMapper				from "awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper";
-import DirectionalShadowMapper			from "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper";
-import ShadowMapperBase					from "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase";
+import {AnimationNodeBase}				from "awayjs-display/lib/animators/nodes/AnimationNodeBase";
+import {DisplayObjectContainer}			from "awayjs-display/lib/display/DisplayObjectContainer";
+import {View}								from "awayjs-display/lib/View";
+import {DisplayObject}					from "awayjs-display/lib/display/DisplayObject";
+import {LightBase}						from "awayjs-display/lib/display/LightBase";
+import {Graphics}							from "awayjs-display/lib/graphics/Graphics";
+import {TriangleElements}					from "awayjs-display/lib/graphics/TriangleElements";
+import {ElementsBase}						from "awayjs-display/lib/graphics/ElementsBase";
+import {DirectionalLight}					from "awayjs-display/lib/display/DirectionalLight";
+import {PointLight}						from "awayjs-display/lib/display/PointLight";
+import {Camera}							from "awayjs-display/lib/display/Camera";
+import {Sprite}							from "awayjs-display/lib/display/Sprite";
+import {TextField}						from "awayjs-display/lib/display/TextField";
+import {Billboard}						from "awayjs-display/lib/display/Billboard";
+import {Skybox}							from "awayjs-display/lib/display/Skybox";
+import {DefaultMaterialManager}			from "awayjs-display/lib/managers/DefaultMaterialManager";
+import {MaterialBase}						from "awayjs-display/lib/materials/MaterialBase";
+import {LightPickerBase}					from "awayjs-display/lib/materials/lightpickers/LightPickerBase";
+import {StaticLightPicker}				from "awayjs-display/lib/materials/lightpickers/StaticLightPicker";
+import {CubeMapShadowMapper}				from "awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper";
+import {DirectionalShadowMapper}			from "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper";
+import {ShadowMapperBase}					from "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase";
 
-import PrefabBase						from "awayjs-display/lib/prefabs/PrefabBase";
-import PrimitivePrefabBase				from "awayjs-display/lib/prefabs/PrimitivePrefabBase";
-import PrimitiveCapsulePrefab			from "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab";
-import PrimitiveConePrefab				from "awayjs-display/lib/prefabs/PrimitiveConePrefab";
-import PrimitiveCubePrefab				from "awayjs-display/lib/prefabs/PrimitiveCubePrefab";
-import PrimitiveCylinderPrefab			from "awayjs-display/lib/prefabs/PrimitiveCylinderPrefab";
-import PrimitivePlanePrefab				from "awayjs-display/lib/prefabs/PrimitivePlanePrefab";
-import PrimitiveSpherePrefab			from "awayjs-display/lib/prefabs/PrimitiveSpherePrefab";
-import PrimitiveTorusPrefab				from "awayjs-display/lib/prefabs/PrimitiveTorusPrefab";
-import SingleCubeTexture				from "awayjs-display/lib/textures/SingleCubeTexture";
-import Single2DTexture					from "awayjs-display/lib/textures/Single2DTexture";
-import TextureBase						from "awayjs-display/lib/textures/TextureBase";
+import {PrefabBase}						from "awayjs-display/lib/prefabs/PrefabBase";
+import {PrimitivePrefabBase}				from "awayjs-display/lib/prefabs/PrimitivePrefabBase";
+import {PrimitiveCapsulePrefab}			from "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab";
+import {PrimitiveConePrefab}				from "awayjs-display/lib/prefabs/PrimitiveConePrefab";
+import {PrimitiveCubePrefab}				from "awayjs-display/lib/prefabs/PrimitiveCubePrefab";
+import {PrimitiveCylinderPrefab}			from "awayjs-display/lib/prefabs/PrimitiveCylinderPrefab";
+import {PrimitivePlanePrefab}				from "awayjs-display/lib/prefabs/PrimitivePlanePrefab";
+import {PrimitiveSpherePrefab}			from "awayjs-display/lib/prefabs/PrimitiveSpherePrefab";
+import {PrimitiveTorusPrefab}				from "awayjs-display/lib/prefabs/PrimitiveTorusPrefab";
+import {SingleCubeTexture}				from "awayjs-display/lib/textures/SingleCubeTexture";
+import {Single2DTexture}					from "awayjs-display/lib/textures/Single2DTexture";
+import {TextureBase}						from "awayjs-display/lib/textures/TextureBase";
 
-import AnimationSetBase					from "awayjs-renderergl/lib/animators/AnimationSetBase";
-import AnimatorBase						from "awayjs-renderergl/lib/animators/AnimatorBase";
-import VertexAnimationSet				from "awayjs-renderergl/lib/animators/VertexAnimationSet";
-import VertexAnimator					from "awayjs-renderergl/lib/animators/VertexAnimator";
-import SkeletonAnimationSet				from "awayjs-renderergl/lib/animators/SkeletonAnimationSet";
-import SkeletonAnimator					from "awayjs-renderergl/lib/animators/SkeletonAnimator";
-import JointPose						from "awayjs-renderergl/lib/animators/data/JointPose";
-import Skeleton							from "awayjs-renderergl/lib/animators/data/Skeleton";
-import SkeletonPose						from "awayjs-renderergl/lib/animators/data/SkeletonPose";
-import SkeletonJoint					from "awayjs-renderergl/lib/animators/data/SkeletonJoint";
-import SkeletonClipNode					from "awayjs-renderergl/lib/animators/nodes/SkeletonClipNode";
-import VertexClipNode					from "awayjs-renderergl/lib/animators/nodes/VertexClipNode";
-import AnimationClipNodeBase			from "awayjs-renderergl/lib/animators/nodes/AnimationClipNodeBase";
+import {AnimationSetBase}					from "awayjs-renderergl/lib/animators/AnimationSetBase";
+import {AnimatorBase}						from "awayjs-renderergl/lib/animators/AnimatorBase";
+import {VertexAnimationSet}				from "awayjs-renderergl/lib/animators/VertexAnimationSet";
+import {VertexAnimator}					from "awayjs-renderergl/lib/animators/VertexAnimator";
+import {SkeletonAnimationSet}				from "awayjs-renderergl/lib/animators/SkeletonAnimationSet";
+import {SkeletonAnimator}					from "awayjs-renderergl/lib/animators/SkeletonAnimator";
+import {JointPose}						from "awayjs-renderergl/lib/animators/data/JointPose";
+import {Skeleton}							from "awayjs-renderergl/lib/animators/data/Skeleton";
+import {SkeletonPose}						from "awayjs-renderergl/lib/animators/data/SkeletonPose";
+import {SkeletonJoint}					from "awayjs-renderergl/lib/animators/data/SkeletonJoint";
+import {SkeletonClipNode}					from "awayjs-renderergl/lib/animators/nodes/SkeletonClipNode";
+import {VertexClipNode}					from "awayjs-renderergl/lib/animators/nodes/VertexClipNode";
+import {AnimationClipNodeBase}			from "awayjs-renderergl/lib/animators/nodes/AnimationClipNodeBase";
 
-import MethodMaterialMode				from "awayjs-methodmaterials/lib/MethodMaterialMode";
-import MethodMaterial					from "awayjs-methodmaterials/lib/MethodMaterial";
-import AmbientEnvMapMethod				from "awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod";
-import DiffuseDepthMethod				from "awayjs-methodmaterials/lib/methods/DiffuseDepthMethod";
-import DiffuseCelMethod					from "awayjs-methodmaterials/lib/methods/DiffuseCelMethod";
-import DiffuseGradientMethod			from "awayjs-methodmaterials/lib/methods/DiffuseGradientMethod";
-import DiffuseLightMapMethod			from "awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod";
-import DiffuseWrapMethod				from "awayjs-methodmaterials/lib/methods/DiffuseWrapMethod";
-import EffectAlphaMaskMethod			from "awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod";
-import EffectColorMatrixMethod			from "awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod";
-import EffectColorTransformMethod		from "awayjs-methodmaterials/lib/methods/EffectColorTransformMethod";
-import EffectEnvMapMethod				from "awayjs-methodmaterials/lib/methods/EffectEnvMapMethod";
-import EffectFogMethod					from "awayjs-methodmaterials/lib/methods/EffectFogMethod";
-import EffectFresnelEnvMapMethod		from "awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod";
-import EffectLightMapMethod				from "awayjs-methodmaterials/lib/methods/EffectLightMapMethod";
-import EffectMethodBase					from "awayjs-methodmaterials/lib/methods/EffectMethodBase";
-import EffectRimLightMethod				from "awayjs-methodmaterials/lib/methods/EffectRimLightMethod";
-import NormalSimpleWaterMethod			from "awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod";
-import ShadowDitheredMethod				from "awayjs-methodmaterials/lib/methods/ShadowDitheredMethod";
-import ShadowFilteredMethod				from "awayjs-methodmaterials/lib/methods/ShadowFilteredMethod";
-import ShadowMapMethodBase				from "awayjs-methodmaterials/lib/methods/ShadowMapMethodBase";
-import ShadowMethodBase					from "awayjs-methodmaterials/lib/methods/ShadowMethodBase";
-import SpecularFresnelMethod			from "awayjs-methodmaterials/lib/methods/SpecularFresnelMethod";
-import ShadowHardMethod					from "awayjs-methodmaterials/lib/methods/ShadowHardMethod";
-import SpecularAnisotropicMethod		from "awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod";
-import SpecularCelMethod				from "awayjs-methodmaterials/lib/methods/SpecularCelMethod";
-import SpecularPhongMethod				from "awayjs-methodmaterials/lib/methods/SpecularPhongMethod";
-import ShadowNearMethod					from "awayjs-methodmaterials/lib/methods/ShadowNearMethod";
-import ShadowSoftMethod					from "awayjs-methodmaterials/lib/methods/ShadowSoftMethod";
+import {MethodMaterialMode}				from "awayjs-methodmaterials/lib/MethodMaterialMode";
+import {MethodMaterial}					from "awayjs-methodmaterials/lib/MethodMaterial";
+import {AmbientEnvMapMethod}				from "awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod";
+import {DiffuseDepthMethod}				from "awayjs-methodmaterials/lib/methods/DiffuseDepthMethod";
+import {DiffuseCelMethod}					from "awayjs-methodmaterials/lib/methods/DiffuseCelMethod";
+import {DiffuseGradientMethod}			from "awayjs-methodmaterials/lib/methods/DiffuseGradientMethod";
+import {DiffuseLightMapMethod}			from "awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod";
+import {DiffuseWrapMethod}				from "awayjs-methodmaterials/lib/methods/DiffuseWrapMethod";
+import {EffectAlphaMaskMethod}			from "awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod";
+import {EffectColorMatrixMethod}			from "awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod";
+import {EffectColorTransformMethod}		from "awayjs-methodmaterials/lib/methods/EffectColorTransformMethod";
+import {EffectEnvMapMethod}				from "awayjs-methodmaterials/lib/methods/EffectEnvMapMethod";
+import {EffectFogMethod}					from "awayjs-methodmaterials/lib/methods/EffectFogMethod";
+import {EffectFresnelEnvMapMethod}		from "awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod";
+import {EffectLightMapMethod}				from "awayjs-methodmaterials/lib/methods/EffectLightMapMethod";
+import {EffectMethodBase}					from "awayjs-methodmaterials/lib/methods/EffectMethodBase";
+import {EffectRimLightMethod}				from "awayjs-methodmaterials/lib/methods/EffectRimLightMethod";
+import {NormalSimpleWaterMethod}			from "awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod";
+import {ShadowDitheredMethod}				from "awayjs-methodmaterials/lib/methods/ShadowDitheredMethod";
+import {ShadowFilteredMethod}				from "awayjs-methodmaterials/lib/methods/ShadowFilteredMethod";
+import {ShadowMapMethodBase}				from "awayjs-methodmaterials/lib/methods/ShadowMapMethodBase";
+import {ShadowMethodBase}					from "awayjs-methodmaterials/lib/methods/ShadowMethodBase";
+import {SpecularFresnelMethod}			from "awayjs-methodmaterials/lib/methods/SpecularFresnelMethod";
+import {ShadowHardMethod}					from "awayjs-methodmaterials/lib/methods/ShadowHardMethod";
+import {SpecularAnisotropicMethod}		from "awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod";
+import {SpecularCelMethod}				from "awayjs-methodmaterials/lib/methods/SpecularCelMethod";
+import {SpecularPhongMethod}				from "awayjs-methodmaterials/lib/methods/SpecularPhongMethod";
+import {ShadowNearMethod}					from "awayjs-methodmaterials/lib/methods/ShadowNearMethod";
+import {ShadowSoftMethod}					from "awayjs-methodmaterials/lib/methods/ShadowSoftMethod";
 
-import BasicMaterial					from "awayjs-display/lib/materials/BasicMaterial";
+import {BasicMaterial}					from "awayjs-display/lib/materials/BasicMaterial";
 
-import ITimelineSceneGraphFactory 	from "awayjs-display/lib/factories/ITimelineSceneGraphFactory";
-import AS2SceneGraphFactory 		from "awayjs-player/lib/factories/AS2SceneGraphFactory";
-import MovieClip 					from "awayjs-display/lib/display/MovieClip";
-import Timeline			 			from "awayjs-display/lib/base/Timeline";
+import {ITimelineSceneGraphFactory} 	from "awayjs-display/lib/factories/ITimelineSceneGraphFactory";
+import {AS2SceneGraphFactory} 		from "awayjs-player/lib/factories/AS2SceneGraphFactory";
+import {MovieClip} 					from "awayjs-display/lib/display/MovieClip";
+import {Timeline}			 			from "awayjs-display/lib/base/Timeline";
 
 
-import AssetLibrary					from "awayjs-core/lib/library/AssetLibrary";
+import {AssetLibrary}					from "awayjs-core/lib/library/AssetLibrary";
 
-import Font							from "awayjs-display/lib/text/Font";
-import TesselatedFontTable			from "awayjs-display/lib/text/TesselatedFontTable";
-import TextFormat					from "awayjs-display/lib/text/TextFormat";
-import TextFieldType				from "awayjs-display/lib/text/TextFieldType";
+import {Font}							from "awayjs-display/lib/text/Font";
+import {TesselatedFontTable}			from "awayjs-display/lib/text/TesselatedFontTable";
+import {TextFormat}					from "awayjs-display/lib/text/TextFormat";
+import {TextFieldType}				from "awayjs-display/lib/text/TextFieldType";
 
-import AWDBlock						from "./AWD3ParserUtils/AWDBlock";
-import Rectangle 					from "awayjs-core/lib/geom/Rectangle";
-import Style 						from "awayjs-display/lib/base/Style";
-import Matrix 						from "awayjs-core/lib/geom/Matrix";
-import MappingMode 					from "awayjs-display/lib/textures/MappingMode";
-import ElementsType from "awayjs-display/lib/graphics/ElementsType";
-import Graphic from "awayjs-display/lib/graphics/Graphic";
+import {AWDBlock}						from "./AWD3ParserUtils/AWDBlock";
+import {Rectangle} 					from "awayjs-core/lib/geom/Rectangle";
+import {Style} 						from "awayjs-display/lib/base/Style";
+import {Matrix} 						from "awayjs-core/lib/geom/Matrix";
+import {MappingMode} 					from "awayjs-display/lib/textures/MappingMode";
+import {ElementsType}				from "awayjs-display/lib/graphics/ElementsType";
+import {Graphic}				from "awayjs-display/lib/graphics/Graphic";
 /**
  * AWDParser provides a parser for the AWD data type.
  */
-class AWDParser extends ParserBase
+export class AWDParser extends ParserBase
 {
 	private _view:View;
 
@@ -271,7 +271,7 @@ class AWDParser extends ParserBase
 	/**
 	 * @inheritDoc
 	 */
-	public _iResolveDependency(resourceDependency:ResourceDependency)
+	public _iResolveDependency(resourceDependency:ResourceDependency):void
 	{
 		// this will be called when Dependency has finished loading.
 		// the ressource dependecniy has a id that point to the awd_block waiting for it.
@@ -328,7 +328,7 @@ class AWDParser extends ParserBase
 	/**
 	 * @inheritDoc
 	 */
-	public _iResolveDependencyFailure(resourceDependency:ResourceDependency)
+	public _iResolveDependencyFailure(resourceDependency:ResourceDependency):void
 	{
 		//not used - if a dependcy fails, the awaiting Texture or CubeTexture will never be finalized, and the default-bitmaps will be used.
 		// this means, that if one Bitmap of a CubeTexture fails, the CubeTexture will have the DefaultTexture applied for all six Bitmaps.
@@ -461,7 +461,7 @@ class AWDParser extends ParserBase
 		}
 	}
 
-	public _pStartParsing(frameLimit:number)
+	public _pStartParsing(frameLimit:number):void
 	{
 		//create a content object for Loaders
 		this._pContent = new DisplayObjectContainer();
@@ -469,7 +469,7 @@ class AWDParser extends ParserBase
 		super._pStartParsing(frameLimit);
 	}
 
-	private dispose()
+	private dispose():void
 	{
 		for (var c in this._blocks) {
 			var b:AWDBlock = <AWDBlock> this._blocks[c];
@@ -477,7 +477,7 @@ class AWDParser extends ParserBase
 		}
 	}
 
-	private parseNextBlock()
+	private parseNextBlock():void
 	{
 		var block:AWDBlock;
 		var isParsed:boolean = false;
@@ -724,7 +724,7 @@ class AWDParser extends ParserBase
 		this._newBlockBytes = null;
 	}
 
-	private updateTimers(type:number)
+	private updateTimers(type:number):void
 	{
 		var end_timing = performance.now();
 		var time_delta = end_timing - this.start_timeing;
@@ -761,7 +761,7 @@ class AWDParser extends ParserBase
 	//--Parser Blocks---------------------------------------------------------------------------
 
 
-	private parseTesselatedFont(blockID:number)
+	private parseTesselatedFont(blockID:number):void
 	{
 		var name:string = this.parseVarStr();
 		this._blocks[blockID].name = name;
@@ -877,7 +877,7 @@ class AWDParser extends ParserBase
 		9:AWDParser.FLOAT32,		//right margin
 		10:AWDParser.FLOAT32};	//line spacing
 
-	private parseTextFormat(blockID:number)
+	private parseTextFormat(blockID:number):void
 	{
 		var name:string = this.parseVarStr();
 		this._blocks[blockID].name = name;
@@ -944,7 +944,7 @@ class AWDParser extends ParserBase
 	private static textFieldTypes:Array<string> = ["static", "dynamic", "input", "input"];
 
 
-	private parseTextField(blockID:number, factory:ITimelineSceneGraphFactory)
+	private parseTextField(blockID:number, factory:ITimelineSceneGraphFactory):void
 	{
 		var name:string = this.parseVarStr();
 		this._blocks[blockID].name = name;
@@ -1003,7 +1003,7 @@ class AWDParser extends ParserBase
 	}
 
 	// Block ID = 25
-	private parseBillBoardLibraryBlock(blockID:number)
+	private parseBillBoardLibraryBlock(blockID:number):void
 	{
 
 		var name:string = this.parseVarStr();
@@ -1024,7 +1024,7 @@ class AWDParser extends ParserBase
 			console.log("Parsed a Library-Billboard: Name = '" + name + "| Material-Name = " + mat.name);
 	}
 	// Block ID = 24
-	private parseSpriteLibraryBlock(blockID:number)
+	private parseSpriteLibraryBlock(blockID:number):void
 	{
 		var name:string = this.parseVarStr();
 		var data_id:number = this._newBlockBytes.readUnsignedInt();
@@ -1128,7 +1128,7 @@ class AWDParser extends ParserBase
 			console.log("Parsed a Library-Sprite: Name = '" + name + "| Graphics-Name = " + graphics.name + " | Graphics-Count = " + sprite.graphics.count + " | Mat-Names = " + materialNames);
 	}
 
-	private parseAudioBlock(blockID:number, factory:ITimelineSceneGraphFactory)
+	private parseAudioBlock(blockID:number, factory:ITimelineSceneGraphFactory):void
 	{
 		//var asset:Audio;todo create asset for audio
 
@@ -1171,7 +1171,7 @@ class AWDParser extends ParserBase
 		2:AWDParser.UINT16,		// sceneID if not present or 0, mc is no scene
 		3:AWDParser.UINT8};		// scripting-language right now its always as2
 	//Block ID = 4
-	private parseMovieClip(blockID:number, factory:ITimelineSceneGraphFactory)
+	private parseMovieClip(blockID:number, factory:ITimelineSceneGraphFactory):void
 	{
 		var i:number;
 		var j:number;
@@ -1381,7 +1381,7 @@ class AWDParser extends ParserBase
 		2:AWDParser.GEO_NUMBER};
 
 	//Block ID = 1
-	private parseGraphics(blockID:number)
+	private parseGraphics(blockID:number):void
 	{
 		var graphics:Graphics = new Graphics();
 
@@ -1591,7 +1591,7 @@ class AWDParser extends ParserBase
 	private static primitiveTypes:Array<string> = ["Unsupported Type-ID", "PrimitivePlanePrefab", "PrimitiveCubePrefab", "PrimitiveSpherePrefab", "PrimitiveCylinderPrefab", "PrimitivesConePrefab", "PrimitivesCapsulePrefab", "PrimitivesTorusPrefab"];
 
 	//Block ID = 11
-	private parsePrimitves(blockID:number)
+	private parsePrimitves(blockID:number):void
 	{
 		var name:string;
 		var prefab:PrefabBase;
@@ -1673,7 +1673,7 @@ class AWDParser extends ParserBase
 		4:AWDParser.UINT8};
 
 	// Block ID = 22
-	private parseContainer(blockID:number)
+	private parseContainer(blockID:number):void
 	{
 		var name:string;
 		var mtx:Matrix3D;
@@ -1721,7 +1721,7 @@ class AWDParser extends ParserBase
 		5:AWDParser.BOOL};
 
 	// Block ID = 23
-	private parseSpriteInstance(blockID:number)
+	private parseSpriteInstance(blockID:number):void
 	{
 		var parent:DisplayObjectContainer = <DisplayObjectContainer> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 		var mtx:Matrix3D = this.parseMatrix3D();
@@ -1801,7 +1801,7 @@ class AWDParser extends ParserBase
 
 
 	//Block ID 31
-	private parseSkyboxInstance(blockID:number)
+	private parseSkyboxInstance(blockID:number):void
 	{
 		var name:string = this.parseVarStr();
 		var asset:Skybox = new Skybox();
@@ -1834,7 +1834,7 @@ class AWDParser extends ParserBase
 		23:AWDParser.MATRIX_NUMBER};
 
 	//Block ID = 41
-	private parseLight(blockID:number)
+	private parseLight(blockID:number):void
 	{
 		var light:LightBase;
 		var newShadowMapper:ShadowMapperBase;
@@ -1930,7 +1930,7 @@ class AWDParser extends ParserBase
 		4:AWDParser.UINT8};
 
 	//Block ID = 43
-	private parseCamera(blockID:number)
+	private parseCamera(blockID:number):void
 	{
 		var parent:DisplayObjectContainer = <DisplayObjectContainer> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 		var mtx:Matrix3D = this.parseMatrix3D();
@@ -1984,7 +1984,7 @@ class AWDParser extends ParserBase
 	}
 
 	//Block ID = 51
-	private parseLightPicker(blockID:number)
+	private parseLightPicker(blockID:number):void
 	{
 		var name:string = this.parseVarStr();
 		var numLights:number = this._newBlockBytes.readUnsignedShort();
@@ -2026,7 +2026,7 @@ class AWDParser extends ParserBase
 		13:AWDParser.BOOL};
 
 	//Block ID = 81
-	private parseMaterial(blockID:number)
+	private parseMaterial(blockID:number):void
 	{
 		// TODO: not used
 		////blockLength = block.len;
@@ -2136,7 +2136,7 @@ class AWDParser extends ParserBase
 		801:AWDParser.MTX4x4};
 
 	// Block ID = 81 AWD2.1
-	private parseMaterial_v1(blockID:number)
+	private parseMaterial_v1(blockID:number):void
 	{
 		var mat:MethodMaterial;
 		var diffuseImage:BitmapImage2D;
@@ -2352,7 +2352,7 @@ class AWDParser extends ParserBase
 	}
 
 	//Block ID = 82
-	private parseTexture(blockID:number)
+	private parseTexture(blockID:number):void
 	{
 		this._blocks[blockID].name = this.parseVarStr();
 
@@ -2392,7 +2392,7 @@ class AWDParser extends ParserBase
 	}
 
 	//Block ID = 83
-	private parseCubeTexture(blockID:number)
+	private parseCubeTexture(blockID:number):void
 	{
 		//blockLength = block.len;
 		var data_len:number;
@@ -2433,7 +2433,7 @@ class AWDParser extends ParserBase
 	}
 
 	//Block ID = 91
-	private parseSharedMethodBlock(blockID:number)
+	private parseSharedMethodBlock(blockID:number):void
 	{
 		var asset:EffectMethodBase;
 
@@ -2449,7 +2449,7 @@ class AWDParser extends ParserBase
 	}
 
 	//Block ID = 92
-	private parseShadowMethodBlock(blockID:number)
+	private parseShadowMethodBlock(blockID:number):void
 	{
 		this._blocks[blockID].name = this.parseVarStr();
 		var light:LightBase = <LightBase> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
@@ -2476,7 +2476,7 @@ class AWDParser extends ParserBase
 		4:AWDParser.UINT8};
 	
 	//Block ID = 253
-	private parseCommand(blockID:number)
+	private parseCommand(blockID:number):void
 	{
 		var hasBlocks:boolean = ( this._newBlockBytes.readUnsignedByte() == 1 );
 		var parentObject:DisplayObjectContainer = <DisplayObjectContainer> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
@@ -2521,7 +2521,7 @@ class AWDParser extends ParserBase
 		5:AWDParser.AWDSTRING};
 
 	//blockID 255
-	private parseMetaData(blockID:number)
+	private parseMetaData(blockID:number):void
 	{
 		var props:AWDProperties = this.parseProperties(AWDParser.metaDataProperties);
 
@@ -2535,7 +2535,7 @@ class AWDParser extends ParserBase
 	}
 
 	//blockID 254
-	private parseNameSpace(blockID:number)
+	private parseNameSpace(blockID:number):void
 	{
 		var id:number = this._newBlockBytes.readUnsignedByte();
 		var nameSpaceString:string = this.parseVarStr();
@@ -2620,7 +2620,7 @@ class AWDParser extends ParserBase
 	}
 
 	//Block ID 101
-	private parseSkeleton(blockID:number /*uint*/)
+	private parseSkeleton(blockID:number /*uint*/):void
 	{
 		var name:string = this.parseVarStr();
 		var num_joints:number /*uint*/ = this._newBlockBytes.readUnsignedShort();
@@ -2655,7 +2655,7 @@ class AWDParser extends ParserBase
 	}
 
 	//Block ID = 102
-	private parseSkeletonPose(blockID:number /*uint*/)
+	private parseSkeletonPose(blockID:number /*uint*/):void
 	{
 		var name:string = this.parseVarStr();
 		var num_joints:number /*uint*/ = this._newBlockBytes.readUnsignedShort();
@@ -2690,7 +2690,7 @@ class AWDParser extends ParserBase
 	}
 
 	//blockID 103
-	private parseSkeletonAnimation(blockID:number /*uint*/)
+	private parseSkeletonAnimation(blockID:number /*uint*/):void
 	{
 		var frame_dur:number;
 		var pose_id:number;
@@ -2722,7 +2722,7 @@ class AWDParser extends ParserBase
 		2:AWDParser.BOOL};
 
 	//Block ID = 111 /  Block ID = 112
-	private parseSpritePoseAnimation(blockID:number /*uint*/, poseOnly:boolean = false)
+	private parseSpritePoseAnimation(blockID:number /*uint*/, poseOnly:boolean = false):void
 	{
 		var subSpriteParsed:number /*uint*/;
 		var x:number;
@@ -2807,7 +2807,7 @@ class AWDParser extends ParserBase
 		1:AWDParser.UINT16};
 	
 	//BlockID 113
-	private parseVertexAnimationSet(blockID:number /*uint*/)
+	private parseVertexAnimationSet(blockID:number /*uint*/):void
 	{
 		var name:string = this.parseVarStr();
 		var num_frames:number /*uint*/ = this._newBlockBytes.readUnsignedShort();
@@ -2859,7 +2859,7 @@ class AWDParser extends ParserBase
 	private static animatorSetProperties:Object = {1:AWDParser.BADDR};
 	
 	//BlockID 122
-	private parseAnimatorSet(blockID:number /*uint*/)
+	private parseAnimatorSet(blockID:number /*uint*/):void
 	{
 		var name:string = this.parseVarStr();
 		var type:number = this._newBlockBytes.readUnsignedShort();
@@ -3184,7 +3184,7 @@ class AWDParser extends ParserBase
 		}
 	}
 
-	private parseHeader()
+	private parseHeader():void
 	{
 		this._byteData.position = 3; // Skip magic string and parse version
 
@@ -3307,8 +3307,6 @@ class AWDParser extends ParserBase
 	}
 }
 
-export default AWDParser;
-
 class ElementType {
 	public static STANDART_STREAMS:number = 0;
 	public static CONCENATED_STREAMS:number = 1;
@@ -3317,7 +3315,7 @@ class ElementType {
 
 class AWDProperties
 {
-	public set(key:number, value:any)
+	public set(key:number, value:any):void
 	{
 		this[key] = value;
 	}

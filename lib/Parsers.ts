@@ -1,14 +1,14 @@
-import Loader							from "awayjs-core/lib/library/Loader";
+import {Loader}							from "awayjs-core/lib/library/Loader";
 
-import AWDParser						from "./AWDParser";
-import Max3DSParser						from "./Max3DSParser";
-import MD2Parser						from "./MD2Parser";
-import OBJParser						from "./OBJParser";
+import {AWDParser}						from "./AWDParser";
+import {Max3DSParser}						from "./Max3DSParser";
+import {MD2Parser}						from "./MD2Parser";
+import {OBJParser}						from "./OBJParser";
 
 /**
  *
  */
-class Parsers
+export class Parsers
 {
 	/**
 	 * A list of all parsers that come bundled with Away3D. Use this to quickly
@@ -59,5 +59,3 @@ class Parsers
 		Loader.enableParsers(Parsers.ALL_BUNDLED);
 	}
 }
-
-export default Parsers;

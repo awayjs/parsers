@@ -1,18 +1,18 @@
-import AttributesBuffer					from "awayjs-core/lib/attributes/AttributesBuffer";
-import Matrix3D							from "awayjs-core/lib/geom/Matrix3D";
-import Quaternion						from "awayjs-core/lib/geom/Quaternion";
-import Vector3D							from "awayjs-core/lib/geom/Vector3D";
-import URLLoaderDataFormat				from "awayjs-core/lib/net/URLLoaderDataFormat";
-import ParserBase						from "awayjs-core/lib/parsers/ParserBase";
+import {AttributesBuffer}					from "awayjs-core/lib/attributes/AttributesBuffer";
+import {Matrix3D}							from "awayjs-core/lib/geom/Matrix3D";
+import {Quaternion}						from "awayjs-core/lib/geom/Quaternion";
+import {Vector3D}							from "awayjs-core/lib/geom/Vector3D";
+import {URLLoaderDataFormat}				from "awayjs-core/lib/net/URLLoaderDataFormat";
+import {ParserBase}						from "awayjs-core/lib/parsers/ParserBase";
 
-import Graphics							from "awayjs-display/lib/graphics/Graphics";
-import TriangleElements					from "awayjs-display/lib/graphics/TriangleElements";
-import DisplayObjectContainer			from "awayjs-display/lib/display/DisplayObjectContainer";
-import Sprite							from "awayjs-display/lib/display/Sprite";
+import {Graphics}							from "awayjs-display/lib/graphics/Graphics";
+import {TriangleElements}					from "awayjs-display/lib/graphics/TriangleElements";
+import {DisplayObjectContainer}			from "awayjs-display/lib/display/DisplayObjectContainer";
+import {Sprite}							from "awayjs-display/lib/display/Sprite";
 
-import SkeletonAnimationSet				from "awayjs-renderergl/lib/animators/SkeletonAnimationSet";
-import Skeleton							from "awayjs-renderergl/lib/animators/data/Skeleton";
-import SkeletonJoint					from "awayjs-renderergl/lib/animators/data/SkeletonJoint";
+import {SkeletonAnimationSet}				from "awayjs-renderergl/lib/animators/SkeletonAnimationSet";
+import {Skeleton}							from "awayjs-renderergl/lib/animators/data/Skeleton";
+import {SkeletonJoint}					from "awayjs-renderergl/lib/animators/data/SkeletonJoint";
 
 // todo: create animation system, parse skeleton
 
@@ -21,7 +21,7 @@ import SkeletonJoint					from "awayjs-renderergl/lib/animators/data/SkeletonJoin
  *
  * todo: optimize
  */
-class MD5MeshParser extends ParserBase
+export class MD5MeshParser extends ParserBase
 {
 	private _textData:string;
 	private _startedParsing:boolean;
@@ -170,7 +170,7 @@ class MD5MeshParser extends ParserBase
 		return ParserBase.MORE_TO_PARSE;
 	}
 
-	public _pStartParsing(frameLimit:number)
+	public _pStartParsing(frameLimit:number):void
 	{
 		//create a content object for Loaders
 		this._pContent = new DisplayObjectContainer();
@@ -657,10 +657,8 @@ class MD5MeshParser extends ParserBase
 	}
 }
 
-export default MD5MeshParser;
 
-
-class PositionData
+export class PositionData
 {
 	public index:number /*int*/;
 	public s:number;
@@ -669,7 +667,7 @@ class PositionData
 	public countWeight:number /*int*/;
 }
 
-class JointData
+export class JointData
 {
 	public index:number /*int*/;
 	public joint:number /*int*/;
@@ -677,7 +675,7 @@ class JointData
 	public pos:Vector3D;
 }
 
-class ElementsData
+export class ElementsData
 {
 	public positionData:Array<PositionData>;
 	public weightData:Array<JointData>;

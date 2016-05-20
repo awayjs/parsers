@@ -1,5 +1,5 @@
 
-class AWD3Utils {
+export class AWD3Utils {
 	public static BLOCKSTATE_FINALIZE:number = 0;
 	public static BLOCKSTATE_INVALID:number = 1;
 	public static BLOCKSTATE_LOAD_DEPENDENICES:number = 2;
@@ -29,4 +29,3 @@ class AWD3Utils {
 	public static MTX4x3:number = 46;
 	public static MTX4x4:number = 47;
 }
-export default AWD3Utils;

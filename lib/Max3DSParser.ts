@@ -1,30 +1,30 @@
-import AttributesBuffer					from "awayjs-core/lib/attributes/AttributesBuffer";
-import BitmapImage2D					from "awayjs-core/lib/image/BitmapImage2D";
-import Matrix3D							from "awayjs-core/lib/geom/Matrix3D";
-import Vector3D							from "awayjs-core/lib/geom/Vector3D";
-import IAsset							from "awayjs-core/lib/library/IAsset";
-import URLLoaderDataFormat				from "awayjs-core/lib/net/URLLoaderDataFormat";
-import URLRequest						from "awayjs-core/lib/net/URLRequest";
-import ParserBase						from "awayjs-core/lib/parsers/ParserBase";
-import ParserUtils						from "awayjs-core/lib/parsers/ParserUtils";
-import ResourceDependency				from "awayjs-core/lib/parsers/ResourceDependency";
-import ByteArray						from "awayjs-core/lib/utils/ByteArray";
+import {AttributesBuffer}					from "awayjs-core/lib/attributes/AttributesBuffer";
+import {BitmapImage2D}					from "awayjs-core/lib/image/BitmapImage2D";
+import {Matrix3D}							from "awayjs-core/lib/geom/Matrix3D";
+import {Vector3D}							from "awayjs-core/lib/geom/Vector3D";
+import {IAsset}							from "awayjs-core/lib/library/IAsset";
+import {URLLoaderDataFormat}				from "awayjs-core/lib/net/URLLoaderDataFormat";
+import {URLRequest}						from "awayjs-core/lib/net/URLRequest";
+import {ParserBase}						from "awayjs-core/lib/parsers/ParserBase";
+import {ParserUtils}						from "awayjs-core/lib/parsers/ParserUtils";
+import {ResourceDependency}				from "awayjs-core/lib/parsers/ResourceDependency";
+import {ByteArray}						from "awayjs-core/lib/utils/ByteArray";
 
-import Graphics							from "awayjs-display/lib/graphics/Graphics";
-import TriangleElements					from "awayjs-display/lib/graphics/TriangleElements";
-import DisplayObjectContainer			from "awayjs-display/lib/display/DisplayObjectContainer";
-import Sprite							from "awayjs-display/lib/display/Sprite";
-import DefaultMaterialManager			from "awayjs-display/lib/managers/DefaultMaterialManager";
-import MaterialBase						from "awayjs-display/lib/materials/MaterialBase";
-import Single2DTexture					from "awayjs-display/lib/textures/Single2DTexture";
+import {Graphics}							from "awayjs-display/lib/graphics/Graphics";
+import {TriangleElements}					from "awayjs-display/lib/graphics/TriangleElements";
+import {DisplayObjectContainer}			from "awayjs-display/lib/display/DisplayObjectContainer";
+import {Sprite}							from "awayjs-display/lib/display/Sprite";
+import {DefaultMaterialManager}			from "awayjs-display/lib/managers/DefaultMaterialManager";
+import {MaterialBase}						from "awayjs-display/lib/materials/MaterialBase";
+import {Single2DTexture}					from "awayjs-display/lib/textures/Single2DTexture";
 
-import MethodMaterial					from "awayjs-methodmaterials/lib/MethodMaterial";
-import MethodMaterialMode				from "awayjs-methodmaterials/lib/MethodMaterialMode";
+import {MethodMaterial}					from "awayjs-methodmaterials/lib/MethodMaterial";
+import {MethodMaterialMode}				from "awayjs-methodmaterials/lib/MethodMaterialMode";
 
 /**
  * Max3DSParser provides a parser for the 3ds data type.
  */
-class Max3DSParser extends ParserBase
+export class Max3DSParser extends ParserBase
 {
 	private _byteData:ByteArray;
 
@@ -251,7 +251,7 @@ class Max3DSParser extends ParserBase
 		}
 	}
 
-	public _pStartParsing(frameLimit:number)
+	public _pStartParsing(frameLimit:number):void
 	{
 		//create a content object for Loaders
 		this._pContent = new DisplayObjectContainer();
@@ -817,12 +817,10 @@ class Max3DSParser extends ParserBase
 	}
 }
 
-export default Max3DSParser;
-
 /**
  *
  */
-class FaceVO
+export class FaceVO
 {
 	public a:number /*int*/;
 	public b:number /*int*/;
@@ -833,7 +831,7 @@ class FaceVO
 /**
  *
  */
-class MaterialVO
+export class MaterialVO
 {
 	public name:string;
 	public ambientColor:number /*int*/;
@@ -848,7 +846,7 @@ class MaterialVO
 /**
  *
  */
-class ObjectVO
+export class ObjectVO
 {
 	public name:string;
 	public type:string;
@@ -867,7 +865,7 @@ class ObjectVO
 /**
  *
  */
-class TextureVO
+export class TextureVO
 {
 	public url:string;
 	public texture:Single2DTexture;
@@ -876,7 +874,7 @@ class TextureVO
 /**
  *
  */
-class VertexVO
+export class VertexVO
 {
 	public x:number;
 	public y:number;

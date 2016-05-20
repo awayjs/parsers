@@ -1,20 +1,20 @@
-import Sampler2D				from "awayjs-core/lib/image/Sampler2D";
-import BitmapImage2D			from "awayjs-core/lib/image/BitmapImage2D";
-import Rectangle				from "awayjs-core/lib/geom/Rectangle";
-import IAsset					from "awayjs-core/lib/library/IAsset";
-import URLLoaderDataFormat		from "awayjs-core/lib/net/URLLoaderDataFormat";
-import URLRequest				from "awayjs-core/lib/net/URLRequest";
-import ParserBase				from "awayjs-core/lib/parsers/ParserBase";
-import ParserUtils				from "awayjs-core/lib/parsers/ParserUtils";
-import ResourceDependency		from "awayjs-core/lib/parsers/ResourceDependency";
-import XmlUtils					from "awayjs-core/lib/utils/XmlUtils";
+import {Sampler2D}				from "awayjs-core/lib/image/Sampler2D";
+import {BitmapImage2D}			from "awayjs-core/lib/image/BitmapImage2D";
+import {Rectangle}				from "awayjs-core/lib/geom/Rectangle";
+import {IAsset}					from "awayjs-core/lib/library/IAsset";
+import {URLLoaderDataFormat}		from "awayjs-core/lib/net/URLLoaderDataFormat";
+import {URLRequest}				from "awayjs-core/lib/net/URLRequest";
+import {ParserBase}				from "awayjs-core/lib/parsers/ParserBase";
+import {ParserUtils}				from "awayjs-core/lib/parsers/ParserUtils";
+import {ResourceDependency}		from "awayjs-core/lib/parsers/ResourceDependency";
+import {XmlUtils}					from "awayjs-core/lib/utils/XmlUtils";
 
 /**
  * TextureAtlasParser provides a "parser" for natively supported image types (jpg, png). While it simply loads bytes into
  * a loader object, it wraps it in a BitmapImage2DResource so resource management can happen consistently without
  * exception cases.
  */
-class FNTParser extends ParserBase
+export class FNTParser extends ParserBase
 {
 	private _doc:Node;
 	private _imagePath:string;
@@ -65,7 +65,7 @@ class FNTParser extends ParserBase
 	/**
 	 * @inheritDoc
 	 */
-	public _iResolveDependency(resourceDependency:ResourceDependency)
+	public _iResolveDependency(resourceDependency:ResourceDependency):void
 	{
 		if(resourceDependency.assets.length) {
 			this._imageData = <BitmapImage2D> resourceDependency.assets[0];
@@ -79,7 +79,7 @@ class FNTParser extends ParserBase
 	/**
 	 * @inheritDoc
 	 */
-	public _iResolveDependencyFailure(resourceDependency:ResourceDependency)
+	public _iResolveDependencyFailure(resourceDependency:ResourceDependency):void
 	{
 		this._parseState = FNTParserState.PARSE_COMPLETE;
 	}
@@ -160,9 +160,7 @@ class FNTParser extends ParserBase
 	}
 }
 
-export default FNTParser;
-
-class FNTParserState {
+export class FNTParserState {
 	public static PARSE_XML:number = 0;
 	public static PARSE_IMAGE:number = 1;
 	public static PARSE_CHARS:number = 2;
