@@ -1,19 +1,19 @@
 require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
 var AWDParser_1 = require("./lib/AWDParser");
-exports.AWDParser = AWDParser_1.default;
+exports.AWDParser = AWDParser_1.AWDParser;
 var Max3DSParser_1 = require("./lib/Max3DSParser");
-exports.Max3DSParser = Max3DSParser_1.default;
+exports.Max3DSParser = Max3DSParser_1.Max3DSParser;
 var MD2Parser_1 = require("./lib/MD2Parser");
-exports.MD2Parser = MD2Parser_1.default;
+exports.MD2Parser = MD2Parser_1.MD2Parser;
 var MD5AnimParser_1 = require("./lib/MD5AnimParser");
-exports.MD5AnimParser = MD5AnimParser_1.default;
+exports.MD5AnimParser = MD5AnimParser_1.MD5AnimParser;
 var MD5MeshParser_1 = require("./lib/MD5MeshParser");
-exports.MD5MeshParser = MD5MeshParser_1.default;
+exports.MD5MeshParser = MD5MeshParser_1.MD5MeshParser;
 var OBJParser_1 = require("./lib/OBJParser");
-exports.OBJParser = OBJParser_1.default;
+exports.OBJParser = OBJParser_1.OBJParser;
 var Parsers_1 = require("./lib/Parsers");
-exports.Parsers = Parsers_1.default;
+exports.Parsers = Parsers_1.Parsers;
 
 },{"./lib/AWDParser":"awayjs-parsers/lib/AWDParser","./lib/MD2Parser":"awayjs-parsers/lib/MD2Parser","./lib/MD5AnimParser":"awayjs-parsers/lib/MD5AnimParser","./lib/MD5MeshParser":"awayjs-parsers/lib/MD5MeshParser","./lib/Max3DSParser":"awayjs-parsers/lib/Max3DSParser","./lib/OBJParser":"awayjs-parsers/lib/OBJParser","./lib/Parsers":"awayjs-parsers/lib/Parsers"}],"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":[function(require,module,exports){
 "use strict";
@@ -50,8 +50,7 @@ var AWD3Utils = (function () {
     AWD3Utils.MTX4x4 = 47;
     return AWD3Utils;
 }());
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = AWD3Utils;
+exports.AWD3Utils = AWD3Utils;
 
 },{}],"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":[function(require,module,exports){
 "use strict";
@@ -60,7 +59,7 @@ var AWDBlock = (function () {
     function AWDBlock(this_id, this_type) {
         this.type = this_type;
         this.id = this_id;
-        this.state = AWD3Utils_1.default.BLOCKSTATE_FINALIZE;
+        this.state = AWD3Utils_1.AWD3Utils.BLOCKSTATE_FINALIZE;
         this.dependencies_data = Array();
         this.dependencies_urls = Array();
         if (this_type == 83) {
@@ -81,8 +80,7 @@ var AWDBlock = (function () {
     };
     return AWDBlock;
 }());
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = AWDBlock;
+exports.AWDBlock = AWDBlock;
 
 },{"../AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWDParser":[function(require,module,exports){
 "use strict";
@@ -192,7 +190,7 @@ var AWDParser = (function (_super) {
      */
     function AWDParser(view) {
         if (view === void 0) { view = null; }
-        _super.call(this, URLLoaderDataFormat_1.default.ARRAY_BUFFER);
+        _super.call(this, URLLoaderDataFormat_1.URLLoaderDataFormat.ARRAY_BUFFER);
         //set to "true" to have some console.logs in the Console
         this._debug = false;
         this._debugTimers = true;
@@ -262,25 +260,25 @@ var AWDParser = (function (_super) {
             702: AWDParser.BOOL };
         this._view = view;
         this._blocks = new Array();
-        this._blocks[0] = new AWDBlock_1.default(0, 255);
+        this._blocks[0] = new AWDBlock_1.AWDBlock(0, 255);
         this._blocks[0].data = null; // Zero address means null in AWD
         this.blendModeDic = new Array(); // used to translate ints to blendMode-strings
-        this.blendModeDic.push(BlendMode_1.default.NORMAL);
-        this.blendModeDic.push(BlendMode_1.default.ADD);
-        this.blendModeDic.push(BlendMode_1.default.ALPHA);
-        this.blendModeDic.push(BlendMode_1.default.DARKEN);
-        this.blendModeDic.push(BlendMode_1.default.DIFFERENCE);
-        this.blendModeDic.push(BlendMode_1.default.ERASE);
-        this.blendModeDic.push(BlendMode_1.default.HARDLIGHT);
-        this.blendModeDic.push(BlendMode_1.default.INVERT);
-        this.blendModeDic.push(BlendMode_1.default.LAYER);
-        this.blendModeDic.push(BlendMode_1.default.LIGHTEN);
-        this.blendModeDic.push(BlendMode_1.default.MULTIPLY);
-        this.blendModeDic.push(BlendMode_1.default.NORMAL);
-        this.blendModeDic.push(BlendMode_1.default.OVERLAY);
-        this.blendModeDic.push(BlendMode_1.default.SCREEN);
-        this.blendModeDic.push(BlendMode_1.default.SHADER);
-        this.blendModeDic.push(BlendMode_1.default.OVERLAY);
+        this.blendModeDic.push(BlendMode_1.BlendMode.NORMAL);
+        this.blendModeDic.push(BlendMode_1.BlendMode.ADD);
+        this.blendModeDic.push(BlendMode_1.BlendMode.ALPHA);
+        this.blendModeDic.push(BlendMode_1.BlendMode.DARKEN);
+        this.blendModeDic.push(BlendMode_1.BlendMode.DIFFERENCE);
+        this.blendModeDic.push(BlendMode_1.BlendMode.ERASE);
+        this.blendModeDic.push(BlendMode_1.BlendMode.HARDLIGHT);
+        this.blendModeDic.push(BlendMode_1.BlendMode.INVERT);
+        this.blendModeDic.push(BlendMode_1.BlendMode.LAYER);
+        this.blendModeDic.push(BlendMode_1.BlendMode.LIGHTEN);
+        this.blendModeDic.push(BlendMode_1.BlendMode.MULTIPLY);
+        this.blendModeDic.push(BlendMode_1.BlendMode.NORMAL);
+        this.blendModeDic.push(BlendMode_1.BlendMode.OVERLAY);
+        this.blendModeDic.push(BlendMode_1.BlendMode.SCREEN);
+        this.blendModeDic.push(BlendMode_1.BlendMode.SHADER);
+        this.blendModeDic.push(BlendMode_1.BlendMode.OVERLAY);
         this._depthSizeDic = new Array(); // used to translate ints to depthSize-values
         this._depthSizeDic.push(256);
         this._depthSizeDic.push(512);
@@ -303,7 +301,7 @@ var AWDParser = (function (_super) {
      * @return Whether or not the given data is supported.
      */
     AWDParser.supportsData = function (data) {
-        return (ParserUtils_1.default.toString(data, 3) == 'AWD');
+        return (ParserUtils_1.ParserUtils.toString(data, 3) == 'AWD');
     };
     /**
      * @inheritDoc
@@ -339,7 +337,7 @@ var AWDParser = (function (_super) {
                 if (this._debug)
                     console.log("Successfully loaded Bitmap " + resourceDependency.sub_id + " / 6 for Cubetexture");
                 if (this_block.loaded_dependencies_cnt == 6) {
-                    var cube_image_asset = new BitmapImageCube_1.default(this_block.loaded_dependencies[0].width);
+                    var cube_image_asset = new BitmapImageCube_1.BitmapImageCube(this_block.loaded_dependencies[0].width);
                     for (var i = 0; i < 6; i++)
                         cube_image_asset.draw(i, this_block.loaded_dependencies[i]);
                     this_block.data = cube_image_asset; // Store finished asset
@@ -413,10 +411,10 @@ var AWDParser = (function (_super) {
                 this.dispose();
                 if (this._debugTimers)
                     console.log("Parsing total: " + (this._time_all | 0) + "ms", " | graphics: " + this._num_graphics + ", " + (this._time_graphics | 0) + "ms", " | graphics bytes: " + this._num_graphics + ", " + (this._time_graphics_bytes | 0) + "ms", " | timelines: " + this._num_timeline + ", " + (this._time_timeline | 0) + "ms", " | fonts: " + this._num_fonts + ", " + (this._time_fonts | 0) + "ms", " | sounds: " + this._num_sounds + ", " + (this._time_sounds | 0) + "ms", " | mats: " + this._num_materials + ", " + (this._time_materials | 0) + "ms", " | textures: " + this._num_textures + ", " + (this._time_textures | 0) + "ms", " | sprites: " + this._num_sprites + ", " + (this._time_sprites | 0) + "ms");
-                return ParserBase_1.default.PARSING_DONE;
+                return ParserBase_1.ParserBase.PARSING_DONE;
             }
             else {
-                return ParserBase_1.default.MORE_TO_PARSE;
+                return ParserBase_1.ParserBase.MORE_TO_PARSE;
             }
         }
         else {
@@ -428,12 +426,12 @@ var AWDParser = (function (_super) {
                     break;
             }
             // Error - most likely _body not set because we do not support compression.
-            return ParserBase_1.default.PARSING_DONE;
+            return ParserBase_1.ParserBase.PARSING_DONE;
         }
     };
     AWDParser.prototype._pStartParsing = function (frameLimit) {
         //create a content object for Loaders
-        this._pContent = new DisplayObjectContainer_1.default();
+        this._pContent = new DisplayObjectContainer_1.DisplayObjectContainer();
         _super.prototype._pStartParsing.call(this, frameLimit);
     };
     AWDParser.prototype.dispose = function () {
@@ -475,7 +473,7 @@ var AWDParser = (function (_super) {
         // Compressed AWD Formats not yet supported
         if (blockCompression) {
             this._pDieWithError('Compressed AWD formats not yet supported');
-            this._newBlockBytes = new ByteArray_1.default();
+            this._newBlockBytes = new ByteArray_1.ByteArray();
             this._body.readBytes(this._newBlockBytes, 0, len);
             this._newBlockBytes.position = 0;
         }
@@ -487,7 +485,7 @@ var AWDParser = (function (_super) {
         //----------------------------------------------------------------------------
         //this._newBlockBytes.endian = Endian.LITTLE_ENDIAN;
         //----------------------------------------------------------------------------
-        block = new AWDBlock_1.default(this._cur_block_id, type);
+        block = new AWDBlock_1.AWDBlock(this._cur_block_id, type);
         block.len = len;
         var blockEndBlock = this._newBlockBytes.position + len;
         if (blockCompression) {
@@ -498,7 +496,7 @@ var AWDParser = (function (_super) {
         this._blocks[this._cur_block_id] = block;
         if ((this._version[0] == 3) && (this._version[1] == 0)) {
             // probably should contain some info about the type of animation
-            var factory = new AS2SceneGraphFactory_1.default(this._view);
+            var factory = new AS2SceneGraphFactory_1.AS2SceneGraphFactory(this._view);
             switch (type) {
                 case 24:
                     this.parseSpriteLibraryBlock(this._cur_block_id);
@@ -692,10 +690,10 @@ var AWDParser = (function (_super) {
     AWDParser.prototype.parseTesselatedFont = function (blockID) {
         var name = this.parseVarStr();
         this._blocks[blockID].name = name;
-        var new_font = AssetLibrary_1.default.getAsset(this._blocks[blockID].name);
+        var new_font = AssetLibrary_1.AssetLibrary.getAsset(this._blocks[blockID].name);
         var newfont = false;
         if (new_font == undefined) {
-            new_font = new Font_1.default();
+            new_font = new Font_1.Font();
             newfont = true;
         }
         var font_style_cnt = this._newBlockBytes.readUnsignedInt();
@@ -742,17 +740,17 @@ var AWDParser = (function (_super) {
                     }
                     else if (str_type == 11) {
                         attr_count = 20;
-                        var curveData = new ByteArray_1.default(str_len);
+                        var curveData = new ByteArray_1.ByteArray(str_len);
                         this._newBlockBytes.readBytes(curveData, 0, str_len);
                     }
                     else if (str_type == 12) {
                         attr_count = 12;
-                        var curveData = new ByteArray_1.default(str_len);
+                        var curveData = new ByteArray_1.ByteArray(str_len);
                         this._newBlockBytes.readBytes(curveData, 0, str_len);
                     }
                     else if (str_type == 10) {
                         attr_count = 28;
-                        var curveData = new ByteArray_1.default(str_len);
+                        var curveData = new ByteArray_1.ByteArray(str_len);
                         this._newBlockBytes.readBytes(curveData, 0, str_len);
                     }
                     else {
@@ -760,17 +758,17 @@ var AWDParser = (function (_super) {
                     }
                 }
                 if (curveData) {
-                    var vertexBuffer = new AttributesBuffer_1.default(attr_count, str_len / attr_count);
+                    var vertexBuffer = new AttributesBuffer_1.AttributesBuffer(attr_count, str_len / attr_count);
                     vertexBuffer.bufferView = new Uint8Array(curveData.arraybytes);
-                    var curve_elements = new TriangleElements_1.default(vertexBuffer);
-                    curve_elements.setPositions(new Float2Attributes_1.default(vertexBuffer));
+                    var curve_elements = new TriangleElements_1.TriangleElements(vertexBuffer);
+                    curve_elements.setPositions(new Float2Attributes_1.Float2Attributes(vertexBuffer));
                     if (attr_count == 20)
-                        curve_elements.setCustomAttributes("curves", new Float3Attributes_1.default(vertexBuffer));
+                        curve_elements.setCustomAttributes("curves", new Float3Attributes_1.Float3Attributes(vertexBuffer));
                     else if (attr_count == 12)
-                        curve_elements.setCustomAttributes("curves", new Byte4Attributes_1.default(vertexBuffer, false));
+                        curve_elements.setCustomAttributes("curves", new Byte4Attributes_1.Byte4Attributes(vertexBuffer, false));
                     //add UVs if they exist in the data
                     if (attr_count == 28)
-                        curve_elements.setUVs(new Float2Attributes_1.default(vertexBuffer));
+                        curve_elements.setUVs(new Float2Attributes_1.Float2Attributes(vertexBuffer));
                     new_font_style.setChar(font_style_char.toString(), curve_elements, char_width);
                 }
             }
@@ -789,7 +787,7 @@ var AWDParser = (function (_super) {
         this._blocks[blockID].name = name;
         var font = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
         var font_style_name = this.parseVarStr();
-        var newTextFormat = new TextFormat_1.default();
+        var newTextFormat = new TextFormat_1.TextFormat();
         newTextFormat.font_name = font.name;
         var font_table = font.get_font_table(font_style_name);
         if (font_table != null) {
@@ -881,7 +879,7 @@ var AWDParser = (function (_super) {
         var name = this.parseVarStr();
         var mat = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
         mat.bothSides = true;
-        var billboard = new Billboard_1.default(mat);
+        var billboard = new Billboard_1.Billboard(mat);
         // todo: optional matrix etc can be put in properties.
         this.parseProperties(null);
         billboard.extra = this.parseUserAttributes();
@@ -901,7 +899,7 @@ var AWDParser = (function (_super) {
         var materialNames = new Array();
         var mat;
         for (var materials_parsed = 0; materials_parsed < num_materials; materials_parsed++) {
-            mat = (this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager_1.default.getDefaultMaterial());
+            mat = (this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager_1.DefaultMaterialManager.getDefaultMaterial());
             //mat.preserveAlpha = true;
             //mat.alphaBlending = true;
             mat.useColorTransform = true;
@@ -909,7 +907,7 @@ var AWDParser = (function (_super) {
             materialNames[materials_parsed] = mat.name;
         }
         var start_timeing = performance.now();
-        var sprite = new Sprite_1.default();
+        var sprite = new Sprite_1.Sprite();
         graphics.copyTo(sprite.graphics);
         var end_timing = performance.now();
         var time_delta = end_timing - start_timeing;
@@ -928,10 +926,10 @@ var AWDParser = (function (_super) {
         //	throw new Error("num elements does not match num subsprites";
         for (var i = 0; i < count; i++) {
             var type = this._newBlockBytes.readUnsignedByte();
-            var sampler = new Sampler2D_1.default();
+            var sampler = new Sampler2D_1.Sampler2D();
             var graphic = sprite.graphics.getGraphicAt(i);
             if (graphic) {
-                graphic.style = new Style_1.default();
+                graphic.style = new Style_1.Style();
                 graphic.style.addSamplerAt(sampler, graphic.material.getTextureAt(0));
             }
             if (type == 3) {
@@ -939,18 +937,18 @@ var AWDParser = (function (_super) {
                 var ty = this._newBlockBytes.readFloat();
                 if (graphic) {
                     graphic.material.animateUVs = true;
-                    graphic.style.uvMatrix = new Matrix_1.default(0, 0, 0, 0, tx, ty);
+                    graphic.style.uvMatrix = new Matrix_1.Matrix(0, 0, 0, 0, tx, ty);
                 }
             }
             else if (type == 4) {
                 var matrix = this.parseMatrix32RawData();
                 if (graphic) {
                     graphic.material.animateUVs = true;
-                    graphic.style.uvMatrix = new Matrix_1.default(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+                    graphic.style.uvMatrix = new Matrix_1.Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
                 }
             }
             else if (type == 5) {
-                var newMatrix = new Matrix_1.default(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+                var newMatrix = new Matrix_1.Matrix(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
                 if (graphic) {
                     graphic.material.animateUVs = true;
                     graphic.style.uvMatrix = newMatrix;
@@ -963,10 +961,10 @@ var AWDParser = (function (_super) {
                 var height = this._newBlockBytes.readFloat();
                 var matrix = this.parseMatrix32RawData();
                 if (graphic) {
-                    sampler.imageRect = new Rectangle_1.default(x, y, width, height);
+                    sampler.imageRect = new Rectangle_1.Rectangle(x, y, width, height);
                     graphic.material.imageRect = true;
                     graphic.material.animateUVs = true;
-                    graphic.style.uvMatrix = new Matrix_1.default(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+                    graphic.style.uvMatrix = new Matrix_1.Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
                 }
             }
             if (graphic) {
@@ -995,12 +993,12 @@ var AWDParser = (function (_super) {
             var url;
             url = this._newBlockBytes.readUTFBytes(data_len);
             // todo parser needs to be able to handle mp3 and wav files if we trigger the loading of external ressource
-            this._pAddDependency(this._cur_block_id.toString(), new URLRequest_1.default(url), false, null, true);
+            this._pAddDependency(this._cur_block_id.toString(), new URLRequest_1.URLRequest(url), false, null, true);
         }
         else {
             // todo: exporter does not export embed sounds yet
             data_len = this._newBlockBytes.readUnsignedInt();
-            var data = new ByteArray_1.default(data_len);
+            var data = new ByteArray_1.ByteArray(data_len);
             this._newBlockBytes.readBytes(data, 0, data_len);
             // todo parse sound from bytes
             // this._pAddDependency(this._cur_block_id.toString(), null, false, ParserUtils.by(data), true);
@@ -1019,7 +1017,7 @@ var AWDParser = (function (_super) {
         var i;
         var j;
         var cmd_asset;
-        var new_timeline = new Timeline_1.default();
+        var new_timeline = new Timeline_1.Timeline();
         var new_mc = factory.createMovieClip(new_timeline);
         var name = this.parseVarStr();
         // register list of potential childs
@@ -1081,7 +1079,7 @@ var AWDParser = (function (_super) {
             // size of this stream in byte
             str_len = this._newBlockBytes.readUnsignedInt();
             if (str_len > 0) {
-                var keyframes_start_indices_data = new ByteArray_1.default(str_len);
+                var keyframes_start_indices_data = new ByteArray_1.ByteArray(str_len);
                 this._newBlockBytes.readBytes(keyframes_start_indices_data, 0, str_len);
                 var new_buffer;
                 //console.log("str_data_type = "+str_type);
@@ -1149,22 +1147,22 @@ var AWDParser = (function (_super) {
             str_len = this._newBlockBytes.readUnsignedInt();
             switch (str_type) {
                 case 0:
-                    float_array_data = new ByteArray_1.default(str_len);
+                    float_array_data = new ByteArray_1.ByteArray(str_len);
                     this._newBlockBytes.readBytes(float_array_data, 0, str_len);
                     new_timeline.properties_stream_f32_mtx_scale_rot = new Float32Array(float_array_data.arraybytes);
                     break;
                 case 1:
-                    float_array_data = new ByteArray_1.default(str_len);
+                    float_array_data = new ByteArray_1.ByteArray(str_len);
                     this._newBlockBytes.readBytes(float_array_data, 0, str_len);
                     new_timeline.properties_stream_f32_mtx_pos = new Float32Array(float_array_data.arraybytes);
                     break;
                 case 2:
-                    float_array_data = new ByteArray_1.default(str_len);
+                    float_array_data = new ByteArray_1.ByteArray(str_len);
                     this._newBlockBytes.readBytes(float_array_data, 0, str_len);
                     new_timeline.properties_stream_f32_mtx_all = new Float32Array(float_array_data.arraybytes);
                     break;
                 case 3:
-                    float_array_data = new ByteArray_1.default(str_len);
+                    float_array_data = new ByteArray_1.ByteArray(str_len);
                     this._newBlockBytes.readBytes(float_array_data, 0, str_len);
                     new_timeline.properties_stream_f32_ct = new Float32Array(float_array_data.arraybytes);
                     break;
@@ -1206,7 +1204,7 @@ var AWDParser = (function (_super) {
     };
     //Block ID = 1
     AWDParser.prototype.parseGraphics = function (blockID) {
-        var graphics = new Graphics_1.default();
+        var graphics = new Graphics_1.Graphics();
         // Read name and sub count
         var name = this.parseVarStr();
         var numElements = this._newBlockBytes.readUnsignedShort();
@@ -1287,19 +1285,19 @@ var AWDParser = (function (_super) {
                 else if (str_type == 10) {
                     element_type = ElementType.CONCENATED_STREAMS;
                     attr_count = 28;
-                    var curveData = new ByteArray_1.default(str_len);
+                    var curveData = new ByteArray_1.ByteArray(str_len);
                     this._newBlockBytes.readBytes(curveData, 0, str_len);
                 }
                 else if (str_type == 11) {
                     element_type = ElementType.CONCENATED_STREAMS;
                     attr_count = 20;
-                    var curveData = new ByteArray_1.default(str_len);
+                    var curveData = new ByteArray_1.ByteArray(str_len);
                     this._newBlockBytes.readBytes(curveData, 0, str_len);
                 }
                 else if (str_type == 12) {
                     element_type = ElementType.CONCENATED_STREAMS;
                     attr_count = 12;
-                    var curveData = new ByteArray_1.default(str_len);
+                    var curveData = new ByteArray_1.ByteArray(str_len);
                     this._newBlockBytes.readBytes(curveData, 0, str_len);
                 }
                 else if (str_type == 13) {
@@ -1318,24 +1316,24 @@ var AWDParser = (function (_super) {
             this.parseUserAttributes(); // Ignore sub-sprite attributes for now
             if (element_type == ElementType.CONCENATED_STREAMS) {
                 //console.log("str_len/attr_count = "+str_len/attr_count)
-                var vertexBuffer = new AttributesBuffer_1.default(attr_count, str_len / attr_count);
+                var vertexBuffer = new AttributesBuffer_1.AttributesBuffer(attr_count, str_len / attr_count);
                 vertexBuffer.bufferView = new Uint8Array(curveData.arraybytes);
-                var curve_elements = new TriangleElements_1.default(vertexBuffer);
-                curve_elements.setPositions(new Float2Attributes_1.default(vertexBuffer));
+                var curve_elements = new TriangleElements_1.TriangleElements(vertexBuffer);
+                curve_elements.setPositions(new Float2Attributes_1.Float2Attributes(vertexBuffer));
                 if (attr_count == 20) {
-                    curve_elements.setCustomAttributes("curves", new Float3Attributes_1.default(vertexBuffer));
+                    curve_elements.setCustomAttributes("curves", new Float3Attributes_1.Float3Attributes(vertexBuffer));
                 }
                 else if (attr_count == 12) {
-                    curve_elements.setCustomAttributes("curves", new Byte4Attributes_1.default(vertexBuffer, false));
+                    curve_elements.setCustomAttributes("curves", new Byte4Attributes_1.Byte4Attributes(vertexBuffer, false));
                 }
                 if (attr_count == 28)
-                    curve_elements.setUVs(new Float2Attributes_1.default(vertexBuffer));
+                    curve_elements.setUVs(new Float2Attributes_1.Float2Attributes(vertexBuffer));
                 graphics.addGraphic(curve_elements);
                 if (this._debug)
                     console.log("Parsed a TriangleElements with curves");
             }
             else if (element_type == ElementType.STANDART_STREAMS) {
-                var triangle_elements = new TriangleElements_1.default(new AttributesBuffer_1.default());
+                var triangle_elements = new TriangleElements_1.TriangleElements(new AttributesBuffer_1.AttributesBuffer());
                 if (weights)
                     triangle_elements.jointsPerVertex = weights.length / (verts.length / 3);
                 if (normals)
@@ -1392,16 +1390,16 @@ var AWDParser = (function (_super) {
         // to do, not all properties are set on all primitives
         switch (primType) {
             case 1:
-                prefab = new PrimitivePlanePrefab_1.default(null, ElementsType_1.default.TRIANGLE, props.get(101, 100), props.get(102, 100), props.get(301, 1), props.get(302, 1), props.get(701, true), props.get(702, false));
+                prefab = new PrimitivePlanePrefab_1.PrimitivePlanePrefab(null, ElementsType_1.ElementsType.TRIANGLE, props.get(101, 100), props.get(102, 100), props.get(301, 1), props.get(302, 1), props.get(701, true), props.get(702, false));
                 break;
             case 2:
-                prefab = new PrimitiveCubePrefab_1.default(null, ElementsType_1.default.TRIANGLE, props.get(101, 100), props.get(102, 100), props.get(103, 100), props.get(301, 1), props.get(302, 1), props.get(303, 1), props.get(701, true));
+                prefab = new PrimitiveCubePrefab_1.PrimitiveCubePrefab(null, ElementsType_1.ElementsType.TRIANGLE, props.get(101, 100), props.get(102, 100), props.get(103, 100), props.get(301, 1), props.get(302, 1), props.get(303, 1), props.get(701, true));
                 break;
             case 3:
-                prefab = new PrimitiveSpherePrefab_1.default(null, ElementsType_1.default.TRIANGLE, props.get(101, 50), props.get(301, 16), props.get(302, 12), props.get(701, true));
+                prefab = new PrimitiveSpherePrefab_1.PrimitiveSpherePrefab(null, ElementsType_1.ElementsType.TRIANGLE, props.get(101, 50), props.get(301, 16), props.get(302, 12), props.get(701, true));
                 break;
             case 4:
-                prefab = new PrimitiveCylinderPrefab_1.default(null, ElementsType_1.default.TRIANGLE, props.get(101, 50), props.get(102, 50), props.get(103, 100), props.get(301, 16), props.get(302, 1), true, true, true); // bool701, bool702, bool703, bool704);
+                prefab = new PrimitiveCylinderPrefab_1.PrimitiveCylinderPrefab(null, ElementsType_1.ElementsType.TRIANGLE, props.get(101, 50), props.get(102, 50), props.get(103, 100), props.get(301, 16), props.get(302, 1), true, true, true); // bool701, bool702, bool703, bool704);
                 if (!props.get(701, true))
                     prefab.topClosed = false;
                 if (!props.get(702, true))
@@ -1410,16 +1408,16 @@ var AWDParser = (function (_super) {
                     prefab.yUp = false;
                 break;
             case 5:
-                prefab = new PrimitiveConePrefab_1.default(null, ElementsType_1.default.TRIANGLE, props.get(101, 50), props.get(102, 100), props.get(301, 16), props.get(302, 1), props.get(701, true), props.get(702, true));
+                prefab = new PrimitiveConePrefab_1.PrimitiveConePrefab(null, ElementsType_1.ElementsType.TRIANGLE, props.get(101, 50), props.get(102, 100), props.get(301, 16), props.get(302, 1), props.get(701, true), props.get(702, true));
                 break;
             case 6:
-                prefab = new PrimitiveCapsulePrefab_1.default(null, ElementsType_1.default.TRIANGLE, props.get(101, 50), props.get(102, 100), props.get(301, 16), props.get(302, 15), props.get(701, true));
+                prefab = new PrimitiveCapsulePrefab_1.PrimitiveCapsulePrefab(null, ElementsType_1.ElementsType.TRIANGLE, props.get(101, 50), props.get(102, 100), props.get(301, 16), props.get(302, 15), props.get(701, true));
                 break;
             case 7:
-                prefab = new PrimitiveTorusPrefab_1.default(null, ElementsType_1.default.TRIANGLE, props.get(101, 50), props.get(102, 50), props.get(301, 16), props.get(302, 8), props.get(701, true));
+                prefab = new PrimitiveTorusPrefab_1.PrimitiveTorusPrefab(null, ElementsType_1.ElementsType.TRIANGLE, props.get(101, 50), props.get(102, 50), props.get(301, 16), props.get(302, 8), props.get(701, true));
                 break;
             default:
-                prefab = new PrefabBase_1.default();
+                prefab = new PrefabBase_1.PrefabBase();
                 console.log("ERROR: UNSUPPORTED PREFAB_TYPE");
                 break;
         }
@@ -1444,7 +1442,7 @@ var AWDParser = (function (_super) {
         mtx = this.parseMatrix3D();
         name = this.parseVarStr();
         var parentName = "Root (TopLevel)";
-        ctr = new DisplayObjectContainer_1.default();
+        ctr = new DisplayObjectContainer_1.DisplayObjectContainer();
         ctr.transform.matrix3D = mtx;
         if (parent) {
             parent.addChild(ctr);
@@ -1457,7 +1455,7 @@ var AWDParser = (function (_super) {
         // in AWD version 2.1 we read the Container properties
         if ((this._version[0] == 2) && (this._version[1] == 1)) {
             var props = this.parseProperties(AWDParser.containerProperties);
-            ctr.pivot = new Vector3D_1.default(props.get(1, 0), props.get(2, 0), props.get(3, 0));
+            ctr.pivot = new Vector3D_1.Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
         }
         else {
             this.parseProperties(null);
@@ -1479,7 +1477,7 @@ var AWDParser = (function (_super) {
         var graphics;
         var prefab;
         var isPrefab = false;
-        if (asset.isAsset(Graphics_1.default)) {
+        if (asset.isAsset(Graphics_1.Graphics)) {
             graphics = asset;
         }
         else {
@@ -1492,7 +1490,7 @@ var AWDParser = (function (_super) {
         var materialNames = new Array();
         var mat;
         for (var materials_parsed = 0; materials_parsed < num_materials; materials_parsed++) {
-            mat = (this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager_1.default.getDefaultMaterial());
+            mat = (this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager_1.DefaultMaterialManager.getDefaultMaterial());
             materials[materials_parsed] = mat;
             materialNames[materials_parsed] = mat.name;
         }
@@ -1501,7 +1499,7 @@ var AWDParser = (function (_super) {
             sprite = prefab.getNewObject();
         }
         else {
-            sprite = new Sprite_1.default();
+            sprite = new Sprite_1.Sprite();
             graphics.copyTo(sprite.graphics);
         }
         sprite.transform.matrix3D = mtx;
@@ -1525,7 +1523,7 @@ var AWDParser = (function (_super) {
         }
         if ((this._version[0] == 2) && (this._version[1] == 1)) {
             var props = this.parseProperties(AWDParser.spriteInstanceProperties);
-            sprite.pivot = new Vector3D_1.default(props.get(1, 0), props.get(2, 0), props.get(3, 0));
+            sprite.pivot = new Vector3D_1.Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
             sprite.castsShadows = props.get(5, true);
         }
         else {
@@ -1544,8 +1542,8 @@ var AWDParser = (function (_super) {
     //Block ID 31
     AWDParser.prototype.parseSkyboxInstance = function (blockID) {
         var name = this.parseVarStr();
-        var asset = new Skybox_1.default();
-        var tex = new SingleCubeTexture_1.default(this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager_1.default.getDefaultImageCube());
+        var asset = new Skybox_1.Skybox();
+        var tex = new SingleCubeTexture_1.SingleCubeTexture(this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager_1.DefaultMaterialManager.getDefaultImageCube());
         asset.texture = tex;
         this.parseProperties(null);
         asset.extra = this.parseUserAttributes();
@@ -1567,21 +1565,21 @@ var AWDParser = (function (_super) {
         var lightTypes = ["Unsupported LightType", "PointLight", "DirectionalLight"];
         var shadowMapperTypes = ["No ShadowMapper", "DirectionalShadowMapper", "NearDirectionalShadowMapper", "CascadeShadowMapper", "CubeMapShadowMapper"];
         if (lightType == 1) {
-            light = new PointLight_1.default();
+            light = new PointLight_1.PointLight();
             light.radius = props.get(1, 90000);
             light.fallOff = props.get(2, 100000);
             if (shadowMapperType > 0) {
                 if (shadowMapperType == 4) {
-                    newShadowMapper = new CubeMapShadowMapper_1.default();
+                    newShadowMapper = new CubeMapShadowMapper_1.CubeMapShadowMapper();
                 }
             }
             light.transform.matrix3D = mtx;
         }
         if (lightType == 2) {
-            light = new DirectionalLight_1.default(props.get(21, 0), props.get(22, -1), props.get(23, 1));
+            light = new DirectionalLight_1.DirectionalLight(props.get(21, 0), props.get(22, -1), props.get(23, 1));
             if (shadowMapperType > 0) {
                 if (shadowMapperType == 1) {
-                    newShadowMapper = new DirectionalShadowMapper_1.default();
+                    newShadowMapper = new DirectionalShadowMapper_1.DirectionalShadowMapper();
                 }
             }
         }
@@ -1592,7 +1590,7 @@ var AWDParser = (function (_super) {
         light.ambient = props.get(8, 0.0);
         // if a shadowMapper has been created, adjust the depthMapSize if needed, assign to light and set castShadows to true
         if (newShadowMapper) {
-            if (newShadowMapper instanceof CubeMapShadowMapper_1.default) {
+            if (newShadowMapper instanceof CubeMapShadowMapper_1.CubeMapShadowMapper) {
                 if (props.get(10, 1) != 1)
                     newShadowMapper.depthMapSize = this._depthSizeDic[props.get(10, 1)];
             }
@@ -1630,19 +1628,19 @@ var AWDParser = (function (_super) {
         var props = this.parseProperties(AWDParser.cameraProperties);
         switch (projectiontype) {
             case 5001:
-                projection = new PerspectiveProjection_1.default(props.get(101, 60));
+                projection = new PerspectiveProjection_1.PerspectiveProjection(props.get(101, 60));
                 break;
             case 5002:
-                projection = new OrthographicProjection_1.default(props.get(101, 500));
+                projection = new OrthographicProjection_1.OrthographicProjection(props.get(101, 500));
                 break;
             case 5003:
-                projection = new OrthographicOffCenterProjection_1.default(props.get(101, -400), props.get(102, 400), props.get(103, -300), props.get(104, 300));
+                projection = new OrthographicOffCenterProjection_1.OrthographicOffCenterProjection(props.get(101, -400), props.get(102, 400), props.get(103, -300), props.get(104, 300));
                 break;
             default:
                 console.log("unsupportedLenstype");
                 return;
         }
-        var camera = new Camera_1.default(projection);
+        var camera = new Camera_1.Camera(projection);
         camera.transform.matrix3D = mtx;
         var parentName = "Root (TopLevel)";
         if (parent) {
@@ -1655,7 +1653,7 @@ var AWDParser = (function (_super) {
         }
         camera.name = name;
         props = this.parseProperties(AWDParser.cameraPivotProperties);
-        camera.pivot = new Vector3D_1.default(props.get(1, 0), props.get(2, 0), props.get(3, 0));
+        camera.pivot = new Vector3D_1.Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
         camera.extra = this.parseUserAttributes();
         this._pFinalizeAsset(camera, name);
         this._blocks[blockID].data = camera;
@@ -1678,7 +1676,7 @@ var AWDParser = (function (_super) {
             this.parseUserAttributes();
             return; //return without any more parsing for this block
         }
-        var lightPick = new StaticLightPicker_1.default(lightsArray);
+        var lightPick = new StaticLightPicker_1.StaticLightPicker(lightsArray);
         lightPick.name = name;
         this.parseUserAttributes();
         this._pFinalizeAsset(lightPick, name);
@@ -1716,16 +1714,16 @@ var AWDParser = (function (_super) {
             debugString += "Parsed a ColorMaterial(SinglePass): Name = '" + name + "' | ";
             var color = props.get(1, 0xffffff);
             if (this.materialMode < 2) {
-                mat = new MethodMaterial_1.default(color, props.get(10, 1.0));
+                mat = new MethodMaterial_1.MethodMaterial(color, props.get(10, 1.0));
             }
             else {
-                mat = new MethodMaterial_1.default(color);
-                mat.mode = MethodMaterialMode_1.default.MULTI_PASS;
+                mat = new MethodMaterial_1.MethodMaterial(color);
+                mat.mode = MethodMaterialMode_1.MethodMaterialMode.MULTI_PASS;
             }
         }
         else if (type === 2) {
-            var texture = new Single2DTexture_1.default(this._blocks[props.get(2, 0)].data);
-            mat = new MethodMaterial_1.default();
+            var texture = new Single2DTexture_1.Single2DTexture(this._blocks[props.get(2, 0)].data);
+            mat = new MethodMaterial_1.MethodMaterial();
             mat.ambientMethod.texture = texture;
             if (this.materialMode < 2) {
                 mat.alphaBlending = props.get(11, false);
@@ -1733,13 +1731,13 @@ var AWDParser = (function (_super) {
                 debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + name + "'" + (texture ? " | Texture-Name = " + texture.name : "");
             }
             else {
-                mat.mode = MethodMaterialMode_1.default.MULTI_PASS;
+                mat.mode = MethodMaterialMode_1.MethodMaterialMode.MULTI_PASS;
                 debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "'" + (texture ? " | Texture-Name = " + texture.name : "");
             }
         }
         mat.extra = this.parseUserAttributes();
         mat.alphaThreshold = props.get(12, 0.0);
-        mat.style.sampler = new Sampler2D_1.default(props.get(13, false));
+        mat.style.sampler = new Sampler2D_1.Sampler2D(props.get(13, false));
         this._pFinalizeAsset(mat, name);
         this._blocks[blockID].data = mat;
         if (this._debug)
@@ -1770,22 +1768,22 @@ var AWDParser = (function (_super) {
                 if (type == 1) {
                     var color = props.get(1, 0xcccccc); //TODO temporarily swapped so that diffuse color goes to ambient
                     if (spezialType == 1) {
-                        mat = new MethodMaterial_1.default(color);
-                        mat.mode = MethodMaterialMode_1.default.MULTI_PASS;
+                        mat = new MethodMaterial_1.MethodMaterial(color);
+                        mat.mode = MethodMaterialMode_1.MethodMaterialMode.MULTI_PASS;
                         debugString += "Parsed a ColorMaterial(MultiPass): Name = '" + name + "' | ";
                     }
                     else {
-                        mat = new MethodMaterial_1.default(color, props.get(10, 1.0));
+                        mat = new MethodMaterial_1.MethodMaterial(color, props.get(10, 1.0));
                         mat.alphaBlending = props.get(11, false);
                         debugString += "Parsed a ColorMaterial(SinglePass): Name = '" + name + "' | ";
                     }
                 }
                 else if (type == 2) {
-                    var texture = new Single2DTexture_1.default(this._blocks[props.get(2, 0)].data);
-                    mat = new MethodMaterial_1.default();
+                    var texture = new Single2DTexture_1.Single2DTexture(this._blocks[props.get(2, 0)].data);
+                    mat = new MethodMaterial_1.MethodMaterial();
                     mat.ambientMethod.texture = texture;
                     if (spezialType == 1) {
-                        mat.mode = MethodMaterialMode_1.default.MULTI_PASS;
+                        mat.mode = MethodMaterialMode_1.MethodMaterialMode.MULTI_PASS;
                         debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "'" + (texture ? " | Texture-Name = " + texture.name : "");
                     }
                     else {
@@ -1798,20 +1796,20 @@ var AWDParser = (function (_super) {
                 normalImage = this._blocks[props.get(3, 0)].data;
                 specImage = this._blocks[props.get(21, 0)].data;
                 mat.lightPicker = this._blocks[props.get(22, 0)].data;
-                mat.style.sampler = new Sampler2D_1.default(props.get(13, false), props.get(5, true), props.get(6, true));
+                mat.style.sampler = new Sampler2D_1.Sampler2D(props.get(13, false), props.get(5, true), props.get(6, true));
                 mat.bothSides = props.get(7, false);
                 mat.alphaPremultiplied = props.get(8, false);
                 mat.blendMode = this.blendModeDic[props.get(9, 0)];
                 if (diffuseImage) {
-                    mat.diffuseTexture = new Single2DTexture_1.default(diffuseImage);
+                    mat.diffuseTexture = new Single2DTexture_1.Single2DTexture(diffuseImage);
                     debugString += " | DiffuseTexture-Name = " + diffuseImage.name;
                 }
                 if (normalImage) {
-                    mat.normalMethod.texture = new Single2DTexture_1.default(normalImage);
+                    mat.normalMethod.texture = new Single2DTexture_1.Single2DTexture(normalImage);
                     debugString += " | NormalTexture-Name = " + normalImage.name;
                 }
                 if (specImage) {
-                    mat.specularMethod.texture = new Single2DTexture_1.default(specImage);
+                    mat.specularMethod.texture = new Single2DTexture_1.Single2DTexture(specImage);
                     debugString += " | SpecularTexture-Name = " + specImage.name;
                 }
                 mat.alphaThreshold = props.get(12, 0.0);
@@ -1836,31 +1834,31 @@ var AWDParser = (function (_super) {
                             debugString += " | ShadowMethod-Name = " + shadowMapMethod.name;
                             break;
                         case 1:
-                            var cubeTexture = new SingleCubeTexture_1.default(this._blocks[props.get(1, 0)].data);
-                            mat.ambientMethod = new AmbientEnvMapMethod_1.default();
+                            var cubeTexture = new SingleCubeTexture_1.SingleCubeTexture(this._blocks[props.get(1, 0)].data);
+                            mat.ambientMethod = new AmbientEnvMapMethod_1.AmbientEnvMapMethod();
                             mat.ambientMethod.texture = cubeTexture;
                             debugString += " | AmbientEnvMapMethod | EnvMap-Name =" + cubeTexture.name;
                             break;
                         case 51:
-                            mat.diffuseMethod = new DiffuseDepthMethod_1.default();
+                            mat.diffuseMethod = new DiffuseDepthMethod_1.DiffuseDepthMethod();
                             debugString += " | DiffuseDepthMethod";
                             break;
                         case 52:
-                            var texture = new Single2DTexture_1.default(this._blocks[props.get(1, 0)].data);
-                            mat.diffuseMethod = new DiffuseGradientMethod_1.default(texture);
+                            var texture = new Single2DTexture_1.Single2DTexture(this._blocks[props.get(1, 0)].data);
+                            mat.diffuseMethod = new DiffuseGradientMethod_1.DiffuseGradientMethod(texture);
                             debugString += " | DiffuseGradientMethod | GradientDiffuseTexture-Name =" + texture.name;
                             break;
                         case 53:
-                            mat.diffuseMethod = new DiffuseWrapMethod_1.default(props.get(101, 5));
+                            mat.diffuseMethod = new DiffuseWrapMethod_1.DiffuseWrapMethod(props.get(101, 5));
                             debugString += " | DiffuseWrapMethod";
                             break;
                         case 54:
-                            var texture = new Single2DTexture_1.default(this._blocks[props.get(1, 0)].data);
-                            mat.diffuseMethod = new DiffuseLightMapMethod_1.default(texture, this.blendModeDic[props.get(401, 10)], false, mat.diffuseMethod);
+                            var texture = new Single2DTexture_1.Single2DTexture(this._blocks[props.get(1, 0)].data);
+                            mat.diffuseMethod = new DiffuseLightMapMethod_1.DiffuseLightMapMethod(texture, this.blendModeDic[props.get(401, 10)], false, mat.diffuseMethod);
                             debugString += " | DiffuseLightMapMethod | LightMapTexture-Name =" + texture.name;
                             break;
                         case 55:
-                            mat.diffuseMethod = new DiffuseCelMethod_1.default(props.get(401, 3), mat.diffuseMethod);
+                            mat.diffuseMethod = new DiffuseCelMethod_1.DiffuseCelMethod(props.get(401, 3), mat.diffuseMethod);
                             mat.diffuseMethod.smoothness = props.get(101, 0.1);
                             debugString += " | DiffuseCelMethod";
                             break;
@@ -1872,20 +1870,20 @@ var AWDParser = (function (_super) {
                             //							debugString += " | DiffuseSubSurfaceMethod";
                             break;
                         case 101:
-                            mat.specularMethod = new SpecularAnisotropicMethod_1.default();
+                            mat.specularMethod = new SpecularAnisotropicMethod_1.SpecularAnisotropicMethod();
                             debugString += " | SpecularAnisotropicMethod";
                             break;
                         case 102:
-                            mat.specularMethod = new SpecularPhongMethod_1.default();
+                            mat.specularMethod = new SpecularPhongMethod_1.SpecularPhongMethod();
                             debugString += " | SpecularPhongMethod";
                             break;
                         case 103:
-                            mat.specularMethod = new SpecularCelMethod_1.default(props.get(101, 0.5), mat.specularMethod);
+                            mat.specularMethod = new SpecularCelMethod_1.SpecularCelMethod(props.get(101, 0.5), mat.specularMethod);
                             mat.specularMethod.smoothness = props.get(102, 0.1);
                             debugString += " | SpecularCelMethod";
                             break;
                         case 104:
-                            mat.specularMethod = new SpecularFresnelMethod_1.default(props.get(701, true), mat.specularMethod);
+                            mat.specularMethod = new SpecularFresnelMethod_1.SpecularFresnelMethod(props.get(701, true), mat.specularMethod);
                             mat.specularMethod.fresnelPower = props.get(101, 5);
                             mat.specularMethod.normalReflectance = props.get(102, 0.1);
                             debugString += " | SpecularFresnelMethod";
@@ -1893,8 +1891,8 @@ var AWDParser = (function (_super) {
                         case 151:
                             break;
                         case 152:
-                            var texture = new Single2DTexture_1.default(this._blocks[props.get(1, 0)].data);
-                            mat.normalMethod = new NormalSimpleWaterMethod_1.default(mat.normalMethod.texture || texture, texture);
+                            var texture = new Single2DTexture_1.Single2DTexture(this._blocks[props.get(1, 0)].data);
+                            mat.normalMethod = new NormalSimpleWaterMethod_1.NormalSimpleWaterMethod(mat.normalMethod.texture || texture, texture);
                             debugString += " | NormalSimpleWaterMethod | Second-NormalTexture-Name = " + texture.name;
                             break;
                     }
@@ -1906,14 +1904,14 @@ var AWDParser = (function (_super) {
             // if this is a basic material, we create it, finalize it, assign it to block-cache and return.
             var color = props.get(1, 0xcccccc);
             debugString += color;
-            var diffuseTexture = new Single2DTexture_1.default(this._blocks[props.get(2, 0)].data);
+            var diffuseTexture = new Single2DTexture_1.Single2DTexture(this._blocks[props.get(2, 0)].data);
             if (type == 5) {
-                diffuseTexture.mappingMode = MappingMode_1.default.LINEAR_GRADIENT;
+                diffuseTexture.mappingMode = MappingMode_1.MappingMode.LINEAR_GRADIENT;
             }
             else if (type == 6) {
-                diffuseTexture.mappingMode = MappingMode_1.default.RADIAL_GRADIENT;
+                diffuseTexture.mappingMode = MappingMode_1.MappingMode.RADIAL_GRADIENT;
             }
-            var basic_mat = new BasicMaterial_1.default();
+            var basic_mat = new BasicMaterial_1.BasicMaterial();
             basic_mat.texture = diffuseTexture;
             basic_mat.bothSides = true;
             //basic_mat.preserveAlpha = true;
@@ -1939,11 +1937,11 @@ var AWDParser = (function (_super) {
         // External
         if (type == 0) {
             var url = this._newBlockBytes.readUTFBytes(this._newBlockBytes.readUnsignedInt());
-            this._pAddDependency(this._cur_block_id.toString(), new URLRequest_1.default(url), false, null, true);
+            this._pAddDependency(this._cur_block_id.toString(), new URLRequest_1.URLRequest(url), false, null, true);
         }
         else {
             var data_len = this._newBlockBytes.readUnsignedInt();
-            var data = new ByteArray_1.default(data_len);
+            var data = new ByteArray_1.ByteArray(data_len);
             this._newBlockBytes.readBytes(data, 0, data_len);
             //
             // AWD3Parserutils - Fix for FireFox Bug: https://bugzilla.mozilla.org/show_bug.cgi?id=715075 .
@@ -1974,13 +1972,13 @@ var AWDParser = (function (_super) {
                 data_len = this._newBlockBytes.readUnsignedInt();
                 var url;
                 url = this._newBlockBytes.readUTFBytes(data_len);
-                this._pAddDependency(this._cur_block_id.toString(), new URLRequest_1.default(url), false, null, true, i);
+                this._pAddDependency(this._cur_block_id.toString(), new URLRequest_1.URLRequest(url), false, null, true, i);
             }
             else {
                 data_len = this._newBlockBytes.readUnsignedInt();
-                var data = new ByteArray_1.default(data_len);
+                var data = new ByteArray_1.ByteArray(data_len);
                 this._newBlockBytes.readBytes(data, 0, data_len);
-                this._pAddDependency(this._cur_block_id.toString(), null, false, ParserUtils_1.default.byteArrayToImage(data), true, i);
+                this._pAddDependency(this._cur_block_id.toString(), null, false, ParserUtils_1.ParserUtils.byteArrayToImage(data), true, i);
             }
         }
         // Ignore for now
@@ -2035,7 +2033,7 @@ var AWDParser = (function (_super) {
         }
         if (targetObject) {
             props = this.parseProperties(AWDParser.targetProperties);
-            targetObject.pivot = new Vector3D_1.default(props.get(1, 0), props.get(2, 0), props.get(3, 0));
+            targetObject.pivot = new Vector3D_1.Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
             targetObject.extra = this.parseUserAttributes();
         }
         this._blocks[blockID].data = targetObject;
@@ -2078,27 +2076,27 @@ var AWDParser = (function (_super) {
             //					shadowMethod = new CascadeShadowMapMethod(returnedArray[1]);
             //					break;
             case 1002:
-                shadowMethod = new ShadowNearMethod_1.default(this._blocks[props.get(1, 0)].data);
+                shadowMethod = new ShadowNearMethod_1.ShadowNearMethod(this._blocks[props.get(1, 0)].data);
                 break;
             case 1101:
-                shadowMethod = new ShadowFilteredMethod_1.default(light);
+                shadowMethod = new ShadowFilteredMethod_1.ShadowFilteredMethod(light);
                 shadowMethod.alpha = props.get(101, 1);
                 shadowMethod.epsilon = props.get(102, 0.002);
                 break;
             case 1102:
-                shadowMethod = new ShadowDitheredMethod_1.default(light, props.get(201, 5));
+                shadowMethod = new ShadowDitheredMethod_1.ShadowDitheredMethod(light, props.get(201, 5));
                 shadowMethod.alpha = props.get(101, 1);
                 shadowMethod.epsilon = props.get(102, 0.002);
                 shadowMethod.range = props.get(103, 1);
                 break;
             case 1103:
-                shadowMethod = new ShadowSoftMethod_1.default(light, props.get(201, 5));
+                shadowMethod = new ShadowSoftMethod_1.ShadowSoftMethod(light, props.get(201, 5));
                 shadowMethod.alpha = props.get(101, 1);
                 shadowMethod.epsilon = props.get(102, 0.002);
                 shadowMethod.range = props.get(103, 1);
                 break;
             case 1104:
-                shadowMethod = new ShadowHardMethod_1.default(light);
+                shadowMethod = new ShadowHardMethod_1.ShadowHardMethod(light);
                 shadowMethod.alpha = props.get(101, 1);
                 shadowMethod.epsilon = props.get(102, 0.002);
                 break;
@@ -2110,14 +2108,14 @@ var AWDParser = (function (_super) {
     AWDParser.prototype.parseSkeleton = function (blockID /*uint*/) {
         var name = this.parseVarStr();
         var num_joints = this._newBlockBytes.readUnsignedShort();
-        var skeleton = new Skeleton_1.default();
+        var skeleton = new Skeleton_1.Skeleton();
         this.parseProperties(null); // Discard properties for now
         for (var joints_parsed = 0; joints_parsed < num_joints; joints_parsed++) {
             var joint;
             var ibp;
             // Ignore joint id
             this._newBlockBytes.readUnsignedShort();
-            joint = new SkeletonJoint_1.default();
+            joint = new SkeletonJoint_1.SkeletonJoint();
             joint.parentIndex = this._newBlockBytes.readUnsignedShort() - 1; // 0=null in AWD
             joint.name = this.parseVarStr();
             ibp = this.parseMatrix3D();
@@ -2139,15 +2137,15 @@ var AWDParser = (function (_super) {
         var name = this.parseVarStr();
         var num_joints = this._newBlockBytes.readUnsignedShort();
         this.parseProperties(null); // Ignore properties for now
-        var pose = new SkeletonPose_1.default();
+        var pose = new SkeletonPose_1.SkeletonPose();
         for (var joints_parsed = 0; joints_parsed < num_joints; joints_parsed++) {
             var joint_pose;
             var has_transform;
-            joint_pose = new JointPose_1.default();
+            joint_pose = new JointPose_1.JointPose();
             has_transform = this._newBlockBytes.readUnsignedByte();
             if (has_transform == 1) {
                 var mtx_data = this.parseMatrix43RawData();
-                var mtx = new Matrix3D_1.default(mtx_data);
+                var mtx = new Matrix3D_1.Matrix3D(mtx_data);
                 joint_pose.orientation.fromMatrix(mtx);
                 joint_pose.translation.copyFrom(mtx.position);
                 pose.jointPoses[joints_parsed] = joint_pose;
@@ -2165,7 +2163,7 @@ var AWDParser = (function (_super) {
         var frame_dur;
         var pose_id;
         var name = this.parseVarStr();
-        var clip = new SkeletonClipNode_1.default();
+        var clip = new SkeletonClipNode_1.SkeletonClipNode();
         var num_frames = this._newBlockBytes.readUnsignedShort();
         this.parseProperties(null); // Ignore properties for now
         for (var frames_parsed = 0; frames_parsed < num_frames; frames_parsed++) {
@@ -2195,7 +2193,7 @@ var AWDParser = (function (_super) {
         var str_end;
         var elements;
         var idx = 0;
-        var clip = new VertexClipNode_1.default();
+        var clip = new VertexClipNode_1.VertexClipNode();
         var indices;
         var verts;
         var streamtypes = new Array();
@@ -2215,7 +2213,7 @@ var AWDParser = (function (_super) {
         var frame_dur;
         for (var frames_parsed = 0; frames_parsed < num_frames; frames_parsed++) {
             frame_dur = this._newBlockBytes.readUnsignedShort();
-            graphics = new Graphics_1.default();
+            graphics = new Graphics_1.Graphics();
             subSpriteParsed = 0;
             while (subSpriteParsed < num_subsprites) {
                 streamsParsed = 0;
@@ -2234,7 +2232,7 @@ var AWDParser = (function (_super) {
                             verts[idx++] = y;
                             verts[idx++] = z;
                         }
-                        elements = new TriangleElements_1.default(new AttributesBuffer_1.default());
+                        elements = new TriangleElements_1.TriangleElements(new AttributesBuffer_1.AttributesBuffer());
                         elements.setIndices(indices);
                         elements.setPositions(verts);
                         elements.setUVs(uvs[subSpriteParsed]);
@@ -2268,9 +2266,9 @@ var AWDParser = (function (_super) {
         var clipNode;
         for (var frames_parsed = 0; frames_parsed < num_frames; frames_parsed++) {
             clipNode = this._blocks[this._newBlockBytes.readUnsignedInt()].data;
-            if (clipNode instanceof VertexClipNode_1.default)
+            if (clipNode instanceof VertexClipNode_1.VertexClipNode)
                 vertexFrames.push(clipNode);
-            else if (clipNode instanceof SkeletonClipNode_1.default)
+            else if (clipNode instanceof SkeletonClipNode_1.SkeletonClipNode)
                 skeletonFrames.push(clipNode);
         }
         if ((vertexFrames.length == 0) && (skeletonFrames.length == 0)) {
@@ -2279,7 +2277,7 @@ var AWDParser = (function (_super) {
         }
         this.parseUserAttributes();
         if (vertexFrames.length > 0) {
-            var newVertexAnimationSet = new VertexAnimationSet_1.default();
+            var newVertexAnimationSet = new VertexAnimationSet_1.VertexAnimationSet();
             for (var i = 0; i < vertexFrames.length; i++)
                 newVertexAnimationSet.addAnimation(vertexFrames[i]);
             this._pFinalizeAsset(newVertexAnimationSet, name);
@@ -2288,7 +2286,7 @@ var AWDParser = (function (_super) {
                 console.log("Parsed a VertexAnimationSet: Name = " + name + " | Animations = " + newVertexAnimationSet.animations.length + " | Animation-Names = " + newVertexAnimationSet.animationNames);
         }
         else if (skeletonFrames.length > 0) {
-            var newSkeletonAnimationSet = new SkeletonAnimationSet_1.default(props.get(1, 4)); //props.get(1,4));
+            var newSkeletonAnimationSet = new SkeletonAnimationSet_1.SkeletonAnimationSet(props.get(1, 4)); //props.get(1,4));
             for (var i = 0; i < skeletonFrames.length; i++)
                 newSkeletonAnimationSet.addAnimation(skeletonFrames[i]);
             this._pFinalizeAsset(newSkeletonAnimationSet, name);
@@ -2313,9 +2311,9 @@ var AWDParser = (function (_super) {
         this.parseUserAttributes();
         var thisAnimator;
         if (type == 1)
-            thisAnimator = new SkeletonAnimator_1.default(targetAnimationSet, this._blocks[props.get(1, 0)].data);
+            thisAnimator = new SkeletonAnimator_1.SkeletonAnimator(targetAnimationSet, this._blocks[props.get(1, 0)].data);
         else if (type == 2)
-            thisAnimator = new VertexAnimator_1.default(targetAnimationSet);
+            thisAnimator = new VertexAnimator_1.VertexAnimator(targetAnimationSet);
         this._pFinalizeAsset(thisAnimator, name);
         this._blocks[blockID].data = thisAnimator;
         for (i = 0; i < targetSpritees.length; i++) {
@@ -2335,21 +2333,21 @@ var AWDParser = (function (_super) {
         switch (methodType) {
             // Effect Methods
             case 401:
-                effectMethodReturn = new EffectColorMatrixMethod_1.default(props.get(101, new Array(0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)));
+                effectMethodReturn = new EffectColorMatrixMethod_1.EffectColorMatrixMethod(props.get(101, new Array(0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)));
                 break;
             case 402:
-                effectMethodReturn = new EffectColorTransformMethod_1.default();
+                effectMethodReturn = new EffectColorTransformMethod_1.EffectColorTransformMethod();
                 var offCol = props.get(601, 0x00000000);
-                effectMethodReturn.colorTransform = new ColorTransform_1.default(props.get(102, 1), props.get(103, 1), props.get(104, 1), props.get(101, 1), ((offCol >> 16) & 0xFF), ((offCol >> 8) & 0xFF), (offCol & 0xFF), ((offCol >> 24) & 0xFF));
+                effectMethodReturn.colorTransform = new ColorTransform_1.ColorTransform(props.get(102, 1), props.get(103, 1), props.get(104, 1), props.get(101, 1), ((offCol >> 16) & 0xFF), ((offCol >> 8) & 0xFF), (offCol & 0xFF), ((offCol >> 24) & 0xFF));
                 break;
             case 403:
-                effectMethodReturn = new EffectEnvMapMethod_1.default(new SingleCubeTexture_1.default(this._blocks[props.get(1, 0)].data), props.get(101, 1));
+                effectMethodReturn = new EffectEnvMapMethod_1.EffectEnvMapMethod(new SingleCubeTexture_1.SingleCubeTexture(this._blocks[props.get(1, 0)].data), props.get(101, 1));
                 var targetID = props.get(2, 0);
                 if (targetID > 0) {
                 }
                 break;
             case 404:
-                effectMethodReturn = new EffectLightMapMethod_1.default(this._blocks[props.get(1, 0)].data, this.blendModeDic[props.get(401, 10)]); //usesecondaryUV not set
+                effectMethodReturn = new EffectLightMapMethod_1.EffectLightMapMethod(this._blocks[props.get(1, 0)].data, this.blendModeDic[props.get(401, 10)]); //usesecondaryUV not set
                 break;
             //				case 405: //ProjectiveTextureMethod
             //					targetID = props.get(1, 0);
@@ -2359,10 +2357,10 @@ var AWDParser = (function (_super) {
             //					effectMethodReturn = new ProjectiveTextureMethod(returnedArray[1], blendModeDic[props.get(401, 10)]);
             //					break;
             case 406:
-                effectMethodReturn = new EffectRimLightMethod_1.default(props.get(601, 0xffffff), props.get(101, 0.4), props.get(101, 2)); //blendMode
+                effectMethodReturn = new EffectRimLightMethod_1.EffectRimLightMethod(props.get(601, 0xffffff), props.get(101, 0.4), props.get(101, 2)); //blendMode
                 break;
             case 407:
-                effectMethodReturn = new EffectAlphaMaskMethod_1.default(this._blocks[props.get(1, 0)].data, props.get(701, false));
+                effectMethodReturn = new EffectAlphaMaskMethod_1.EffectAlphaMaskMethod(this._blocks[props.get(1, 0)].data, props.get(701, false));
                 break;
             //				case 408: //RefractionEnvMapMethod
             //					targetID = props.get(1, 0);
@@ -2376,10 +2374,10 @@ var AWDParser = (function (_super) {
             //					effectMethodReturn = new OutlineMethod(props.get(601, 0x00000000), props.get(101, 1), props.get(701, true), props.get(702, false));
             //					break;
             case 410:
-                effectMethodReturn = new EffectFresnelEnvMapMethod_1.default(this._blocks[props.get(1, 0)].data, props.get(101, 1));
+                effectMethodReturn = new EffectFresnelEnvMapMethod_1.EffectFresnelEnvMapMethod(this._blocks[props.get(1, 0)].data, props.get(101, 1));
                 break;
             case 411:
-                effectMethodReturn = new EffectFogMethod_1.default(props.get(101, 0), props.get(102, 1000), props.get(601, 0x808080));
+                effectMethodReturn = new EffectFogMethod_1.EffectFogMethod(props.get(101, 0), props.get(102, 1000), props.get(601, 0x808080));
                 break;
         }
         this.parseUserAttributes();
@@ -2581,7 +2579,7 @@ var AWDParser = (function (_super) {
     };
     // Helper - functions
     AWDParser.prototype.getUVForVertexAnimation = function (spriteID /*uint*/) {
-        if (this._blocks[spriteID].data instanceof Sprite_1.default)
+        if (this._blocks[spriteID].data instanceof Sprite_1.Sprite)
             spriteID = this._blocks[spriteID].geoID;
         if (this._blocks[spriteID].uvsForVertexAnimation)
             return this._blocks[spriteID].uvsForVertexAnimation;
@@ -2605,7 +2603,7 @@ var AWDParser = (function (_super) {
         return this._newBlockBytes.readFloat();
     };
     AWDParser.prototype.parseMatrix3D = function () {
-        return new Matrix3D_1.default(this.parseMatrix43RawData());
+        return new Matrix3D_1.Matrix3D(this.parseMatrix43RawData());
     };
     AWDParser.prototype.parseMatrix32RawData = function () {
         var mtx_raw = new Array(6);
@@ -2820,9 +2818,8 @@ var AWDParser = (function (_super) {
         1: AWDParser.UINT16 };
     AWDParser.animatorSetProperties = { 1: AWDParser.BADDR };
     return AWDParser;
-}(ParserBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = AWDParser;
+}(ParserBase_1.ParserBase));
+exports.AWDParser = AWDParser;
 var ElementType = (function () {
     function ElementType() {
     }
@@ -2897,7 +2894,7 @@ var FNTParser = (function (_super) {
      * @param extra The holder for extra contextual data that the parser might need.
      */
     function FNTParser() {
-        _super.call(this, URLLoaderDataFormat_1.default.TEXT);
+        _super.call(this, URLLoaderDataFormat_1.URLLoaderDataFormat.TEXT);
         this._parseState = 0;
     }
     /**
@@ -2916,7 +2913,7 @@ var FNTParser = (function (_super) {
      */
     FNTParser.supportsData = function (data) {
         try {
-            var content = ParserUtils_1.default.toString(data);
+            var content = ParserUtils_1.ParserUtils.toString(data);
             if (content.indexOf("font") != -1 || content.indexOf("Font") != -1)
                 return true;
             return false;
@@ -2952,22 +2949,22 @@ var FNTParser = (function (_super) {
         switch (this._parseState) {
             case FNTParserState.PARSE_XML:
                 try {
-                    this._doc = XmlUtils_1.default.getChildrenWithTag(XmlUtils_1.default.strToXml(this._pGetTextData()), "font")[0];
-                    this._imagePath = XmlUtils_1.default.readAttributeValue(this._doc, "imagePath");
-                    this._chars = XmlUtils_1.default.getChildrenWithTag(this._doc, "chars");
+                    this._doc = XmlUtils_1.XmlUtils.getChildrenWithTag(XmlUtils_1.XmlUtils.strToXml(this._pGetTextData()), "font")[0];
+                    this._imagePath = XmlUtils_1.XmlUtils.readAttributeValue(this._doc, "imagePath");
+                    this._chars = XmlUtils_1.XmlUtils.getChildrenWithTag(this._doc, "chars");
                     this._parseState = FNTParserState.PARSE_IMAGE;
                 }
                 catch (Error) {
-                    return ParserBase_1.default.PARSING_DONE;
+                    return ParserBase_1.ParserBase.PARSING_DONE;
                 }
                 break;
             case FNTParserState.PARSE_IMAGE:
                 if (this._imagePath) {
-                    this._pAddDependency(this._imagePath, new URLRequest_1.default(this._imagePath));
+                    this._pAddDependency(this._imagePath, new URLRequest_1.URLRequest(this._imagePath));
                     this._pPauseAndRetrieveDependencies();
                 }
                 else {
-                    return ParserBase_1.default.PARSING_DONE;
+                    return ParserBase_1.ParserBase.PARSING_DONE;
                 }
                 break;
             case FNTParserState.PARSE_CHARS:
@@ -2980,34 +2977,33 @@ var FNTParser = (function (_super) {
                 var len = this._chars.length;
                 for (var i = 0; i < len; i++) {
                     element = this._chars[i];
-                    sampler = new Sampler2D_1.default();
+                    sampler = new Sampler2D_1.Sampler2D();
                     //setup subtexture rect
-                    x = XmlUtils_1.default.readAttributeValue(element, "x");
-                    y = XmlUtils_1.default.readAttributeValue(element, "y");
-                    width = XmlUtils_1.default.readAttributeValue(element, "width");
-                    height = XmlUtils_1.default.readAttributeValue(element, "height");
+                    x = XmlUtils_1.XmlUtils.readAttributeValue(element, "x");
+                    y = XmlUtils_1.XmlUtils.readAttributeValue(element, "y");
+                    width = XmlUtils_1.XmlUtils.readAttributeValue(element, "width");
+                    height = XmlUtils_1.XmlUtils.readAttributeValue(element, "height");
                     if (x || y || width || height)
-                        sampler.imageRect = new Rectangle_1.default(parseInt(x) / this._imageData.width, parseInt(y) / this._imageData.height, parseInt(width) / this._imageData.width, parseInt(height) / this._imageData.height);
+                        sampler.imageRect = new Rectangle_1.Rectangle(parseInt(x) / this._imageData.width, parseInt(y) / this._imageData.height, parseInt(width) / this._imageData.width, parseInt(height) / this._imageData.height);
                     //setup frame rect
-                    x = XmlUtils_1.default.readAttributeValue(element, "frameX");
-                    y = XmlUtils_1.default.readAttributeValue(element, "frameY");
-                    width = XmlUtils_1.default.readAttributeValue(element, "frameWidth");
-                    height = XmlUtils_1.default.readAttributeValue(element, "frameHeight");
+                    x = XmlUtils_1.XmlUtils.readAttributeValue(element, "frameX");
+                    y = XmlUtils_1.XmlUtils.readAttributeValue(element, "frameY");
+                    width = XmlUtils_1.XmlUtils.readAttributeValue(element, "frameWidth");
+                    height = XmlUtils_1.XmlUtils.readAttributeValue(element, "frameHeight");
                     if (x || y || width || height)
-                        sampler.frameRect = new Rectangle_1.default(parseInt(x), parseInt(y), parseInt(width), parseInt(height));
-                    this._pFinalizeAsset(sampler, XmlUtils_1.default.readAttributeValue(element, "name"));
+                        sampler.frameRect = new Rectangle_1.Rectangle(parseInt(x), parseInt(y), parseInt(width), parseInt(height));
+                    this._pFinalizeAsset(sampler, XmlUtils_1.XmlUtils.readAttributeValue(element, "name"));
                 }
                 this._parseState = FNTParserState.PARSE_COMPLETE;
                 break;
             case FNTParserState.PARSE_COMPLETE:
-                return ParserBase_1.default.PARSING_DONE;
+                return ParserBase_1.ParserBase.PARSING_DONE;
         }
-        return ParserBase_1.default.MORE_TO_PARSE;
+        return ParserBase_1.ParserBase.MORE_TO_PARSE;
     };
     return FNTParser;
-}(ParserBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = FNTParser;
+}(ParserBase_1.ParserBase));
+exports.FNTParser = FNTParser;
 var FNTParserState = (function () {
     function FNTParserState() {
     }
@@ -3017,6 +3013,7 @@ var FNTParserState = (function () {
     FNTParserState.PARSE_COMPLETE = 3;
     return FNTParserState;
 }());
+exports.FNTParserState = FNTParserState;
 
 },{"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/utils/XmlUtils":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
 "use strict";
@@ -3052,10 +3049,10 @@ var MD2Parser = (function (_super) {
     function MD2Parser(textureType, ignoreTexturePath) {
         if (textureType === void 0) { textureType = "jpg"; }
         if (ignoreTexturePath === void 0) { ignoreTexturePath = true; }
-        _super.call(this, URLLoaderDataFormat_1.default.ARRAY_BUFFER);
+        _super.call(this, URLLoaderDataFormat_1.URLLoaderDataFormat.ARRAY_BUFFER);
         this._clipNodes = new Object();
         // the current elements being built
-        this._animationSet = new VertexAnimationSet_1.default();
+        this._animationSet = new VertexAnimationSet_1.VertexAnimationSet();
         this.materialFinal = false;
         this.graphicsCreated = false;
         this._textureType = textureType;
@@ -3076,7 +3073,7 @@ var MD2Parser = (function (_super) {
      * @return Whether or not the given data is supported.
      */
     MD2Parser.supportsData = function (data) {
-        return (ParserUtils_1.default.toString(data, 4) == 'IDP2');
+        return (ParserUtils_1.ParserUtils.toString(data, 4) == 'IDP2');
     };
     /**
      * @inheritDoc
@@ -3084,9 +3081,9 @@ var MD2Parser = (function (_super) {
     MD2Parser.prototype._iResolveDependency = function (resourceDependency) {
         if (resourceDependency.assets.length != 1)
             return;
-        var material = new MethodMaterial_1.default(resourceDependency.assets[0]);
+        var material = new MethodMaterial_1.MethodMaterial(resourceDependency.assets[0]);
         if (this.materialMode >= 2)
-            material.mode = MethodMaterialMode_1.default.MULTI_PASS;
+            material.mode = MethodMaterialMode_1.MethodMaterialMode.MULTI_PASS;
         //add to the content property
         this._pContent.addChild(this._sprite);
         material.name = this._sprite.material.name;
@@ -3102,11 +3099,11 @@ var MD2Parser = (function (_super) {
     MD2Parser.prototype._iResolveDependencyFailure = function (resourceDependency) {
         // apply system default
         if (this.materialMode < 2) {
-            this._sprite.material = DefaultMaterialManager_1.default.getDefaultMaterial();
+            this._sprite.material = DefaultMaterialManager_1.DefaultMaterialManager.getDefaultMaterial();
         }
         else {
-            this._sprite.material = new MethodMaterial_1.default(DefaultMaterialManager_1.default.getDefaultImage2D());
-            this._sprite.material.mode = MethodMaterialMode_1.default.MULTI_PASS;
+            this._sprite.material = new MethodMaterial_1.MethodMaterial(DefaultMaterialManager_1.DefaultMaterialManager.getDefaultImage2D());
+            this._sprite.material.mode = MethodMaterialMode_1.MethodMaterialMode.MULTI_PASS;
         }
         //add to the content property
         this._pContent.addChild(this._sprite);
@@ -3133,14 +3130,14 @@ var MD2Parser = (function (_super) {
                 //this._byteData.endian = Endian.LITTLE_ENDIAN;
                 // TODO: Create a sprite only when encountered (if it makes sense
                 // for this file format) and return it using this._pFinalizeAsset()
-                this._sprite = new Sprite_1.default();
+                this._sprite = new Sprite_1.Sprite();
                 this._graphics = this._sprite.graphics;
                 if (this.materialMode < 2) {
-                    this._sprite.material = DefaultMaterialManager_1.default.getDefaultMaterial();
+                    this._sprite.material = DefaultMaterialManager_1.DefaultMaterialManager.getDefaultMaterial();
                 }
                 else {
-                    this._sprite.material = new MethodMaterial_1.default(DefaultMaterialManager_1.default.getDefaultImage2D());
-                    this._sprite.material.mode = MethodMaterialMode_1.default.MULTI_PASS;
+                    this._sprite.material = new MethodMaterial_1.MethodMaterial(DefaultMaterialManager_1.DefaultMaterialManager.getDefaultImage2D());
+                    this._sprite.material.mode = MethodMaterialMode_1.MethodMaterialMode.MULTI_PASS;
                 }
                 //_graphics.animation = new VertexAnimation(2, VertexAnimationMode.ABSOLUTE);
                 //_animator = new VertexAnimator(VertexAnimationState(_sprite.animationState));
@@ -3158,7 +3155,7 @@ var MD2Parser = (function (_super) {
                 this.parseFrames();
             }
             else if ((this.graphicsCreated) && (this.materialFinal)) {
-                return ParserBase_1.default.PARSING_DONE;
+                return ParserBase_1.ParserBase.PARSING_DONE;
             }
             else if (!this.graphicsCreated) {
                 this.graphicsCreated = true;
@@ -3175,11 +3172,11 @@ var MD2Parser = (function (_super) {
                 this._pPauseAndRetrieveDependencies();
             }
         }
-        return ParserBase_1.default.MORE_TO_PARSE;
+        return ParserBase_1.ParserBase.MORE_TO_PARSE;
     };
     MD2Parser.prototype._pStartParsing = function (frameLimit) {
         //create a content object for Loaders
-        this._pContent = new DisplayObjectContainer_1.default();
+        this._pContent = new DisplayObjectContainer_1.DisplayObjectContainer();
         _super.prototype._pStartParsing.call(this, frameLimit);
     };
     /**
@@ -3236,7 +3233,7 @@ var MD2Parser = (function (_super) {
             this._materialNames[i] = name;
             // only support 1 skin TODO: really?
             if (this.dependencies.length == 0)
-                this._pAddDependency(name, new URLRequest_1.default(url));
+                this._pAddDependency(name, new URLRequest_1.URLRequest(url));
         }
         if (this._materialNames.length > 0)
             this._sprite.material.name = this._materialNames[0];
@@ -3353,10 +3350,10 @@ var MD2Parser = (function (_super) {
                 fvertices[k++] = tvertices[this._vertIndices[j] * 3 + 2];
                 fvertices[k++] = tvertices[this._vertIndices[j] * 3 + 1];
             }
-            elements = new TriangleElements_1.default(new AttributesBuffer_1.default());
+            elements = new TriangleElements_1.TriangleElements(new AttributesBuffer_1.AttributesBuffer());
             if (this._firstElements == null)
                 this._firstElements = elements;
-            graphics = new Graphics_1.default();
+            graphics = new Graphics_1.Graphics();
             graphics.addGraphic(elements);
             elements.setIndices(this._indices);
             elements.setPositions(fvertices);
@@ -3376,7 +3373,7 @@ var MD2Parser = (function (_super) {
                     this._pFinalizeAsset(prevClip);
                     this._animationSet.addAnimation(prevClip);
                 }
-                clip = new VertexClipNode_1.default();
+                clip = new VertexClipNode_1.VertexClipNode();
                 clip.name = name;
                 clip.stitchFinalFrame = true;
                 this._clipNodes[name] = clip;
@@ -3407,9 +3404,8 @@ var MD2Parser = (function (_super) {
     };
     MD2Parser.FPS = 6;
     return MD2Parser;
-}(ParserBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = MD2Parser;
+}(ParserBase_1.ParserBase));
+exports.MD2Parser = MD2Parser;
 
 },{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/Sprite":undefined,"awayjs-display/lib/graphics/Graphics":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD5AnimParser":[function(require,module,exports){
 "use strict";
@@ -3440,15 +3436,15 @@ var MD5AnimParser = (function (_super) {
     function MD5AnimParser(additionalRotationAxis, additionalRotationRadians) {
         if (additionalRotationAxis === void 0) { additionalRotationAxis = null; }
         if (additionalRotationRadians === void 0) { additionalRotationRadians = 0; }
-        _super.call(this, URLLoaderDataFormat_1.default.TEXT);
+        _super.call(this, URLLoaderDataFormat_1.URLLoaderDataFormat.TEXT);
         this._parseIndex = 0;
         this._line = 0;
         this._charLineIndex = 0;
-        this._rotationQuat = new Quaternion_1.default();
-        var t1 = new Quaternion_1.default();
-        var t2 = new Quaternion_1.default();
-        t1.fromAxisAngle(Vector3D_1.default.X_AXIS, -Math.PI * .5);
-        t2.fromAxisAngle(Vector3D_1.default.Y_AXIS, -Math.PI * .5);
+        this._rotationQuat = new Quaternion_1.Quaternion();
+        var t1 = new Quaternion_1.Quaternion();
+        var t2 = new Quaternion_1.Quaternion();
+        t1.fromAxisAngle(Vector3D_1.Vector3D.X_AXIS, -Math.PI * .5);
+        t2.fromAxisAngle(Vector3D_1.Vector3D.Y_AXIS, -Math.PI * .5);
         this._rotationQuat.multiply(t2, t1);
         if (additionalRotationAxis) {
             this._rotationQuat.multiply(t2, t1);
@@ -3532,13 +3528,13 @@ var MD5AnimParser = (function (_super) {
                         this.sendUnknownKeywordError();
             }
             if (this._reachedEOF) {
-                this._clip = new SkeletonClipNode_1.default();
+                this._clip = new SkeletonClipNode_1.SkeletonClipNode();
                 this.translateClip();
                 this._pFinalizeAsset(this._clip);
-                return ParserBase_1.default.PARSING_DONE;
+                return ParserBase_1.ParserBase.PARSING_DONE;
             }
         }
-        return ParserBase_1.default.MORE_TO_PARSE;
+        return ParserBase_1.ParserBase.MORE_TO_PARSE;
     };
     /**
      * Converts all key frame data to an SkinnedAnimationSequence.
@@ -3558,14 +3554,14 @@ var MD5AnimParser = (function (_super) {
         var base;
         var flags;
         var j;
-        var translate = new Vector3D_1.default();
-        var orientation = new Quaternion_1.default();
+        var translate = new Vector3D_1.Vector3D();
+        var orientation = new Quaternion_1.Quaternion();
         var components = frameData.components;
-        var skelPose = new SkeletonPose_1.default();
+        var skelPose = new SkeletonPose_1.SkeletonPose();
         var jointPoses = skelPose.jointPoses;
         for (var i = 0; i < this._numJoints; ++i) {
             j = 0;
-            pose = new JointPose_1.default();
+            pose = new JointPose_1.JointPose();
             hierarchy = this._hierarchy[i];
             base = this._baseFrameData[i];
             flags = hierarchy.flags;
@@ -3811,7 +3807,7 @@ var MD5AnimParser = (function (_super) {
      * Retrieves the next 3d vector in the data stream.
      */
     MD5AnimParser.prototype.parseVector3D = function () {
-        var vec = new Vector3D_1.default();
+        var vec = new Vector3D_1.Vector3D();
         var ch = this.getNextToken();
         if (ch != "(")
             this.sendParseError("(");
@@ -3826,7 +3822,7 @@ var MD5AnimParser = (function (_super) {
      * Retrieves the next quaternion in the data stream.
      */
     MD5AnimParser.prototype.parseQuaternion = function () {
-        var quat = new Quaternion_1.default();
+        var quat = new Quaternion_1.Quaternion();
         var ch = this.getNextToken();
         if (ch != "(")
             this.sendParseError("(");
@@ -3897,9 +3893,8 @@ var MD5AnimParser = (function (_super) {
     MD5AnimParser.FRAME_TOKEN = "frame";
     MD5AnimParser.COMMENT_TOKEN = "//";
     return MD5AnimParser;
-}(ParserBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = MD5AnimParser;
+}(ParserBase_1.ParserBase));
+exports.MD5AnimParser = MD5AnimParser;
 /**
  *
  */
@@ -3908,6 +3903,7 @@ var BaseFrameData = (function () {
     }
     return BaseFrameData;
 }());
+exports.BaseFrameData = BaseFrameData;
 /**
  *
  */
@@ -3916,6 +3912,7 @@ var BoundsData = (function () {
     }
     return BoundsData;
 }());
+exports.BoundsData = BoundsData;
 /**
  *
  */
@@ -3924,6 +3921,7 @@ var FrameData = (function () {
     }
     return FrameData;
 }());
+exports.FrameData = FrameData;
 /**
  *
  */
@@ -3932,6 +3930,7 @@ var HierarchyData = (function () {
     }
     return HierarchyData;
 }());
+exports.HierarchyData = HierarchyData;
 
 },{"awayjs-core/lib/geom/Quaternion":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined}],"awayjs-parsers/lib/MD5MeshParser":[function(require,module,exports){
 "use strict";
@@ -3965,14 +3964,14 @@ var MD5MeshParser = (function (_super) {
     function MD5MeshParser(additionalRotationAxis, additionalRotationRadians) {
         if (additionalRotationAxis === void 0) { additionalRotationAxis = null; }
         if (additionalRotationRadians === void 0) { additionalRotationRadians = 0; }
-        _super.call(this, URLLoaderDataFormat_1.default.TEXT);
+        _super.call(this, URLLoaderDataFormat_1.URLLoaderDataFormat.TEXT);
         this._parseIndex = 0;
         this._line = 0;
         this._charLineIndex = 0;
-        this._rotationQuat = new Quaternion_1.default();
-        this._rotationQuat.fromAxisAngle(Vector3D_1.default.X_AXIS, -Math.PI * .5);
+        this._rotationQuat = new Quaternion_1.Quaternion();
+        this._rotationQuat.fromAxisAngle(Vector3D_1.Vector3D.X_AXIS, -Math.PI * .5);
         if (additionalRotationAxis) {
-            var quat = new Quaternion_1.default();
+            var quat = new Quaternion_1.Quaternion();
             quat.fromAxisAngle(additionalRotationAxis, additionalRotationRadians);
             this._rotationQuat.multiply(this._rotationQuat, quat);
         }
@@ -4036,8 +4035,8 @@ var MD5MeshParser = (function (_super) {
             }
             if (this._reachedEOF) {
                 this.calculateMaxJointCount();
-                this._animationSet = new SkeletonAnimationSet_1.default(this._maxJointCount);
-                this._sprite = new Sprite_1.default();
+                this._animationSet = new SkeletonAnimationSet_1.SkeletonAnimationSet(this._maxJointCount);
+                this._sprite = new Sprite_1.Sprite();
                 this._graphics = this._sprite.graphics;
                 for (var i = 0; i < this._elementsData.length; ++i)
                     this._graphics.addGraphic(this.translateElements(this._elementsData[i].positionData, this._elementsData[i].weightData, this._elementsData[i].indices));
@@ -4049,14 +4048,14 @@ var MD5MeshParser = (function (_super) {
                 this._pFinalizeAsset(this._sprite);
                 this._pFinalizeAsset(this._skeleton);
                 this._pFinalizeAsset(this._animationSet);
-                return ParserBase_1.default.PARSING_DONE;
+                return ParserBase_1.ParserBase.PARSING_DONE;
             }
         }
-        return ParserBase_1.default.MORE_TO_PARSE;
+        return ParserBase_1.ParserBase.MORE_TO_PARSE;
     };
     MD5MeshParser.prototype._pStartParsing = function (frameLimit) {
         //create a content object for Loaders
-        this._pContent = new DisplayObjectContainer_1.default();
+        this._pContent = new DisplayObjectContainer_1.DisplayObjectContainer();
         _super.prototype._pStartParsing.call(this, frameLimit);
     };
     MD5MeshParser.prototype.calculateMaxJointCount = function () {
@@ -4098,11 +4097,11 @@ var MD5MeshParser = (function (_super) {
         var token = this.getNextToken();
         if (token != "{")
             this.sendUnknownKeywordError();
-        this._skeleton = new Skeleton_1.default();
+        this._skeleton = new Skeleton_1.Skeleton();
         do {
             if (this._reachedEOF)
                 this.sendEOFError();
-            joint = new SkeletonJoint_1.default();
+            joint = new SkeletonJoint_1.SkeletonJoint();
             joint.name = this.parseLiteralstring();
             joint.parentIndex = this.getNextInt();
             pos = this.parseVector3D();
@@ -4199,7 +4198,7 @@ var MD5MeshParser = (function (_super) {
         var weight;
         var bindPose;
         var pos;
-        var elements = new TriangleElements_1.default(new AttributesBuffer_1.default());
+        var elements = new TriangleElements_1.TriangleElements(new AttributesBuffer_1.AttributesBuffer());
         var uvs = new Array(len * 2);
         var positions = new Array(len * 3);
         var jointIndices = new Array(len * this._maxJointCount);
@@ -4373,7 +4372,7 @@ var MD5MeshParser = (function (_super) {
      * Retrieves the next 3d vector in the data stream.
      */
     MD5MeshParser.prototype.parseVector3D = function () {
-        var vec = new Vector3D_1.default();
+        var vec = new Vector3D_1.Vector3D();
         var ch = this.getNextToken();
         if (ch != "(")
             this.sendParseError("(");
@@ -4388,7 +4387,7 @@ var MD5MeshParser = (function (_super) {
      * Retrieves the next quaternion in the data stream.
      */
     MD5MeshParser.prototype.parseQuaternion = function () {
-        var quat = new Quaternion_1.default();
+        var quat = new Quaternion_1.Quaternion();
         var ch = this.getNextToken();
         if (ch != "(")
             this.sendParseError("(");
@@ -4400,7 +4399,7 @@ var MD5MeshParser = (function (_super) {
         quat.w = t < 0 ? 0 : -Math.sqrt(t);
         if (this.getNextToken() != ")")
             this.sendParseError(")");
-        var rotQuat = new Quaternion_1.default();
+        var rotQuat = new Quaternion_1.Quaternion();
         rotQuat.multiply(this._rotationQuat, quat);
         return rotQuat;
     };
@@ -4464,24 +4463,26 @@ var MD5MeshParser = (function (_super) {
     MD5MeshParser.MESH_NUM_WEIGHTS_TOKEN = "numweights";
     MD5MeshParser.MESH_WEIGHT_TOKEN = "weight";
     return MD5MeshParser;
-}(ParserBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = MD5MeshParser;
+}(ParserBase_1.ParserBase));
+exports.MD5MeshParser = MD5MeshParser;
 var PositionData = (function () {
     function PositionData() {
     }
     return PositionData;
 }());
+exports.PositionData = PositionData;
 var JointData = (function () {
     function JointData() {
     }
     return JointData;
 }());
+exports.JointData = JointData;
 var ElementsData = (function () {
     function ElementsData() {
     }
     return ElementsData;
 }());
+exports.ElementsData = ElementsData;
 
 },{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/geom/Quaternion":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/Sprite":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined}],"awayjs-parsers/lib/Max3DSParser":[function(require,module,exports){
 "use strict";
@@ -4517,7 +4518,7 @@ var Max3DSParser = (function (_super) {
      */
     function Max3DSParser(useSmoothingGroups) {
         if (useSmoothingGroups === void 0) { useSmoothingGroups = true; }
-        _super.call(this, URLLoaderDataFormat_1.default.ARRAY_BUFFER);
+        _super.call(this, URLLoaderDataFormat_1.URLLoaderDataFormat.ARRAY_BUFFER);
         this._useSmoothingGroups = useSmoothingGroups;
     }
     /**
@@ -4536,7 +4537,7 @@ var Max3DSParser = (function (_super) {
      */
     Max3DSParser.supportsData = function (data) {
         var ba;
-        ba = ParserUtils_1.default.toByteArray(data);
+        ba = ParserUtils_1.ParserUtils.toByteArray(data);
         if (ba) {
             ba.position = 0;
             if (ba.readShort() == 0x4d4d)
@@ -4551,10 +4552,10 @@ var Max3DSParser = (function (_super) {
         if (resourceDependency.assets.length == 1) {
             var asset;
             asset = resourceDependency.assets[0];
-            if (asset.isAsset(BitmapImage2D_1.default)) {
+            if (asset.isAsset(BitmapImage2D_1.BitmapImage2D)) {
                 var tex;
                 tex = this._textures[resourceDependency.id];
-                tex.texture = new Single2DTexture_1.default(asset);
+                tex.texture = new Single2DTexture_1.Single2DTexture(asset);
             }
         }
     };
@@ -4626,7 +4627,7 @@ var Max3DSParser = (function (_super) {
                         this._cur_obj.materialFaces = {};
                         break;
                     case 0x4100:
-                        this._cur_obj.type = Sprite_1.default.assetType;
+                        this._cur_obj.type = Sprite_1.Sprite.assetType;
                         break;
                     case 0x4110:
                         this.parseVertexList();
@@ -4667,7 +4668,7 @@ var Max3DSParser = (function (_super) {
         // been read, or if there is a currently non-finalized object in
         // the pipeline.
         if (this._byteData.getBytesAvailable() || this._cur_obj || this._cur_mat) {
-            return ParserBase_1.default.MORE_TO_PARSE;
+            return ParserBase_1.ParserBase.MORE_TO_PARSE;
         }
         else {
             var name;
@@ -4681,12 +4682,12 @@ var Max3DSParser = (function (_super) {
                     this._pFinalizeAsset(obj, name);
                 }
             }
-            return ParserBase_1.default.PARSING_DONE;
+            return ParserBase_1.ParserBase.PARSING_DONE;
         }
     };
     Max3DSParser.prototype._pStartParsing = function (frameLimit) {
         //create a content object for Loaders
-        this._pContent = new DisplayObjectContainer_1.default();
+        this._pContent = new DisplayObjectContainer_1.DisplayObjectContainer();
         _super.prototype._pStartParsing.call(this, frameLimit);
     };
     Max3DSParser.prototype.parseMaterial = function () {
@@ -4747,7 +4748,7 @@ var Max3DSParser = (function (_super) {
             }
         }
         this._textures[tex.url] = tex;
-        this._pAddDependency(tex.url, new URLRequest_1.default(tex.url));
+        this._pAddDependency(tex.url, new URLRequest_1.URLRequest(tex.url));
         return tex;
     };
     Max3DSParser.prototype.parseVertexList = function () {
@@ -4831,7 +4832,7 @@ var Max3DSParser = (function (_super) {
         var name;
         var hier;
         // Pivot defaults to origin
-        pivot = new Vector3D_1.default;
+        pivot = new Vector3D_1.Vector3D;
         while (this._byteData.position < end) {
             var cid;
             var len;
@@ -4869,7 +4870,7 @@ var Max3DSParser = (function (_super) {
     };
     Max3DSParser.prototype.constructObject = function (obj, pivot) {
         if (pivot === void 0) { pivot = null; }
-        if (obj.type == Sprite_1.default.assetType) {
+        if (obj.type == Sprite_1.Sprite.assetType) {
             var i;
             var sub;
             var graphics;
@@ -4916,12 +4917,12 @@ var Max3DSParser = (function (_super) {
                 mat = this._materials[mname].material;
             }
             // Build sprite and return it
-            sprite = new Sprite_1.default(mat);
-            sprite.transform.matrix3D = new Matrix3D_1.default(obj.transform);
+            sprite = new Sprite_1.Sprite(mat);
+            sprite.transform.matrix3D = new Matrix3D_1.Matrix3D(obj.transform);
             graphics = sprite.graphics;
             // Construct elements (potentially splitting buffers)
             // and add them to graphics.
-            sub = new TriangleElements_1.default(new AttributesBuffer_1.default());
+            sub = new TriangleElements_1.TriangleElements(new AttributesBuffer_1.AttributesBuffer());
             sub.setIndices(obj.indices);
             sub.setPositions(obj.verts);
             sub.setUVs(obj.uvs);
@@ -4932,21 +4933,21 @@ var Max3DSParser = (function (_super) {
                 if (obj.transform) {
                     // If a transform was found while parsing the
                     // object chunk, use it to find the local pivot vector
-                    mtx = new Matrix3D_1.default(obj.transform);
+                    mtx = new Matrix3D_1.Matrix3D(obj.transform);
                     mtx.rawData[12] = 0;
                     mtx.rawData[13] = 0;
                     mtx.rawData[14] = 0;
                     pivot = mtx.transformVector(pivot);
                 }
                 pivot.scaleBy(-1);
-                mtx = new Matrix3D_1.default();
+                mtx = new Matrix3D_1.Matrix3D();
                 mtx.appendTranslation(pivot.x, pivot.y, pivot.z);
                 graphics.applyTransformation(mtx);
             }
             // Apply transformation to graphics if a transformation
             // was found while parsing the object chunk earlier.
             if (obj.transform) {
-                mtx = new Matrix3D_1.default(obj.transform);
+                mtx = new Matrix3D_1.Matrix3D(obj.transform);
                 mtx.invert();
                 graphics.applyTransformation(mtx);
             }
@@ -5066,13 +5067,13 @@ var Max3DSParser = (function (_super) {
     };
     Max3DSParser.prototype.finalizeCurrentMaterial = function () {
         var mat;
-        mat = new MethodMaterial_1.default(this._cur_mat.ambientColor);
+        mat = new MethodMaterial_1.MethodMaterial(this._cur_mat.ambientColor);
         if (this._cur_mat.colorMap)
-            mat.ambientMethod.texture = this._cur_mat.colorMap.texture || DefaultMaterialManager_1.default.getDefaultTexture();
+            mat.ambientMethod.texture = this._cur_mat.colorMap.texture || DefaultMaterialManager_1.DefaultMaterialManager.getDefaultTexture();
         mat.diffuseMethod.color = this._cur_mat.diffuseColor;
         mat.specularMethod.color = this._cur_mat.specularColor;
         if (this.materialMode >= 2)
-            mat.mode = MethodMaterialMode_1.default.MULTI_PASS;
+            mat.mode = MethodMaterialMode_1.MethodMaterialMode.MULTI_PASS;
         mat.bothSides = this._cur_mat.twoSided;
         this._pFinalizeAsset(mat, this._cur_mat.name);
         this._materials[this._cur_mat.name] = this._cur_mat;
@@ -5134,9 +5135,8 @@ var Max3DSParser = (function (_super) {
         return (r << 16) | (g << 8) | b;
     };
     return Max3DSParser;
-}(ParserBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = Max3DSParser;
+}(ParserBase_1.ParserBase));
+exports.Max3DSParser = Max3DSParser;
 /**
  *
  */
@@ -5145,6 +5145,7 @@ var FaceVO = (function () {
     }
     return FaceVO;
 }());
+exports.FaceVO = FaceVO;
 /**
  *
  */
@@ -5153,6 +5154,7 @@ var MaterialVO = (function () {
     }
     return MaterialVO;
 }());
+exports.MaterialVO = MaterialVO;
 /**
  *
  */
@@ -5161,6 +5163,7 @@ var ObjectVO = (function () {
     }
     return ObjectVO;
 }());
+exports.ObjectVO = ObjectVO;
 /**
  *
  */
@@ -5169,6 +5172,7 @@ var TextureVO = (function () {
     }
     return TextureVO;
 }());
+exports.TextureVO = TextureVO;
 /**
  *
  */
@@ -5177,6 +5181,7 @@ var VertexVO = (function () {
     }
     return VertexVO;
 }());
+exports.VertexVO = VertexVO;
 
 },{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/Sprite":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined}],"awayjs-parsers/lib/OBJParser":[function(require,module,exports){
 "use strict";
@@ -5212,7 +5217,7 @@ var OBJParser = (function (_super) {
      */
     function OBJParser(scale) {
         if (scale === void 0) { scale = 1; }
-        _super.call(this, URLLoaderDataFormat_1.default.TEXT);
+        _super.call(this, URLLoaderDataFormat_1.URLLoaderDataFormat.TEXT);
         this._mtlLibLoaded = true;
         this._activeMaterialID = "";
         this._scale = scale;
@@ -5243,7 +5248,7 @@ var OBJParser = (function (_super) {
      * @return Whether or not the given data is supported.
      */
     OBJParser.supportsData = function (data) {
-        var content = ParserUtils_1.default.toString(data);
+        var content = ParserUtils_1.ParserUtils.toString(data);
         var hasV = false;
         var hasF = false;
         if (content) {
@@ -5257,7 +5262,7 @@ var OBJParser = (function (_super) {
      */
     OBJParser.prototype._iResolveDependency = function (resourceDependency) {
         if (resourceDependency.id == 'mtl') {
-            var str = ParserUtils_1.default.toString(resourceDependency.data);
+            var str = ParserUtils_1.ParserUtils.toString(resourceDependency.data);
             this.parseMtl(str);
         }
         else {
@@ -5266,10 +5271,10 @@ var OBJParser = (function (_super) {
                 return;
             }
             asset = resourceDependency.assets[0];
-            if (asset.isAsset(BitmapImage2D_1.default)) {
+            if (asset.isAsset(BitmapImage2D_1.BitmapImage2D)) {
                 var lm = new LoadedMaterial();
                 lm.materialID = resourceDependency.id;
-                lm.texture = new Single2DTexture_1.default(asset);
+                lm.texture = new Single2DTexture_1.Single2DTexture(asset);
                 this._materialLoaded.push(lm);
                 if (this._sprites.length > 0) {
                     this.applyMaterial(lm);
@@ -5336,22 +5341,22 @@ var OBJParser = (function (_super) {
             // parsing being paused to retrieve dependencies, break
             // here and do not continue parsing until un-paused.
             if (this.parsingPaused) {
-                return ParserBase_1.default.MORE_TO_PARSE;
+                return ParserBase_1.ParserBase.MORE_TO_PARSE;
             }
         }
         if (this._charIndex >= this._stringLength) {
             if (this._mtlLib && !this._mtlLibLoaded) {
-                return ParserBase_1.default.MORE_TO_PARSE;
+                return ParserBase_1.ParserBase.MORE_TO_PARSE;
             }
             this.translate();
             this.applyMaterials();
-            return ParserBase_1.default.PARSING_DONE;
+            return ParserBase_1.ParserBase.PARSING_DONE;
         }
-        return ParserBase_1.default.MORE_TO_PARSE;
+        return ParserBase_1.ParserBase.MORE_TO_PARSE;
     };
     OBJParser.prototype._pStartParsing = function (frameLimit) {
         //create a content object for Loaders
-        this._pContent = new DisplayObjectContainer_1.default();
+        this._pContent = new DisplayObjectContainer_1.DisplayObjectContainer();
         _super.prototype._pStartParsing.call(this, frameLimit);
     };
     /**
@@ -5408,11 +5413,11 @@ var OBJParser = (function (_super) {
             var sm;
             var bmMaterial;
             for (var g = 0; g < numGroups; ++g) {
-                bmMaterial = new MethodMaterial_1.default(DefaultMaterialManager_1.default.getDefaultImage2D());
+                bmMaterial = new MethodMaterial_1.MethodMaterial(DefaultMaterialManager_1.DefaultMaterialManager.getDefaultImage2D());
                 //check for multipass
                 if (this.materialMode >= 2)
-                    bmMaterial.mode = MethodMaterialMode_1.default.MULTI_PASS;
-                sprite = new Sprite_1.default(bmMaterial);
+                    bmMaterial.mode = MethodMaterialMode_1.MethodMaterialMode.MULTI_PASS;
+                sprite = new Sprite_1.Sprite(bmMaterial);
                 graphics = sprite.graphics;
                 materialGroups = groups[g].materialGroups;
                 numMaterialGroups = materialGroups.length;
@@ -5478,7 +5483,7 @@ var OBJParser = (function (_super) {
             }
         }
         if (vertices.length > 0) {
-            elements = new TriangleElements_1.default(new AttributesBuffer_1.default());
+            elements = new TriangleElements_1.TriangleElements(new AttributesBuffer_1.AttributesBuffer());
             elements.autoDeriveNormals = normals.length ? false : true;
             elements.setIndices(indices);
             elements.setPositions(vertices);
@@ -5732,7 +5737,7 @@ var OBJParser = (function (_super) {
             }
             if (mapkd != "") {
                 if (useSpecular) {
-                    basicSpecularMethod = new SpecularBasicMethod_1.default();
+                    basicSpecularMethod = new SpecularBasicMethod_1.SpecularBasicMethod();
                     basicSpecularMethod.color = specularColor;
                     basicSpecularMethod.strength = specular;
                     var specularData = new SpecularData();
@@ -5743,19 +5748,19 @@ var OBJParser = (function (_super) {
                         this._materialSpecularData = new Array();
                     this._materialSpecularData.push(specularData);
                 }
-                this._pAddDependency(this._lastMtlID, new URLRequest_1.default(mapkd));
+                this._pAddDependency(this._lastMtlID, new URLRequest_1.URLRequest(mapkd));
             }
             else if (useColor && !isNaN(color)) {
                 var lm = new LoadedMaterial();
                 lm.materialID = this._lastMtlID;
                 if (alpha == 0)
                     console.log("Warning: an alpha value of 0 was found in mtl color tag (Tr or d) ref:" + this._lastMtlID + ", sprite(es) using it will be invisible!");
-                var cm = new MethodMaterial_1.default(color);
+                var cm = new MethodMaterial_1.MethodMaterial(color);
                 if (this.materialMode < 2) {
                     cm.alpha = alpha;
                 }
                 else {
-                    cm.mode = MethodMaterialMode_1.default.MULTI_PASS;
+                    cm.mode = MethodMaterialMode_1.MethodMaterialMode.MULTI_PASS;
                 }
                 cm.diffuseMethod.color = diffuseColor;
                 if (useSpecular) {
@@ -5810,7 +5815,7 @@ var OBJParser = (function (_super) {
     OBJParser.prototype.loadMtl = function (mtlurl) {
         // Add raw-data dependency to queue and load dependencies now,
         // which will pause the parsing in the meantime.
-        this._pAddDependency('mtl', new URLRequest_1.default(mtlurl), true);
+        this._pAddDependency('mtl', new URLRequest_1.URLRequest(mtlurl), true);
         this._pPauseAndRetrieveDependencies(); //
     };
     OBJParser.prototype.applyMaterial = function (lm) {
@@ -5833,11 +5838,11 @@ var OBJParser = (function (_super) {
                     tm.ambientMethod.texture = lm.texture;
                     tm.style.color = lm.color;
                     tm.alpha = lm.alpha;
-                    tm.style.sampler = new Sampler2D_1.default(true);
+                    tm.style.sampler = new Sampler2D_1.Sampler2D(true);
                     if (this.materialMode < 2)
                         tm.alpha = lm.alpha;
                     else
-                        tm.mode = MethodMaterialMode_1.default.MULTI_PASS;
+                        tm.mode = MethodMaterialMode_1.MethodMaterialMode.MULTI_PASS;
                     if (lm.specularMethod) {
                         // By setting the specularMethod property to null before assigning
                         // the actual method instance, we avoid having the properties of
@@ -5874,27 +5879,29 @@ var OBJParser = (function (_super) {
             this.applyMaterial(this._materialLoaded[i]);
     };
     return OBJParser;
-}(ParserBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = OBJParser;
+}(ParserBase_1.ParserBase));
+exports.OBJParser = OBJParser;
 var ObjectGroup = (function () {
     function ObjectGroup() {
         this.groups = new Array();
     }
     return ObjectGroup;
 }());
+exports.ObjectGroup = ObjectGroup;
 var Group = (function () {
     function Group() {
         this.materialGroups = new Array();
     }
     return Group;
 }());
+exports.Group = Group;
 var MaterialGroup = (function () {
     function MaterialGroup() {
         this.faces = new Array();
     }
     return MaterialGroup;
 }());
+exports.MaterialGroup = MaterialGroup;
 var SpecularData = (function () {
     function SpecularData() {
         this.color = 0xFFFFFF;
@@ -5902,6 +5909,7 @@ var SpecularData = (function () {
     }
     return SpecularData;
 }());
+exports.SpecularData = SpecularData;
 var LoadedMaterial = (function () {
     function LoadedMaterial() {
         this.color = 0xFFFFFF;
@@ -5909,6 +5917,7 @@ var LoadedMaterial = (function () {
     }
     return LoadedMaterial;
 }());
+exports.LoadedMaterial = LoadedMaterial;
 var FaceData = (function () {
     function FaceData() {
         this.vertexIndices = new Array();
@@ -5918,6 +5927,7 @@ var FaceData = (function () {
     }
     return FaceData;
 }());
+exports.FaceData = FaceData;
 /**
 * Texture coordinates value object.
 */
@@ -5974,6 +5984,7 @@ var UV = (function () {
     };
     return UV;
 }());
+exports.UV = UV;
 var Vertex = (function () {
     /**
      * Creates a new <code>Vertex</code> value object.
@@ -6057,6 +6068,7 @@ var Vertex = (function () {
     };
     return Vertex;
 }());
+exports.Vertex = Vertex;
 
 },{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/Sprite":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/SpecularBasicMethod":undefined}],"awayjs-parsers/lib/Parsers":[function(require,module,exports){
 "use strict";
@@ -6081,7 +6093,7 @@ var Parsers = (function () {
      * @see away.parsers.Parsers.ALL_BUNDLED
      */
     Parsers.enableAllBundled = function () {
-        Loader_1.default.enableParsers(Parsers.ALL_BUNDLED);
+        Loader_1.Loader.enableParsers(Parsers.ALL_BUNDLED);
     };
     /**
      * A list of all parsers that come bundled with Away3D. Use this to quickly
@@ -6116,11 +6128,10 @@ var Parsers = (function () {
      *
      * @see away.library.AssetLibrary.enableParser
      */
-    Parsers.ALL_BUNDLED = Array(AWDParser_1.default, Max3DSParser_1.default, MD2Parser_1.default, OBJParser_1.default);
+    Parsers.ALL_BUNDLED = Array(AWDParser_1.AWDParser, Max3DSParser_1.Max3DSParser, MD2Parser_1.MD2Parser, OBJParser_1.OBJParser);
     return Parsers;
 }());
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = Parsers;
+exports.Parsers = Parsers;
 
 },{"./AWDParser":"awayjs-parsers/lib/AWDParser","./MD2Parser":"awayjs-parsers/lib/MD2Parser","./Max3DSParser":"awayjs-parsers/lib/Max3DSParser","./OBJParser":"awayjs-parsers/lib/OBJParser","awayjs-core/lib/library/Loader":undefined}]},{},[1])
 //# sourceMappingURL=awayjs-parsers.js.map
