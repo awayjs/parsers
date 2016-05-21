@@ -1084,10 +1084,10 @@ export class AWDParser extends ParserBase
 				}
 			}
 			else if (type == 4) {// texture fill - need full matrix
-				var matrix:Array<number> = this.parseMatrix32RawData();
+				var matrix:Float32Array = this.parseMatrix32RawData();
 				if(graphic) {
 					graphic.material.animateUVs = true;
-					graphic.style.uvMatrix = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+					graphic.style.uvMatrix = new Matrix(matrix);
 				}
 			}
 			else if (type == 5) {// linear gradient fill - need a, c , tx and ty
@@ -1102,12 +1102,12 @@ export class AWDParser extends ParserBase
 					var y:number = this._newBlockBytes.readFloat();
 					var width:number = this._newBlockBytes.readFloat();
 					var height:number = this._newBlockBytes.readFloat();
-					var matrix:Array<number> = this.parseMatrix32RawData();
+					var matrix:Float32Array = this.parseMatrix32RawData();
 					if(graphic) {
 						sampler.imageRect = new Rectangle(x, y, width, height);
 						graphic.material.imageRect = true;
 						graphic.material.animateUVs = true;
-						graphic.style.uvMatrix = new Matrix(matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+						graphic.style.uvMatrix = new Matrix(matrix);
 					}
 				}
 			if(graphic) {
@@ -3257,9 +3257,9 @@ export class AWDParser extends ParserBase
 		return new Matrix3D(this.parseMatrix43RawData());
 	}
 
-	private parseMatrix32RawData():Array<number>
+	private parseMatrix32RawData():Float32Array
 	{
-		var mtx_raw:Array<number> = new Array<number>(6);
+		var mtx_raw:Float32Array = new Float32Array(6);
 
 		for (var i:number = 0; i < 6; i++)
 			mtx_raw[i] = this._newBlockBytes.readFloat();
