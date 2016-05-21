@@ -14,7 +14,6 @@ var OBJParser_1 = require("./lib/OBJParser");
 exports.OBJParser = OBJParser_1.OBJParser;
 var Parsers_1 = require("./lib/Parsers");
 exports.Parsers = Parsers_1.Parsers;
-
 },{"./lib/AWDParser":"awayjs-parsers/lib/AWDParser","./lib/MD2Parser":"awayjs-parsers/lib/MD2Parser","./lib/MD5AnimParser":"awayjs-parsers/lib/MD5AnimParser","./lib/MD5MeshParser":"awayjs-parsers/lib/MD5MeshParser","./lib/Max3DSParser":"awayjs-parsers/lib/Max3DSParser","./lib/OBJParser":"awayjs-parsers/lib/OBJParser","./lib/Parsers":"awayjs-parsers/lib/Parsers"}],"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":[function(require,module,exports){
 "use strict";
 var AWD3Utils = (function () {
@@ -51,7 +50,6 @@ var AWD3Utils = (function () {
     return AWD3Utils;
 }());
 exports.AWD3Utils = AWD3Utils;
-
 },{}],"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock":[function(require,module,exports){
 "use strict";
 var AWD3Utils_1 = require("../AWD3ParserUtils/AWD3Utils");
@@ -81,7 +79,6 @@ var AWDBlock = (function () {
     return AWDBlock;
 }());
 exports.AWDBlock = AWDBlock;
-
 },{"../AWD3ParserUtils/AWD3Utils":"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils"}],"awayjs-parsers/lib/AWDParser":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -171,6 +168,7 @@ var AS2SceneGraphFactory_1 = require("awayjs-player/lib/factories/AS2SceneGraphF
 var Timeline_1 = require("awayjs-display/lib/base/Timeline");
 var AssetLibrary_1 = require("awayjs-core/lib/library/AssetLibrary");
 var Font_1 = require("awayjs-display/lib/text/Font");
+var TesselatedFontTable_1 = require("awayjs-display/lib/text/TesselatedFontTable");
 var TextFormat_1 = require("awayjs-display/lib/text/TextFormat");
 var AWDBlock_1 = require("./AWD3ParserUtils/AWDBlock");
 var Rectangle_1 = require("awayjs-core/lib/geom/Rectangle");
@@ -713,7 +711,7 @@ var AWDParser = (function (_super) {
             if ((this._blocks[blockID].name == "Tahoma") && (font_style_name == "RegularStyle")) {
                 font_style_name = "BoldStyle";
             }
-            new_font_style = new_font.get_font_table(font_style_name);
+            new_font_style = new_font.get_font_table(font_style_name, TesselatedFontTable_1.TesselatedFontTable.assetType);
             new_font_style.set_font_em_size(this._newBlockBytes.readUnsignedInt());
             new_font_style.set_whitespace_width(this._newBlockBytes.readUnsignedInt());
             new_font_style.ascent = this._newBlockBytes.readFloat();
@@ -789,6 +787,7 @@ var AWDParser = (function (_super) {
         var font_style_name = this.parseVarStr();
         var newTextFormat = new TextFormat_1.TextFormat();
         newTextFormat.font_name = font.name;
+        // todo:  atm in awd this will always default to get a TesselatedFontTable. need to find a way to request the correct type here
         var font_table = font.get_font_table(font_style_name);
         if (font_table != null) {
             newTextFormat.font_style = font_style_name;
@@ -2866,21 +2865,21 @@ var BitFlags = (function () {
     BitFlags.FLAG16 = 32768;
     return BitFlags;
 }());
-
-},{"./AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/image/BitmapImageCube":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-core/lib/library/AssetLibrary":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/Style":undefined,"awayjs-display/lib/base/Timeline":undefined,"awayjs-display/lib/display/Billboard":undefined,"awayjs-display/lib/display/Camera":undefined,"awayjs-display/lib/display/DirectionalLight":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/PointLight":undefined,"awayjs-display/lib/display/Skybox":undefined,"awayjs-display/lib/display/Sprite":undefined,"awayjs-display/lib/graphics/ElementsType":undefined,"awayjs-display/lib/graphics/Graphics":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-display/lib/text/TextFormat":undefined,"awayjs-display/lib/textures/MappingMode":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/FNTParser":[function(require,module,exports){
+},{"./AWD3ParserUtils/AWDBlock":"awayjs-parsers/lib/AWD3ParserUtils/AWDBlock","awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/image/BitmapImageCube":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-core/lib/library/AssetLibrary":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/projections/OrthographicOffCenterProjection":undefined,"awayjs-core/lib/projections/OrthographicProjection":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/base/Style":undefined,"awayjs-display/lib/base/Timeline":undefined,"awayjs-display/lib/display/Billboard":undefined,"awayjs-display/lib/display/Camera":undefined,"awayjs-display/lib/display/DirectionalLight":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/PointLight":undefined,"awayjs-display/lib/display/Skybox":undefined,"awayjs-display/lib/display/Sprite":undefined,"awayjs-display/lib/graphics/ElementsType":undefined,"awayjs-display/lib/graphics/Graphics":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined,"awayjs-display/lib/materials/lightpickers/StaticLightPicker":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/prefabs/PrefabBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveConePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":undefined,"awayjs-display/lib/prefabs/PrimitivePlanePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined,"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":undefined,"awayjs-display/lib/text/Font":undefined,"awayjs-display/lib/text/TesselatedFontTable":undefined,"awayjs-display/lib/text/TextFormat":undefined,"awayjs-display/lib/textures/MappingMode":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-display/lib/textures/SingleCubeTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/AmbientEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseCelMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseDepthMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseGradientMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/DiffuseWrapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectAlphaMaskMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorMatrixMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectColorTransformMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFogMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectFresnelEnvMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectLightMapMethod":undefined,"awayjs-methodmaterials/lib/methods/EffectRimLightMethod":undefined,"awayjs-methodmaterials/lib/methods/NormalSimpleWaterMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowDitheredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowFilteredMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowHardMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowNearMethod":undefined,"awayjs-methodmaterials/lib/methods/ShadowSoftMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularAnisotropicMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularCelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularFresnelMethod":undefined,"awayjs-methodmaterials/lib/methods/SpecularPhongMethod":undefined,"awayjs-player/lib/factories/AS2SceneGraphFactory":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimator":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/VertexAnimator":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/FNTParser":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var Sampler2D_1 = require("awayjs-core/lib/image/Sampler2D");
-var Rectangle_1 = require("awayjs-core/lib/geom/Rectangle");
+var AssetLibrary_1 = require("awayjs-core/lib/library/AssetLibrary");
 var URLLoaderDataFormat_1 = require("awayjs-core/lib/net/URLLoaderDataFormat");
 var URLRequest_1 = require("awayjs-core/lib/net/URLRequest");
 var ParserBase_1 = require("awayjs-core/lib/parsers/ParserBase");
 var ParserUtils_1 = require("awayjs-core/lib/parsers/ParserUtils");
 var XmlUtils_1 = require("awayjs-core/lib/utils/XmlUtils");
+var BitmapFontTable_1 = require("awayjs-display/lib/text/BitmapFontTable");
+var Font_1 = require("awayjs-display/lib/text/Font");
 /**
  * TextureAtlasParser provides a "parser" for natively supported image types (jpg, png). While it simply loads bytes into
  * a loader object, it wraps it in a BitmapImage2DResource so resource management can happen consistently without
@@ -2904,6 +2903,10 @@ var FNTParser = (function (_super) {
      */
     FNTParser.supportsType = function (extension) {
         extension = extension.toLowerCase();
+        var supports = extension == "fnt";
+        if (supports) {
+            console.log("supportsType fnt = " + extension);
+        }
         return extension == "fnt";
     };
     /**
@@ -2914,8 +2917,10 @@ var FNTParser = (function (_super) {
     FNTParser.supportsData = function (data) {
         try {
             var content = ParserUtils_1.ParserUtils.toString(data);
-            if (content.indexOf("font") != -1 || content.indexOf("Font") != -1)
+            if (content.indexOf("font") != -1 || content.indexOf("Font") != -1) {
+                console.log("supportsData fnt");
                 return true;
+            }
             return false;
         }
         catch (e) {
@@ -2927,8 +2932,8 @@ var FNTParser = (function (_super) {
      */
     FNTParser.prototype._iResolveDependency = function (resourceDependency) {
         if (resourceDependency.assets.length) {
-            this._imageData = resourceDependency.assets[0];
-            this._pFinalizeAsset(this._imageData);
+            this._bitmapFontTable.add_page(resourceDependency.assets[0]);
+            this._pFinalizeAsset(resourceDependency.assets[0]);
             this._parseState = FNTParserState.PARSE_CHARS;
         }
         else {
@@ -2950,9 +2955,33 @@ var FNTParser = (function (_super) {
             case FNTParserState.PARSE_XML:
                 try {
                     this._doc = XmlUtils_1.XmlUtils.getChildrenWithTag(XmlUtils_1.XmlUtils.strToXml(this._pGetTextData()), "font")[0];
-                    this._imagePath = XmlUtils_1.XmlUtils.readAttributeValue(this._doc, "imagePath");
-                    this._chars = XmlUtils_1.XmlUtils.getChildrenWithTag(this._doc, "chars");
+                    var page_node = XmlUtils_1.XmlUtils.getChildrenWithTag(this._doc, "pages")[0];
+                    var all_pages = XmlUtils_1.XmlUtils.getChildrenWithTag(page_node, "page");
+                    var len = all_pages.length;
+                    // todo: correctly support multiple pages
+                    for (var i = 0; i < len; i++) {
+                        this._imagePath = XmlUtils_1.XmlUtils.readAttributeValue(all_pages[i], "file");
+                    }
+                    var char_node = XmlUtils_1.XmlUtils.getChildrenWithTag(this._doc, "chars")[0];
+                    this._chars = XmlUtils_1.XmlUtils.getChildrenWithTag(char_node, "char");
                     this._parseState = FNTParserState.PARSE_IMAGE;
+                    var info_node = XmlUtils_1.XmlUtils.getChildrenWithTag(this._doc, "info")[0];
+                    var common_node = XmlUtils_1.XmlUtils.getChildrenWithTag(this._doc, "common")[0];
+                    var font_name = XmlUtils_1.XmlUtils.readAttributeValue(info_node, "face");
+                    this._font = AssetLibrary_1.AssetLibrary.getAsset(font_name);
+                    if (this._font == undefined) {
+                        this._font = new Font_1.Font();
+                        this._font.name = font_name;
+                    }
+                    var bold = XmlUtils_1.XmlUtils.readAttributeValue(info_node, "bold");
+                    if (bold != "0")
+                        font_name += "_bold";
+                    var italic = XmlUtils_1.XmlUtils.readAttributeValue(info_node, "italic");
+                    if (italic != "0")
+                        font_name += "_italic";
+                    this._bitmapFontTable = this._font.get_font_table(font_name, BitmapFontTable_1.BitmapFontTable.assetType);
+                    var size = XmlUtils_1.XmlUtils.readAttributeValue(info_node, "size");
+                    this._bitmapFontTable._init_size = parseInt(size);
                 }
                 catch (Error) {
                     return ParserBase_1.ParserBase.PARSING_DONE;
@@ -2968,32 +2997,25 @@ var FNTParser = (function (_super) {
                 }
                 break;
             case FNTParserState.PARSE_CHARS:
-                var sampler;
                 var element;
-                var x;
-                var y;
-                var width;
-                var height;
+                var x, y, width, height, xoff, yoff, xadv, page, chnl;
+                var id;
                 var len = this._chars.length;
                 for (var i = 0; i < len; i++) {
                     element = this._chars[i];
-                    sampler = new Sampler2D_1.Sampler2D();
-                    //setup subtexture rect
-                    x = XmlUtils_1.XmlUtils.readAttributeValue(element, "x");
-                    y = XmlUtils_1.XmlUtils.readAttributeValue(element, "y");
-                    width = XmlUtils_1.XmlUtils.readAttributeValue(element, "width");
-                    height = XmlUtils_1.XmlUtils.readAttributeValue(element, "height");
-                    if (x || y || width || height)
-                        sampler.imageRect = new Rectangle_1.Rectangle(parseInt(x) / this._imageData.width, parseInt(y) / this._imageData.height, parseInt(width) / this._imageData.width, parseInt(height) / this._imageData.height);
-                    //setup frame rect
-                    x = XmlUtils_1.XmlUtils.readAttributeValue(element, "frameX");
-                    y = XmlUtils_1.XmlUtils.readAttributeValue(element, "frameY");
-                    width = XmlUtils_1.XmlUtils.readAttributeValue(element, "frameWidth");
-                    height = XmlUtils_1.XmlUtils.readAttributeValue(element, "frameHeight");
-                    if (x || y || width || height)
-                        sampler.frameRect = new Rectangle_1.Rectangle(parseInt(x), parseInt(y), parseInt(width), parseInt(height));
-                    this._pFinalizeAsset(sampler, XmlUtils_1.XmlUtils.readAttributeValue(element, "name"));
+                    x = parseInt(XmlUtils_1.XmlUtils.readAttributeValue(element, "x"));
+                    y = parseInt(XmlUtils_1.XmlUtils.readAttributeValue(element, "y"));
+                    width = parseInt(XmlUtils_1.XmlUtils.readAttributeValue(element, "width"));
+                    height = parseInt(XmlUtils_1.XmlUtils.readAttributeValue(element, "height"));
+                    xoff = parseInt(XmlUtils_1.XmlUtils.readAttributeValue(element, "xoffset"));
+                    yoff = parseInt(XmlUtils_1.XmlUtils.readAttributeValue(element, "yoffset"));
+                    xadv = parseInt(XmlUtils_1.XmlUtils.readAttributeValue(element, "xadvance"));
+                    page = parseInt(XmlUtils_1.XmlUtils.readAttributeValue(element, "page"));
+                    chnl = parseInt(XmlUtils_1.XmlUtils.readAttributeValue(element, "chnl"));
+                    id = XmlUtils_1.XmlUtils.readAttributeValue(element, "id");
+                    this._bitmapFontTable.setChar(id, x, y, width, height, xoff, yoff, xadv, page, chnl);
                 }
+                this._pFinalizeAsset(this._font, this._font.name);
                 this._parseState = FNTParserState.PARSE_COMPLETE;
                 break;
             case FNTParserState.PARSE_COMPLETE:
@@ -3013,9 +3035,7 @@ var FNTParserState = (function () {
     FNTParserState.PARSE_COMPLETE = 3;
     return FNTParserState;
 }());
-exports.FNTParserState = FNTParserState;
-
-},{"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/utils/XmlUtils":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetLibrary":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-core/lib/utils/XmlUtils":undefined,"awayjs-display/lib/text/BitmapFontTable":undefined,"awayjs-display/lib/text/Font":undefined}],"awayjs-parsers/lib/MD2Parser":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -3406,7 +3426,6 @@ var MD2Parser = (function (_super) {
     return MD2Parser;
 }(ParserBase_1.ParserBase));
 exports.MD2Parser = MD2Parser;
-
 },{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/Sprite":undefined,"awayjs-display/lib/graphics/Graphics":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-renderergl/lib/animators/VertexAnimationSet":undefined,"awayjs-renderergl/lib/animators/nodes/VertexClipNode":undefined}],"awayjs-parsers/lib/MD5AnimParser":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -3931,7 +3950,6 @@ var HierarchyData = (function () {
     return HierarchyData;
 }());
 exports.HierarchyData = HierarchyData;
-
 },{"awayjs-core/lib/geom/Quaternion":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-renderergl/lib/animators/data/JointPose":undefined,"awayjs-renderergl/lib/animators/data/SkeletonPose":undefined,"awayjs-renderergl/lib/animators/nodes/SkeletonClipNode":undefined}],"awayjs-parsers/lib/MD5MeshParser":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -4483,7 +4501,6 @@ var ElementsData = (function () {
     return ElementsData;
 }());
 exports.ElementsData = ElementsData;
-
 },{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/geom/Quaternion":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/Sprite":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-renderergl/lib/animators/SkeletonAnimationSet":undefined,"awayjs-renderergl/lib/animators/data/Skeleton":undefined,"awayjs-renderergl/lib/animators/data/SkeletonJoint":undefined}],"awayjs-parsers/lib/Max3DSParser":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -5182,7 +5199,6 @@ var VertexVO = (function () {
     return VertexVO;
 }());
 exports.VertexVO = VertexVO;
-
 },{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/Sprite":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined}],"awayjs-parsers/lib/OBJParser":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -6069,7 +6085,6 @@ var Vertex = (function () {
     return Vertex;
 }());
 exports.Vertex = Vertex;
-
 },{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-core/lib/net/URLLoaderDataFormat":undefined,"awayjs-core/lib/net/URLRequest":undefined,"awayjs-core/lib/parsers/ParserBase":undefined,"awayjs-core/lib/parsers/ParserUtils":undefined,"awayjs-display/lib/display/DisplayObjectContainer":undefined,"awayjs-display/lib/display/Sprite":undefined,"awayjs-display/lib/graphics/TriangleElements":undefined,"awayjs-display/lib/managers/DefaultMaterialManager":undefined,"awayjs-display/lib/textures/Single2DTexture":undefined,"awayjs-methodmaterials/lib/MethodMaterial":undefined,"awayjs-methodmaterials/lib/MethodMaterialMode":undefined,"awayjs-methodmaterials/lib/methods/SpecularBasicMethod":undefined}],"awayjs-parsers/lib/Parsers":[function(require,module,exports){
 "use strict";
 var Loader_1 = require("awayjs-core/lib/library/Loader");
@@ -6077,6 +6092,7 @@ var AWDParser_1 = require("./AWDParser");
 var Max3DSParser_1 = require("./Max3DSParser");
 var MD2Parser_1 = require("./MD2Parser");
 var OBJParser_1 = require("./OBJParser");
+var FNTParser_1 = require("./FNTParser");
 /**
  *
  */
@@ -6128,10 +6144,9 @@ var Parsers = (function () {
      *
      * @see away.library.AssetLibrary.enableParser
      */
-    Parsers.ALL_BUNDLED = Array(AWDParser_1.AWDParser, Max3DSParser_1.Max3DSParser, MD2Parser_1.MD2Parser, OBJParser_1.OBJParser);
+    Parsers.ALL_BUNDLED = Array(AWDParser_1.AWDParser, Max3DSParser_1.Max3DSParser, MD2Parser_1.MD2Parser, OBJParser_1.OBJParser, FNTParser_1.FNTParser);
     return Parsers;
 }());
 exports.Parsers = Parsers;
-
-},{"./AWDParser":"awayjs-parsers/lib/AWDParser","./MD2Parser":"awayjs-parsers/lib/MD2Parser","./Max3DSParser":"awayjs-parsers/lib/Max3DSParser","./OBJParser":"awayjs-parsers/lib/OBJParser","awayjs-core/lib/library/Loader":undefined}]},{},[1])
+},{"./AWDParser":"awayjs-parsers/lib/AWDParser","./FNTParser":"awayjs-parsers/lib/FNTParser","./MD2Parser":"awayjs-parsers/lib/MD2Parser","./Max3DSParser":"awayjs-parsers/lib/Max3DSParser","./OBJParser":"awayjs-parsers/lib/OBJParser","awayjs-core/lib/library/Loader":undefined}]},{},[1])
 //# sourceMappingURL=awayjs-parsers.js.map
