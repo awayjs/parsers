@@ -4,6 +4,7 @@ import {AWDParser}						from "./AWDParser";
 import {Max3DSParser}						from "./Max3DSParser";
 import {MD2Parser}						from "./MD2Parser";
 import {OBJParser}						from "./OBJParser";
+import {FNTParser}						from "./FNTParser";
 
 /**
  *
@@ -43,7 +44,7 @@ export class Parsers
 	 *
 	 * @see away.library.AssetLibrary.enableParser
 	 */
-	public static ALL_BUNDLED:Array<Object> = Array<Object>(AWDParser, Max3DSParser, MD2Parser, OBJParser);
+	public static ALL_BUNDLED:Array<Object> = Array<Object>(AWDParser, Max3DSParser, MD2Parser, OBJParser, FNTParser);
 
 	/**
 	 * Short-hand function to enable all bundled parsers for auto-detection. In practice,
