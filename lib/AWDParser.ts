@@ -571,7 +571,7 @@ export class AWDParser extends ParserBase
 					this.parseBillBoardLibraryBlock(this._cur_block_id);
 					isParsed = true;
 					break;
-				case 4444:
+				case 44:
 					this.parseAudioBlock(this._cur_block_id, factory);
 					isParsed = true;
 					break;
