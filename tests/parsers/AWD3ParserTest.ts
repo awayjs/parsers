@@ -34,25 +34,25 @@
 
  */
 
-import AssetLibrary					from "awayjs-core/lib/library/AssetLibrary";
-import Loader						from "awayjs-core/lib/library/Loader";
-import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
-import URLRequest					from "awayjs-core/lib/net/URLRequest";
-import LoaderEvent					from "awayjs-core/lib/events/LoaderEvent";
-import OrthographicProjection		from "awayjs-core/lib/projections/OrthographicProjection";
-import CoordinateSystem				from "awayjs-core/lib/projections/CoordinateSystem";
-import PerspectiveProjection		from "awayjs-core/lib/projections/PerspectiveProjection";
-import RequestAnimationFrame		from "awayjs-core/lib/utils/RequestAnimationFrame";
+import {AssetLibrary}					from "awayjs-core/lib/library/AssetLibrary";
+import {Loader}						from "awayjs-core/lib/library/Loader";
+import {AssetEvent}					from "awayjs-core/lib/events/AssetEvent";
+import {URLRequest}					from "awayjs-core/lib/net/URLRequest";
+import {LoaderEvent}					from "awayjs-core/lib/events/LoaderEvent";
+import {OrthographicProjection}		from "awayjs-core/lib/projections/OrthographicProjection";
+import {CoordinateSystem}				from "awayjs-core/lib/projections/CoordinateSystem";
+import {PerspectiveProjection}		from "awayjs-core/lib/projections/PerspectiveProjection";
+import {RequestAnimationFrame}		from "awayjs-core/lib/utils/RequestAnimationFrame";
 
-import View							from "awayjs-display/lib/View";
-import HoverController				from "awayjs-display/lib/controllers/HoverController";
-import MovieClip					from "awayjs-display/lib/display/MovieClip";
-import Camera						from "awayjs-display/lib/display/Camera";
-import SceneGraphPartition			from "awayjs-display/lib/partition/SceneGraphPartition";
+import {View}							from "awayjs-display/lib/View";
+import {HoverController}				from "awayjs-display/lib/controllers/HoverController";
+import {MovieClip}					from "awayjs-display/lib/display/MovieClip";
+import {Camera}						from "awayjs-display/lib/display/Camera";
+import {SceneGraphPartition}			from "awayjs-display/lib/partition/SceneGraphPartition";
 
-import DefaultRenderer				from "awayjs-renderergl/lib/DefaultRenderer";
+import {DefaultRenderer}				from "awayjs-renderergl/lib/DefaultRenderer";
 
-import AWDParser					from "awayjs-parsers/lib/AWDParser";
+import {AWDParser}					from "awayjs-parsers/lib/AWDParser";
 
 
 class AWD3ParserTest

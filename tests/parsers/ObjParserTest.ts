@@ -1,17 +1,17 @@
-import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
-import LoaderEvent					from "awayjs-core/lib/events/LoaderEvent";
-import AssetLibrary					from "awayjs-core/lib/library/AssetLibrary";
-import Loader						from "awayjs-core/lib/library/Loader";
-import URLRequest					from "awayjs-core/lib/net/URLRequest";
-import Debug						from "awayjs-core/lib/utils/Debug";
-import RequestAnimationFrame		from "awayjs-core/lib/utils/RequestAnimationFrame";
+import {AssetEvent}					from "awayjs-core/lib/events/AssetEvent";
+import {LoaderEvent}					from "awayjs-core/lib/events/LoaderEvent";
+import {AssetLibrary}					from "awayjs-core/lib/library/AssetLibrary";
+import {Loader}						from "awayjs-core/lib/library/Loader";
+import {URLRequest}					from "awayjs-core/lib/net/URLRequest";
+import {Debug}						from "awayjs-core/lib/utils/Debug";
+import {RequestAnimationFrame}		from "awayjs-core/lib/utils/RequestAnimationFrame";
 
-import View							from "awayjs-display/lib/View";
-import Sprite						from "awayjs-display/lib/display/Sprite";
+import {View}							from "awayjs-display/lib/View";
+import {Sprite}						from "awayjs-display/lib/display/Sprite";
 
-import DefaultRenderer				from "awayjs-renderergl/lib/DefaultRenderer";
+import {DefaultRenderer}				from "awayjs-renderergl/lib/DefaultRenderer";
 
-import OBJParser					from "awayjs-parsers/lib/OBJParser";
+import {OBJParser}					from "awayjs-parsers/lib/OBJParser";
 
 /**
  *
