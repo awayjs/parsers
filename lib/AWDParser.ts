@@ -919,6 +919,9 @@ export class AWDParser extends ParserBase
 		else if(tf_align_int==2){
 			newTextFormat.align="center";
 		}
+		else if(tf_align_int==3){
+			newTextFormat.align="justify";
+		}
 		newTextFormat.indent = format_props.get(7,0);
 		newTextFormat.leftMargin = format_props.get(8,0);
 		newTextFormat.rightMargin = format_props.get(9,0);
