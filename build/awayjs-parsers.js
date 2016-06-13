@@ -4,6 +4,10 @@ var AWDParser_1 = require("./lib/AWDParser");
 exports.AWDParser = AWDParser_1.AWDParser;
 var Max3DSParser_1 = require("./lib/Max3DSParser");
 exports.Max3DSParser = Max3DSParser_1.Max3DSParser;
+var FNTParser_1 = require("./lib/FNTParser");
+exports.FNTParser = FNTParser_1.FNTParser;
+var FontParser_1 = require("./lib/FontParser");
+exports.FontParser = FontParser_1.FontParser;
 var MD2Parser_1 = require("./lib/MD2Parser");
 exports.MD2Parser = MD2Parser_1.MD2Parser;
 var MD5AnimParser_1 = require("./lib/MD5AnimParser");
@@ -14,7 +18,7 @@ var OBJParser_1 = require("./lib/OBJParser");
 exports.OBJParser = OBJParser_1.OBJParser;
 var Parsers_1 = require("./lib/Parsers");
 exports.Parsers = Parsers_1.Parsers;
-},{"./lib/AWDParser":"awayjs-parsers/lib/AWDParser","./lib/MD2Parser":"awayjs-parsers/lib/MD2Parser","./lib/MD5AnimParser":"awayjs-parsers/lib/MD5AnimParser","./lib/MD5MeshParser":"awayjs-parsers/lib/MD5MeshParser","./lib/Max3DSParser":"awayjs-parsers/lib/Max3DSParser","./lib/OBJParser":"awayjs-parsers/lib/OBJParser","./lib/Parsers":"awayjs-parsers/lib/Parsers"}],"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":[function(require,module,exports){
+},{"./lib/AWDParser":"awayjs-parsers/lib/AWDParser","./lib/FNTParser":"awayjs-parsers/lib/FNTParser","./lib/FontParser":"awayjs-parsers/lib/FontParser","./lib/MD2Parser":"awayjs-parsers/lib/MD2Parser","./lib/MD5AnimParser":"awayjs-parsers/lib/MD5AnimParser","./lib/MD5MeshParser":"awayjs-parsers/lib/MD5MeshParser","./lib/Max3DSParser":"awayjs-parsers/lib/Max3DSParser","./lib/OBJParser":"awayjs-parsers/lib/OBJParser","./lib/Parsers":"awayjs-parsers/lib/Parsers"}],"awayjs-parsers/lib/AWD3ParserUtils/AWD3Utils":[function(require,module,exports){
 "use strict";
 var AWD3Utils = (function () {
     function AWD3Utils() {
