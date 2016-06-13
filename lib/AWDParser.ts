@@ -836,20 +836,9 @@ export class AWDParser extends ParserBase
 				if(curveData) {
 					var vertexBuffer:AttributesBuffer = new AttributesBuffer(attr_count, str_len / attr_count);
 					vertexBuffer.bufferView = new Uint8Array(<ArrayBuffer> curveData.arraybytes);
+					//console.log("allchars[cnt1++] = ['"+font_style_char.toString()+"',["+vertexBuffer.bufferView.toString()+"]]");
 
-					var curve_elements:TriangleElements = new TriangleElements(vertexBuffer);
-
-					curve_elements.setPositions(new Float2Attributes(vertexBuffer));
-					if (attr_count == 20)
-						curve_elements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
-					else if(attr_count == 12)
-						curve_elements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
-
-					//add UVs if they exist in the data
-					if (attr_count == 28)
-						curve_elements.setUVs(new Float2Attributes(vertexBuffer));
-
-					new_font_style.setChar(font_style_char.toString(), curve_elements, char_width);
+					new_font_style.setChar(font_style_char.toString(), char_width, vertexBuffer, null);
 				}
 			}
 		}
