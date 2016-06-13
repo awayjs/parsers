@@ -2334,7 +2334,8 @@ export class AWDParser extends ParserBase
 			var basic_mat:BasicMaterial = new BasicMaterial();
 			basic_mat.texture = diffuseTexture;
 			basic_mat.bothSides = true;
-			//basic_mat.preserveAlpha = true;
+			basic_mat.alphaBlending = props.get(11, false);
+			//basic_mat.preserveAlpha = basic_mat.alphaBlending;
 			//basic_mat.alphaBlending = true;
 			basic_mat.extra = this.parseUserAttributes();
 			this._pFinalizeAsset(<IAsset> basic_mat, name);
