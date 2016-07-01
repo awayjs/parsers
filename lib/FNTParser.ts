@@ -1,14 +1,14 @@
-import {BitmapImage2D}			from "awayjs-core/lib/image/BitmapImage2D";
-import {IAsset}					from "awayjs-core/lib/library/IAsset";
-import {AssetLibrary}			from "awayjs-core/lib/library/AssetLibrary";
-import {URLLoaderDataFormat}	from "awayjs-core/lib/net/URLLoaderDataFormat";
-import {URLRequest}				from "awayjs-core/lib/net/URLRequest";
-import {ParserBase}				from "awayjs-core/lib/parsers/ParserBase";
-import {ParserUtils}			from "awayjs-core/lib/parsers/ParserUtils";
-import {ResourceDependency}		from "awayjs-core/lib/parsers/ResourceDependency";
-import {XmlUtils}				from "awayjs-core/lib/utils/XmlUtils";
-import {BitmapFontTable}		from "awayjs-display/lib/text/BitmapFontTable";
-import {Font}					from "awayjs-display/lib/text/Font";
+import {BitmapImage2D}			from "@awayjs/core/lib/image/BitmapImage2D";
+import {IAsset}					from "@awayjs/core/lib/library/IAsset";
+import {AssetLibrary}			from "@awayjs/core/lib/library/AssetLibrary";
+import {URLLoaderDataFormat}	from "@awayjs/core/lib/net/URLLoaderDataFormat";
+import {URLRequest}				from "@awayjs/core/lib/net/URLRequest";
+import {ParserBase}				from "@awayjs/core/lib/parsers/ParserBase";
+import {ParserUtils}			from "@awayjs/core/lib/parsers/ParserUtils";
+import {ResourceDependency}		from "@awayjs/core/lib/parsers/ResourceDependency";
+import {XmlUtils}				from "@awayjs/core/lib/utils/XmlUtils";
+import {BitmapFontTable}		from "@awayjs/display/lib/text/BitmapFontTable";
+import {Font}					from "@awayjs/display/lib/text/Font";
 
 /**
  * TextureAtlasParser provides a "parser" for natively supported image types (jpg, png). While it simply loads bytes into

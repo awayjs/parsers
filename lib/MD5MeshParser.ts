@@ -1,18 +1,18 @@
-import {AttributesBuffer}					from "awayjs-core/lib/attributes/AttributesBuffer";
-import {Matrix3D}							from "awayjs-core/lib/geom/Matrix3D";
-import {Quaternion}						from "awayjs-core/lib/geom/Quaternion";
-import {Vector3D}							from "awayjs-core/lib/geom/Vector3D";
-import {URLLoaderDataFormat}				from "awayjs-core/lib/net/URLLoaderDataFormat";
-import {ParserBase}						from "awayjs-core/lib/parsers/ParserBase";
+import {AttributesBuffer}					from "@awayjs/core/lib/attributes/AttributesBuffer";
+import {Matrix3D}							from "@awayjs/core/lib/geom/Matrix3D";
+import {Quaternion}						from "@awayjs/core/lib/geom/Quaternion";
+import {Vector3D}							from "@awayjs/core/lib/geom/Vector3D";
+import {URLLoaderDataFormat}				from "@awayjs/core/lib/net/URLLoaderDataFormat";
+import {ParserBase}						from "@awayjs/core/lib/parsers/ParserBase";
 
-import {Graphics}							from "awayjs-display/lib/graphics/Graphics";
-import {TriangleElements}					from "awayjs-display/lib/graphics/TriangleElements";
-import {DisplayObjectContainer}			from "awayjs-display/lib/display/DisplayObjectContainer";
-import {Sprite}							from "awayjs-display/lib/display/Sprite";
+import {Graphics}							from "@awayjs/display/lib/graphics/Graphics";
+import {TriangleElements}					from "@awayjs/display/lib/graphics/TriangleElements";
+import {DisplayObjectContainer}			from "@awayjs/display/lib/display/DisplayObjectContainer";
+import {Sprite}							from "@awayjs/display/lib/display/Sprite";
 
-import {SkeletonAnimationSet}				from "awayjs-renderergl/lib/animators/SkeletonAnimationSet";
-import {Skeleton}							from "awayjs-renderergl/lib/animators/data/Skeleton";
-import {SkeletonJoint}					from "awayjs-renderergl/lib/animators/data/SkeletonJoint";
+import {SkeletonAnimationSet}				from "@awayjs/renderer/lib/animators/SkeletonAnimationSet";
+import {Skeleton}							from "@awayjs/renderer/lib/animators/data/Skeleton";
+import {SkeletonJoint}					from "@awayjs/renderer/lib/animators/data/SkeletonJoint";
 
 // todo: create animation system, parse skeleton
 

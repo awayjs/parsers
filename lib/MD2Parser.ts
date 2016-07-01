@@ -1,27 +1,27 @@
-import {AttributesBuffer}					from "awayjs-core/lib/attributes/AttributesBuffer";
-import {BitmapImage2D}					from "awayjs-core/lib/image/BitmapImage2D";
-import {Vector3D}							from "awayjs-core/lib/geom/Vector3D";
-import {URLLoaderDataFormat}				from "awayjs-core/lib/net/URLLoaderDataFormat";
-import {URLRequest}						from "awayjs-core/lib/net/URLRequest";
-import {ParserBase}						from "awayjs-core/lib/parsers/ParserBase";
-import {ParserUtils}						from "awayjs-core/lib/parsers/ParserUtils";
-import {ResourceDependency}				from "awayjs-core/lib/parsers/ResourceDependency";
-import {ByteArray}						from "awayjs-core/lib/utils/ByteArray";
+import {AttributesBuffer}					from "@awayjs/core/lib/attributes/AttributesBuffer";
+import {BitmapImage2D}					from "@awayjs/core/lib/image/BitmapImage2D";
+import {Vector3D}							from "@awayjs/core/lib/geom/Vector3D";
+import {URLLoaderDataFormat}				from "@awayjs/core/lib/net/URLLoaderDataFormat";
+import {URLRequest}						from "@awayjs/core/lib/net/URLRequest";
+import {ParserBase}						from "@awayjs/core/lib/parsers/ParserBase";
+import {ParserUtils}						from "@awayjs/core/lib/parsers/ParserUtils";
+import {ResourceDependency}				from "@awayjs/core/lib/parsers/ResourceDependency";
+import {ByteArray}						from "@awayjs/core/lib/utils/ByteArray";
 
-import {Graphics}							from "awayjs-display/lib/graphics/Graphics";
-import {TriangleElements}					from "awayjs-display/lib/graphics/TriangleElements";
-import {DisplayObjectContainer}			from "awayjs-display/lib/display/DisplayObjectContainer";
-import {DisplayObject}					from "awayjs-display/lib/display/DisplayObject";
-import {Camera}							from "awayjs-display/lib/display/Camera";
-import {Sprite}							from "awayjs-display/lib/display/Sprite";
-import {DefaultMaterialManager}			from "awayjs-display/lib/managers/DefaultMaterialManager";
-import {Single2DTexture}					from "awayjs-display/lib/textures/Single2DTexture";
+import {Graphics}							from "@awayjs/display/lib/graphics/Graphics";
+import {TriangleElements}					from "@awayjs/display/lib/graphics/TriangleElements";
+import {DisplayObjectContainer}			from "@awayjs/display/lib/display/DisplayObjectContainer";
+import {DisplayObject}					from "@awayjs/display/lib/display/DisplayObject";
+import {Camera}							from "@awayjs/display/lib/display/Camera";
+import {Sprite}							from "@awayjs/display/lib/display/Sprite";
+import {DefaultMaterialManager}			from "@awayjs/display/lib/managers/DefaultMaterialManager";
+import {Single2DTexture}					from "@awayjs/display/lib/textures/Single2DTexture";
 
-import {VertexClipNode}					from "awayjs-renderergl/lib/animators/nodes/VertexClipNode";
-import {VertexAnimationSet}				from "awayjs-renderergl/lib/animators/VertexAnimationSet";
+import {VertexClipNode}					from "@awayjs/renderer/lib/animators/nodes/VertexClipNode";
+import {VertexAnimationSet}				from "@awayjs/renderer/lib/animators/VertexAnimationSet";
 
-import {MethodMaterial}					from "awayjs-methodmaterials/lib/MethodMaterial";
-import {MethodMaterialMode}				from "awayjs-methodmaterials/lib/MethodMaterialMode";
+import {MethodMaterial}					from "@awayjs/materials/lib/MethodMaterial";
+import {MethodMaterialMode}				from "@awayjs/materials/lib/MethodMaterialMode";
 
 /**
  * MD2Parser provides a parser for the MD2 data type.

@@ -1,16 +1,16 @@
-import {BitmapImage2D}			from "awayjs-core/lib/image/BitmapImage2D";
-import {IAsset}					from "awayjs-core/lib/library/IAsset";
-import {AssetLibrary}			from "awayjs-core/lib/library/AssetLibrary";
-import {URLLoaderDataFormat}	from "awayjs-core/lib/net/URLLoaderDataFormat";
-import {URLRequest}				from "awayjs-core/lib/net/URLRequest";
-import {ParserBase}				from "awayjs-core/lib/parsers/ParserBase";
-import {ParserUtils}			from "awayjs-core/lib/parsers/ParserUtils";
-import {ResourceDependency}		from "awayjs-core/lib/parsers/ResourceDependency";
-import {XmlUtils}				from "awayjs-core/lib/utils/XmlUtils";
-import {BitmapFontTable}		from "awayjs-display/lib/text/BitmapFontTable";
-import {Font}							from "awayjs-display/lib/text/Font";
-import {TesselatedFontTable}			from "awayjs-display/lib/text/TesselatedFontTable";
-import {IFontTable}						from "awayjs-display/lib/text/IFontTable";
+import {BitmapImage2D}			from "@awayjs/core/lib/image/BitmapImage2D";
+import {IAsset}					from "@awayjs/core/lib/library/IAsset";
+import {AssetLibrary}			from "@awayjs/core/lib/library/AssetLibrary";
+import {URLLoaderDataFormat}	from "@awayjs/core/lib/net/URLLoaderDataFormat";
+import {URLRequest}				from "@awayjs/core/lib/net/URLRequest";
+import {ParserBase}				from "@awayjs/core/lib/parsers/ParserBase";
+import {ParserUtils}			from "@awayjs/core/lib/parsers/ParserUtils";
+import {ResourceDependency}		from "@awayjs/core/lib/parsers/ResourceDependency";
+import {XmlUtils}				from "@awayjs/core/lib/utils/XmlUtils";
+import {BitmapFontTable}		from "@awayjs/display/lib/text/BitmapFontTable";
+import {Font}							from "@awayjs/display/lib/text/Font";
+import {TesselatedFontTable}			from "@awayjs/display/lib/text/TesselatedFontTable";
+import {IFontTable}						from "@awayjs/display/lib/text/IFontTable";
 
 var opentype;
 /**
