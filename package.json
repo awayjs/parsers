@@ -1,6 +1,6 @@
 {
   "name": "@awayjs/parsers",
-  "version": "0.5.36",
+  "version": "0.5.38",
   "description": "Parsers for AwayJS",
   "url": "http://www.away3d.com",
   "author": "Rob Bateman",
@@ -32,14 +32,12 @@
   },
   "homepage": "https://github.com/awayjs/parsers#readme",
   "dependencies": {
-    "dependencies": {
-      "@awayjs/core": "^0.6.0",
-      "@awayjs/display": "^0.8.0",
-      "@awayjs/renderer": "^0.8.0",
-      "@awayjs/player": "^0.5.0",
-      "@awayjs/materials": "^0.3.0"
+    "@awayjs/core": "^0.6.0",
+    "@awayjs/display": "^0.8.0",
+    "@awayjs/renderer": "^0.8.0",
+    "@awayjs/player": "^0.5.0",
+    "@awayjs/materials": "^0.3.0"
 
-    }
   },
   "devDependencies": {
     "@awayjs/stage": "^0.8.0",
