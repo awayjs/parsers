@@ -865,7 +865,8 @@ export class AWDParser extends ParserBase
 		7:AWDParser.FLOAT32,		//intent
 		8:AWDParser.FLOAT32,		//left margin
 		9:AWDParser.FLOAT32,		//right margin
-		10:AWDParser.FLOAT32};	//line spacing
+		10:AWDParser.FLOAT32,	//line spacing
+		11:AWDParser.COLOR};	//line spacing
 
 	private parseTextFormat(blockID:number):void
 	{
@@ -887,7 +888,7 @@ export class AWDParser extends ParserBase
 
 		var mat:BasicMaterial = <BasicMaterial> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 		mat.bothSides = true;
-		mat.curves = true;
+		//mat.curves = true;
 		var num_uv_values:number = this._newBlockBytes.readUnsignedByte();
 		var uv_values:Array<number> = [];
 		for(var uvcnt:number = 0; uvcnt < num_uv_values; uvcnt++)
@@ -915,6 +916,7 @@ export class AWDParser extends ParserBase
 		newTextFormat.leftMargin = format_props.get(8,0);
 		newTextFormat.rightMargin = format_props.get(9,0);
 		newTextFormat.leading = format_props.get(10,0);
+		newTextFormat.color = format_props.get(11,0);
 		newTextFormat.material = mat;
 		this.parseUserAttributes();// textformat has no extra-properties
 		//newTextFormat.extra =
@@ -1392,8 +1394,8 @@ export class AWDParser extends ParserBase
 		var element_type:number = ElementType.STANDART_STREAMS;
 		var target_element:ElementsBase = null;
 		// Loop through sub sprites
+		target_element = null;
 		for (var elements_parsed:number = 0;  elements_parsed < numElements; elements_parsed++) {
-			var is_curve_elements:boolean=false;
 			var attr_count:number=0;
 			var sm_len:number, sm_end:number;
 			var w_indices:Array<number>;
@@ -1401,7 +1403,6 @@ export class AWDParser extends ParserBase
 			target_start_idx=0;
 			target_vert_cnt=0;
 			element_type = ElementType.STANDART_STREAMS;
-			target_element = null;
 			sm_len = this._newBlockBytes.readUnsignedInt();
 			sm_end = this._newBlockBytes.position + sm_len;
 			var elementsProps:AWDProperties = this.parseProperties(AWDParser.elementsProperties);
@@ -1419,7 +1420,7 @@ export class AWDParser extends ParserBase
 				var x:number, y:number, z:number;
 
 				if (str_type == 1) {//vertex 3d positions
-					var verts:Array<number> = new Array<number>();
+					var verts:Array<number> = [];
 
 					while (this._newBlockBytes.position < str_end) {
 
@@ -1432,16 +1433,16 @@ export class AWDParser extends ParserBase
 						verts[idx++] = z;
 					}
 				} else if (str_type == 2) {//face indicies positions
-					var indices:Array<number> = new Array<number>();
+					var indices:Array<number> = [];
 					while (this._newBlockBytes.position < str_end)
 						indices[idx++] = this._newBlockBytes.readUnsignedShort();
 
 				} else if (str_type == 3) {
-					var uvs:Array<number> = new Array<number>();
+					var uvs:Array<number> = [];
 					while (this._newBlockBytes.position < str_end)
 						uvs[idx++] = this.readNumber(this._accuracyGeo);
 				} else if (str_type == 4) {
-					var normals:Array<number> = new Array<number>();
+					var normals:Array<number> = [];
 					while (this._newBlockBytes.position < str_end)
 						normals[idx++] = this.readNumber(this._accuracyGeo);
 				} else if (str_type == 6) {
@@ -1449,7 +1450,7 @@ export class AWDParser extends ParserBase
 					while (this._newBlockBytes.position < str_end)
 						w_indices[idx++] = this._newBlockBytes.readUnsignedShort()*3;
 				} else if (str_type == 7) {
-					weights = new Array<number>();
+					weights = [];
 					while (this._newBlockBytes.position < str_end)
 						weights[idx++] = this.readNumber(this._accuracyGeo);
 				} else if (str_type == 8) {// 2d-positions - not used yet.
@@ -1471,11 +1472,25 @@ export class AWDParser extends ParserBase
 					attr_count = 12;
 					var curveData:ByteArray = new ByteArray(str_len);
 					this._newBlockBytes.readBytes(curveData, 0, str_len);
-				} else if (str_type == 13) {// combined vertex2D stream 5 x float32 (2d pos + curvedata)else {
+				} else if (str_type == 13) {
 					element_type=ElementType.SHARED_BUFFER;
 					var targetGraphic:Graphics=<Graphics>(this._blocks[this._newBlockBytes.readUnsignedInt()].data);
 					var element_idx:number=this._newBlockBytes.readUnsignedByte();
 					target_element = targetGraphic.getGraphicAt(element_idx).elements;
+					target_start_idx = this._newBlockBytes.readUnsignedInt();
+					target_vert_cnt = this._newBlockBytes.readUnsignedInt();
+				}else if (str_type == 14) {
+					element_type=ElementType.CONCATENATED_SUBGEO;
+					var verts:Array<number> = [];
+					while (this._newBlockBytes.position < str_end) {
+						x = this.readNumber(false);
+						y = this.readNumber(false);
+						verts[idx++] = x;
+						verts[idx++] = y;
+						verts[idx++] = 0;
+					}
+				}else if (str_type == 15) {
+					element_type=ElementType.SHARED_INDEXBUFFER;
 					target_start_idx = this._newBlockBytes.readUnsignedInt();
 					target_vert_cnt = this._newBlockBytes.readUnsignedInt();
 				}else{
@@ -1545,13 +1560,52 @@ export class AWDParser extends ParserBase
 				if (this._debug)
 					console.log("Parsed a TriangleElements");
 			}
+			else if(element_type==ElementType.CONCATENATED_SUBGEO) {
+
+				var triangle_elements =   new TriangleElements(new AttributesBuffer());
+				//if (weights)
+				//	triangle_elements.jointsPerVertex = weights.length / (verts.length / 3);
+
+				//if (normals)
+				//	triangle_elements.autoDeriveNormals = false;
+
+				//triangle_elements.autoDeriveTangents = true;
+
+				triangle_elements.setIndices(indices);
+				triangle_elements.setPositions(verts);
+				//triangle_elements.setNormals(normals);
+				triangle_elements.setUVs(uvs);
+				//triangle_elements.setJointWeights(weights);
+				//triangle_elements.setJointIndices(w_indices);
+
+				var scaleU:number = elementsProps.get(1, 1);
+				var scaleV:number = elementsProps.get(2, 1);
+				var setSubUVs:boolean = false; //this should remain false atm, because in AwayBuilder the uv is only scaled by the graphics
+
+				if ((geoScaleU != scaleU) || (geoScaleV != scaleV)) {
+					setSubUVs = true;
+					scaleU = geoScaleU / scaleU;
+					scaleV = geoScaleV / scaleV;
+				}
+				if (setSubUVs)
+					triangle_elements.scaleUV(scaleU, scaleV);
+				target_element=triangle_elements;
+			}
+			else if(element_type==ElementType.SHARED_INDEXBUFFER) {
+
+				var graphic:Graphic = graphics.addGraphic(target_element);
+				graphic.idx_offset = target_start_idx;
+				graphic.idx_count = target_vert_cnt;
+
+
+			}
 			else if(element_type==ElementType.SHARED_BUFFER){
 
 				var graphic:Graphic = graphics.addGraphic(target_element);
 				graphic.offset = target_start_idx;
 				graphic.count = target_vert_cnt;
 				if (this._debug)
-					console.log("Parsed a TriangleElements that shares buffer from target geom");
+					console.log("Parsed a TriangleElements that shares index buffer from target geom");
 			}
 
 			// TODO: Somehow map in-sub to out-sub indices to enable look-up
@@ -3306,6 +3360,8 @@ class ElementType {
 	public static STANDART_STREAMS:number = 0;
 	public static CONCENATED_STREAMS:number = 1;
 	public static SHARED_BUFFER:number = 2;
+	public static CONCATENATED_SUBGEO:number = 3;
+	public static SHARED_INDEXBUFFER:number = 4;
 }
 
 class AWDProperties

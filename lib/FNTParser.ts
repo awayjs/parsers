@@ -116,21 +116,27 @@ export class FNTParser extends ParserBase
 					this._parseState = FNTParserState.PARSE_IMAGE;
 					var info_node:Node = XmlUtils.getChildrenWithTag(this._doc, "info")[0];
 					var common_node:Node = XmlUtils.getChildrenWithTag(this._doc, "common")[0];
-
 					var font_name:string = XmlUtils.readAttributeValue(info_node, "face");
-					this._font = <Font>AssetLibrary.getAsset(font_name);
-					if(this._font==undefined){
+					//this._font = <Font>AssetLibrary.getAsset(font_name);
+					//if(this._font==undefined){
 						this._font = new Font();
 						this._font.name=font_name;
-					}
+					//}
 					var bold:string = XmlUtils.readAttributeValue(info_node, "bold");
 					if(bold!="0") font_name+="_bold";
 					var italic:string = XmlUtils.readAttributeValue(info_node, "italic");
 					if(italic!="0") font_name+="_italic";
+
 					this._bitmapFontTable = <BitmapFontTable> this._font.get_font_table(font_name, BitmapFontTable.assetType);
 					
 					var size:string = XmlUtils.readAttributeValue(info_node, "size");
 					this._bitmapFontTable._init_size=parseInt(size);
+					var scaleH:string = XmlUtils.readAttributeValue(common_node, "scaleH");
+					this._bitmapFontTable.texture_height=parseInt(scaleH);
+					var scaleW:string = XmlUtils.readAttributeValue(common_node, "scaleW");
+					this._bitmapFontTable.texture_width=parseInt(scaleW);
+					var adjustSize:string = XmlUtils.readAttributeValue(common_node, "adjustSize");
+					if(adjustSize!="") this._bitmapFontTable._adjust_size=parseInt(adjustSize);
 
 				} catch(Error) {
 					return ParserBase.PARSING_DONE;
