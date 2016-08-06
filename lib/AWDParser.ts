@@ -1481,14 +1481,18 @@ export class AWDParser extends ParserBase
 					target_vert_cnt = this._newBlockBytes.readUnsignedInt();
 				}else if (str_type == 14) {
 					element_type=ElementType.CONCATENATED_SUBGEO;
-					var verts:Array<number> = [];
+					//var verts:Array<number> = [];
+					attr_count = 8;
+					var vertData:ByteArray = new ByteArray(str_len);
+					this._newBlockBytes.readBytes(vertData, 0, str_len);
+					/*
 					while (this._newBlockBytes.position < str_end) {
 						x = this.readNumber(false);
 						y = this.readNumber(false);
 						verts[idx++] = x;
 						verts[idx++] = y;
 						verts[idx++] = 0;
-					}
+					}*/
 				}else if (str_type == 15) {
 					element_type=ElementType.SHARED_INDEXBUFFER;
 					target_start_idx = this._newBlockBytes.readUnsignedInt();
@@ -1562,7 +1566,11 @@ export class AWDParser extends ParserBase
 			}
 			else if(element_type==ElementType.CONCATENATED_SUBGEO) {
 
-				var triangle_elements =   new TriangleElements(new AttributesBuffer());
+
+				var vertexBuffer:AttributesBuffer = new AttributesBuffer(attr_count, str_len/attr_count);
+				vertexBuffer.bufferView = new Uint8Array(<ArrayBuffer> vertData.arraybytes);
+				var triangle_elements =   new TriangleElements(vertexBuffer);
+				triangle_elements.setPositions(new Float2Attributes(vertexBuffer));
 				//if (weights)
 				//	triangle_elements.jointsPerVertex = weights.length / (verts.length / 3);
 
@@ -1572,9 +1580,9 @@ export class AWDParser extends ParserBase
 				//triangle_elements.autoDeriveTangents = true;
 
 				triangle_elements.setIndices(indices);
-				triangle_elements.setPositions(verts);
+				//triangle_elements.setPositions(verts);
 				//triangle_elements.setNormals(normals);
-				triangle_elements.setUVs(uvs);
+				//triangle_elements.setUVs(uvs);
 				//triangle_elements.setJointWeights(weights);
 				//triangle_elements.setJointIndices(w_indices);
 
