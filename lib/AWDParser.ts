@@ -105,8 +105,6 @@ import {SpecularPhongMethod}			from "@awayjs/materials/lib/methods/SpecularPhong
 import {ShadowNearMethod}				from "@awayjs/materials/lib/methods/ShadowNearMethod";
 import {ShadowSoftMethod}				from "@awayjs/materials/lib/methods/ShadowSoftMethod";
 
-import {BasicMaterial}					from "@awayjs/display/lib/materials/BasicMaterial";
-
 import {ITimelineSceneGraphFactory} 	from "@awayjs/display/lib/factories/ITimelineSceneGraphFactory";
 import {AS2SceneGraphFactory} 			from "@awayjs/player/lib/factories/AS2SceneGraphFactory";
 import {MovieClip} 						from "@awayjs/display/lib/display/MovieClip";
@@ -886,7 +884,7 @@ export class AWDParser extends ParserBase
 			newTextFormat.font_table = font_table;
 		}
 
-		var mat:BasicMaterial = <BasicMaterial> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+		var mat:MethodMaterial = <MethodMaterial> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 		mat.bothSides = true;
 		//mat.curves = true;
 		var num_uv_values:number = this._newBlockBytes.readUnsignedByte();
@@ -1003,7 +1001,7 @@ export class AWDParser extends ParserBase
 	{
 
 		var name:string = this.parseVarStr();
-		var mat:BasicMaterial = <BasicMaterial> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
+		var mat:MethodMaterial = <MethodMaterial> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 		mat.bothSides=true;
 		var billboard:Billboard = new Billboard(mat);
 
@@ -2385,8 +2383,8 @@ export class AWDParser extends ParserBase
 			else if(type==6){
 				diffuseTexture.mappingMode = MappingMode.RADIAL_GRADIENT;
 			}
-			var basic_mat:BasicMaterial = new BasicMaterial();
-			basic_mat.texture = diffuseTexture;
+			var basic_mat:MethodMaterial = new MethodMaterial();
+			basic_mat.ambientMethod.texture = diffuseTexture;
 			basic_mat.bothSides = true;
 			basic_mat.alphaBlending = props.get(11, false);
 			//basic_mat.preserveAlpha = basic_mat.alphaBlending;
