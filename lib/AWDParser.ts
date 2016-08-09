@@ -1455,17 +1455,17 @@ export class AWDParser extends ParserBase
 					this._newBlockBytes.position = str_end;
 				} else if (str_type == 9) {// combined vertex3D stream 13 x float32
 					this._newBlockBytes.position = str_end;
-				} else if (str_type == 10) {// combined vertex2D stream 7 x float32 (2d pos + uv + curvedata)
+				} else if (str_type == 10) {
 					element_type=ElementType.CONCENATED_STREAMS;
 					attr_count = 28;
 					var curveData:ByteArray = new ByteArray(str_len);
 					this._newBlockBytes.readBytes(curveData, 0, str_len);
-				} else if (str_type == 11) {// combined vertex2D stream 5 x float32 (2d pos + curvedata)
+				} else if (str_type == 11) {
 					element_type=ElementType.CONCENATED_STREAMS;
 					attr_count = 20;
 					var curveData:ByteArray = new ByteArray(str_len);
 					this._newBlockBytes.readBytes(curveData, 0, str_len);
-				} else if (str_type == 12) {// combined vertex2D stream 5 x float32 (2d pos + curvedata)
+				} else if (str_type == 12) {
 					element_type=ElementType.CONCENATED_STREAMS;
 					attr_count = 12;
 					var curveData:ByteArray = new ByteArray(str_len);
@@ -1495,6 +1495,12 @@ export class AWDParser extends ParserBase
 					element_type=ElementType.SHARED_INDEXBUFFER;
 					target_start_idx = this._newBlockBytes.readUnsignedInt();
 					target_vert_cnt = this._newBlockBytes.readUnsignedInt();
+				}
+				else if (str_type == 16) {
+					element_type=ElementType.CONCENATED_STREAMS;
+					attr_count = 8;
+					var curveData:ByteArray = new ByteArray(str_len);
+					this._newBlockBytes.readBytes(curveData, 0, str_len);
 				}else{
 					console.log("skipping unknown subgeom stream");
 					this._newBlockBytes.position = str_end;
