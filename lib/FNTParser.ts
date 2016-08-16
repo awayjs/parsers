@@ -46,10 +46,6 @@ export class FNTParser extends ParserBase
 	public static supportsType(extension:string):boolean
 	{
 		extension = extension.toLowerCase();
-		var supports:boolean=extension == "fnt";
-		if(supports){
-			console.log("supportsType fnt = "+extension);
-		}
 		return extension == "fnt";
 	}
 
@@ -63,7 +59,7 @@ export class FNTParser extends ParserBase
 		try {
 			var content:string = ParserUtils.toString(data);
 			if(content.indexOf("font") != -1 || content.indexOf("Font") != -1){
-				console.log("supportsData fnt");
+				//console.log("supportsData fnt");
 				return true;
 
 			}
@@ -145,7 +141,7 @@ export class FNTParser extends ParserBase
 					var scaleW:string = XmlUtils.readAttributeValue(common_node, "scaleW");
 					this._bitmapFontTable.texture_width=parseInt(scaleW);
 					var adjustSize:string = XmlUtils.readAttributeValue(common_node, "adjustSize");
-					if(adjustSize!="") this._bitmapFontTable._adjust_size=parseInt(adjustSize);
+					if(adjustSize!="") this._bitmapFontTable._adjust_size=parseFloat(adjustSize);
 
 				} catch(Error) {
 					return ParserBase.PARSING_DONE;
