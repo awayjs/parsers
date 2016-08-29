@@ -27,7 +27,7 @@ import {Point}							from "@awayjs/core/lib/geom/Point";
 
 import {AnimationNodeBase}				from "@awayjs/display/lib/animators/nodes/AnimationNodeBase";
 import {DisplayObjectContainer}			from "@awayjs/display/lib/display/DisplayObjectContainer";
-import {View}							from "@awayjs/display/lib/View";
+import {IView}							from "@awayjs/display/lib/IView";
 import {DisplayObject}					from "@awayjs/display/lib/display/DisplayObject";
 import {LightBase}						from "@awayjs/display/lib/display/LightBase";
 import {Graphics}						from "@awayjs/display/lib/graphics/Graphics";
@@ -131,7 +131,7 @@ import {Graphic}						from "@awayjs/display/lib/graphics/Graphic";
  */
 export class AWDParser extends ParserBase
 {
-	private _view:View;
+	private _view:IView;
 
 	//set to "true" to have some console.logs in the Console
 	private _debug:boolean = false;
@@ -211,7 +211,7 @@ export class AWDParser extends ParserBase
 	 * @param uri The url or id of the data or file to be parsed.
 	 * @param extra The holder for extra contextual data that the parser might need.
 	 */
-	constructor(view:View = null)
+	constructor(view:IView = null)
 	{
 		super(URLLoaderDataFormat.ARRAY_BUFFER);
 
