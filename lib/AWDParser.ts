@@ -810,7 +810,8 @@ export class AWDParser extends ParserBase
 					str_ftype = this._newBlockBytes.readUnsignedByte();
 					str_len = this._newBlockBytes.readUnsignedInt();
 					str_end = this._newBlockBytes.position + str_len;
-
+					/*
+					//todo: right now we only support 2 types of vert data for glyphs (curves vs non-curves)
 					if (str_type == 2) {//face indices positions
 						var indices:Array<number> = new Array<number>();
 						for(var idx:number = 0; this._newBlockBytes.position < str_end; idx++)
@@ -819,15 +820,21 @@ export class AWDParser extends ParserBase
 						attr_count = 20;
 						var curveData:ByteArray = new ByteArray(str_len);
 						this._newBlockBytes.readBytes(curveData, 0, str_len);
-					} else if (str_type == 12) {// combined vertex2D stream 5 x float32 (position + curvedata)
+					} else if (str_type == 10) {// combined vertex2D stream 7 x float32 (position + curvedata + uv)
+					 attr_count = 28;
+					 var curveData:ByteArray = new ByteArray(str_len);
+					 this._newBlockBytes.readBytes(curveData, 0, str_len);
+					 }*/
+					if (str_type == 12) {// each vert has 2 x float position + 1 x float curve-data (curve data is interpreted as 4 individual bytes later)
 						attr_count = 12;
 						var curveData:ByteArray = new ByteArray(str_len);
 						this._newBlockBytes.readBytes(curveData, 0, str_len);
-					} else if (str_type == 10) {// combined vertex2D stream 7 x float32 (position + curvedata + uv)
-						attr_count = 28;
+					}
+					else if (str_type == 16) {// each vert has 2 x float position
+						attr_count = 8;
 						var curveData:ByteArray = new ByteArray(str_len);
 						this._newBlockBytes.readBytes(curveData, 0, str_len);
-					} else {
+					}else {
 						this._newBlockBytes.position = str_end;
 					}
 				}
@@ -835,8 +842,7 @@ export class AWDParser extends ParserBase
 					var vertexBuffer:AttributesBuffer = new AttributesBuffer(attr_count, str_len / attr_count);
 					vertexBuffer.bufferView = new Uint8Array(<ArrayBuffer> curveData.arraybytes);
 					//console.log("allchars[cnt1++] = ['"+font_style_char.toString()+"',["+vertexBuffer.bufferView.toString()+"]]");
-
-					new_font_style.setChar(font_style_char.toString(), char_width, vertexBuffer, null);
+					new_font_style.setChar(font_style_char.toString(), char_width, vertexBuffer, null, (attr_count!=8));
 				}
 			}
 		}
