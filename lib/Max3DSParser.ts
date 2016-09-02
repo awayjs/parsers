@@ -70,12 +70,17 @@ export class Max3DSParser extends ParserBase
 	public static supportsData(data:any):boolean
 	{
 		var ba:ByteArray;
-
-		ba = ParserUtils.toByteArray(data);
-		if (ba) {
-			ba.position = 0;
-			if (ba.readShort() == 0x4d4d)
-				return true;
+		try{
+			//TODO!!!: crashes when trying to check against AudioData
+			ba = ParserUtils.toByteArray(data);
+			if (ba) {
+				ba.position = 0;
+				if (ba.readShort() == 0x4d4d)
+					return true;
+			}
+		}
+		catch(err){
+			return false;
 		}
 
 		return false;
