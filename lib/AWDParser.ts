@@ -782,12 +782,12 @@ export class AWDParser extends ParserBase
 		for (var i:number = 0; i < font_style_cnt; ++i) {
 			font_style_name = this.parseVarStr();
 
-			// dirty hack for icycle
+			// dirty hack for icycle, when using Tessellated fonts (for FNT fonts we do not need this anymore)
 			// we use bold chars for non-latin chars, but we use regular for � sign,
 			// so the dirty hack is to merge the regular and the bold style
-			if((this._blocks[blockID].name=="Tahoma") && (font_style_name=="RegularStyle")){
-				font_style_name="BoldStyle";
-			}
+			//if((this._blocks[blockID].name=="Tahoma") && (font_style_name=="RegularStyle")){
+			//	font_style_name="BoldStyle";
+			//}
 
 			new_font_style = <TesselatedFontTable>new_font.get_font_table(font_style_name, TesselatedFontTable.assetType);
 			new_font_style.set_font_em_size(this._newBlockBytes.readUnsignedInt());
