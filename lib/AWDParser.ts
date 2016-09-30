@@ -2704,7 +2704,7 @@ export class AWDParser extends ParserBase
 			joint.name = this.parseVarStr();
 
 			ibp = this.parseMatrix3D();
-			joint.inverseBindPose = ibp.rawData;
+			joint.inverseBindPose = ibp._rawData;
 			// Ignore joint props/attributes for now
 			this.parseProperties(null);
 			this.parseUserAttributes();

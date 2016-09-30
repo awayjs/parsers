@@ -582,10 +582,11 @@ export class Max3DSParser extends ParserBase
 				if (obj.transform) {
 					// If a transform was found while parsing the
 					// object chunk, use it to find the local pivot vector
-					mtx = new Matrix3D(obj.transform);
-					mtx.rawData[12] = 0;
-					mtx.rawData[13] = 0;
-					mtx.rawData[14] = 0;
+					mtx = new Matrix3D();
+					mtx.copyRawDataFrom(obj.transform);
+					mtx._rawData[12] = 0;
+					mtx._rawData[13] = 0;
+					mtx._rawData[14] = 0;
 					pivot = mtx.transformVector(pivot);
 				}
 
@@ -599,7 +600,8 @@ export class Max3DSParser extends ParserBase
 			// Apply transformation to graphics if a transformation
 			// was found while parsing the object chunk earlier.
 			if (obj.transform) {
-				mtx = new Matrix3D(obj.transform);
+				mtx = new Matrix3D();
+				mtx.copyRawDataFrom(obj.transform);
 				mtx.invert();
 				graphics.applyTransformation(mtx);
 			}

@@ -245,7 +245,7 @@ export class MD5MeshParser extends ParserBase
 			this._bindPoses[i].appendTranslation(pos.x, pos.y, pos.z);
 			var inv:Matrix3D = this._bindPoses[i].clone();
 			inv.invert();
-			joint.inverseBindPose = inv.rawData;
+			joint.inverseBindPose = inv._rawData;
 
 			this._skeleton.joints[i++] = joint;
 
