@@ -1,4 +1,5 @@
-import {BitmapImage2D}			from "@awayjs/core/lib/image/BitmapImage2D";
+import {BitmapImage2D}			from "@awayjs/graphics/lib/image/BitmapImage2D";
+
 import {IAsset}					from "@awayjs/core/lib/library/IAsset";
 import {AssetLibrary}			from "@awayjs/core/lib/library/AssetLibrary";
 import {URLLoaderDataFormat}	from "@awayjs/core/lib/net/URLLoaderDataFormat";

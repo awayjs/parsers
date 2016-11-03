@@ -5,8 +5,9 @@ import {Vector3D}							from "@awayjs/core/lib/geom/Vector3D";
 import {URLLoaderDataFormat}				from "@awayjs/core/lib/net/URLLoaderDataFormat";
 import {ParserBase}						from "@awayjs/core/lib/parsers/ParserBase";
 
-import {Graphics}							from "@awayjs/display/lib/graphics/Graphics";
-import {TriangleElements}					from "@awayjs/display/lib/graphics/TriangleElements";
+import {Graphics}							from "@awayjs/graphics/lib/Graphics";
+import {TriangleElements}					from "@awayjs/graphics/lib/elements/TriangleElements";
+
 import {DisplayObjectContainer}			from "@awayjs/display/lib/display/DisplayObjectContainer";
 import {Sprite}							from "@awayjs/display/lib/display/Sprite";
 

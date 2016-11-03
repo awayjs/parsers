@@ -1,5 +1,4 @@
 import {AttributesBuffer}					from "@awayjs/core/lib/attributes/AttributesBuffer";
-import {BitmapImage2D}					from "@awayjs/core/lib/image/BitmapImage2D";
 import {Matrix3D}							from "@awayjs/core/lib/geom/Matrix3D";
 import {Vector3D}							from "@awayjs/core/lib/geom/Vector3D";
 import {IAsset}							from "@awayjs/core/lib/library/IAsset";
@@ -10,13 +9,15 @@ import {ParserUtils}						from "@awayjs/core/lib/parsers/ParserUtils";
 import {ResourceDependency}				from "@awayjs/core/lib/parsers/ResourceDependency";
 import {ByteArray}						from "@awayjs/core/lib/utils/ByteArray";
 
-import {Graphics}							from "@awayjs/display/lib/graphics/Graphics";
-import {TriangleElements}					from "@awayjs/display/lib/graphics/TriangleElements";
+import {Graphics}							from "@awayjs/graphics/lib/Graphics";
+import {BitmapImage2D}					from "@awayjs/graphics/lib/image/BitmapImage2D";
+import {TriangleElements}					from "@awayjs/graphics/lib/elements/TriangleElements";
+import {DefaultMaterialManager}			from "@awayjs/graphics/lib/managers/DefaultMaterialManager";
+import {MaterialBase}						from "@awayjs/graphics/lib/materials/MaterialBase";
+import {Single2DTexture}					from "@awayjs/graphics/lib/textures/Single2DTexture";
+
 import {DisplayObjectContainer}			from "@awayjs/display/lib/display/DisplayObjectContainer";
 import {Sprite}							from "@awayjs/display/lib/display/Sprite";
-import {DefaultMaterialManager}			from "@awayjs/display/lib/managers/DefaultMaterialManager";
-import {MaterialBase}						from "@awayjs/display/lib/materials/MaterialBase";
-import {Single2DTexture}					from "@awayjs/display/lib/textures/Single2DTexture";
 
 import {MethodMaterial}					from "@awayjs/materials/lib/MethodMaterial";
 import {MethodMaterialMode}				from "@awayjs/materials/lib/MethodMaterialMode";

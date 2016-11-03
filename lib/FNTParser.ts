@@ -1,4 +1,8 @@
-import {BitmapImage2D}			from "@awayjs/core/lib/image/BitmapImage2D";
+import {BitmapImage2D}			from "@awayjs/graphics/lib/image/BitmapImage2D";
+import {Single2DTexture}				from "@awayjs/graphics/lib/textures/Single2DTexture";
+import {Sampler2D}						from "@awayjs/graphics/lib/image/Sampler2D";
+import {Style}							from "@awayjs/graphics/lib/base/Style";
+
 import {IAsset}					from "@awayjs/core/lib/library/IAsset";
 import {URLLoaderDataFormat}	from "@awayjs/core/lib/net/URLLoaderDataFormat";
 import {URLRequest}				from "@awayjs/core/lib/net/URLRequest";
@@ -9,9 +13,6 @@ import {XmlUtils}				from "@awayjs/core/lib/utils/XmlUtils";
 import {BitmapFontTable}		from "@awayjs/display/lib/text/BitmapFontTable";
 import {Font}					from "@awayjs/display/lib/text/Font";
 import {MethodMaterial}					from "@awayjs/materials/lib/MethodMaterial";
-import {Single2DTexture}				from "@awayjs/display/lib/textures/Single2DTexture";
-import {Sampler2D}						from "@awayjs/core/lib/image/Sampler2D";
-import {Style}							from "@awayjs/display/lib/base/Style";
 
 /**
  * TextureAtlasParser provides a "parser" for natively supported image types (jpg, png). While it simply loads bytes into

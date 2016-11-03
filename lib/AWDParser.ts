@@ -4,10 +4,6 @@ import {Float3Attributes}				from "@awayjs/core/lib/attributes/Float3Attributes"
 import {Float2Attributes}				from "@awayjs/core/lib/attributes/Float2Attributes";
 import {Byte4Attributes}				from "@awayjs/core/lib/attributes/Byte4Attributes";
 
-import {BitmapImage2D}					from "@awayjs/core/lib/image/BitmapImage2D";
-import {BitmapImageCube}				from "@awayjs/core/lib/image/BitmapImageCube";
-import {BlendMode}						from "@awayjs/core/lib/image/BlendMode";
-import {Sampler2D}						from "@awayjs/core/lib/image/Sampler2D";
 import {WaveAudio}						from "@awayjs/core/lib/audio/WaveAudio";
 import {ColorTransform}					from "@awayjs/core/lib/geom/ColorTransform";
 import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
@@ -25,14 +21,25 @@ import {OrthographicOffCenterProjection}from "@awayjs/core/lib/projections/Ortho
 import {ByteArray}						from "@awayjs/core/lib/utils/ByteArray";
 import {Point}							from "@awayjs/core/lib/geom/Point";
 
-import {AnimationNodeBase}				from "@awayjs/display/lib/animators/nodes/AnimationNodeBase";
+import {Graphics}						from "@awayjs/graphics/lib/Graphics";
+import {Style} 							from "@awayjs/graphics/lib/base/Style";
+import {BitmapImage2D}					from "@awayjs/graphics/lib/image/BitmapImage2D";
+import {BitmapImageCube}				from "@awayjs/graphics/lib/image/BitmapImageCube";
+import {BlendMode}						from "@awayjs/graphics/lib/image/BlendMode";
+import {Sampler2D}						from "@awayjs/graphics/lib/image/Sampler2D";
+import {TriangleElements}				from "@awayjs/graphics/lib/elements/TriangleElements";
+import {ElementsBase}					from "@awayjs/graphics/lib/elements/ElementsBase";
+import {DefaultMaterialManager}			from "@awayjs/graphics/lib/managers/DefaultMaterialManager";
+import {SingleCubeTexture}				from "@awayjs/graphics/lib/textures/SingleCubeTexture";
+import {Single2DTexture}				from "@awayjs/graphics/lib/textures/Single2DTexture";
+import {MappingMode} 					from "@awayjs/graphics/lib/textures/MappingMode";
+import {ElementsType}					from "@awayjs/graphics/lib/elements/ElementsType";
+import {Graphic}						from "@awayjs/graphics/lib/Graphic";
+
 import {DisplayObjectContainer}			from "@awayjs/display/lib/display/DisplayObjectContainer";
 import {IView}							from "@awayjs/display/lib/IView";
 import {DisplayObject}					from "@awayjs/display/lib/display/DisplayObject";
 import {LightBase}						from "@awayjs/display/lib/display/LightBase";
-import {Graphics}						from "@awayjs/display/lib/graphics/Graphics";
-import {TriangleElements}				from "@awayjs/display/lib/graphics/TriangleElements";
-import {ElementsBase}					from "@awayjs/display/lib/graphics/ElementsBase";
 import {DirectionalLight}				from "@awayjs/display/lib/display/DirectionalLight";
 import {PointLight}						from "@awayjs/display/lib/display/PointLight";
 import {Camera}							from "@awayjs/display/lib/display/Camera";
@@ -40,13 +47,11 @@ import {Sprite}							from "@awayjs/display/lib/display/Sprite";
 import {TextField}						from "@awayjs/display/lib/display/TextField";
 import {Billboard}						from "@awayjs/display/lib/display/Billboard";
 import {Skybox}							from "@awayjs/display/lib/display/Skybox";
-import {DefaultMaterialManager}			from "@awayjs/display/lib/managers/DefaultMaterialManager";
-import {MaterialBase}					from "@awayjs/display/lib/materials/MaterialBase";
-import {LightPickerBase}				from "@awayjs/display/lib/materials/lightpickers/LightPickerBase";
-import {StaticLightPicker}				from "@awayjs/display/lib/materials/lightpickers/StaticLightPicker";
-import {CubeMapShadowMapper}			from "@awayjs/display/lib/materials/shadowmappers/CubeMapShadowMapper";
-import {DirectionalShadowMapper}		from "@awayjs/display/lib/materials/shadowmappers/DirectionalShadowMapper";
-import {ShadowMapperBase}				from "@awayjs/display/lib/materials/shadowmappers/ShadowMapperBase";
+import {LightPickerBase}				from "@awayjs/display/lib/lightpickers/LightPickerBase";
+import {StaticLightPicker}				from "@awayjs/display/lib/lightpickers/StaticLightPicker";
+import {CubeMapShadowMapper}			from "@awayjs/display/lib/shadowmappers/CubeMapShadowMapper";
+import {DirectionalShadowMapper}		from "@awayjs/display/lib/shadowmappers/DirectionalShadowMapper";
+import {ShadowMapperBase}				from "@awayjs/display/lib/shadowmappers/ShadowMapperBase";
 
 import {PrefabBase}						from "@awayjs/display/lib/prefabs/PrefabBase";
 import {PrimitivePrefabBase}			from "@awayjs/display/lib/prefabs/PrimitivePrefabBase";
@@ -57,9 +62,6 @@ import {PrimitiveCylinderPrefab}		from "@awayjs/display/lib/prefabs/PrimitiveCyl
 import {PrimitivePlanePrefab}			from "@awayjs/display/lib/prefabs/PrimitivePlanePrefab";
 import {PrimitiveSpherePrefab}			from "@awayjs/display/lib/prefabs/PrimitiveSpherePrefab";
 import {PrimitiveTorusPrefab}			from "@awayjs/display/lib/prefabs/PrimitiveTorusPrefab";
-import {SingleCubeTexture}				from "@awayjs/display/lib/textures/SingleCubeTexture";
-import {Single2DTexture}				from "@awayjs/display/lib/textures/Single2DTexture";
-import {TextureBase}					from "@awayjs/display/lib/textures/TextureBase";
 
 import {AnimationSetBase}				from "@awayjs/renderer/lib/animators/AnimationSetBase";
 import {AnimatorBase}					from "@awayjs/renderer/lib/animators/AnimatorBase";
@@ -121,11 +123,8 @@ import {TextFieldType}					from "@awayjs/display/lib/text/TextFieldType";
 
 import {AWDBlock}						from "./AWD3ParserUtils/AWDBlock";
 import {Rectangle} 						from "@awayjs/core/lib/geom/Rectangle";
-import {Style} 							from "@awayjs/display/lib/base/Style";
 import {Matrix} 						from "@awayjs/core/lib/geom/Matrix";
-import {MappingMode} 					from "@awayjs/display/lib/textures/MappingMode";
-import {ElementsType}					from "@awayjs/display/lib/graphics/ElementsType";
-import {Graphic}						from "@awayjs/display/lib/graphics/Graphic";
+
 /**
  * AWDParser provides a parser for the AWD data type.
  */
