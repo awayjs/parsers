@@ -36,32 +36,32 @@ import {MappingMode} 					from "@awayjs/graphics/lib/textures/MappingMode";
 import {ElementsType}					from "@awayjs/graphics/lib/elements/ElementsType";
 import {Graphic}						from "@awayjs/graphics/lib/Graphic";
 
-import {DisplayObjectContainer}			from "@awayjs/display/lib/display/DisplayObjectContainer";
-import {IView}							from "@awayjs/display/lib/IView";
-import {DisplayObject}					from "@awayjs/display/lib/display/DisplayObject";
-import {LightBase}						from "@awayjs/display/lib/display/LightBase";
-import {DirectionalLight}				from "@awayjs/display/lib/display/DirectionalLight";
-import {PointLight}						from "@awayjs/display/lib/display/PointLight";
-import {Camera}							from "@awayjs/display/lib/display/Camera";
-import {Sprite}							from "@awayjs/display/lib/display/Sprite";
-import {TextField}						from "@awayjs/display/lib/display/TextField";
-import {Billboard}						from "@awayjs/display/lib/display/Billboard";
-import {Skybox}							from "@awayjs/display/lib/display/Skybox";
-import {LightPickerBase}				from "@awayjs/display/lib/lightpickers/LightPickerBase";
-import {StaticLightPicker}				from "@awayjs/display/lib/lightpickers/StaticLightPicker";
-import {CubeMapShadowMapper}			from "@awayjs/display/lib/shadowmappers/CubeMapShadowMapper";
-import {DirectionalShadowMapper}		from "@awayjs/display/lib/shadowmappers/DirectionalShadowMapper";
-import {ShadowMapperBase}				from "@awayjs/display/lib/shadowmappers/ShadowMapperBase";
+import {DisplayObjectContainer}			from "@awayjs/scene/lib/display/DisplayObjectContainer";
+import {IView}							from "@awayjs/scene/lib/IView";
+import {DisplayObject}					from "@awayjs/scene/lib/display/DisplayObject";
+import {LightBase}						from "@awayjs/scene/lib/display/LightBase";
+import {DirectionalLight}				from "@awayjs/scene/lib/display/DirectionalLight";
+import {PointLight}						from "@awayjs/scene/lib/display/PointLight";
+import {Camera}							from "@awayjs/scene/lib/display/Camera";
+import {Sprite}							from "@awayjs/scene/lib/display/Sprite";
+import {TextField}						from "@awayjs/scene/lib/display/TextField";
+import {Billboard}						from "@awayjs/scene/lib/display/Billboard";
+import {Skybox}							from "@awayjs/scene/lib/display/Skybox";
+import {LightPickerBase}				from "@awayjs/scene/lib/lightpickers/LightPickerBase";
+import {StaticLightPicker}				from "@awayjs/scene/lib/lightpickers/StaticLightPicker";
+import {CubeMapShadowMapper}			from "@awayjs/scene/lib/shadowmappers/CubeMapShadowMapper";
+import {DirectionalShadowMapper}		from "@awayjs/scene/lib/shadowmappers/DirectionalShadowMapper";
+import {ShadowMapperBase}				from "@awayjs/scene/lib/shadowmappers/ShadowMapperBase";
 
-import {PrefabBase}						from "@awayjs/display/lib/prefabs/PrefabBase";
-import {PrimitivePrefabBase}			from "@awayjs/display/lib/prefabs/PrimitivePrefabBase";
-import {PrimitiveCapsulePrefab}			from "@awayjs/display/lib/prefabs/PrimitiveCapsulePrefab";
-import {PrimitiveConePrefab}			from "@awayjs/display/lib/prefabs/PrimitiveConePrefab";
-import {PrimitiveCubePrefab}			from "@awayjs/display/lib/prefabs/PrimitiveCubePrefab";
-import {PrimitiveCylinderPrefab}		from "@awayjs/display/lib/prefabs/PrimitiveCylinderPrefab";
-import {PrimitivePlanePrefab}			from "@awayjs/display/lib/prefabs/PrimitivePlanePrefab";
-import {PrimitiveSpherePrefab}			from "@awayjs/display/lib/prefabs/PrimitiveSpherePrefab";
-import {PrimitiveTorusPrefab}			from "@awayjs/display/lib/prefabs/PrimitiveTorusPrefab";
+import {PrefabBase}						from "@awayjs/scene/lib/prefabs/PrefabBase";
+import {PrimitivePrefabBase}			from "@awayjs/scene/lib/prefabs/PrimitivePrefabBase";
+import {PrimitiveCapsulePrefab}			from "@awayjs/scene/lib/prefabs/PrimitiveCapsulePrefab";
+import {PrimitiveConePrefab}			from "@awayjs/scene/lib/prefabs/PrimitiveConePrefab";
+import {PrimitiveCubePrefab}			from "@awayjs/scene/lib/prefabs/PrimitiveCubePrefab";
+import {PrimitiveCylinderPrefab}		from "@awayjs/scene/lib/prefabs/PrimitiveCylinderPrefab";
+import {PrimitivePlanePrefab}			from "@awayjs/scene/lib/prefabs/PrimitivePlanePrefab";
+import {PrimitiveSpherePrefab}			from "@awayjs/scene/lib/prefabs/PrimitiveSpherePrefab";
+import {PrimitiveTorusPrefab}			from "@awayjs/scene/lib/prefabs/PrimitiveTorusPrefab";
 
 import {AnimationSetBase}				from "@awayjs/renderer/lib/animators/AnimationSetBase";
 import {AnimatorBase}					from "@awayjs/renderer/lib/animators/AnimatorBase";
@@ -107,19 +107,19 @@ import {SpecularPhongMethod}			from "@awayjs/materials/lib/methods/SpecularPhong
 import {ShadowNearMethod}				from "@awayjs/materials/lib/methods/ShadowNearMethod";
 import {ShadowSoftMethod}				from "@awayjs/materials/lib/methods/ShadowSoftMethod";
 
-import {ITimelineSceneGraphFactory} 	from "@awayjs/display/lib/factories/ITimelineSceneGraphFactory";
+import {ITimelineSceneGraphFactory} 	from "@awayjs/scene/lib/factories/ITimelineSceneGraphFactory";
 import {AS2SceneGraphFactory} 			from "@awayjs/player/lib/factories/AS2SceneGraphFactory";
-import {MovieClip} 						from "@awayjs/display/lib/display/MovieClip";
-import {Timeline}			 			from "@awayjs/display/lib/base/Timeline";
+import {MovieClip} 						from "@awayjs/scene/lib/display/MovieClip";
+import {Timeline}			 			from "@awayjs/scene/lib/base/Timeline";
 
 
 import {AssetLibrary}					from "@awayjs/core/lib/library/AssetLibrary";
 
-import {Font}							from "@awayjs/display/lib/text/Font";
-import {TesselatedFontTable}			from "@awayjs/display/lib/text/TesselatedFontTable";
-import {IFontTable}						from "@awayjs/display/lib/text/IFontTable";
-import {TextFormat}						from "@awayjs/display/lib/text/TextFormat";
-import {TextFieldType}					from "@awayjs/display/lib/text/TextFieldType";
+import {Font}							from "@awayjs/scene/lib/text/Font";
+import {TesselatedFontTable}			from "@awayjs/scene/lib/text/TesselatedFontTable";
+import {IFontTable}						from "@awayjs/scene/lib/text/IFontTable";
+import {TextFormat}						from "@awayjs/scene/lib/text/TextFormat";
+import {TextFieldType}					from "@awayjs/scene/lib/text/TextFieldType";
 
 import {AWDBlock}						from "./AWD3ParserUtils/AWDBlock";
 import {Rectangle} 						from "@awayjs/core/lib/geom/Rectangle";

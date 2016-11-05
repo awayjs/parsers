@@ -8,10 +8,10 @@ import {ParserBase}				from "@awayjs/core/lib/parsers/ParserBase";
 import {ParserUtils}			from "@awayjs/core/lib/parsers/ParserUtils";
 import {ResourceDependency}		from "@awayjs/core/lib/parsers/ResourceDependency";
 import {XmlUtils}				from "@awayjs/core/lib/utils/XmlUtils";
-import {BitmapFontTable}		from "@awayjs/display/lib/text/BitmapFontTable";
-import {Font}							from "@awayjs/display/lib/text/Font";
-import {TesselatedFontTable}			from "@awayjs/display/lib/text/TesselatedFontTable";
-import {IFontTable}						from "@awayjs/display/lib/text/IFontTable";
+import {BitmapFontTable}		from "@awayjs/scene/lib/text/BitmapFontTable";
+import {Font}							from "@awayjs/scene/lib/text/Font";
+import {TesselatedFontTable}			from "@awayjs/scene/lib/text/TesselatedFontTable";
+import {IFontTable}						from "@awayjs/scene/lib/text/IFontTable";
 
 var opentype;
 /**

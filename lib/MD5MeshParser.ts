@@ -8,8 +8,8 @@ import {ParserBase}						from "@awayjs/core/lib/parsers/ParserBase";
 import {Graphics}							from "@awayjs/graphics/lib/Graphics";
 import {TriangleElements}					from "@awayjs/graphics/lib/elements/TriangleElements";
 
-import {DisplayObjectContainer}			from "@awayjs/display/lib/display/DisplayObjectContainer";
-import {Sprite}							from "@awayjs/display/lib/display/Sprite";
+import {DisplayObjectContainer}			from "@awayjs/scene/lib/display/DisplayObjectContainer";
+import {Sprite}							from "@awayjs/scene/lib/display/Sprite";
 
 import {SkeletonAnimationSet}				from "@awayjs/renderer/lib/animators/SkeletonAnimationSet";
 import {Skeleton}							from "@awayjs/renderer/lib/animators/data/Skeleton";

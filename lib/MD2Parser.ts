@@ -12,8 +12,8 @@ import {ParserUtils}						from "@awayjs/core/lib/parsers/ParserUtils";
 import {ResourceDependency}				from "@awayjs/core/lib/parsers/ResourceDependency";
 import {ByteArray}						from "@awayjs/core/lib/utils/ByteArray";
 
-import {DisplayObjectContainer}			from "@awayjs/display/lib/display/DisplayObjectContainer";
-import {Sprite}							from "@awayjs/display/lib/display/Sprite";
+import {DisplayObjectContainer}			from "@awayjs/scene/lib/display/DisplayObjectContainer";
+import {Sprite}							from "@awayjs/scene/lib/display/Sprite";
 
 import {VertexClipNode}					from "@awayjs/renderer/lib/animators/nodes/VertexClipNode";
 import {VertexAnimationSet}				from "@awayjs/renderer/lib/animators/VertexAnimationSet";

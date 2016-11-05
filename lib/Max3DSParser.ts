@@ -16,8 +16,8 @@ import {DefaultMaterialManager}			from "@awayjs/graphics/lib/managers/DefaultMat
 import {MaterialBase}						from "@awayjs/graphics/lib/materials/MaterialBase";
 import {Single2DTexture}					from "@awayjs/graphics/lib/textures/Single2DTexture";
 
-import {DisplayObjectContainer}			from "@awayjs/display/lib/display/DisplayObjectContainer";
-import {Sprite}							from "@awayjs/display/lib/display/Sprite";
+import {DisplayObjectContainer}			from "@awayjs/scene/lib/display/DisplayObjectContainer";
+import {Sprite}							from "@awayjs/scene/lib/display/Sprite";
 
 import {MethodMaterial}					from "@awayjs/materials/lib/MethodMaterial";
 import {MethodMaterialMode}				from "@awayjs/materials/lib/MethodMaterialMode";
