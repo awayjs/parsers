@@ -202,7 +202,7 @@ export class MD2Parser extends ParserBase
 			} else if (!this.graphicsCreated) {
 				this.graphicsCreated = true;
 				//create default subgraphics
-				this._graphics.addGraphic(this._firstElements.clone());
+				this._graphics.addShape(this._firstElements.clone());
 				// Force name to be chosen by this._pFinalizeAsset()
 				this._sprite.name = "";
 				if (this.materialFinal) {
@@ -443,7 +443,7 @@ export class MD2Parser extends ParserBase
 				this._firstElements = elements;
 
 			graphics = new Graphics();
-			graphics.addGraphic(elements);
+			graphics.addShape(elements);
 
 			elements.setIndices(this._indices);
 			elements.setPositions(fvertices);

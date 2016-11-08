@@ -363,7 +363,7 @@ export class OBJParser extends ParserBase
 
 				if (sprite.graphics.count > 1) {
 					for (sm = 1; sm < sprite.graphics.count; ++sm)
-						sprite.graphics.getGraphicAt(sm).material = bmMaterial;
+						sprite.graphics.getShapeAt(sm).material = bmMaterial;
 				}
 
 				//add to the content property
@@ -416,7 +416,7 @@ export class OBJParser extends ParserBase
 			elements.setNormals(normals);
 			elements.setUVs(uvs);
 
-			graphics.addGraphic(elements);
+			graphics.addShape(elements);
 		}
 	}
 

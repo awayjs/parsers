@@ -575,7 +575,7 @@ export class Max3DSParser extends ParserBase
 			sub.setPositions(obj.verts);
 			sub.setUVs(obj.uvs);
 
-			graphics.addGraphic(sub);
+			graphics.addShape(sub);
 
 			// Apply pivot translation to graphics if a pivot was
 			// found while parsing the keyframe chunk earlier.

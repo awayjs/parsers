@@ -153,7 +153,7 @@ export class MD5MeshParser extends ParserBase
 				this._graphics = this._sprite.graphics;
 
 				for (var i:number /*int*/ = 0; i < this._elementsData.length; ++i)
-					this._graphics.addGraphic(this.translateElements(this._elementsData[i].positionData, this._elementsData[i].weightData, this._elementsData[i].indices));
+					this._graphics.addShape(this.translateElements(this._elementsData[i].positionData, this._elementsData[i].weightData, this._elementsData[i].indices));
 
 				//_graphics.animation = _animation;
 				//					_sprite.animationController = _animationController;
