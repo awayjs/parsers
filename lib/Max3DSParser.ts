@@ -10,6 +10,7 @@ import {ResourceDependency}				from "@awayjs/core/lib/parsers/ResourceDependency
 import {ByteArray}						from "@awayjs/core/lib/utils/ByteArray";
 
 import {Graphics}							from "@awayjs/graphics/lib/Graphics";
+import {Shape}							from "@awayjs/graphics/lib/base/Shape";
 import {BitmapImage2D}					from "@awayjs/graphics/lib/image/BitmapImage2D";
 import {TriangleElements}					from "@awayjs/graphics/lib/elements/TriangleElements";
 import {DefaultMaterialManager}			from "@awayjs/graphics/lib/managers/DefaultMaterialManager";
@@ -575,7 +576,7 @@ export class Max3DSParser extends ParserBase
 			sub.setPositions(obj.verts);
 			sub.setUVs(obj.uvs);
 
-			graphics.addShape(sub);
+			graphics.addShape(new Shape(sub));
 
 			// Apply pivot translation to graphics if a pivot was
 			// found while parsing the keyframe chunk earlier.

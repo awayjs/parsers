@@ -23,6 +23,7 @@ import {Point}							from "@awayjs/core/lib/geom/Point";
 
 import {Graphics}						from "@awayjs/graphics/lib/Graphics";
 import {Style} 							from "@awayjs/graphics/lib/base/Style";
+import {IMaterial} 							from "@awayjs/graphics/lib/base/IMaterial";
 import {BitmapImage2D}					from "@awayjs/graphics/lib/image/BitmapImage2D";
 import {BitmapImageCube}				from "@awayjs/graphics/lib/image/BitmapImageCube";
 import {BlendMode}						from "@awayjs/graphics/lib/image/BlendMode";
@@ -1059,6 +1060,9 @@ export class AWDParser extends ParserBase
 				sprite.graphics.getShapeAt(i).material = materials[Math.min(materials.length - 1, i)];
 		}
 
+		var sampler:Sampler2D;
+		var shape:Shape;
+		var material:IMaterial;
 		var count:number = this._newBlockBytes.readUnsignedShort();
 		//if(count != sprite.graphics.count)
 		//	throw new Error("num elements does not match num subsprites";
@@ -1066,31 +1070,32 @@ export class AWDParser extends ParserBase
 		for (var i:number = 0; i < count; i++) {
 			var type:number = this._newBlockBytes.readUnsignedByte();
 
-			var sampler:Sampler2D = new Sampler2D();
-			var shape:Shape = sprite.graphics.getShapeAt(i);
+			sampler = new Sampler2D();
+			shape = sprite.graphics.getShapeAt(i);
+			material = shape.material || sprite.material;
 			if(shape) {
 				shape.style = new Style();
-				shape.style.addSamplerAt(sampler, shape.material.getTextureAt(0));
+				shape.style.addSamplerAt(sampler, material.getTextureAt(0));
 			}
 			if (type == 3) {// solid color fill - need tx and ty
 				var tx:number=this._newBlockBytes.readFloat();
 				var ty:number=this._newBlockBytes.readFloat();
 				if(shape) {
-					shape.material.animateUVs = true;
+					material.animateUVs = true;
 					shape.style.uvMatrix = new Matrix(0, 0, 0, 0, tx, ty);
 				}
 			}
 			else if (type == 4) {// texture fill - need full matrix
 				var matrix:Float32Array = this.parseMatrix32RawData();
 				if(shape) {
-					shape.material.animateUVs = true;
+					material.animateUVs = true;
 					shape.style.uvMatrix = new Matrix(matrix);
 				}
 			}
 			else if (type == 5) {// linear gradient fill - need a, c , tx and ty
 				var newMatrix:Matrix = new Matrix(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(), 0, 0, this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
 				if(shape) {
-					shape.material.animateUVs = true;
+					material.animateUVs = true;
 					shape.style.uvMatrix = newMatrix;
 				}
 			}
@@ -1102,15 +1107,15 @@ export class AWDParser extends ParserBase
 					var matrix:Float32Array = this.parseMatrix32RawData();
 					if(shape) {
 						sampler.imageRect = new Rectangle(x, y, width, height);
-						shape.material.imageRect = true;
-						shape.material.animateUVs = true;
+						material.imageRect = true;
+						material.animateUVs = true;
 						shape.style.uvMatrix = new Matrix(matrix);
 					}
 				}
 			if(shape) {
 				//check if curves are needed
 				if (shape.elements.getCustomAtributes("curves"))
-					shape.material.curves = true;
+					material.curves = true;
 			}
 			// todo: finish optional properties (spreadmode + focalpoint)
 			this._newBlockBytes.readUnsignedInt();
@@ -1532,7 +1537,7 @@ export class AWDParser extends ParserBase
 				if(attr_count==28)
 					curve_elements.setUVs(new Float2Attributes(vertexBuffer));
 
-				graphics.addShape(curve_elements);
+				graphics.addShape(new Shape(curve_elements));
 
 				if (this._debug)
 					console.log("Parsed a TriangleElements with curves");
@@ -1569,7 +1574,7 @@ export class AWDParser extends ParserBase
 				if (setSubUVs)
 					triangle_elements.scaleUV(scaleU, scaleV);
 
-				graphics.addShape(triangle_elements);
+				graphics.addShape(new Shape(triangle_elements));
 				if (this._debug)
 					console.log("Parsed a TriangleElements");
 			}
@@ -1610,7 +1615,7 @@ export class AWDParser extends ParserBase
 			}
 			else if(element_type==ElementType.SHARED_INDEXBUFFER) {
 
-				var shape:Shape = graphics.addShape(target_element);
+				var shape:Shape = graphics.addShape(new Shape(target_element));
 				shape.offset = target_start_idx/3; //todo: move this calc to exporter
 				shape.count = target_vert_cnt/3; //todo: move this calc to exporter
 
@@ -1618,7 +1623,7 @@ export class AWDParser extends ParserBase
 			}
 			else if(element_type==ElementType.SHARED_BUFFER){
 
-				var shape:Shape = graphics.addShape(target_element);
+				var shape:Shape = graphics.addShape(new Shape(target_element));
 				shape.offset = target_start_idx;
 				shape.count = target_vert_cnt;
 				if (this._debug)
@@ -2852,7 +2857,7 @@ export class AWDParser extends ParserBase
 						elements.autoDeriveNormals = false;
 						elements.autoDeriveTangents = false;
 						subSpriteParsed++;
-						graphics.addShape(elements);
+						graphics.addShape(new Shape(elements));
 					} else
 						this._newBlockBytes.position = str_end;
 					streamsParsed++;

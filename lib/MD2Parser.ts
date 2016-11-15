@@ -2,6 +2,7 @@ import {AttributesBuffer}					from "@awayjs/core/lib/attributes/AttributesBuffer
 import {URLLoaderDataFormat}				from "@awayjs/core/lib/net/URLLoaderDataFormat";
 
 import {Graphics}							from "@awayjs/graphics/lib/Graphics";
+import {Shape}							from "@awayjs/graphics/lib/base/Shape";
 import {TriangleElements}					from "@awayjs/graphics/lib/elements/TriangleElements";
 import {BitmapImage2D}					from "@awayjs/graphics/lib/image/BitmapImage2D";
 import {DefaultMaterialManager}			from "@awayjs/graphics/lib/managers/DefaultMaterialManager";
@@ -202,7 +203,7 @@ export class MD2Parser extends ParserBase
 			} else if (!this.graphicsCreated) {
 				this.graphicsCreated = true;
 				//create default subgraphics
-				this._graphics.addShape(this._firstElements.clone());
+				this._graphics.addShape(new Shape(this._firstElements.clone()));
 				// Force name to be chosen by this._pFinalizeAsset()
 				this._sprite.name = "";
 				if (this.materialFinal) {
@@ -439,12 +440,6 @@ export class MD2Parser extends ParserBase
 
 			elements = new TriangleElements(new AttributesBuffer());
 
-			if (this._firstElements == null)
-				this._firstElements = elements;
-
-			graphics = new Graphics();
-			graphics.addShape(elements);
-
 			elements.setIndices(this._indices);
 			elements.setPositions(fvertices);
 			elements.setUVs(this._finalUV);
@@ -455,6 +450,12 @@ export class MD2Parser extends ParserBase
 			elements.autoDeriveNormals = false;
 			elements.autoDeriveTangents = false;
 
+			if (this._firstElements == null)
+				this._firstElements = elements;
+
+			graphics = new Graphics();
+			graphics.addShape(new Shape(elements));
+			
 			var clip:VertexClipNode = this._clipNodes[name];
 
 			if (!clip) {

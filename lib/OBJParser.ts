@@ -10,6 +10,7 @@ import {ParserBase}						from "@awayjs/core/lib/parsers/ParserBase";
 import {ParserUtils}						from "@awayjs/core/lib/parsers/ParserUtils";
 import {ResourceDependency}				from "@awayjs/core/lib/parsers/ResourceDependency";
 
+import {Shape}							from "@awayjs/graphics/lib/base/Shape";
 import {Graphics}							from "@awayjs/graphics/lib/Graphics";
 import {BitmapImage2D}					from "@awayjs/graphics/lib/image/BitmapImage2D";
 import {TriangleElements}					from "@awayjs/graphics/lib/elements/TriangleElements";
@@ -416,7 +417,7 @@ export class OBJParser extends ParserBase
 			elements.setNormals(normals);
 			elements.setUVs(uvs);
 
-			graphics.addShape(elements);
+			graphics.addShape(new Shape(elements));
 		}
 	}
 
