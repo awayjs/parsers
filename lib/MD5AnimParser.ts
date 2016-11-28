@@ -1,11 +1,6 @@
-import {Quaternion}						from "@awayjs/core/lib/geom/Quaternion";
-import {Vector3D}							from "@awayjs/core/lib/geom/Vector3D";
-import {URLLoaderDataFormat}				from "@awayjs/core/lib/net/URLLoaderDataFormat";
-import {ParserBase}						from "@awayjs/core/lib/parsers/ParserBase";
+import {Quaternion, Vector3D, URLLoaderDataFormat, ParserBase} from "@awayjs/core";
 
-import {JointPose}						from "@awayjs/renderer/lib/animators/data/JointPose";
-import {SkeletonPose}						from "@awayjs/renderer/lib/animators/data/SkeletonPose";
-import {SkeletonClipNode}					from "@awayjs/renderer/lib/animators/nodes/SkeletonClipNode";
+import {JointPose, SkeletonPose, SkeletonClipNode} from "@awayjs/renderer";
 
 /**
  * MD5AnimParser provides a parser for the md5anim data type, providing an animation sequence for the md5 format.

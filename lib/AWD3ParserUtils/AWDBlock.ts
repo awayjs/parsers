@@ -1,6 +1,6 @@
-import {ByteArray}						from "@awayjs/core/lib/utils/ByteArray";
+import {ByteArray} from "@awayjs/core";
 
-import {AWD3Utils}						from "../AWD3ParserUtils/AWD3Utils";
+import {AWD3Utils} from "./AWD3Utils";
 
 
 export class AWDBlock

@@ -1,17 +1,6 @@
-import {BitmapImage2D}			from "@awayjs/graphics/lib/image/BitmapImage2D";
+import {IAsset, AssetLibrary, URLLoaderDataFormat, ParserBase, ParserUtils, ResourceDependency} from "@awayjs/core";
 
-import {IAsset}					from "@awayjs/core/lib/library/IAsset";
-import {AssetLibrary}			from "@awayjs/core/lib/library/AssetLibrary";
-import {URLLoaderDataFormat}	from "@awayjs/core/lib/net/URLLoaderDataFormat";
-import {URLRequest}				from "@awayjs/core/lib/net/URLRequest";
-import {ParserBase}				from "@awayjs/core/lib/parsers/ParserBase";
-import {ParserUtils}			from "@awayjs/core/lib/parsers/ParserUtils";
-import {ResourceDependency}		from "@awayjs/core/lib/parsers/ResourceDependency";
-import {XmlUtils}				from "@awayjs/core/lib/utils/XmlUtils";
-import {BitmapFontTable}		from "@awayjs/scene/lib/text/BitmapFontTable";
-import {Font}							from "@awayjs/scene/lib/text/Font";
-import {TesselatedFontTable}			from "@awayjs/scene/lib/text/TesselatedFontTable";
-import {IFontTable}						from "@awayjs/scene/lib/text/IFontTable";
+import {Font, TesselatedFontTable} from "@awayjs/scene";
 
 var opentype;
 /**

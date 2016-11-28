@@ -1,8 +1,7 @@
-import {AssetBase}				from "@awayjs/core/lib/library/AssetBase";
-import {AWDBlock}				from "../lib/AWD3ParserUtils/AWDBlock";
-import {IAsset} 				from "@awayjs/core/lib/library/IAsset";
-import {ByteArray}						from "@awayjs/core/lib/utils/ByteArray";
-import {AWDEncoder}						from "../lib/AWDEncoder";
+import {AssetBase, IAsset, ByteArray} from "@awayjs/core";
+
+import {AWDBlock}				from "./AWD3ParserUtils/AWDBlock";
+
 /**
  * TextureAtlasParser provides a "parser" for natively supported image types (jpg, png). While it simply loads bytes into
  * a loader object, it wraps it in a BitmapImage2DResource so resource management can happen consistently without

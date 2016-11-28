@@ -1,29 +1,10 @@
-import {Sampler2D}					from "@awayjs/graphics/lib/image/Sampler2D";
-import {AttributesBuffer}					from "@awayjs/core/lib/attributes/AttributesBuffer";
-import {Matrix3D}							from "@awayjs/core/lib/geom/Matrix3D";
-import {Quaternion}						from "@awayjs/core/lib/geom/Quaternion";
-import {Vector3D}							from "@awayjs/core/lib/geom/Vector3D";
-import {IAsset}							from "@awayjs/core/lib/library/IAsset";
-import {URLLoaderDataFormat}				from "@awayjs/core/lib/net/URLLoaderDataFormat";
-import {URLRequest}						from "@awayjs/core/lib/net/URLRequest";
-import {ParserBase}						from "@awayjs/core/lib/parsers/ParserBase";
-import {ParserUtils}						from "@awayjs/core/lib/parsers/ParserUtils";
-import {ResourceDependency}				from "@awayjs/core/lib/parsers/ResourceDependency";
+import {AttributesBuffer, IAsset, URLLoaderDataFormat, URLRequest, ParserBase, ParserUtils, ResourceDependency} from "@awayjs/core";
 
-import {Shape}							from "@awayjs/graphics/lib/base/Shape";
-import {Graphics}							from "@awayjs/graphics/lib/Graphics";
-import {BitmapImage2D}					from "@awayjs/graphics/lib/image/BitmapImage2D";
-import {TriangleElements}					from "@awayjs/graphics/lib/elements/TriangleElements";
-import {DefaultMaterialManager}			from "@awayjs/graphics/lib/managers/DefaultMaterialManager";
-import {MaterialBase}						from "@awayjs/graphics/lib/materials/MaterialBase";
-import {Single2DTexture}					from "@awayjs/graphics/lib/textures/Single2DTexture";
+import {Sampler2D, Shape, Graphics, BitmapImage2D, TriangleElements, DefaultMaterialManager, MaterialBase, Single2DTexture} from "@awayjs/graphics";
 
-import {DisplayObjectContainer}			from "@awayjs/scene/lib/display/DisplayObjectContainer";
-import {Sprite}							from "@awayjs/scene/lib/display/Sprite";
+import {DisplayObjectContainer, Sprite} from "@awayjs/scene";
 
-import {MethodMaterial}					from "@awayjs/materials/lib/MethodMaterial";
-import {MethodMaterialMode}				from "@awayjs/materials/lib/MethodMaterialMode";
-import {SpecularBasicMethod}				from "@awayjs/materials/lib/methods/SpecularBasicMethod";
+import {MethodMaterial, MethodMaterialMode, SpecularBasicMethod} from "@awayjs/materials";
 
 /**
  * OBJParser provides a parser for the OBJ data type.

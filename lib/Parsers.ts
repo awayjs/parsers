@@ -1,10 +1,10 @@
-import {Loader}							from "@awayjs/core/lib/library/Loader";
+import {Loader} from "@awayjs/core";
 
-import {AWDParser}						from "./AWDParser";
-import {Max3DSParser}						from "./Max3DSParser";
-import {MD2Parser}						from "./MD2Parser";
-import {OBJParser}						from "./OBJParser";
-import {FNTParser}						from "./FNTParser";
+import {AWDParser} from "./AWDParser";
+import {Max3DSParser} from "./Max3DSParser";
+import {MD2Parser} from "./MD2Parser";
+import {OBJParser} from "./OBJParser";
+import {FNTParser} from "./FNTParser";
 
 /**
  *

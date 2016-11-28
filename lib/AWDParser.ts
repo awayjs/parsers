@@ -1,130 +1,16 @@
-import {AttributesBuffer}				from "@awayjs/core/lib/attributes/AttributesBuffer";
-import {Short3Attributes}				from "@awayjs/core/lib/attributes/Short3Attributes";
-import {Float3Attributes}				from "@awayjs/core/lib/attributes/Float3Attributes";
-import {Float2Attributes}				from "@awayjs/core/lib/attributes/Float2Attributes";
-import {Byte4Attributes}				from "@awayjs/core/lib/attributes/Byte4Attributes";
+import {AttributesBuffer, Short3Attributes, Float3Attributes, Float2Attributes, Byte4Attributes, WaveAudio, ColorTransform, Matrix3D, Vector3D, URLLoaderDataFormat, URLRequest, AssetLibrary, IAsset, ParserBase, ParserUtils, ResourceDependency, ProjectionBase, PerspectiveProjection, OrthographicProjection, OrthographicOffCenterProjection, ByteArray, Rectangle, Matrix} from "@awayjs/core";
 
-import {WaveAudio}						from "@awayjs/core/lib/audio/WaveAudio";
-import {ColorTransform}					from "@awayjs/core/lib/geom/ColorTransform";
-import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
-import {URLLoaderDataFormat}			from "@awayjs/core/lib/net/URLLoaderDataFormat";
-import {URLRequest}						from "@awayjs/core/lib/net/URLRequest";
-import {IAsset}							from "@awayjs/core/lib/library/IAsset";
-import {ParserBase}						from "@awayjs/core/lib/parsers/ParserBase";
-import {ParserUtils}					from "@awayjs/core/lib/parsers/ParserUtils";
-import {ResourceDependency}				from "@awayjs/core/lib/parsers/ResourceDependency";
-import {ProjectionBase}					from "@awayjs/core/lib/projections/ProjectionBase";
-import {PerspectiveProjection}			from "@awayjs/core/lib/projections/PerspectiveProjection";
-import {OrthographicProjection}			from "@awayjs/core/lib/projections/OrthographicProjection";
-import {OrthographicOffCenterProjection}from "@awayjs/core/lib/projections/OrthographicOffCenterProjection";
-import {ByteArray}						from "@awayjs/core/lib/utils/ByteArray";
-import {Point}							from "@awayjs/core/lib/geom/Point";
+import {Graphics, Style, IMaterial, BitmapImage2D, BitmapImageCube, BlendMode, Sampler2D, TriangleElements, ElementsBase, DefaultMaterialManager, SingleCubeTexture, Single2DTexture, MappingMode, ElementsType, Shape} from "@awayjs/graphics";
 
-import {Graphics}						from "@awayjs/graphics/lib/Graphics";
-import {Style} 							from "@awayjs/graphics/lib/base/Style";
-import {IMaterial} 							from "@awayjs/graphics/lib/base/IMaterial";
-import {BitmapImage2D}					from "@awayjs/graphics/lib/image/BitmapImage2D";
-import {BitmapImageCube}				from "@awayjs/graphics/lib/image/BitmapImageCube";
-import {BlendMode}						from "@awayjs/graphics/lib/image/BlendMode";
-import {Sampler2D}						from "@awayjs/graphics/lib/image/Sampler2D";
-import {TriangleElements}				from "@awayjs/graphics/lib/elements/TriangleElements";
-import {ElementsBase}					from "@awayjs/graphics/lib/elements/ElementsBase";
-import {DefaultMaterialManager}			from "@awayjs/graphics/lib/managers/DefaultMaterialManager";
-import {SingleCubeTexture}				from "@awayjs/graphics/lib/textures/SingleCubeTexture";
-import {Single2DTexture}				from "@awayjs/graphics/lib/textures/Single2DTexture";
-import {MappingMode} 					from "@awayjs/graphics/lib/textures/MappingMode";
-import {ElementsType}					from "@awayjs/graphics/lib/elements/ElementsType";
-import {Shape}							from "@awayjs/graphics/lib/base/Shape";
+import {DisplayObjectContainer, IView, DisplayObject, LightBase, DirectionalLight, PointLight, Camera, Sprite, TextField, Billboard, Skybox, LightPickerBase, StaticLightPicker, CubeMapShadowMapper, DirectionalShadowMapper, ShadowMapperBase, PrefabBase, PrimitiveCapsulePrefab, PrimitiveConePrefab, PrimitiveCubePrefab, PrimitiveCylinderPrefab, PrimitivePlanePrefab, PrimitiveSpherePrefab, PrimitiveTorusPrefab, ITimelineSceneGraphFactory, MovieClip, Timeline, Font, TesselatedFontTable, IFontTable, TextFormat, TextFieldType} from "@awayjs/scene";
 
-import {DisplayObjectContainer}			from "@awayjs/scene/lib/display/DisplayObjectContainer";
-import {IView}							from "@awayjs/scene/lib/IView";
-import {DisplayObject}					from "@awayjs/scene/lib/display/DisplayObject";
-import {LightBase}						from "@awayjs/scene/lib/display/LightBase";
-import {DirectionalLight}				from "@awayjs/scene/lib/display/DirectionalLight";
-import {PointLight}						from "@awayjs/scene/lib/display/PointLight";
-import {Camera}							from "@awayjs/scene/lib/display/Camera";
-import {Sprite}							from "@awayjs/scene/lib/display/Sprite";
-import {TextField}						from "@awayjs/scene/lib/display/TextField";
-import {Billboard}						from "@awayjs/scene/lib/display/Billboard";
-import {Skybox}							from "@awayjs/scene/lib/display/Skybox";
-import {LightPickerBase}				from "@awayjs/scene/lib/lightpickers/LightPickerBase";
-import {StaticLightPicker}				from "@awayjs/scene/lib/lightpickers/StaticLightPicker";
-import {CubeMapShadowMapper}			from "@awayjs/scene/lib/shadowmappers/CubeMapShadowMapper";
-import {DirectionalShadowMapper}		from "@awayjs/scene/lib/shadowmappers/DirectionalShadowMapper";
-import {ShadowMapperBase}				from "@awayjs/scene/lib/shadowmappers/ShadowMapperBase";
+import {AnimationSetBase, AnimatorBase, VertexAnimationSet, VertexAnimator, SkeletonAnimationSet, SkeletonAnimator, JointPose, Skeleton, SkeletonPose, SkeletonJoint, SkeletonClipNode, VertexClipNode, AnimationClipNodeBase} from "@awayjs/renderer";
 
-import {PrefabBase}						from "@awayjs/scene/lib/prefabs/PrefabBase";
-import {PrimitivePrefabBase}			from "@awayjs/scene/lib/prefabs/PrimitivePrefabBase";
-import {PrimitiveCapsulePrefab}			from "@awayjs/scene/lib/prefabs/PrimitiveCapsulePrefab";
-import {PrimitiveConePrefab}			from "@awayjs/scene/lib/prefabs/PrimitiveConePrefab";
-import {PrimitiveCubePrefab}			from "@awayjs/scene/lib/prefabs/PrimitiveCubePrefab";
-import {PrimitiveCylinderPrefab}		from "@awayjs/scene/lib/prefabs/PrimitiveCylinderPrefab";
-import {PrimitivePlanePrefab}			from "@awayjs/scene/lib/prefabs/PrimitivePlanePrefab";
-import {PrimitiveSpherePrefab}			from "@awayjs/scene/lib/prefabs/PrimitiveSpherePrefab";
-import {PrimitiveTorusPrefab}			from "@awayjs/scene/lib/prefabs/PrimitiveTorusPrefab";
+import {MethodMaterialMode, MethodMaterial, AmbientEnvMapMethod, DiffuseDepthMethod, DiffuseCelMethod, DiffuseGradientMethod, DiffuseLightMapMethod, DiffuseWrapMethod, EffectAlphaMaskMethod, EffectColorMatrixMethod, EffectColorTransformMethod, EffectEnvMapMethod, EffectFogMethod, EffectFresnelEnvMapMethod, EffectLightMapMethod, EffectMethodBase, EffectRimLightMethod, NormalSimpleWaterMethod, ShadowDitheredMethod, ShadowFilteredMethod, ShadowMapMethodBase, ShadowMethodBase, SpecularFresnelMethod, ShadowHardMethod, SpecularAnisotropicMethod, SpecularCelMethod, SpecularPhongMethod, ShadowNearMethod, ShadowSoftMethod} from "@awayjs/materials";
 
-import {AnimationSetBase}				from "@awayjs/renderer/lib/animators/AnimationSetBase";
-import {AnimatorBase}					from "@awayjs/renderer/lib/animators/AnimatorBase";
-import {VertexAnimationSet}				from "@awayjs/renderer/lib/animators/VertexAnimationSet";
-import {VertexAnimator}					from "@awayjs/renderer/lib/animators/VertexAnimator";
-import {SkeletonAnimationSet}			from "@awayjs/renderer/lib/animators/SkeletonAnimationSet";
-import {SkeletonAnimator}				from "@awayjs/renderer/lib/animators/SkeletonAnimator";
-import {JointPose}						from "@awayjs/renderer/lib/animators/data/JointPose";
-import {Skeleton}						from "@awayjs/renderer/lib/animators/data/Skeleton";
-import {SkeletonPose}					from "@awayjs/renderer/lib/animators/data/SkeletonPose";
-import {SkeletonJoint}					from "@awayjs/renderer/lib/animators/data/SkeletonJoint";
-import {SkeletonClipNode}				from "@awayjs/renderer/lib/animators/nodes/SkeletonClipNode";
-import {VertexClipNode}					from "@awayjs/renderer/lib/animators/nodes/VertexClipNode";
-import {AnimationClipNodeBase}			from "@awayjs/renderer/lib/animators/nodes/AnimationClipNodeBase";
+import {AS2SceneGraphFactory} from "@awayjs/player";
 
-import {MethodMaterialMode}				from "@awayjs/materials/lib/MethodMaterialMode";
-import {MethodMaterial}					from "@awayjs/materials/lib/MethodMaterial";
-import {AmbientEnvMapMethod}			from "@awayjs/materials/lib/methods/AmbientEnvMapMethod";
-import {DiffuseDepthMethod}				from "@awayjs/materials/lib/methods/DiffuseDepthMethod";
-import {DiffuseCelMethod}				from "@awayjs/materials/lib/methods/DiffuseCelMethod";
-import {DiffuseGradientMethod}			from "@awayjs/materials/lib/methods/DiffuseGradientMethod";
-import {DiffuseLightMapMethod}			from "@awayjs/materials/lib/methods/DiffuseLightMapMethod";
-import {DiffuseWrapMethod}				from "@awayjs/materials/lib/methods/DiffuseWrapMethod";
-import {EffectAlphaMaskMethod}			from "@awayjs/materials/lib/methods/EffectAlphaMaskMethod";
-import {EffectColorMatrixMethod}		from "@awayjs/materials/lib/methods/EffectColorMatrixMethod";
-import {EffectColorTransformMethod}		from "@awayjs/materials/lib/methods/EffectColorTransformMethod";
-import {EffectEnvMapMethod}				from "@awayjs/materials/lib/methods/EffectEnvMapMethod";
-import {EffectFogMethod}				from "@awayjs/materials/lib/methods/EffectFogMethod";
-import {EffectFresnelEnvMapMethod}		from "@awayjs/materials/lib/methods/EffectFresnelEnvMapMethod";
-import {EffectLightMapMethod}			from "@awayjs/materials/lib/methods/EffectLightMapMethod";
-import {EffectMethodBase}				from "@awayjs/materials/lib/methods/EffectMethodBase";
-import {EffectRimLightMethod}			from "@awayjs/materials/lib/methods/EffectRimLightMethod";
-import {NormalSimpleWaterMethod}		from "@awayjs/materials/lib/methods/NormalSimpleWaterMethod";
-import {ShadowDitheredMethod}			from "@awayjs/materials/lib/methods/ShadowDitheredMethod";
-import {ShadowFilteredMethod}			from "@awayjs/materials/lib/methods/ShadowFilteredMethod";
-import {ShadowMapMethodBase}			from "@awayjs/materials/lib/methods/ShadowMapMethodBase";
-import {ShadowMethodBase}				from "@awayjs/materials/lib/methods/ShadowMethodBase";
-import {SpecularFresnelMethod}			from "@awayjs/materials/lib/methods/SpecularFresnelMethod";
-import {ShadowHardMethod}				from "@awayjs/materials/lib/methods/ShadowHardMethod";
-import {SpecularAnisotropicMethod}		from "@awayjs/materials/lib/methods/SpecularAnisotropicMethod";
-import {SpecularCelMethod}				from "@awayjs/materials/lib/methods/SpecularCelMethod";
-import {SpecularPhongMethod}			from "@awayjs/materials/lib/methods/SpecularPhongMethod";
-import {ShadowNearMethod}				from "@awayjs/materials/lib/methods/ShadowNearMethod";
-import {ShadowSoftMethod}				from "@awayjs/materials/lib/methods/ShadowSoftMethod";
-
-import {ITimelineSceneGraphFactory} 	from "@awayjs/scene/lib/factories/ITimelineSceneGraphFactory";
-import {AS2SceneGraphFactory} 			from "@awayjs/player/lib/factories/AS2SceneGraphFactory";
-import {MovieClip} 						from "@awayjs/scene/lib/display/MovieClip";
-import {Timeline}			 			from "@awayjs/scene/lib/base/Timeline";
-
-
-import {AssetLibrary}					from "@awayjs/core/lib/library/AssetLibrary";
-
-import {Font}							from "@awayjs/scene/lib/text/Font";
-import {TesselatedFontTable}			from "@awayjs/scene/lib/text/TesselatedFontTable";
-import {IFontTable}						from "@awayjs/scene/lib/text/IFontTable";
-import {TextFormat}						from "@awayjs/scene/lib/text/TextFormat";
-import {TextFieldType}					from "@awayjs/scene/lib/text/TextFieldType";
-
-import {AWDBlock}						from "./AWD3ParserUtils/AWDBlock";
-import {Rectangle} 						from "@awayjs/core/lib/geom/Rectangle";
-import {Matrix} 						from "@awayjs/core/lib/geom/Matrix";
+import {AWDBlock} from "./AWD3ParserUtils/AWDBlock";
 
 /**
  * AWDParser provides a parser for the AWD data type.

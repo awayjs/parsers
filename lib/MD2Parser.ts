@@ -1,26 +1,12 @@
-import {AttributesBuffer}					from "@awayjs/core/lib/attributes/AttributesBuffer";
-import {URLLoaderDataFormat}				from "@awayjs/core/lib/net/URLLoaderDataFormat";
+import {AttributesBuffer, URLLoaderDataFormat, URLRequest, ParserBase, ParserUtils, ResourceDependency, ByteArray} from "@awayjs/core";
 
-import {Graphics}							from "@awayjs/graphics/lib/Graphics";
-import {Shape}							from "@awayjs/graphics/lib/base/Shape";
-import {TriangleElements}					from "@awayjs/graphics/lib/elements/TriangleElements";
-import {BitmapImage2D}					from "@awayjs/graphics/lib/image/BitmapImage2D";
-import {DefaultMaterialManager}			from "@awayjs/graphics/lib/managers/DefaultMaterialManager";
+import {Graphics, Shape, TriangleElements, BitmapImage2D, DefaultMaterialManager} from "@awayjs/graphics";
 
-import {URLRequest}						from "@awayjs/core/lib/net/URLRequest";
-import {ParserBase}						from "@awayjs/core/lib/parsers/ParserBase";
-import {ParserUtils}						from "@awayjs/core/lib/parsers/ParserUtils";
-import {ResourceDependency}				from "@awayjs/core/lib/parsers/ResourceDependency";
-import {ByteArray}						from "@awayjs/core/lib/utils/ByteArray";
+import {DisplayObjectContainer, Sprite} from "@awayjs/scene";
 
-import {DisplayObjectContainer}			from "@awayjs/scene/lib/display/DisplayObjectContainer";
-import {Sprite}							from "@awayjs/scene/lib/display/Sprite";
+import {VertexClipNode, VertexAnimationSet} from "@awayjs/renderer";
 
-import {VertexClipNode}					from "@awayjs/renderer/lib/animators/nodes/VertexClipNode";
-import {VertexAnimationSet}				from "@awayjs/renderer/lib/animators/VertexAnimationSet";
-
-import {MethodMaterial}					from "@awayjs/materials/lib/MethodMaterial";
-import {MethodMaterialMode}				from "@awayjs/materials/lib/MethodMaterialMode";
+import {MethodMaterial, MethodMaterialMode} from "@awayjs/materials";
 
 /**
  * MD2Parser provides a parser for the MD2 data type.

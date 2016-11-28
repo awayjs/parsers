@@ -1,20 +1,10 @@
-import {AttributesBuffer}					from "@awayjs/core/lib/attributes/AttributesBuffer";
-import {Matrix3D}							from "@awayjs/core/lib/geom/Matrix3D";
-import {Quaternion}						from "@awayjs/core/lib/geom/Quaternion";
-import {Vector3D}							from "@awayjs/core/lib/geom/Vector3D";
-import {URLLoaderDataFormat}				from "@awayjs/core/lib/net/URLLoaderDataFormat";
-import {ParserBase}						from "@awayjs/core/lib/parsers/ParserBase";
+import {AttributesBuffer, Matrix3D, Quaternion, Vector3D, URLLoaderDataFormat, ParserBase} from "@awayjs/core";
 
-import {Graphics}							from "@awayjs/graphics/lib/Graphics";
-import {Shape}							from "@awayjs/graphics/lib/base/Shape";
-import {TriangleElements}					from "@awayjs/graphics/lib/elements/TriangleElements";
+import {Graphics, Shape, TriangleElements} from "@awayjs/graphics";
 
-import {DisplayObjectContainer}			from "@awayjs/scene/lib/display/DisplayObjectContainer";
-import {Sprite}							from "@awayjs/scene/lib/display/Sprite";
+import {DisplayObjectContainer, Sprite} from "@awayjs/scene";
 
-import {SkeletonAnimationSet}				from "@awayjs/renderer/lib/animators/SkeletonAnimationSet";
-import {Skeleton}							from "@awayjs/renderer/lib/animators/data/Skeleton";
-import {SkeletonJoint}					from "@awayjs/renderer/lib/animators/data/SkeletonJoint";
+import {SkeletonAnimationSet, Skeleton, SkeletonJoint} from "@awayjs/renderer";
 
 // todo: create animation system, parse skeleton
 
