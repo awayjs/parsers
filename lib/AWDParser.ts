@@ -1654,7 +1654,7 @@ export class AWDParser extends ParserBase
 		// in AWD version 2.1 we read the Container properties
 		if ((this._version[0] == 2) && (this._version[1] == 1)) {
 			var props:AWDProperties = this.parseProperties(AWDParser.containerProperties);
-			ctr.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
+			ctr.registrationPoint = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
 		} else {// in other versions we do not read the Container properties
 			this.parseProperties(null);
 		}
@@ -1736,7 +1736,7 @@ export class AWDParser extends ParserBase
 		}
 		if ((this._version[0] == 2) && (this._version[1] == 1)) {
 			var props:AWDProperties = this.parseProperties(AWDParser.spriteInstanceProperties);
-			sprite.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
+			sprite.registrationPoint = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
 			sprite.castsShadows = props.get(5, true);
 		} else {
 			this.parseProperties(null);
@@ -1928,7 +1928,7 @@ export class AWDParser extends ParserBase
 
 		camera.name = name;
 		props = this.parseProperties(AWDParser.cameraPivotProperties);
-		camera.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
+		camera.registrationPoint = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
 		camera.extra = this.parseUserAttributes();
 
 		this._pFinalizeAsset(camera, name);
@@ -2460,7 +2460,7 @@ export class AWDParser extends ParserBase
 		if (targetObject) {
 			props = this.parseProperties(AWDParser.targetProperties);
 
-			targetObject.pivot = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
+			targetObject.registrationPoint = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
 			targetObject.extra = this.parseUserAttributes();
 		}
 
