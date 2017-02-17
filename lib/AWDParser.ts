@@ -1,4 +1,4 @@
-import {AttributesBuffer, Short3Attributes, Float3Attributes, Float2Attributes, Byte4Attributes, WaveAudio, ColorTransform, Matrix3D, Vector3D, URLLoaderDataFormat, URLRequest, AssetLibrary, IAsset, ParserBase, ParserUtils, ResourceDependency, ProjectionBase, PerspectiveProjection, OrthographicProjection, OrthographicOffCenterProjection, ByteArray, Rectangle, Matrix} from "@awayjs/core";
+import {AttributesBuffer,Short2Attributes, Short3Attributes, Float3Attributes, Float2Attributes, Byte4Attributes, WaveAudio, ColorTransform, Matrix3D, Vector3D, URLLoaderDataFormat, URLRequest, AssetLibrary, IAsset, ParserBase, ParserUtils, ResourceDependency, ProjectionBase, PerspectiveProjection, OrthographicProjection, OrthographicOffCenterProjection, ByteArray, Rectangle, Matrix} from "@awayjs/core";
 
 import {Graphics, Style, IMaterial, BitmapImage2D, BitmapImageCube, BlendMode, Sampler2D, TriangleElements, ElementsBase, DefaultMaterialManager, SingleCubeTexture, Single2DTexture, MappingMode, ElementsType, Shape} from "@awayjs/graphics";
 
@@ -909,6 +909,11 @@ export class AWDParser extends ParserBase
 		if (this._debug)
 			console.log("Parsed a Library-Billboard: Name = '" + name + "| Material-Name = " + mat.name);
 	}
+	private static spriteLibraryProperties:Object = {
+		1:AWDParser.FLOAT32,
+		2:AWDParser.FLOAT32,
+		3:AWDParser.FLOAT32,
+		4:AWDParser.FLOAT32};
 	// Block ID = 24
 	private parseSpriteLibraryBlock(blockID:number):void
 	{
@@ -1007,7 +1012,10 @@ export class AWDParser extends ParserBase
 			this._newBlockBytes.readUnsignedInt();
 		}
 
-		this.parseProperties(null);
+
+		var props:AWDProperties=this.parseProperties(AWDParser.spriteLibraryProperties);
+		sprite.registrationPoint=new Vector3D(props.get(1, 0.0), props.get(2, 0.0), 0.0);
+		sprite.registrationScale=new Vector3D(props.get(3, 1.0), props.get(4, 1.0), 1.0);
 		sprite.extra = this.parseUserAttributes();
 
 		this._pFinalizeAsset(<IAsset> sprite, name);
@@ -1397,6 +1405,18 @@ export class AWDParser extends ParserBase
 					attr_count = 8;
 					var curveData:ByteArray = new ByteArray(str_len);
 					this._newBlockBytes.readBytes(curveData, 0, str_len);
+				}
+				else if (str_type == 17) {// positions2D (2 x uint16)
+					element_type=ElementType.CONCENATED_STREAMS_UINT16;
+					attr_count = 4;
+					var curveData:ByteArray = new ByteArray(str_len);
+					this._newBlockBytes.readBytes(curveData, 0, str_len);
+				}
+				else if (str_type == 18) {// positions2D (2 x uint16) + curvedata (3 x uint8)
+					element_type=ElementType.CONCENATED_STREAMS_UINT16;
+					attr_count = 8;
+					var curveData:ByteArray = new ByteArray(str_len);
+					this._newBlockBytes.readBytes(curveData, 0, str_len);
 				}else{
 					console.log("skipping unknown subgeom stream");
 					this._newBlockBytes.position = str_end;
@@ -1427,6 +1447,23 @@ export class AWDParser extends ParserBase
 
 				if (this._debug)
 					console.log("Parsed a TriangleElements with curves");
+
+			}
+			else if(element_type==ElementType.CONCENATED_STREAMS_UINT16){
+				var vertexBuffer:AttributesBuffer = new AttributesBuffer(attr_count, str_len/attr_count);
+				vertexBuffer.bufferView = new Uint8Array(<ArrayBuffer> curveData.arraybytes);
+
+				var curve_elements:TriangleElements = new TriangleElements(vertexBuffer);
+				curve_elements.setPositions(new Short2Attributes(vertexBuffer, true));
+				if(attr_count==8){
+					curve_elements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
+				}
+
+
+				graphics.addShape(new Shape(curve_elements));
+
+				if (this._debug)
+					console.log("Parsed a TriangleElements uint16");
 
 			}
 			else if(element_type==ElementType.STANDART_STREAMS){
@@ -3270,6 +3307,7 @@ class ElementType {
 	public static SHARED_BUFFER:number = 2;
 	public static CONCATENATED_SUBGEO:number = 3;
 	public static SHARED_INDEXBUFFER:number = 4;
+	public static CONCENATED_STREAMS_UINT16:number = 5;
 }
 
 class AWDProperties
