@@ -8,7 +8,7 @@ import {DisplayObjectContainer, IView, DisplayObject, LightBase, DirectionalLigh
 
 import {VertexAnimationSet, VertexAnimator, SkeletonAnimationSet, SkeletonAnimator, JointPose, Skeleton, SkeletonPose, SkeletonJoint, SkeletonClipNode, VertexClipNode, AnimationClipNodeBase} from "@awayjs/renderer";
 
-import {MethodMaterialMode, MethodMaterial, AmbientEnvMapMethod, DiffuseDepthMethod, DiffuseCelMethod, DiffuseGradientMethod, DiffuseLightMapMethod, DiffuseWrapMethod, EffectAlphaMaskMethod, EffectColorMatrixMethod, EffectColorTransformMethod, EffectEnvMapMethod, EffectFogMethod, EffectFresnelEnvMapMethod, EffectLightMapMethod, EffectMethodBase, EffectRimLightMethod, NormalSimpleWaterMethod, ShadowDitheredMethod, ShadowFilteredMethod, ShadowMapMethodBase, ShadowMethodBase, SpecularFresnelMethod, ShadowHardMethod, SpecularAnisotropicMethod, SpecularCelMethod, SpecularPhongMethod, ShadowNearMethod, ShadowSoftMethod} from "@awayjs/materials";
+import {MethodMaterialMode, MethodMaterial, DiffuseCelMethod, DiffuseGradientMethod, DiffuseLightMapMethod, DiffuseWrapMethod, EffectAlphaMaskMethod, EffectColorMatrixMethod, EffectColorTransformMethod, EffectEnvMapMethod, EffectFogMethod, EffectFresnelEnvMapMethod, EffectLightMapMethod, EffectRimLightMethod, NormalSimpleWaterMethod, ShadingMethodBase, ShadowDitheredMethod, ShadowMethodBase, SpecularFresnelMethod, ShadowCompositeMethod, ShadowHardMethod, SpecularAnisotropicMethod, SpecularCelMethod, SpecularPhongMethod, ShadowNearMethod, ShadowSoftMethod} from "@awayjs/materials";
 
 import {AS2SceneGraphFactory} from "@awayjs/player";
 
@@ -2200,7 +2200,7 @@ export class AWDParser extends ParserBase
 				mat.blendMode = this.blendModeDic[props.get(9, 0)];
 
 				if (diffuseImage) {
-					mat.diffuseTexture = new Single2DTexture(diffuseImage);
+					mat.diffuseMethod.texture = new Single2DTexture(diffuseImage);
 					debugString += " | DiffuseTexture-Name = " + diffuseImage.name;
 				}
 
@@ -2229,31 +2229,31 @@ export class AWDParser extends ParserBase
 
 					switch (method_type) {
 						case 999: //wrapper-Methods that will load a previous parsed EffektMethod returned
-							var effectMethod:EffectMethodBase = <EffectMethodBase> this._blocks[props.get(1, 0)].data;
+							var effectMethod:ShadingMethodBase = <ShadingMethodBase> this._blocks[props.get(1, 0)].data;
 							mat.addEffectMethod(effectMethod);
 							debugString += " | EffectMethod-Name = " + effectMethod.name;
 
 							break;
 
 						case 998: //wrapper-Methods that will load a previous parsed ShadowMapMethod
-							var shadowMapMethod:ShadowMapMethodBase = <ShadowMapMethodBase> this._blocks[props.get(1, 0)].data;
-							mat.shadowMethod = shadowMapMethod;
-							debugString += " | ShadowMethod-Name = " + shadowMapMethod.name;
+							var shadowMethod:ShadowMethodBase = <ShadowMethodBase> this._blocks[props.get(1, 0)].data;
+							mat.shadowMethod = shadowMethod;
+							debugString += " | ShadowMethod-Name = " + shadowMethod.name;
 
 							break;
 
 						case 1: //EnvMapAmbientMethod
 							var cubeTexture:SingleCubeTexture = new SingleCubeTexture(<BitmapImageCube> this._blocks[props.get(1, 0)].data);
-							mat.ambientMethod = new AmbientEnvMapMethod();
+							//mat.ambientMethod.mappingMode = 
 							mat.ambientMethod.texture = cubeTexture;
 							debugString += " | AmbientEnvMapMethod | EnvMap-Name =" + cubeTexture.name;
 
 							break;
 
-						case 51: //DepthDiffuseMethod
-							mat.diffuseMethod = new DiffuseDepthMethod();
-							debugString += " | DiffuseDepthMethod";
-							break;
+						// case 51: //AmbientDepthMethod
+						// 	mat.diffuseMethod = new AmbientDepthMethod();
+						// 	debugString += " | AmbientDepthMethod";
+						// 	break;
 						case 52: //GradientDiffuseMethod
 							var texture:Single2DTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(1, 0)].data);
 							mat.diffuseMethod = new DiffuseGradientMethod(texture);
@@ -2269,8 +2269,7 @@ export class AWDParser extends ParserBase
 							debugString += " | DiffuseLightMapMethod | LightMapTexture-Name =" + texture.name;
 							break;
 						case 55: //CelDiffuseMethod
-							mat.diffuseMethod = new DiffuseCelMethod(props.get(401, 3), mat.diffuseMethod);
-							(<DiffuseCelMethod> mat.diffuseMethod).smoothness = props.get(101, 0.1);
+							mat.diffuseMethod = new DiffuseCelMethod(props.get(401, 3), props.get(101, 0.1), mat.diffuseMethod);
 							debugString += " | DiffuseCelMethod";
 							break;
 						case 56: //SubSurfaceScatteringMethod
@@ -2290,14 +2289,11 @@ export class AWDParser extends ParserBase
 							debugString += " | SpecularPhongMethod";
 							break;
 						case 103: //CellSpecularMethod
-							mat.specularMethod = new SpecularCelMethod(props.get(101, 0.5), mat.specularMethod);
-							(<SpecularCelMethod> mat.specularMethod).smoothness = props.get(102, 0.1);
+							mat.specularMethod = new SpecularCelMethod(props.get(101, 0.5), props.get(102, 0.1), mat.specularMethod);
 							debugString += " | SpecularCelMethod";
 							break;
 						case 104: //SpecularFresnelMethod
-							mat.specularMethod = new SpecularFresnelMethod(props.get(701, true), mat.specularMethod);
-							(<SpecularFresnelMethod> mat.specularMethod).fresnelPower = props.get(101, 5);
-							(<SpecularFresnelMethod> mat.specularMethod).normalReflectance = props.get(102, 0.1);
+							mat.specularMethod = new SpecularFresnelMethod(props.get(701, true), props.get(101, 5), props.get(102, 0.1), mat.specularMethod);
 							debugString += " | SpecularFresnelMethod";
 							break;
 						case 151://HeightMapNormalMethod - thios is not implemented for now, but might appear later
@@ -2319,10 +2315,10 @@ export class AWDParser extends ParserBase
 			debugString+=color;
 			var diffuseTexture:Single2DTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(2, 0)].data);
 			if(type==5){
-				diffuseTexture.mappingMode = MappingMode.LINEAR_GRADIENT;
+				diffuseTexture.mappingMode = MappingMode.LINEAR;
 			}
 			else if(type==6){
-				diffuseTexture.mappingMode = MappingMode.RADIAL_GRADIENT;
+				diffuseTexture.mappingMode = MappingMode.RADIAL;
 			}
 			var basic_mat:MethodMaterial = new MethodMaterial();
 			basic_mat.ambientMethod.texture = diffuseTexture;
@@ -2431,7 +2427,7 @@ export class AWDParser extends ParserBase
 	//Block ID = 91
 	private parseSharedMethodBlock(blockID:number):void
 	{
-		var asset:EffectMethodBase;
+		var asset:ShadingMethodBase;
 
 		this._blocks[blockID].name = this.parseVarStr();
 		asset = this.parseSharedMethodList(blockID);
@@ -2449,7 +2445,7 @@ export class AWDParser extends ParserBase
 	{
 		this._blocks[blockID].name = this.parseVarStr();
 		var light:LightBase = <LightBase> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
-		var asset:ShadowMethodBase = this.parseShadowMethodList(light, blockID);
+		var asset:ShadowMethodBase | ShadowCompositeMethod = this.parseShadowMethodList(light, blockID);
 
 		if (!asset)
 			return;
@@ -2562,11 +2558,11 @@ export class AWDParser extends ParserBase
 		801:AWDParser.MTX4x4}
 	
 	// this functions reads and creates a ShadowMethodMethod
-	private parseShadowMethodList(light:LightBase, blockID:number):ShadowMethodBase
+	private parseShadowMethodList(light:LightBase, blockID:number):ShadowMethodBase | ShadowCompositeMethod
 	{
 
 		var methodType:number = this._newBlockBytes.readUnsignedShort();
-		var shadowMethod:ShadowMethodBase;
+		var shadowMethod:ShadowMethodBase | ShadowCompositeMethod;
 		var props:AWDProperties = this.parseProperties(this.shadowMethodListProperties);
 
 		var targetID:number;
@@ -2584,11 +2580,11 @@ export class AWDParser extends ParserBase
 			case 1002: //ShadowNearMethod
 				shadowMethod = new ShadowNearMethod(<ShadowMethodBase> this._blocks[props.get(1, 0)].data);
 				break;
-			case 1101: //ShadowFilteredMethod
-				shadowMethod = new ShadowFilteredMethod(<DirectionalLight> light);
-				(<ShadowFilteredMethod> shadowMethod).alpha = props.get(101, 1);
-				(<ShadowFilteredMethod> shadowMethod).epsilon = props.get(102, 0.002);
-				break;
+			// case 1101: //ShadowFilteredMethod
+			// 	shadowMethod = new ShadowFilteredMethod(<DirectionalLight> light);
+			// 	(<ShadowFilteredMethod> shadowMethod).alpha = props.get(101, 1);
+			// 	(<ShadowFilteredMethod> shadowMethod).epsilon = props.get(102, 0.002);
+			// 	break;
 
 			case 1102: //ShadowDitheredMethod
 				shadowMethod = new ShadowDitheredMethod(<DirectionalLight> light, <number> props.get(201, 5));
@@ -2915,10 +2911,10 @@ export class AWDParser extends ParserBase
 		702:AWDParser.BOOL};
 
 	// this functions reads and creates a EffectMethod
-	private parseSharedMethodList(blockID:number):EffectMethodBase
+	private parseSharedMethodList(blockID:number):ShadingMethodBase
 	{
 		var methodType:number = this._newBlockBytes.readUnsignedShort();
-		var effectMethodReturn:EffectMethodBase;
+		var effectMethodReturn:ShadingMethodBase;
 
 		var props:AWDProperties = this.parseProperties(this.sharedMethodListProperties);
 
