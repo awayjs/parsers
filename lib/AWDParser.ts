@@ -845,8 +845,8 @@ export class AWDParser extends ParserBase
 			newTextField.displayAsPassword = true;
 
 		//
-		newTextField.textWidth = Math.abs(this._newBlockBytes.readFloat());
-		newTextField.textHeight = Math.abs(this._newBlockBytes.readFloat());
+		newTextField.textFieldWidth = Math.abs(this._newBlockBytes.readFloat());
+		newTextField.textFieldHeight = Math.abs(this._newBlockBytes.readFloat());
 		var num_paragraphs:number = this._newBlockBytes.readUnsignedInt();
 		var complete_text:string = "";
 		//console.log("num_paragraphs  '" + num_paragraphs);
@@ -1558,7 +1558,7 @@ export class AWDParser extends ParserBase
 			// TODO: Somehow map in-sub to out-sub indices to enable look-up
 			// when creating sprites (and their material assignments.)
 		}
-
+		
 		if ((geoScaleU != 1) || (geoScaleV != 1))
 			graphics.scaleUV(geoScaleU, geoScaleV);
 		this.parseUserAttributes();
