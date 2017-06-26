@@ -1,6 +1,6 @@
 import {AttributesBuffer,Short2Attributes, Short3Attributes, Float3Attributes, Float2Attributes, Byte4Attributes, WaveAudio, ColorTransform, Matrix3D, Vector3D, URLLoaderDataFormat, URLRequest, AssetLibrary, IAsset, ParserBase, ParserUtils, ResourceDependency, ProjectionBase, PerspectiveProjection, OrthographicProjection, OrthographicOffCenterProjection, ByteArray, Rectangle, Matrix} from "@awayjs/core";
 
-import {Graphics, Style, IMaterial, BitmapImage2D, BitmapImageCube, BlendMode, Sampler2D, TriangleElements, ElementsBase, DefaultMaterialManager, SingleCubeTexture, Single2DTexture, MappingMode, ElementsType, Shape} from "@awayjs/graphics";
+import {Graphics, ElementsUtils, Style, IMaterial, BitmapImage2D, BitmapImageCube, BlendMode, Sampler2D, TriangleElements, ElementsBase, DefaultMaterialManager, SingleCubeTexture, Single2DTexture, MappingMode, ElementsType, Shape} from "@awayjs/graphics";
 
 import {AnimationSetBase, AnimatorBase} from "@awayjs/stage";
 
@@ -1067,9 +1067,11 @@ export class AWDParser extends ParserBase
 	}
 
 	private static movieClipProperties:Object = {
-		1:AWDParser.FLOAT32,	//fps
-		2:AWDParser.UINT16,		// sceneID if not present or 0, mc is no scene
-		3:AWDParser.UINT8};		// scripting-language right now its always as2
+		1: AWDParser.FLOAT32,	//fps
+		2: AWDParser.UINT16,		// sceneID if not present or 0, mc is no scene
+		3: AWDParser.UINT8,		// scripting-language right now its always as2
+		4: AWDParser.UINT8		// isScale9SliceMC
+	};
 	//Block ID = 4
 	private parseMovieClip(blockID:number, factory:ITimelineSceneGraphFactory):void
 	{
@@ -1262,7 +1264,8 @@ export class AWDParser extends ParserBase
 
 		var sceneID:number = 0;
 		var fps:number = 25;
-		this.parseProperties(AWDParser.movieClipProperties);
+		var props=this.parseProperties(AWDParser.movieClipProperties);
+		new_mc.isSlice9ScaledMC=props.get(4, false);
 		this.parseUserAttributes();
 		this._pFinalizeAsset(<IAsset>new_mc, name);
 
@@ -1302,8 +1305,9 @@ export class AWDParser extends ParserBase
 		for (var elements_parsed:number = 0;  elements_parsed < numElements; elements_parsed++) {
 			var attr_count:number=0;
 			var sm_len:number, sm_end:number;
-			var w_indices:Array<number>;
-			var weights:Array<number>;
+			var w_indices:number[];
+			var weights:number[];
+			var slice9Indices:number[];
 			target_start_idx=0;
 			target_vert_cnt=0;
 			element_type = ElementType.STANDART_STREAMS;
@@ -1419,6 +1423,27 @@ export class AWDParser extends ParserBase
 					attr_count = 8;
 					var curveData:ByteArray = new ByteArray(str_len);
 					this._newBlockBytes.readBytes(curveData, 0, str_len);
+				}
+				else if (str_type == 23) {// positions2D (2 x uint16) + curvedata (3 x uint8)
+					slice9Indices=[];
+					var cnt:number=0;
+					var cnt2:number=0;
+					graphics.slice9Rectangle=new Rectangle();
+					graphics.originalSlice9Size=new Rectangle();
+					while (this._newBlockBytes.position < str_end){
+						if(cnt==0)graphics.slice9Rectangle.x=(this._newBlockBytes.readInt()/20);
+						else if(cnt==1)graphics.slice9Rectangle.y=(this._newBlockBytes.readInt()/20);
+						else if(cnt==2)graphics.slice9Rectangle.width=(this._newBlockBytes.readInt()/20);
+						else if(cnt==3)graphics.slice9Rectangle.height=(this._newBlockBytes.readInt()/20);
+						else if(cnt==4)graphics.originalSlice9Size.x=(this._newBlockBytes.readInt()/20);
+						else if(cnt==5)graphics.originalSlice9Size.y=(this._newBlockBytes.readInt()/20);
+						else if(cnt==6)graphics.originalSlice9Size.width=(this._newBlockBytes.readInt()/20);
+						else if(cnt==7)graphics.originalSlice9Size.height=(this._newBlockBytes.readInt()/20);
+
+						else slice9Indices[cnt2++]=this._newBlockBytes.readInt();
+						cnt++;
+					}
+
 				}else{
 					console.log("skipping unknown subgeom stream");
 					this._newBlockBytes.position = str_end;
@@ -1433,18 +1458,48 @@ export class AWDParser extends ParserBase
 				vertexBuffer.bufferView = new Uint8Array(<ArrayBuffer> curveData.arraybytes);
 
 				var curve_elements:TriangleElements = new TriangleElements(vertexBuffer);
+				if(graphics.slice9Rectangle){
+					curve_elements.slice9Indices=slice9Indices;
+					curve_elements.slice9offsets=new Rectangle();
+					curve_elements.slice9offsets.copyFrom(graphics.slice9Rectangle);
+					graphics.minSlice9Width=curve_elements.slice9offsets.x+curve_elements.slice9offsets.width;
+					graphics.minSlice9Height=curve_elements.slice9offsets.y+curve_elements.slice9offsets.height;
 
-				curve_elements.setPositions(new Float2Attributes(vertexBuffer));
-				if(attr_count==20){
-					curve_elements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
+					/*graphics.originalSlice9Size.x-=graphics.minSlice9Width/2;
+					graphics.originalSlice9Size.y-=graphics.minSlice9Height/2;
+
+
+					graphics.originalSlice9Size.width+=graphics.minSlice9Width;
+					graphics.originalSlice9Size.height+=graphics.minSlice9Height;*/
+
+
+					curve_elements.originalSlice9Size=new Rectangle();
+					curve_elements.originalSlice9Size.copyFrom(graphics.originalSlice9Size);
+					// set the slice9Rectangle of the graphics to represent the original size
+					// as long as graphics.slice9Rectangle==graphics.originalSlice9Size, the elements should be in correct size
+					graphics.slice9Rectangle.copyFrom(graphics.originalSlice9Size);
+
+					curve_elements.setPositions(new Float2Attributes(vertexBuffer));
+
+					ElementsUtils.updateTriangleGraphicsSlice9(curve_elements, curve_elements.originalSlice9Size, true);
+
+					//var newrect:Rectangle=new Rectangle(-50, -100, 100, 200);
+					//ElementsUtils.updateTriangleGraphicsSlice9(curve_elements, newrect, false);
+
 				}
-				else if(attr_count==12){
-					curve_elements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
+				else{
+					curve_elements.setPositions(new Float2Attributes(vertexBuffer));
+					if(attr_count==20){
+						curve_elements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
+					}
+					else if(attr_count==12){
+						curve_elements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
+					}
+
+					if(attr_count==28)
+						curve_elements.setUVs(new Float2Attributes(vertexBuffer));
+
 				}
-
-				if(attr_count==28)
-					curve_elements.setUVs(new Float2Attributes(vertexBuffer));
-
 				graphics.addShape(new Shape(curve_elements));
 
 				if (this._debug)
