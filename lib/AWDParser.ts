@@ -1481,7 +1481,7 @@ export class AWDParser extends ParserBase
 
 					curve_elements.setPositions(new Float2Attributes(vertexBuffer));
 
-					ElementsUtils.updateTriangleGraphicsSlice9(curve_elements, curve_elements.originalSlice9Size, true);
+					ElementsUtils.updateTriangleGraphicsSlice9(curve_elements, curve_elements.originalSlice9Size, 1, 1, true);
 
 					//var newrect:Rectangle=new Rectangle(-50, -100, 100, 200);
 					//ElementsUtils.updateTriangleGraphicsSlice9(curve_elements, newrect, false);
