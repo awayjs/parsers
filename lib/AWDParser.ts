@@ -845,8 +845,8 @@ export class AWDParser extends ParserBase
 			newTextField.displayAsPassword = true;
 
 		//
-		newTextField.textFieldWidth = Math.abs(this._newBlockBytes.readFloat());
-		newTextField.textFieldHeight = Math.abs(this._newBlockBytes.readFloat());
+		newTextField.width = Math.abs(this._newBlockBytes.readFloat());
+		newTextField.height = Math.abs(this._newBlockBytes.readFloat());
 		var num_paragraphs:number = this._newBlockBytes.readUnsignedInt();
 		var complete_text:string = "";
 		//console.log("num_paragraphs  '" + num_paragraphs);
