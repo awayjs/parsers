@@ -946,11 +946,14 @@ export class AWDParser extends ParserBase
 
 		if (materials.length >= 1 && sprite.graphics.count == 1) {
 			sprite.material = materials[0];
-		} else if (materials.length > 1) {
+		} else if (materials.length >= 1) {
 			// Assign each sub-sprite in the sprite a material from the list. If more sub-sprites
 			// than materials, repeat the last material for all remaining sub-sprites.
-			for (var i:number = 0; i < sprite.graphics.count; i++)
-				sprite.graphics.getShapeAt(i).material = materials[Math.min(materials.length - 1, i)];
+			for (var i:number = 0; i < sprite.graphics.count; i++){
+				if(!sprite.graphics.getShapeAt(i).isStroke){
+					sprite.graphics.getShapeAt(i).material = materials[Math.min(materials.length - 1, i)];
+				}
+			}
 		}
 
 		var sampler:Sampler2D;
@@ -1494,29 +1497,17 @@ export class AWDParser extends ParserBase
 					curve_elements.slice9Indices=slice9Indices;
 					curve_elements.slice9offsets=new Rectangle();
 					curve_elements.slice9offsets.copyFrom(graphics.slice9Rectangle);
-					graphics.minSlice9Width=curve_elements.slice9offsets.x+curve_elements.slice9offsets.width;
-					graphics.minSlice9Height=curve_elements.slice9offsets.y+curve_elements.slice9offsets.height;
-
-					/*graphics.originalSlice9Size.x-=graphics.minSlice9Width/2;
-					graphics.originalSlice9Size.y-=graphics.minSlice9Height/2;
-
-
-					graphics.originalSlice9Size.width+=graphics.minSlice9Width;
-					graphics.originalSlice9Size.height+=graphics.minSlice9Height;*/
 
 
 					curve_elements.originalSlice9Size=new Rectangle();
 					curve_elements.originalSlice9Size.copyFrom(graphics.originalSlice9Size);
-					// set the slice9Rectangle of the graphics to represent the original size
-					// as long as graphics.slice9Rectangle==graphics.originalSlice9Size, the elements should be in correct size
+
 					graphics.slice9Rectangle.copyFrom(graphics.originalSlice9Size);
 
 					curve_elements.setPositions(new Float2Attributes(vertexBuffer));
 
 					ElementsUtils.updateTriangleGraphicsSlice9(curve_elements, curve_elements.originalSlice9Size, 1, 1, true);
 
-					//var newrect:Rectangle=new Rectangle(-50, -100, 100, 200);
-					//ElementsUtils.updateTriangleGraphicsSlice9(curve_elements, newrect, false);
 
 				}
 				else{
