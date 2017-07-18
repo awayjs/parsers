@@ -966,6 +966,9 @@ export class AWDParser extends ParserBase
 			sampler = new Sampler2D();
 			shape = sprite.graphics.getShapeAt(i);
 			material = shape.material || sprite.material;
+			if(!material){
+				shape=null;
+			}
 			if(shape) {
 				shape.style = new Style();
 				shape.style.addSamplerAt(sampler, material.getTextureAt(0));
@@ -1424,7 +1427,7 @@ export class AWDParser extends ParserBase
 					var curveData:ByteArray = new ByteArray(str_len);
 					this._newBlockBytes.readBytes(curveData, 0, str_len);
 				}
-				else if (str_type == 23) {// positions2D (2 x uint16) + curvedata (3 x uint8)
+				else if (str_type == 23) {
 					slice9Indices=[];
 					var cnt:number=0;
 					var cnt2:number=0;
@@ -1444,7 +1447,36 @@ export class AWDParser extends ParserBase
 						cnt++;
 					}
 
-				}else{
+				}
+
+				else if (str_type == 24) {
+					element_type = ElementType.STROKE_DATA;
+					// todo: store the lineStyle as optional props on subgeom-properties ?
+					var color:number=this._newBlockBytes.readInt();
+					var thickness:number=this._newBlockBytes.readFloat();
+					var capStyle:number=this._newBlockBytes.readUnsignedByte();//todo
+					var jointStyle:number=this._newBlockBytes.readUnsignedByte();//todo
+					var mitter:number=this._newBlockBytes.readFloat();//todo
+					graphics.lineStyle(thickness, color);
+					var seg_type:number;
+					while (this._newBlockBytes.position < str_end){
+						seg_type=this._newBlockBytes.readFloat();
+						if(seg_type==1.0){
+							graphics.moveTo(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+						}
+						else if (seg_type==2.0){
+							graphics.lineTo(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+						}
+						else if (seg_type==3.0){
+							graphics.curveTo(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(),
+								this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+						}
+					}
+					graphics.endFill();
+					graphics.scaleStrokes=true;
+
+				}
+				else{
 					console.log("skipping unknown subgeom stream");
 					this._newBlockBytes.position = str_end;
 				}
@@ -3361,6 +3393,7 @@ class ElementType {
 	public static CONCATENATED_SUBGEO:number = 3;
 	public static SHARED_INDEXBUFFER:number = 4;
 	public static CONCENATED_STREAMS_UINT16:number = 5;
+	public static STROKE_DATA:number = 6;
 }
 
 class AWDProperties
