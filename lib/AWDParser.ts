@@ -939,6 +939,7 @@ export class AWDParser extends ParserBase
 
 		var start_timeing = performance.now();
 		var sprite:Sprite = new Sprite();
+		sprite.mouseEnabled = false;
 		graphics.copyTo(sprite.graphics);
 		var end_timing = performance.now();
 		var time_delta = end_timing - start_timeing;
