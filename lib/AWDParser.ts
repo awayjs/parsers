@@ -4,7 +4,7 @@ import {Graphics, ElementsUtils, Style, IMaterial, BitmapImage2D, BitmapImageCub
 
 import {AnimationSetBase, AnimatorBase} from "@awayjs/stage";
 
-import {DisplayObjectContainer, IView, DisplayObject, LightBase, DirectionalLight, PointLight, Camera, Sprite, TextField, Billboard, Skybox, LightPickerBase, StaticLightPicker, CubeMapShadowMapper, DirectionalShadowMapper, ShadowMapperBase, PrefabBase, PrimitiveCapsulePrefab, PrimitiveConePrefab, PrimitiveCubePrefab, PrimitiveCylinderPrefab, PrimitivePlanePrefab, PrimitiveSpherePrefab, PrimitiveTorusPrefab, ITimelineSceneGraphFactory, MovieClip, Timeline, Font, TesselatedFontTable, IFontTable, TextFormat, TextFieldType} from "@awayjs/scene";
+import {DisplayObjectContainer, IView, DisplayObject, LightBase, DirectionalLight, PointLight, Camera, Sprite, TextField, Billboard, Skybox, LightPickerBase, StaticLightPicker, CubeMapShadowMapper, DirectionalShadowMapper, ShadowMapperBase, PrefabBase, PrimitiveCapsulePrefab, PrimitiveConePrefab, PrimitiveCubePrefab, PrimitiveCylinderPrefab, PrimitivePlanePrefab, PrimitiveSpherePrefab, PrimitiveTorusPrefab, ISceneGraphFactory, DefaultSceneGraphFactory, MovieClip, Timeline, Font, TesselatedFontTable, IFontTable, TextFormat, TextFieldType} from "@awayjs/scene";
 
 import {VertexAnimationSet, VertexAnimator, SkeletonAnimationSet, SkeletonAnimator, JointPose, Skeleton, SkeletonPose, SkeletonJoint, SkeletonClipNode, VertexClipNode, AnimationClipNodeBase} from "@awayjs/renderer";
 
@@ -19,7 +19,7 @@ import {AWDBlock} from "./AWD3ParserUtils/AWDBlock";
  */
 export class AWDParser extends ParserBase
 {
-	private _view:IView;
+	private _factory:ISceneGraphFactory;
 
 	//set to "true" to have some console.logs in the Console
 	private _debug:boolean = false;
@@ -99,11 +99,11 @@ export class AWDParser extends ParserBase
 	 * @param uri The url or id of the data or file to be parsed.
 	 * @param extra The holder for extra contextual data that the parser might need.
 	 */
-	constructor(view:IView = null)
+	constructor(factory:ISceneGraphFactory = null)
 	{
 		super(URLLoaderDataFormat.ARRAY_BUFFER);
 
-		this._view = view;
+		this._factory = factory || new DefaultSceneGraphFactory();
 		this._blocks = new Array<AWDBlock>();
 		this._blocks[0] = new AWDBlock(0,255);
 		this._blocks[0].data = null; // Zero address means null in AWD
@@ -445,8 +445,7 @@ export class AWDParser extends ParserBase
 		this._blocks[this._cur_block_id] = block;
 
 		if ((this._version[0] == 3) && (this._version[1] == 0)) {
-			// probably should contain some info about the type of animation
-			var factory = new AS2SceneGraphFactory(this._view);
+			// probably should contain some info about the type of animation;
 
 			switch (type) {
 				case 24:
@@ -458,15 +457,15 @@ export class AWDParser extends ParserBase
 					isParsed = true;
 					break;
 				case 44:
-					this.parseAudioBlock(this._cur_block_id, factory);
+					this.parseAudioBlock(this._cur_block_id);
 					isParsed = true;
 					break;
 				case 133:
-					this.parseMovieClip(this._cur_block_id, factory);
+					this.parseMovieClip(this._cur_block_id);
 					isParsed = true;
 					break;
 				case 134:
-					this.parseTextField(this._cur_block_id, factory);
+					this.parseTextField(this._cur_block_id);
 					isParsed = true;
 					break;
 				case 135:
@@ -832,11 +831,11 @@ export class AWDParser extends ParserBase
 	private static textFieldTypes:Array<string> = ["static", "dynamic", "input", "input"];
 
 
-	private parseTextField(blockID:number, factory:ITimelineSceneGraphFactory):void
+	private parseTextField(blockID:number):void
 	{
 		var name:string = this.parseVarStr();
 		this._blocks[blockID].name = name;
-        var newTextField = factory.createTextField();
+        var newTextField = this._factory.createTextField();
 		var text_field_type:number=this._newBlockBytes.readUnsignedByte();
 
 		newTextField.type = AWDParser.textFieldTypes[text_field_type];
@@ -897,7 +896,7 @@ export class AWDParser extends ParserBase
 		var name:string = this.parseVarStr();
 		var mat:MethodMaterial = <MethodMaterial> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
 		mat.bothSides=true;
-		var billboard:Billboard = new Billboard(mat);
+		var billboard:Billboard = this._factory.createBillboard(mat);
 
 		// todo: optional matrix etc can be put in properties.
 		this.parseProperties(null);
@@ -938,7 +937,7 @@ export class AWDParser extends ParserBase
 		}
 
 		var start_timeing = performance.now();
-		var sprite:Sprite = new Sprite();
+		var sprite:Sprite = this._factory.createSprite();
 		sprite.mouseEnabled = false;
 		graphics.copyTo(sprite.graphics);
 		var end_timing = performance.now();
@@ -1035,7 +1034,7 @@ export class AWDParser extends ParserBase
 			console.log("Parsed a Library-Sprite: Name = '" + name + "| Graphics-Name = " + graphics.name + " | Graphics-Count = " + sprite.graphics.count + " | Mat-Names = " + materialNames);
 	}
 
-	private parseAudioBlock(blockID:number, factory:ITimelineSceneGraphFactory):void
+	private parseAudioBlock(blockID:number):void
 	{
 		//var asset:Audio;todo create asset for audio
 
@@ -1080,13 +1079,13 @@ export class AWDParser extends ParserBase
 		4: AWDParser.UINT8		// isScale9SliceMC
 	};
 	//Block ID = 4
-	private parseMovieClip(blockID:number, factory:ITimelineSceneGraphFactory):void
+	private parseMovieClip(blockID:number):void
 	{
 		var i:number;
 		var j:number;
 		var cmd_asset:DisplayObject;
 		var new_timeline:Timeline = new Timeline();
-		var new_mc = factory.createMovieClip(new_timeline);
+		var new_mc = this._factory.createMovieClip(new_timeline);
 		var name = this.parseVarStr();
 
 		// register list of potential childs
@@ -1758,7 +1757,7 @@ export class AWDParser extends ParserBase
 		name = this.parseVarStr();
 
 		var parentName:string = "Root (TopLevel)";
-		ctr = new DisplayObjectContainer();
+		ctr = this._factory.createDisplayObjectContainer();
 		ctr.transform.matrix3D = mtx;
 
 		if (parent) {
@@ -1829,7 +1828,7 @@ export class AWDParser extends ParserBase
 		if (isPrefab) {
 			sprite = <Sprite> prefab.getNewObject()
 		} else {
-			sprite = new Sprite();
+			sprite = this._factory.createSprite();
 			graphics.copyTo(sprite.graphics);
 		}
 
