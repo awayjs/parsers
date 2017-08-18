@@ -4,14 +4,13 @@ import {Graphics, ElementsUtils, Style, IMaterial, BitmapImage2D, BitmapImageCub
 
 import {AnimationSetBase, AnimatorBase} from "@awayjs/stage";
 
-import {DisplayObjectContainer, IView, DisplayObject, LightBase, DirectionalLight, PointLight, Camera, Sprite, TextField, Billboard, Skybox, LightPickerBase, StaticLightPicker, CubeMapShadowMapper, DirectionalShadowMapper, ShadowMapperBase, PrefabBase, PrimitiveCapsulePrefab, PrimitiveConePrefab, PrimitiveCubePrefab, PrimitiveCylinderPrefab, PrimitivePlanePrefab, PrimitiveSpherePrefab, PrimitiveTorusPrefab, ISceneGraphFactory, DefaultSceneGraphFactory, MovieClip, Timeline, Font, TesselatedFontTable, IFontTable, TextFormat, TextFieldType} from "@awayjs/scene";
+import {DisplayObjectContainer, IView, DisplayObject, LightBase, DirectionalLight, PointLight, Camera, Sprite, TextField, Billboard, Skybox, LightPickerBase, StaticLightPicker, CubeMapShadowMapper, DirectionalShadowMapper, ShadowMapperBase, PrefabBase, PrimitiveCapsulePrefab, PrimitiveConePrefab, PrimitiveCubePrefab, PrimitiveCylinderPrefab, PrimitivePlanePrefab, PrimitiveSpherePrefab, PrimitiveTorusPrefab, ISceneGraphFactory, MovieClip, Timeline, Font, TesselatedFontTable, IFontTable, TextFormat, TextFieldType} from "@awayjs/scene";
 
 import {VertexAnimationSet, VertexAnimator, SkeletonAnimationSet, SkeletonAnimator, JointPose, Skeleton, SkeletonPose, SkeletonJoint, SkeletonClipNode, VertexClipNode, AnimationClipNodeBase} from "@awayjs/renderer";
 
 import {MethodMaterialMode, MethodMaterial, DiffuseCelMethod, DiffuseGradientMethod, DiffuseLightMapMethod, DiffuseWrapMethod, EffectAlphaMaskMethod, EffectColorMatrixMethod, EffectColorTransformMethod, EffectEnvMapMethod, EffectFogMethod, EffectFresnelEnvMapMethod, EffectLightMapMethod, EffectRimLightMethod, NormalSimpleWaterMethod, ShadingMethodBase, ShadowDitheredMethod, ShadowMethodBase, SpecularFresnelMethod, ShadowCompositeMethod, ShadowHardMethod, SpecularAnisotropicMethod, SpecularCelMethod, SpecularPhongMethod, ShadowNearMethod, ShadowSoftMethod} from "@awayjs/materials";
 
-import {AS2SceneGraphFactory} from "@awayjs/player";
-
+import {DefaultSceneGraphFactory} from "./factories/DefaultSceneGraphFactory";
 import {AWDBlock} from "./AWD3ParserUtils/AWDBlock";
 
 /**
@@ -2134,15 +2133,15 @@ export class AWDParser extends ParserBase
 			debugString += "Parsed a ColorMaterial(SinglePass): Name = '" + name + "' | ";
 			var color:number = props.get(1, 0xffffff);
 			if (this.materialMode < 2) {
-				mat = new MethodMaterial(color, props.get(10, 1.0));
+				mat = <MethodMaterial> this._factory.createMaterial(color, props.get(10, 1.0));
 			} else {
-				mat = new MethodMaterial(color);
+				mat = <MethodMaterial> this._factory.createMaterial(color);
 				mat.mode = MethodMaterialMode.MULTI_PASS;
 			}
 		} else if (type === 2) {
 			var texture:Single2DTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(2, 0)].data);
 
-			mat = new MethodMaterial();
+			mat = <MethodMaterial> this._factory.createMaterial();
 			mat.ambientMethod.texture = texture;
 
 			if (this.materialMode < 2) {
@@ -2240,12 +2239,12 @@ export class AWDParser extends ParserBase
 					var color:number = props.get(1, 0xcccccc);//TODO temporarily swapped so that diffuse color goes to ambient
 
 					if (spezialType == 1) {//	MultiPassMaterial
-						mat = new MethodMaterial(color);
+						mat = <MethodMaterial> this._factory.createMaterial(color);
 						mat.mode = MethodMaterialMode.MULTI_PASS;
 						debugString += "Parsed a ColorMaterial(MultiPass): Name = '" + name + "' | ";
 
 					} else { //	SinglePassMaterial
-						mat = new MethodMaterial(color, props.get(10, 1.0));
+						mat = <MethodMaterial> this._factory.createMaterial(color, props.get(10, 1.0));
 						mat.alphaBlending = props.get(11, false);
 						debugString += "Parsed a ColorMaterial(SinglePass): Name = '" + name + "' | ";
 					}
@@ -2253,7 +2252,7 @@ export class AWDParser extends ParserBase
 				} else if (type == 2) {// texture material
 					var texture:Single2DTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(2, 0)].data);
 
-					mat = new MethodMaterial();
+					mat = <MethodMaterial> this._factory.createMaterial();
 					mat.ambientMethod.texture = texture;
 
 					if (spezialType == 1) {// MultiPassMaterial
@@ -2398,7 +2397,7 @@ export class AWDParser extends ParserBase
 			else if(type==6){
 				diffuseTexture.mappingMode = MappingMode.RADIAL;
 			}
-			var basic_mat:MethodMaterial = new MethodMaterial();
+			var basic_mat:MethodMaterial = <MethodMaterial> this._factory.createMaterial();
 			basic_mat.ambientMethod.texture = diffuseTexture;
 			basic_mat.bothSides = true;
 			basic_mat.alphaBlending = props.get(11, false);

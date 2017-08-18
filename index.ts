@@ -1,3 +1,4 @@
+export {DefaultSceneGraphFactory} from "./lib/factories/DefaultSceneGraphFactory";
 export {AWDParser} from "./lib/AWDParser";
 export {Max3DSParser} from "./lib/Max3DSParser";
 export {FNTParser} from "./lib/FNTParser";
