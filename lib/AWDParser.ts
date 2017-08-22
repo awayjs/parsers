@@ -2252,7 +2252,8 @@ export class AWDParser extends ParserBase
 				} else if (type == 2) {// texture material
 					var texture:Single2DTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(2, 0)].data);
 
-					mat = <MethodMaterial> this._factory.createMaterial();
+					mat = <MethodMaterial> this._factory.createMaterial(<BitmapImage2D> this._blocks[props.get(2, 0)].data);
+
 					mat.ambientMethod.texture = texture;
 
 					if (spezialType == 1) {// MultiPassMaterial
