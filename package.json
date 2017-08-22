@@ -1,6 +1,6 @@
 {
   "name": "@awayjs/parsers",
-  "version": "0.5.77",
+  "version": "0.5.78",
   "description": "Parsers for AwayJS",
   "main": "bundle/awayjs-parsers.umd.js",
   "types": "dist/index.d.ts",
