@@ -2250,21 +2250,17 @@ export class AWDParser extends ParserBase
 					}
 
 				} else if (type == 2) {// texture material
-					var texture:Single2DTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(2, 0)].data);
-
 					mat = <MethodMaterial> this._factory.createMaterial(<BitmapImage2D> this._blocks[props.get(2, 0)].data);
-
-					mat.ambientMethod.texture = texture;
 
 					if (spezialType == 1) {// MultiPassMaterial
 						mat.mode = MethodMaterialMode.MULTI_PASS;
 
-						debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "'" + (texture? " | Texture-Name = " + texture.name : "");
+						debugString += "Parsed a MethodMaterial(MultiPass): Name = '" + name + "'" + (mat.ambientMethod.texture? " | Texture-Name = " + mat.ambientMethod.texture.name : "");
 					} else {//	SinglePassMaterial
 						mat.alpha = props.get(10, 1.0);
 						mat.alphaBlending = props.get(11, false);
 
-						debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + name + "'" + (texture? " | Texture-Name = " + texture.name : "");
+						debugString += "Parsed a MethodMaterial(SinglePass): Name = '" + name + "'" + (mat.ambientMethod.texture? " | Texture-Name = " + mat.ambientMethod.texture.name : "");
 					}
 				}
 
@@ -3249,6 +3245,8 @@ export class AWDParser extends ParserBase
 				list[num_read] = read_func.call(this._newBlockBytes);
 
 			return list;
+		} else if (type == AWDParser.BOOL) {
+			return Boolean(read_func.call(this._newBlockBytes));
 		} else {
 			return read_func.call(this._newBlockBytes);
 		}
@@ -3396,7 +3394,7 @@ class AWDProperties
 
 	public get(key:number, fallback:any):any
 	{
-		return (this[key] || fallback);
+		return this.hasOwnProperty(key.toString())? this[key] : fallback;
 	}
 }
 
