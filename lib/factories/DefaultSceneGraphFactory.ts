@@ -1,6 +1,6 @@
 import {MaterialBase, Image2D} from "@awayjs/graphics";
 
-import {Timeline, Billboard, TextField, MovieClip, Sprite, DisplayObjectContainer, ISceneGraphFactory} from "@awayjs/scene";
+import {Timeline, Billboard, TextField, MovieClip, Sprite, DisplayObjectContainer, ISceneGraphFactory, PrefabBase} from "@awayjs/scene";
 
 import {MethodMaterial} from "@awayjs/materials";
 
@@ -15,8 +15,11 @@ export class DefaultSceneGraphFactory implements ISceneGraphFactory
 		return new MovieClip(timeline);
 	}
 
-	createSprite():Sprite
+	createSprite(prefab:PrefabBase = null):Sprite
 	{
+		if (prefab)
+			return <Sprite> prefab.getNewObject();
+
 		return new Sprite();
 	}
 

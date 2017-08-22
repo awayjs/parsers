@@ -1825,7 +1825,7 @@ export class AWDParser extends ParserBase
 		var sprite:Sprite;
 
 		if (isPrefab) {
-			sprite = <Sprite> prefab.getNewObject()
+			sprite = this._factory.createSprite(prefab);
 		} else {
 			sprite = this._factory.createSprite();
 			graphics.copyTo(sprite.graphics);
