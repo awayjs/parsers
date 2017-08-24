@@ -12,6 +12,7 @@ import {MethodMaterialMode, MethodMaterial, DiffuseCelMethod, DiffuseGradientMet
 
 import {DefaultSceneGraphFactory} from "./factories/DefaultSceneGraphFactory";
 import {AWDBlock} from "./AWD3ParserUtils/AWDBlock";
+import {LineScaleMode} from "@awayjs/graphics";
 
 /**
  * AWDParser provides a parser for the AWD data type.
@@ -1475,7 +1476,7 @@ export class AWDParser extends ParserBase
 						}
 					}
 					graphics.endFill();
-					graphics.scaleStrokes=true;
+					graphics.scaleStrokes=LineScaleMode.NORMAL;
 
 				}
 				else{
