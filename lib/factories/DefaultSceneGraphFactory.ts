@@ -1,14 +1,11 @@
-import {MaterialBase, Image2D} from "@awayjs/graphics";
+import {MaterialBase, Image2D, DefaultGraphicsFactory} from "@awayjs/graphics";
 
 import {Timeline, Billboard, TextField, MovieClip, Sprite, DisplayObjectContainer, ISceneGraphFactory, PrefabBase} from "@awayjs/scene";
 
 import {MethodMaterial} from "@awayjs/materials";
 
-export class DefaultSceneGraphFactory implements ISceneGraphFactory
+export class DefaultSceneGraphFactory extends DefaultGraphicsFactory implements ISceneGraphFactory
 {
-	constructor()
-	{
-	}
 
 	createMovieClip(timeline:Timeline = null):MovieClip
 	{

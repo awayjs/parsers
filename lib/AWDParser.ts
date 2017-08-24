@@ -1,6 +1,6 @@
 import {AttributesBuffer,Short2Attributes, Short3Attributes, Float3Attributes, Float2Attributes, Byte4Attributes, WaveAudio, ColorTransform, Matrix3D, Vector3D, URLLoaderDataFormat, URLRequest, AssetLibrary, IAsset, ParserBase, ParserUtils, ResourceDependency, ProjectionBase, PerspectiveProjection, OrthographicProjection, OrthographicOffCenterProjection, ByteArray, Rectangle, Matrix} from "@awayjs/core";
 
-import {Graphics, ElementsUtils, Style, IMaterial, BitmapImage2D, BitmapImageCube, BlendMode, Sampler2D, TriangleElements, ElementsBase, DefaultMaterialManager, SingleCubeTexture, Single2DTexture, MappingMode, ElementsType, Shape} from "@awayjs/graphics";
+import {Image2DParser, Graphics, ElementsUtils, Style, IMaterial, BitmapImage2D, BitmapImageCube, BlendMode, Sampler2D, TriangleElements, ElementsBase, DefaultMaterialManager, SingleCubeTexture, Single2DTexture, MappingMode, ElementsType, Shape} from "@awayjs/graphics";
 
 import {AnimationSetBase, AnimatorBase} from "@awayjs/stage";
 
@@ -350,7 +350,7 @@ export class AWDParser extends ParserBase
 	public _pStartParsing(frameLimit:number):void
 	{
 		//create a content object for Loaders
-		this._pContent = new DisplayObjectContainer();
+		this._pContent = this._factory.createDisplayObjectContainer();
 
 		super._pStartParsing(frameLimit);
 	}
@@ -1048,7 +1048,7 @@ export class AWDParser extends ParserBase
 			var url:string;
 			url = this._newBlockBytes.readUTFBytes(data_len);
 			// todo parser needs to be able to handle mp3 and wav files if we trigger the loading of external ressource
-			this._pAddDependency(this._cur_block_id.toString(), new URLRequest(url), false, null, true);
+			this._pAddDependency(this._cur_block_id.toString(), new URLRequest(url), null, null, false, true);
 		} else {
 			// todo: exporter does not export embed sounds yet
 			data_len = this._newBlockBytes.readUnsignedInt();
@@ -1058,7 +1058,7 @@ export class AWDParser extends ParserBase
 
 			// todo parse sound from bytes
 			// this._pAddDependency(this._cur_block_id.toString(), null, false, ParserUtils.by(data), true);
-			this._pAddDependency(this._cur_block_id.toString(), null, false, data, true);
+			this._pAddDependency(this._cur_block_id.toString(), null, null, data, false, true);
 		}
 
 		// Ignore for now
@@ -2429,7 +2429,7 @@ export class AWDParser extends ParserBase
 		// External
 		if (type == 0) {
 			var url:string = this._newBlockBytes.readUTFBytes(this._newBlockBytes.readUnsignedInt());
-			this._pAddDependency(this._cur_block_id.toString(), new URLRequest(url), false, null, true);
+			this._pAddDependency(this._cur_block_id.toString(), new URLRequest(url), new Image2DParser(this._factory), null, false, true);
 
 		} else {
 			var data_len:number = this._newBlockBytes.readUnsignedInt();
@@ -2442,7 +2442,7 @@ export class AWDParser extends ParserBase
 			// Converting data to image here instead of parser - fix FireFox bug where image width / height is 0 when created from data
 			// This gives the browser time to initialise image width / height.
 
-			this._pAddDependency(this._cur_block_id.toString(), null, false, data, true);
+			this._pAddDependency(this._cur_block_id.toString(), null, new Image2DParser(this._factory), data, false, true);
 			//this._pAddDependency(this._cur_block_id.toString(), null, false, data, true);
 
 		}
@@ -2478,14 +2478,14 @@ export class AWDParser extends ParserBase
 				data_len = this._newBlockBytes.readUnsignedInt();
 				var url:string;
 				url = this._newBlockBytes.readUTFBytes(data_len);
-				this._pAddDependency(this._cur_block_id.toString(), new URLRequest(url), false, null, true, i);
+				this._pAddDependency(this._cur_block_id.toString(), new URLRequest(url), null, null, false, true, i);
 			} else {
 
 				data_len = this._newBlockBytes.readUnsignedInt();
 				var data:ByteArray = new ByteArray(data_len);
 				this._newBlockBytes.readBytes(data, 0, data_len);
 
-				this._pAddDependency(this._cur_block_id.toString(), null, false, ParserUtils.byteArrayToImage(data), true, i);
+				this._pAddDependency(this._cur_block_id.toString(), null, null, ParserUtils.byteArrayToImage(data), false, true, i);
 			}
 		}
 

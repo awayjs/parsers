@@ -814,7 +814,7 @@ export class OBJParser extends ParserBase
 	{
 		// Add raw-data dependency to queue and load dependencies now,
 		// which will pause the parsing in the meantime.
-		this._pAddDependency('mtl', new URLRequest(mtlurl), true);
+		this._pAddDependency('mtl', new URLRequest(mtlurl), null, null, true);
 		this._pPauseAndRetrieveDependencies();//
 	}
 
