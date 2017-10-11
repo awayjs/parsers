@@ -736,9 +736,9 @@ export class AWDParser extends ParserBase
 
 		this.parseProperties(null);
 		this.parseUserAttributes();
-		if(newfont) {
+		//if(newfont) {
 			this._pFinalizeAsset(<IAsset>new_font, name);
-		}
+		//}
 
 		this._blocks[blockID].data = new_font;
 
