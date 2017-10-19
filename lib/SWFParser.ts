@@ -4,7 +4,7 @@ import {Image2DParser, Graphics, ElementsUtils, Style, IMaterial, BitmapImage2D,
 
 import {AnimationSetBase, AnimatorBase} from "@awayjs/stage";
 
-import {DisplayObjectContainer, IView, DisplayObject, LightBase, DirectionalLight, PointLight, Camera, Sprite, TextField, Billboard, 
+import {DisplayObjectContainer, MorphSprite, IView, DisplayObject, LightBase, DirectionalLight, PointLight, Camera, Sprite, TextField, Billboard,
 	Skybox, LightPickerBase, StaticLightPicker, CubeMapShadowMapper, DirectionalShadowMapper, ShadowMapperBase, 
 	PrefabBase, PrimitiveCapsulePrefab, PrimitiveConePrefab, PrimitiveCubePrefab, PrimitiveCylinderPrefab, 
 	PrimitivePlanePrefab, PrimitiveSpherePrefab, PrimitiveTorusPrefab, ISceneGraphFactory, 
@@ -61,7 +61,7 @@ import {
 	getSwfTagCodeName} from "./SWFParserUtils/SWFTags";
 import {__extends} from "tslib";
 
-
+var noTimelineDebug=false;
 export const enum CompressionMethod {
 	None,
 	Deflate,
@@ -241,9 +241,9 @@ export class SWFParser extends ParserBase
 						console.log("finished unknown parsing", resourceDependency);
 						break;
 				}
-
 			}
-			console.log("no eagerlyParsedSymbolsMap for id", resourceDependency.id);
+			else
+				console.log("no eagerlyParsedSymbolsMap for id", resourceDependency.id);
 
 		}
 		else{
@@ -373,12 +373,17 @@ export class SWFParser extends ParserBase
 				var symbol = this.getSymbol(dictionary[i].id);
 				console.log("symbol: ", dictionary[i].id, symbol.type, symbol);
 				switch(symbol.type){
+					case "morphshape":
+						this._pFinalizeAsset(symbol.shape, symbol.id);
+						symbol.shape.setRatio(0);
+						this.awaySymbols[dictionary[i].id]=symbol.shape;
+						break;
 					case "shape":
-						var mySprite:Sprite=new Sprite();
+						//var mySprite:Sprite=new Sprite();
 						symbol.shape.endFill();
-						mySprite.graphics.copyFrom(symbol.shape);
-						this._pFinalizeAsset(mySprite, symbol.id);
-						this.awaySymbols[dictionary[i].id]=mySprite;
+						//mySprite.graphics.copyFrom(symbol.shape);
+						this._pFinalizeAsset(symbol.shape, symbol.id);
+						this.awaySymbols[dictionary[i].id]=symbol.shape;
 						break;
 					case "font":
 						this._pFinalizeAsset(symbol.away, symbol.id);
@@ -395,18 +400,22 @@ export class SWFParser extends ParserBase
 						var font:Font=this.awaySymbols[symbol.tag.fontId];
 						awayText.textFormat.font_table=font.font_styles[0];
 
-						console.log(symbol.tag.initialText);
-						var doc = parser.parseFromString("<p>"+symbol.tag.initialText+"</p>", "application/xml");
-
-						console.log(doc.firstChild);
-						//todo: multiple formats per textfield
 						var text="";
-						for(var k=0; k<doc.firstChild.childNodes.length;k++){
-							if(doc.firstChild.childNodes[k].firstChild){
-								text+=(<any>doc.firstChild.childNodes[k].firstChild).innerHTML+"\\n";
-							}
-							else{
-								text+="\\n";
+						if(symbol.tag.initialText && symbol.tag.initialText!=""){
+							text=symbol.tag.initialText;
+							var doc = parser.parseFromString("<p>"+symbol.tag.initialText+"</p>", "application/xml");
+							if(doc && doc.firstChild){
+								text="";
+								//console.log(doc.firstChild);
+								//todo: multiple formats per textfield
+								for(var k=0; k<doc.firstChild.childNodes.length;k++){
+									if(doc.firstChild.childNodes[k].firstChild){
+										text+=(<any>doc.firstChild.childNodes[k].firstChild).innerHTML+"\\n";
+									}
+									else{
+										text+="\\n";
+									}
+								}
 							}
 						}
 						awayText.multiline=doc.firstChild.childNodes.length>0;
@@ -422,7 +431,8 @@ export class SWFParser extends ParserBase
 						this.awaySymbols[dictionary[i].id] = awayText;
 						break;
 					case "sound":
-						(<WaveAudio>this.awaySymbols[dictionary[i].id]).play(0,false);
+						//(<WaveAudio>this.awaySymbols[dictionary[i].id]).play(0,false);
+						break;
 
 
 				}
@@ -463,14 +473,14 @@ export class SWFParser extends ParserBase
 
 		//console.log("parsed a timeline: ", frames);
 
+		//noTimelineDebug || console.log("\nconverting frames to awayjs MovieClip\n\n");
 
-		var virutalScenegraph:any=[];
+		var virutalScenegraph:any={};
+		var registeredGraphicsIDs:any={};
 		var frameCnt=0;
 		for (var i = 0; i < frames.length; i++) {
 
-			keyframe_durations.push(1);
 
-			frame_command_indices.push(command_index_stream.length);
 
 			//todo: labels
 
@@ -482,7 +492,19 @@ export class SWFParser extends ParserBase
 			var cmds_update:any[]=[];
 			var unparsedTags:any[]=[];
 			var freePotentialChildCache:any={};
-			if(frames[i].controlTags && frames[i].controlTags.length>0){
+			if(!frames[i].controlTags || frames[i].controlTags.length==0){
+				//noTimelineDebug || console.log("extending last frames duration");
+				if(keyframe_durations.length>0)
+					keyframe_durations[keyframe_durations.length-1]+=1;
+				else
+					keyframe_durations[keyframe_durations.length]=1;
+			}
+			else if(frames[i].controlTags && frames[i].controlTags.length>0){
+
+				//console.log("frame ",i);
+				frame_command_indices.push(command_index_stream.length);
+				keyframe_durations[keyframe_durations.length]=1;
+				//noTimelineDebug || console.log("Start parsing frame");
 				frameCnt++;
 				var len:number=frames[i].controlTags.length;
 				for (var ct = 0; ct < len; ct++) {
@@ -491,6 +513,9 @@ export class SWFParser extends ParserBase
 
 					//console.log("parsed tag", tag);
 					switch (tag.code) {
+						case SwfTagCode.CODE_START_SOUND:
+							//noTimelineDebug || console.log("startsound", tag.soundId, tag.soundInfo);
+							break;
 						case SwfTagCode.CODE_REMOVE_OBJECT:
 						case SwfTagCode.CODE_REMOVE_OBJECT2:
 							//console.log("CODE_REMOVE_OBJECT", tag.depth | 0);
@@ -501,8 +526,10 @@ export class SWFParser extends ParserBase
 								freePotentialChilds=[];
 								freePotentialChildCache[id]=freePotentialChilds;
 							}
-							freePotentialChilds.push(virutalScenegraph[tag.depth].awayChildID);
+							freePotentialChilds.push(virutalScenegraph[tag.depth].sessionID);
 							virutalScenegraph[tag.depth]=null;
+							delete virutalScenegraph[tag.depth];
+							//noTimelineDebug || console.log("	remove", "depth", tag.depth);
 
 							/*var child = this.getTimelineObjectAtDepth(tag.depth | 0);
 							if (child) {
@@ -513,7 +540,7 @@ export class SWFParser extends ParserBase
 						case SwfTagCode.CODE_PLACE_OBJECT2:
 						case SwfTagCode.CODE_PLACE_OBJECT3:
 							var placeObjectTag = <PlaceObjectTag>tag;
-							//console.log("CODE_PLACE_OBJECT", tag.depth | 0, placeObjectTag.symbolId);
+							//console.log("CODE_PLACE_OBJECT", tag.depth | 0, placeObjectTag);
 							var child = virutalScenegraph[tag.depth];
 							var hasCharacter = placeObjectTag.symbolId > -1;
 							// Check for invalid flag constellations.
@@ -531,28 +558,100 @@ export class SWFParser extends ParserBase
 									break;
 								}*/
 							var awaySymbol: IAsset = null;
-							var awayChildID: number = -1;
-							if(hasCharacter && !child) {
+							var sessionID: number = -1;
+							var swapGraphicsID: number = -1;
+							var ratio: number = -1;
 
-								if (freePotentialChildCache[placeObjectTag.symbolId] && freePotentialChildCache[placeObjectTag.symbolId].length > 0) {
-									awayChildID = freePotentialChildCache[placeObjectTag.symbolId].pop();
+							// possible options:
+
+							// hasCharacter && !child
+							//		we need to put a child into the display list. might need to create sprite for graphics !
+
+							// hasCharacter && child
+							//		need to update a child with a new graphic
+
+							// !hasCharacter && child
+							//		need to update a child
+
+							// !hasCharacter && !child
+							//		something is wrong ?
+
+							if(hasCharacter) {
+								//console.log("placeTag symbol id",placeObjectTag.symbolId )
+								awaySymbol = this.awaySymbols[placeObjectTag.symbolId];
+								if(awaySymbol.isAsset(Graphics)){
+
+									swapGraphicsID=placeObjectTag.symbolId;
+									awayMc.timeline.graphicsPool[placeObjectTag.symbolId]=awaySymbol;
+									//swapGraphicsID=registeredGraphicsIDs[placeObjectTag.symbolId];
+									/*if(!swapGraphicsID){
+										swapGraphicsID=registeredGraphicsIDs[placeObjectTag.symbolId]=awayMc.timeline.potentialPrototypes.length;
+										awayMc.timeline.registerPotentialChild(awaySymbol);
+									}*/
+									if(child){
+										sessionID=child.sessionID;
+										// a child (sprite) already exists and the swapGraphicsId will be handled in the update command
+									}
+									else{
+										// register a new instance for this object
+										var graphicsSprite:Sprite=new Sprite();
+										(<Graphics>awaySymbol).endFill();
+										//graphicsSprite.graphics.copyFrom(<Graphics>awaySymbol);
+										sessionID = awayMc.timeline.potentialPrototypes.length;
+										awayMc.timeline.registerPotentialChild(graphicsSprite);
+										//if (freePotentialChildCache["graphicsSprite"] && freePotentialChildCache["graphicsSprite"].length > 0) {
+										//	sessionID = freePotentialChildCache["graphicsSprite"].pop();
+										//	isReused = true;
+										//}
+										//if (sessionID < 0) {
+										//}
+										//noTimelineDebug || console.log("	add shape", "session-id", sessionID, "depth", tag.depth, "reused", isReused, tag, awaySymbol);
+										child=virutalScenegraph[tag.depth] = {
+											sessionID: sessionID,
+											id: placeObjectTag.symbolId,
+											masks: []
+										}
+										cmds_add[cmds_add.length] = {sessionID: sessionID, depth: tag.depth};
+
+									}
 								}
-								if (awayChildID < 0){
+								else{
+									var isReused = false;
+									// a free instance for this object might already be available
+									//if (freePotentialChildCache[placeObjectTag.symbolId] && freePotentialChildCache[placeObjectTag.symbolId].length > 0) {
+									//	sessionID = freePotentialChildCache[placeObjectTag.symbolId].pop();
+									//	isReused = true;
+									//}
 
-									awaySymbol = this.awaySymbols[placeObjectTag.symbolId];
-									awayChildID=awayMc.timeline.potentialPrototypes.length;
-									awayMc.timeline.registerPotentialChild(awaySymbol);
-									cmds_add[cmds_add.length] = {childID: awayChildID,depth:tag.depth};
-									virutalScenegraph[tag.depth]={awayChildID:awayChildID, id:placeObjectTag.symbolId}
-									cmds_update[cmds_update.length]={child:virutalScenegraph[tag.depth], placeObjectTag:placeObjectTag};
+									//if (sessionID < 0) {
+										// register a new instance for this object
+										sessionID = awayMc.timeline.potentialPrototypes.length;
+										awayMc.timeline.registerPotentialChild(awaySymbol);
+								//	}
+									//noTimelineDebug || console.log("	add", "session-id", sessionID, "depth", tag.depth, "reused", isReused, tag, awaySymbol);
+									child=virutalScenegraph[tag.depth] = {
+										sessionID: sessionID,
+										id: placeObjectTag.symbolId,
+										masks: []
+									}
+									cmds_add[cmds_add.length] = {sessionID: sessionID, depth: tag.depth};
 								}
-
 							}
-							//console.log("child", child);
+
+							if (placeObjectTag.flags & PlaceObjectFlags.HasRatio) {
+								if(!awaySymbol)
+									awaySymbol = this.awaySymbols[child.id];
+								if(awaySymbol.isAsset(MorphSprite))
+									ratio=placeObjectTag.ratio;
+							}
 
 							if (child) {
-								cmds_update[cmds_update.length]={child:child, placeObjectTag:placeObjectTag};
+								cmds_update[cmds_update.length]={child:child, placeObjectTag:placeObjectTag, swapGraphicsID:swapGraphicsID, ratio:ratio};
+								//noTimelineDebug || console.log("	update", "session-id", child.sessionID, "hasCharacter", hasCharacter, "depth", tag.depth, "reused", isReused, "swapGraphicsID", swapGraphicsID, tag,  awaySymbol);
 
+							}
+							else{
+								throw("error in add command");
 							}
 
 
@@ -564,37 +663,67 @@ export class SWFParser extends ParserBase
 
 
 
+				// create remove commands:
 				var command_recipe_flag=0;
 				var start_index = remove_child_stream.length;
 				var command_cnt=cmds_removed.length;
 				if(command_cnt){
 					command_recipe_flag |= 0x02;
+					start_index = remove_child_stream.length;
 					for (var cmd = 0; cmd < command_cnt; cmd++){
 						remove_child_stream.push(cmds_removed[cmd]);
 					}
 					command_length_stream.push(command_cnt);
 					command_index_stream.push(start_index);
+					//noTimelineDebug || console.log("removeCommand", cmds_removed);
 				}
 
+				// create add commands:
 				var command_cnt=cmds_add.length;
 				if(command_cnt){
 					command_recipe_flag |= 0x04;
 					start_index = add_child_stream.length;
 					for (var cmd = 0; cmd < command_cnt; cmd++){
-						add_child_stream.push(cmds_add[cmd].childID);
+						add_child_stream.push(cmds_add[cmd].sessionID);
 						add_child_stream.push(cmds_add[cmd].depth);
+						//console.log("add", cmds_add[cmd].childID , cmds_add[cmd].depth);
 					}
 					command_length_stream.push(command_cnt);
-					command_index_stream.push(start_index);
+					command_index_stream.push(start_index/2);
+					//noTimelineDebug || console.log("cmds_add", cmds_add);
 				}
 
+				// create update commands:
 				var command_cnt=cmds_update.length;
 				if(command_cnt){
-					command_recipe_flag |= 0x08;
-					start_index = update_child_stream.length;
+					// collect masks per objects
+					for(var key in virutalScenegraph){
+						virutalScenegraph[key].masks=[];
+					}
+
+					//prepare mask info:
+
 					for (var cmd = 0; cmd < command_cnt; cmd++) {
 						placeObjectTag = cmds_update[cmd].placeObjectTag;
-						var child = cmds_update[cmd].child;
+						var child=cmds_update[cmd].child;
+						if (placeObjectTag.flags & PlaceObjectFlags.HasClipDepth) {
+							var depth:number=placeObjectTag.clipDepth-1;
+							while(depth>placeObjectTag.depth){
+								virutalScenegraph[depth].masks.push(child.sessionID);
+								depth--;
+							}
+						}
+					}
+
+					// process updated props:
+
+					start_index = update_child_stream.length;
+					var updateCnt=0;
+					var updateCmd;
+					for (var cmd = 0; cmd < command_cnt; cmd++) {
+						updateCmd=cmds_update[cmd];
+						placeObjectTag = updateCmd.placeObjectTag;
+						var child = updateCmd.child;
 						//if (symbol && !symbol.dynamic) {
 						// If the current object is of a simple type (for now Shapes, MorphShapes and
 						// StaticText) only its static content is updated instead of replacing it with a
@@ -606,11 +735,17 @@ export class SWFParser extends ParserBase
 						// this would affect.
 						//if (child._hasFlags(DisplayObjectFlags.AnimatedByTimeline)) {
 
-						update_child_stream.push(child.awayChildID);//displaycmd->child->child->id);////
-						update_child_props_indices_stream.push(property_type_stream.length);
+						var childStartIdx:number=property_type_stream.length;
 						var num_updated_props=0;
 						var reset = false;//!(placeObjectTag.flags & PlaceObjectFlags.Move) && placeObjectTag.flags & PlaceObjectFlags.HasCharacter;
 
+						if(updateCmd.swapGraphicsID>=0){
+
+							num_updated_props++;
+							property_type_stream.push(202);
+							property_index_stream.push(properties_stream_int.length);
+							properties_stream_int.push(updateCmd.swapGraphicsID);
+						}
 						//var matrixClass = this.sec.flash.geom.Matrix.axClass;
 						if (placeObjectTag.flags & PlaceObjectFlags.HasMatrix) {
 
@@ -638,26 +773,43 @@ export class SWFParser extends ParserBase
 							property_type_stream.push(2);
 							property_index_stream.push(properties_stream_f32_ct.length / 8);
 							num_updated_props++;
-							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.redMultiplier;
-							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.greenMultiplier;
-							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.blueMultiplier;
-							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.alphaMultiplier;
+							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.redMultiplier/255;
+							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.greenMultiplier/255;
+							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.blueMultiplier/255;
+							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.alphaMultiplier/255;
 							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.redOffset;
 							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.greenOffset;
 							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.blueOffset;
 							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.alphaOffset;
 						}
 
-						if (placeObjectTag.flags & PlaceObjectFlags.HasRatio) {
-							//var ratio = placeObjectTag.ratio | 0;
-							//if (ratio !== this._ratio) {
-							//	release || assert(ratio >= 0 && ratio <= 0xffff);
-							//	this._ratio = ratio;
-							//	this._setDirtyFlags(DisplayObjectDirtyFlags.DirtyMiscellaneousProperties);
-							//}
+						if (updateCmd.ratio>=0) {
+							num_updated_props++;
+							property_type_stream.push(203);
+							property_index_stream.push(properties_stream_int.length);
+							properties_stream_int.push(updateCmd.ratio | 0);
+							//console.log("PlaceObjectFlags.HasRatio", placeObjectTag, child);
 						}
 
+						if (child.masks.length>0) {
+
+							num_updated_props++;
+							property_type_stream.push(3);
+							property_index_stream.push(properties_stream_int.length);
+							properties_stream_int.push(child.masks.length);
+							for(let val of child.masks)
+								properties_stream_int.push(val);
+						}
 						if (placeObjectTag.flags & PlaceObjectFlags.HasClipDepth) {
+
+							//console.log("cmds_update[cmd]",cmds_update[cmd]);
+
+
+							//console.log("placeObjectTag.clipDepth", placeObjectTag.clipDepth);
+
+							num_updated_props++;
+							property_type_stream.push(200);
+							property_index_stream.push(0);
 							//var clipDepth = placeObjectTag.clipDepth === undefined ? -1 : placeObjectTag.clipDepth;
 							//if (clipDepth !== this._clipDepth) {
 							//	this._clipDepth = clipDepth;
@@ -792,24 +944,39 @@ export class SWFParser extends ParserBase
 */
 						}
 
-						update_child_props_length_stream.push(num_updated_props);
+						if(num_updated_props>0){
+							updateCnt++;
+							update_child_stream.push(child.sessionID);
+							update_child_props_indices_stream.push(childStartIdx);
+							update_child_props_length_stream.push(num_updated_props);
+						}
 					}
-					command_length_stream.push(command_cnt);
-					command_index_stream.push(start_index);
+					if(updateCnt>0){
+						command_recipe_flag |= 0x08;
+						command_length_stream.push(command_cnt);
+						command_index_stream.push(start_index);
+						//noTimelineDebug || console.log("cmds_update", cmds_update);
+					}
+
+				}
+				if(frame_recipe.length==0){
+					command_recipe_flag |= 0x01;
 
 				}
 				frame_recipe.push(command_recipe_flag);
 
 			}
 			else{
-				keyframe_durations[keyframe_durations.length--]++;
 			}
 
 		}
 
-		awayTimeline.numKeyFrames=frameCnt;
 
 		awayTimeline.keyframe_durations=new Uint32Array(keyframe_durations);
+		awayTimeline.numKeyFrames=frameCnt;
+
+		//noTimelineDebug || console.log("frameCnt", frameCnt, "keyframe_durations", keyframe_durations);
+
 		awayTimeline.frame_command_indices=new Uint32Array(frame_command_indices);
 		awayTimeline.frame_recipe=new Uint32Array(frame_recipe);
 		awayTimeline.command_length_stream=new Uint32Array(command_length_stream);

@@ -427,7 +427,7 @@ export function defineFont(tag: FontTag):any {
 				myYCoordinates += toString16(dy);
 				x = nx;
 				y = ny;
-				glyphPath.curveTo( nx,ascent-ny,cx, ascent-cy);
+				glyphPath.curveTo(cx, ascent-cy,  nx,ascent-ny);
 			}
 			endPoint++;
 			if (endPoint > maxPoints) {
@@ -492,7 +492,7 @@ export function defineFont(tag: FontTag):any {
 		
 		
 		
-		var vertexBuffer=GraphicsFactoryFills.pathToAttributesBuffer(glyphPath);
+		var vertexBuffer=GraphicsFactoryFills.pathToAttributesBuffer(glyphPath, true);
 		if(vertexBuffer){
 			//console.log("created glyph for ", String.fromCharCode(code))
 			tessFontTableAJS.setChar(code.toString(), xMax-xMin, vertexBuffer, null, false );

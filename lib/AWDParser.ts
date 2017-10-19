@@ -1460,6 +1460,9 @@ export class AWDParser extends ParserBase
 					var capStyle:number=this._newBlockBytes.readUnsignedByte();//todo
 					var jointStyle:number=this._newBlockBytes.readUnsignedByte();//todo
 					var mitter:number=this._newBlockBytes.readFloat();//todo
+					if(thickness<=0.06)
+						thickness=0;
+					//console.log("thickness", thickness);
 					graphics.lineStyle(thickness, color);
 					var seg_type:number;
 					while (this._newBlockBytes.position < str_end){
@@ -1471,8 +1474,9 @@ export class AWDParser extends ParserBase
 							graphics.lineTo(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
 						}
 						else if (seg_type==3.0){
-							graphics.curveTo(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(),
-								this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat());
+							var test1=this._newBlockBytes.readFloat();
+							var test2=this._newBlockBytes.readFloat();
+							graphics.curveTo(this._newBlockBytes.readFloat(), this._newBlockBytes.readFloat(),test1, test2);
 						}
 					}
 					graphics.endFill();

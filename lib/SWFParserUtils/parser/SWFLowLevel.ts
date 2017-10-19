@@ -970,9 +970,12 @@ function parseFillStyle(stream: Stream, swfVersion: number, tagCode: number,
       if (isMorph) {
         gradient.matrixMorph = parseMatrix(stream);
       }
+      //console.log("GradientFill", tagCode);
       if (tagCode === SwfTagCode.CODE_DEFINE_SHAPE4) {
         gradient.spreadMode = stream.readUb(2);
         gradient.interpolationMode = stream.readUb(2);
+		  //console.log("gradient.spreadMode", gradient.spreadMode);
+		  //console.log("gradient.interpolationMode", gradient.interpolationMode);
       } else {
         stream.readUb(4);
       }
@@ -1042,6 +1045,8 @@ function parseLineStyles(stream: Stream, swfVersion: number, tagCode: number,
       var hasFill = style.hasFill = stream.readUb(1);
       style.noHscale = !!stream.readUb(1);
       style.noVscale = !!stream.readUb(1);
+     // console.log("style.noHscale", style.noHscale, "style.noVscale", style.noVscale);
+
       style.pixelHinting = !!stream.readUb(1);
       stream.readUb(5);
       style.noClose = !!stream.readUb(1);
@@ -1058,6 +1063,7 @@ function parseLineStyles(stream: Stream, swfVersion: number, tagCode: number,
         }
       }
     } else {
+		//console.log("No strokes");
       if (tagCode > SwfTagCode.CODE_DEFINE_SHAPE2) {
         style.color = parseRgba(stream);
       } else {

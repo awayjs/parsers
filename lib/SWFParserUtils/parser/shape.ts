@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import {Graphics, BitmapFillStyle, MappingMode,Single2DTexture, GraphicsPath, GraphicsFillStyle, GradientFillStyle, GraphicsStrokeStyle, GradientType as GradientTypeAway} from "@awayjs/graphics"
+import {Graphics, CapsStyle, JointStyle, BitmapFillStyle, MappingMode,Single2DTexture, GraphicsPath, GraphicsFillStyle, GradientFillStyle, GraphicsStrokeStyle, GradientType as GradientTypeAway} from "@awayjs/graphics"
 import {ColorUtils, Matrix as AwayMatrix} from "@awayjs/core"
+
+import {MorphSprite} from "@awayjs/scene"
 import {MethodMaterial} from "@awayjs/materials"
 import {PathCommand, GradientType, GradientSpreadMethod,
 	GradientInterpolationMethod, ShapeData,	ShapeMatrix} from "./ShapeData";
@@ -41,6 +43,11 @@ var gradients_map_swf_to_away:any;
 gradients_map_swf_to_away={};
 gradients_map_swf_to_away[GradientType.Linear]=GradientTypeAway.LINEAR;
 gradients_map_swf_to_away[GradientType.Radial]=GradientTypeAway.RADIAL;
+var capStyle_map_to_away:any;
+capStyle_map_to_away={};
+capStyle_map_to_away[0]=CapsStyle.ROUND;
+capStyle_map_to_away[1]=CapsStyle.NONE;
+capStyle_map_to_away[2]=CapsStyle.SQUARE;
 /*
  * Applies the current segment to the paths of all styles specified in the last
  * style-change record.
@@ -85,7 +92,7 @@ function applySegmentToStyles(segment: PathSegment, styles,
  */
 function convertRecordsToShapeData(records: ShapeRecord[], fillPaths: SegmentedPath[],
 								   linePaths: SegmentedPath[], dependencies: number[],
-								   recordsMorph: ShapeRecord[], parser:any): Graphics
+								   recordsMorph: ShapeRecord[], parser:any): any
 {
 	var isMorph = recordsMorph !== null;
 	var styles = {fill0: 0, fill1: 0, line: 0};
@@ -280,16 +287,31 @@ function convertRecordsToShapeData(records: ShapeRecord[], fillPaths: SegmentedP
 		allPaths.push(defaultPath);
 	}
 
-	var shape: ShapeData = new ShapeData();
-	var graphics: Graphics = new Graphics();
+	var shapeAJS: GraphicsPath;
 	if (isMorph) {
-		shape.morphCoordinates = new Int32Array(shape.coordinates.length);
-		shape.morphStyles = new DataBuffer(16);
+		var morphShapeAJS: GraphicsPath;
+		//shape.morphCoordinates = new Int32Array(shape.coordinates.length);
+		//shape.morphStyles = new DataBuffer(16);
+		var morphSprite: MorphSprite;
+		morphSprite = new MorphSprite();
+		morphSprite.start=[];
+		morphSprite.end=[];
+		for (i = 0; i < allPaths.length; i++) {
+			//allPaths[i].serialize(shape);
+			shapeAJS = new GraphicsPath();
+			morphShapeAJS = new GraphicsPath();
+			allPaths[i].serializeAJS(shapeAJS, morphShapeAJS);
+			morphSprite.start.push(shapeAJS);
+			morphSprite.end.push(morphShapeAJS);
+		}
+		return morphSprite;
 	}
+	var graphics: Graphics = new Graphics();
 	for (i = 0; i < allPaths.length; i++) {
+		//console.log("allPaths", i, allPaths[i]);
 		//allPaths[i].serialize(shape);
-		var shapeAJS: GraphicsPath = new GraphicsPath();
-		allPaths[i].serializeAJS(shapeAJS);
+		shapeAJS = new GraphicsPath();
+		allPaths[i].serializeAJS(shapeAJS, null);
 		graphics.add_queued_path(shapeAJS);
 	}
 
@@ -394,8 +416,8 @@ function processStyle(style, isLineStyle: boolean, isMorph: boolean,
 	}
 	var matrix = style.matrix;
 	shapeStyle.transform = {
-		/*
-		a: (matrix.a * scale),
+
+		/*a: (matrix.a * scale),
 		b: (matrix.b * scale),
 		c: (matrix.c * scale),
 		d: (matrix.d * scale),
@@ -505,6 +527,8 @@ export function defineShape(tag: ShapeTag, parser:any):any {
 	var dependencies = [];
 	var fillPaths = createPathsList(tag.fillStyles, false, !!tag.recordsMorph, dependencies, parser);
 	var linePaths = createPathsList(tag.lineStyles, true, !!tag.recordsMorph, dependencies, parser);
+	//console.log(fillPaths, linePaths);
+
 	var shape = convertRecordsToShapeData(tag.records, fillPaths, linePaths, dependencies, tag.recordsMorph || null, parser);
 
 	return {
@@ -515,6 +539,7 @@ export function defineShape(tag: ShapeTag, parser:any):any {
 		morphFillBounds: tag.fillBoundsMorph || null,
 		morphLineBounds: tag.lineBoundsMorph || null,
 		shape: shape,//.toPlainObject(),
+		//shape_swf: shape.toPlainObject(),
 		//transferables: shape.buffers,
 		require: dependencies.length ? dependencies : null
 	};
@@ -709,9 +734,10 @@ class PathSegment {
 		}
 		return position;
 	}
-	serializeAJS(shape: GraphicsPath, lastPosition: {x: number; y: number}) {
+	serializeAJS(shape: GraphicsPath, morphShape: GraphicsPath, lastPosition: {x: number; y: number}) {
+		//console.log("serializeAJS segment");
 		if (this.isReversed) {
-			this._serializeReversedAJS(shape, lastPosition);
+			this._serializeReversedAJS(shape, morphShape, lastPosition);
 			return;
 		}
 		var commands = this.commands.bytes;
@@ -730,13 +756,25 @@ class PathSegment {
 		for (var i = offset; i < commandsCount; i++) {
 			switch (commands[i]){
 				case PathCommand.MoveTo:
+					//console.log("moveTo",data[dataPosition]/20, data[dataPosition+1]/20);
 					shape.moveTo(data[dataPosition]/20, data[dataPosition+1]/20);
+					if(morphShape){
+						morphShape.moveTo(morphData[dataPosition]/20, morphData[dataPosition+1]/20);
+					}
 					break;
 				case PathCommand.LineTo:
+					//console.log("lineTo",data[dataPosition]/20, data[dataPosition+1]/20);
 					shape.lineTo(data[dataPosition]/20, data[dataPosition+1]/20);
+					if(morphShape){
+						morphShape.lineTo(morphData[dataPosition]/20, morphData[dataPosition+1]/20);
+					}
 					break;
 				case PathCommand.CurveTo:
-					shape.curveTo(data[dataPosition+2]/20, data[dataPosition+3]/20,data[dataPosition]/20, data[dataPosition+1]/20 );
+					//console.log("curveTo",data[dataPosition]/20, data[dataPosition+1]/20,data[dataPosition+2]/20, data[dataPosition+3]/20);
+					shape.curveTo(data[dataPosition]/20, data[dataPosition+1]/20,data[dataPosition+2]/20, data[dataPosition+3]/20 );
+					if(morphShape){
+						morphShape.curveTo(morphData[dataPosition]/20, morphData[dataPosition+1]/20,morphData[dataPosition+2]/20, morphData[dataPosition+3]/20 );
+					}
 					//shape.curveTo(data[dataPosition]/20, data[dataPosition+1]/20, data[dataPosition+2]/20, data[dataPosition+3]/20 );
 					dataPosition+=2;
 					break;
@@ -748,7 +786,8 @@ class PathSegment {
 		lastPosition.x = data[dataLength - 2];
 		lastPosition.y = data[dataLength - 1];
 	}
-	private _serializeReversedAJS(shape: GraphicsPath, lastPosition: {x: number; y: number}) {
+	private _serializeReversedAJS(shape: GraphicsPath, morphShape: GraphicsPath, lastPosition: {x: number; y: number}) {
+		//console.log("_serializeReversedAJS segment");
 		// For reversing the fill0 segments, we rely on the fact that each segment
 		// starts with a moveTo. We first write a new moveTo with the final drawing command's
 		// target coordinates (if we don't skip it, see below). For each of the following
@@ -766,6 +805,9 @@ class PathSegment {
 		// Only write the first moveTo if it doesn't go to the current coordinates.
 		if (data[dataPosition] !== lastPosition.x || data[dataPosition + 1] !== lastPosition.y) {
 			shape.moveTo(data[dataPosition]/20, data[dataPosition+1]/20);
+			if(morphShape){
+				morphShape.moveTo(morphData[dataPosition]/20, morphData[dataPosition+1]/20);
+			}
 		}
 		if (commandsCount === 1) {
 			lastPosition.x = data[0];
@@ -777,14 +819,26 @@ class PathSegment {
 			var command: PathCommand = commands[i];
 			switch (commands[i]){
 				case PathCommand.MoveTo:
+					//console.log("moveTo",data[dataPosition]/20, data[dataPosition+1]/20);
 					shape.moveTo(data[dataPosition]/20, data[dataPosition+1]/20);
+					if(morphShape){
+						morphShape.moveTo(morphData[dataPosition]/20, morphData[dataPosition+1]/20);
+					}
 					break;
 				case PathCommand.LineTo:
+					//console.log("lineTo",data[dataPosition]/20, data[dataPosition+1]/20);
 					shape.lineTo(data[dataPosition]/20, data[dataPosition+1]/20);
+					if(morphShape){
+						morphShape.lineTo(morphData[dataPosition]/20, morphData[dataPosition+1]/20);
+					}
 					break;
 				case PathCommand.CurveTo:
 					dataPosition -= 2;
-					shape.curveTo(data[dataPosition]/20, data[dataPosition+1]/20,data[dataPosition+2]/20, data[dataPosition+3]/20 );
+					//console.log("curveTo",data[dataPosition+2]/20, data[dataPosition+3]/20,data[dataPosition]/20, data[dataPosition+1]/20);
+					shape.curveTo(data[dataPosition+2]/20, data[dataPosition+3]/20,data[dataPosition]/20, data[dataPosition+1]/20 );
+					if(morphShape){
+						morphShape.curveTo(morphData[dataPosition+2]/20, morphData[dataPosition+3]/20,morphData[dataPosition]/20, morphData[dataPosition+1]/20 );
+					}
 					break;
 
 			}
@@ -1007,6 +1061,14 @@ class SegmentedPath {
 		(g << 8) | b;
 	}
 
+	getAlpha(float32Color:number):number
+	{
+		//var r:number = ( float32Color & 0xff000000 ) >>> 24;
+		//var g:number = ( float32Color & 0xff0000 ) >>> 16;
+		//var b:number = ( float32Color & 0xff00 ) >>> 8;
+		var a:number = float32Color & 0xff;
+		return a;
+	}
 
 	rgbToArgb(float32Color:number):number
 	{
@@ -1018,7 +1080,8 @@ class SegmentedPath {
 			(g << 8) | b;
 	}
 
-	serializeAJS(shape: GraphicsPath) {
+	serializeAJS(shape: GraphicsPath, morphShape: GraphicsPath) {
+		//console.log("serializeAJS");
 		var segment = this.head();
 		if (!segment) {
 			// Path is empty.
@@ -1100,11 +1163,14 @@ class SegmentedPath {
 			var morph = style.morph;
 			switch (style.type) {
 				case FillType.Solid:
+					style.alpha=this.getAlpha(style.color)/255;
 					style.color=this.rgbaToArgb(style.color);
-					shape.style=new GraphicsFillStyle(style.color);
+
+					shape.style=new GraphicsFillStyle(style.color, style.alpha);
 					if (morph) {
-						//console.log("writeMorphFill not handled yet");
-						//shape.writeMorphFill(morph.color);
+						morph.alpha=this.getAlpha(morph.color)/255;
+						morph.color=this.rgbaToArgb(morph.color);
+						morphShape.style=new GraphicsFillStyle(morph.color, morph.alpha);
 					}
 
 
@@ -1117,16 +1183,25 @@ class SegmentedPath {
 						GradientType.Radial;
 					var alphas:number[]=[];
 					for(var i:number=0; i<style.colors.length; i++) {
+						alphas[i]=this.getAlpha(style.colors[i])/255;
 						style.colors[i]=this.rgbaToArgb(style.colors[i]);
-						alphas[i]=1;
 					}
-					/*for(var i:number=0; i<style.ratios.length; i++) {
-						style.ratios[i]=style.ratios[i]/255;
-					}*/
 					var awayMatrix:AwayMatrix=new AwayMatrix(style.transform.a, style.transform.b, style.transform.c, style.transform.d, style.transform.tx, style.transform.ty);
-					shape.style=new GradientFillStyle(gradients_map_swf_to_away[gradientType], style.colors, alphas, style.ratios,  awayMatrix, style.spreadMethod,style.interpolationMode, style.focalPoint / 2 | 0);
+					shape.style=new GradientFillStyle(gradients_map_swf_to_away[gradientType], style.colors, alphas, style.ratios,  awayMatrix, style.spreadMethod, style.interpolationMode, style.focalPoint / 2 | 0);
 
+					//console.log("style.spreadMethod, style.interpolationMode", style.spreadMethod, style.interpolationMode);
 					if (morph) {
+						var gradientType = morph.type === FillType.LinearGradient ?
+							GradientType.Linear :
+							GradientType.Radial;
+						var alphas:number[]=[];
+						for(var i:number=0; i<morph.colors.length; i++) {
+							alphas[i]=this.getAlpha(morph.colors[i])/255;
+							morph.colors[i]=this.rgbaToArgb(morph.colors[i]);
+						}
+						var awayMatrix:AwayMatrix=new AwayMatrix(morph.transform.a, morph.transform.b, morph.transform.c, morph.transform.d, morph.transform.tx, morph.transform.ty);
+						morphShape.style=new GradientFillStyle(gradients_map_swf_to_away[gradientType], morph.colors, alphas, morph.ratios,  awayMatrix, morph.spreadMethod, morph.interpolationMode, morph.focalPoint / 2 | 0);
+
 						//console.log("writeMorphGradient not handled yet");
 						//writeMorphGradient(morph, shape);
 					}
@@ -1167,11 +1242,27 @@ class SegmentedPath {
 						style.noVscale ? 3 : 1;
 					// TODO: Figure out how to handle startCapsStyle
 					var thickness = (clamp(style.width, 0, 0xff * 20)|0)/20;
-					style.color=this.rgbaToArgb(style.color)
-					shape.style=new GraphicsStrokeStyle(style.color, 1, thickness, style.jointStyle, style.endCapsStyle, style.miterLimit);
+					style.alpha=this.getAlpha(style.color)/255;
+					style.color=this.rgbaToArgb(style.color);
+					var scaleModeAWJ="NORMAL";
+					if(style.noVscale==null && style.noHscale==null){
+						scaleModeAWJ="HAIRLINE";
+					}
+					if(thickness==0.05){
+						scaleModeAWJ="HAIRLINE";
+					}
+					if(style.startCapsStyle!=style.endCapsStyle){
+						throw("different end vs start capstyöe");
+					}
+					shape.style=new GraphicsStrokeStyle(style.color, style.alpha, thickness, style.jointStyle, capStyle_map_to_away[style.startCapsStyle], style.miterLimit, scaleModeAWJ);
 
+					//console.log("scaleMode", scaleModeAWJ, style.noHscale, style.noVscale, scaleMode, thickness, style.jointStyle, style.startCapsStyle, style.endCapsStyle, style.miterLimit);
 					if (morph) {
-						//console.log("writeMorphLineStyle not handled yet");
+						var thickness = (clamp(morph.width, 0, 0xff * 20)|0)/20;
+						morph.alpha=this.getAlpha(morph.color)/255;
+						morph.color=this.rgbaToArgb(morph.color);
+						morphShape.style=new GraphicsStrokeStyle(morph.color, morph.alpha, thickness, style.jointStyle, capStyle_map_to_away[style.startCapsStyle], style.miterLimit, scaleModeAWJ);
+//console.log("writeMorphLineStyle not handled yet");
 						//writeMorphLineStyle(morph, shape);
 					}
 					break;
@@ -1183,8 +1274,9 @@ class SegmentedPath {
 						style.noVscale ? 3 : 1;
 					// TODO: Figure out how to handle startCapsStyle
 					var thickness = (clamp(style.width, 0, 0xff * 20)|0)/20;
+					style.alpha=this.getAlpha(style.color)/255;
 					style.color=this.rgbaToArgb(style.color)
-					shape.style=new GraphicsStrokeStyle(style.color, 1, thickness, style.jointStyle, style.endCapsStyle, style.miterLimit);
+					shape.style=new GraphicsStrokeStyle(style.color, style.alpha, thickness, style.jointStyle, style.endCapsStyle, style.miterLimit);
 					var gradientType = style.type === FillType.LinearGradient ?
 						GradientType.Linear :
 						GradientType.Radial;
@@ -1195,6 +1287,7 @@ class SegmentedPath {
 					for(var i:number=0; i<style.colors.length; i++) alphas[i]=1;
 					shape.style=new GradientFillStyle(gradients_map_swf_to_away[gradientType], style.colors, alphas, style.ratios,  style.transform, style.spreadMethod,style.interpolationMode, style.focalPoint / 2 | 0);
 
+					console.log("scaleMode", style.noHscale, style.noVscale, scaleMode, thickness, style.jointStyle, style.endCapsStyle, style.miterLimit);
 					if (morph) {
 						//console.log("writeMorphLineStyle not handled yet");
 						//console.log("writeMorphGradient not handled yet");
@@ -1212,6 +1305,10 @@ class SegmentedPath {
 					// TODO: Figure out how to handle startCapsStyle
 					var thickness = clamp(style.width, 0, 0xff * 20)|0;
 					shape.style=new GraphicsStrokeStyle(style.color, 1, thickness, style.jointStyle, style.endCapsStyle, style.miterLimit);
+					console.log("scaleMode", scaleMode, thickness, style.jointStyle, style.endCapsStyle, style.miterLimit);
+
+
+
 					//console.log("writeBitmap not handled yet");
 					//writeBitmap(PathCommand.LineStyleBitmap, style, shape);
 					if (morph) {
@@ -1229,7 +1326,7 @@ class SegmentedPath {
 		var lastPosition = {x: 0, y: 0};
 		current = finalRoot;
 		while (current) {
-			current.serializeAJS(shape, lastPosition);
+			current.serializeAJS(shape, morphShape, lastPosition);
 			current = current.next;
 		}
 		/*
