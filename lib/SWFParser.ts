@@ -221,17 +221,17 @@ export class SWFParser extends ParserBase
 			if (awaitedObject) {
 				switch(awaitedObject.type) {
 					case "image":
-						console.log("finished image parsing", resourceDependency);
+						//console.log("finished image parsing", resourceDependency);
 						var myBitmap:BitmapImage2D=(<BitmapImage2D>resourceDependency.assets[0]);
 						//myBitmap.width=awaitedObject.definition.width;
 						//myBitmap.height=awaitedObject.definition.height;
 						this.awaySymbols[resourceDependency.id]=myBitmap;
 						break;
 					case "font":
-						console.log("finished font parsing", resourceDependency);
+						//console.log("finished font parsing", resourceDependency);
 						break;
 					case "sound":
-						console.log("finished sound parsing", resourceDependency);
+						//console.log("finished sound parsing", resourceDependency);
 						var waveAudio:WaveAudio=(<WaveAudio>resourceDependency.assets[0]);
 						//myBitmap.width=awaitedObject.definition.width;
 						//myBitmap.height=awaitedObject.definition.height;
@@ -264,7 +264,7 @@ export class SWFParser extends ParserBase
 	{
 		//not used - if a dependcy fails, the awaiting Texture or CubeTexture will never be finalized, and the default-bitmaps will be used.
 		// this means, that if one Bitmap of a CubeTexture fails, the CubeTexture will have the DefaultTexture applied for all six Bitmaps.
-		console.log("_iResolveDependencyFailure", resourceDependency);
+		//console.log("_iResolveDependencyFailure", resourceDependency);
 		this.externalDependenciesCount--;
 		if(this.externalDependenciesCount==0){
 			this.parseSymbolsToAwayJS();
@@ -324,17 +324,17 @@ export class SWFParser extends ParserBase
 					if (eagerlySymbol) {
 						switch(eagerlySymbol.type) {
 							case "image":
-								console.log("init image parsing", eagerlySymbol);
+								//console.log("init image parsing", eagerlySymbol);
 								this._pAddDependency(eagerlySymbol.id.toString(), null, new Image2DParser(this._factory), new Blob([eagerlySymbol.definition.data],{type: eagerlySymbol.definition.mimeType}), false, true);
 								this.externalDependenciesCount++;
 								break;
 							case "sound":
-								console.log("init sound parsing", eagerlySymbol);
+								//console.log("init sound parsing", eagerlySymbol);
 								this._pAddDependency(eagerlySymbol.id.toString(), null, new WaveAudioParser(), new Blob([eagerlySymbol.definition.packaged.data],{type: eagerlySymbol.definition.packaged.mimeType}), false, true);
 								this.externalDependenciesCount++;
 								break;
 							case "font":
-								console.log("encountered eagerly parsed font: ", eagerlySymbol);
+								//console.log("encountered eagerly parsed font: ", eagerlySymbol);
 								break;
 							default:
 								console.log("encountered eagerly parsed unknown type: ", eagerlySymbol);
@@ -371,11 +371,11 @@ export class SWFParser extends ParserBase
 			if ( dictionary[i]) {
 				var s = performance.now();
 				var symbol = this.getSymbol(dictionary[i].id);
-				console.log("symbol: ", dictionary[i].id, symbol.type, symbol);
+				//console.log("symbol: ", dictionary[i].id, symbol.type, symbol);
 				switch(symbol.type){
 					case "morphshape":
 						this._pFinalizeAsset(symbol.shape, symbol.id);
-						symbol.shape.setRatio(0);
+						//symbol.shape.setRatio(0);
 						this.awaySymbols[dictionary[i].id]=symbol.shape;
 						break;
 					case "shape":
@@ -397,6 +397,7 @@ export class SWFParser extends ParserBase
 					case "text":
 						var awayText = this._factory.createTextField();
 						awayText.textFormat=new TextFormat();
+
 						var font:Font=this.awaySymbols[symbol.tag.fontId];
 						awayText.textFormat.font_table=font.font_styles[0];
 
@@ -439,7 +440,8 @@ export class SWFParser extends ParserBase
 			}
 		}
 		var awayMc:MovieClip=this.framesToAwayTimeline(null);
-		console.log("root-timeline: ", awayMc);
+		//console.log("root-timeline: ", awayMc);
+		console.log("AwayJS loaded SWF with "+ dictionary.length+" symbols");
 
 		this._pFinalizeAsset(awayMc, "scene");
 	}
@@ -1143,7 +1145,7 @@ export class SWFParser extends ParserBase
 		this._dataStream.pos = 8;
 		this._dataView = this._dataStream.view;
 		if (isDeflateCompressed) {
-			console.log("readHeaderAndInitialize isDeflateCompressed");
+			//console.log("readHeaderAndInitialize isDeflateCompressed");
 			this.swfData.set(initialBytes.subarray(0, 8));
 			this._uncompressedLoadedLength = 8;
 			this._decompressor = Inflate.create(true);
@@ -1155,7 +1157,7 @@ export class SWFParser extends ParserBase
 			}
 			this._decompressor.push(initialBytes.subarray(8));
 		} else if (isLzmaCompressed) {
-			console.log("readHeaderAndInitialize isLzmaCompressed");
+			//console.log("readHeaderAndInitialize isLzmaCompressed");
 			this.swfData.set(initialBytes.subarray(0, 8));
 			this._uncompressedLoadedLength = 8;
 			this._decompressor = new LzmaDecoder(true);
@@ -1166,7 +1168,7 @@ export class SWFParser extends ParserBase
 			};
 			this._decompressor.push(initialBytes);
 		} else {
-			console.log("readHeaderAndInitialize isUncompressed");
+			//console.log("readHeaderAndInitialize isUncompressed");
 			this.swfData.set(initialBytes);
 			this._uncompressedLoadedLength = initialBytes.length;
 			this._decompressor = null;
@@ -1182,9 +1184,9 @@ export class SWFParser extends ParserBase
 		this.bounds = obj.bounds;
 		this.frameRate = obj.frameRate;
 		this.frameCount = obj.frameCount;
-		console.log("parseHeaderContents this.bounds", this.bounds);
-		console.log("parseHeaderContents this.frameRate", this.frameRate);
-		console.log("parseHeaderContents this.frameCount", this.frameCount);
+		//console.log("parseHeaderContents this.bounds", this.bounds);
+		//console.log("parseHeaderContents this.frameRate", this.frameRate);
+		//console.log("parseHeaderContents this.frameCount", this.frameCount);
 	}
 
 	private processFirstBatchOfDecompressedData(data: Uint8Array) {
@@ -1640,7 +1642,7 @@ export class SWFParser extends ParserBase
 			useDirectBlit : bits & 0x40
 		};
 		this.useAVM1 = !this.attributes.doAbc;
-		console.log("use AVM1: ", this.useAVM1)
+		//console.log("use AVM1: ", this.useAVM1)
 	}
 
 	private setSceneAndFrameLabelData(tagLength: number) {

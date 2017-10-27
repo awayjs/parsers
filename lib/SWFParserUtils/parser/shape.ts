@@ -1210,7 +1210,7 @@ class SegmentedPath {
 				case FillType.RepeatingBitmap:
 				case FillType.NonsmoothedClippedBitmap:
 				case FillType.NonsmoothedRepeatingBitmap:
-
+/*
 					var material:MethodMaterial = this.parser.mapMatsForBitmaps[style.bitmapIndex];
 					if(!material){
 						material=new MethodMaterial();
@@ -1227,6 +1227,7 @@ class SegmentedPath {
 						console.log("writeMorphBitmap not handled yet");
 						//writeMorphBitmap(morph, shape);
 					}
+					*/
 					break;
 				default:
 					console.log('Invalid fill style type: ' + style.type);
