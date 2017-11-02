@@ -1,11 +1,11 @@
 import {AttributesBuffer,Short2Attributes, Short3Attributes, Float3Attributes, Float2Attributes, WaveAudioParser, Byte4Attributes, WaveAudio, ColorTransform, Matrix3D, Vector3D, URLLoaderDataFormat, URLRequest, AssetLibrary, IAsset, ParserBase, ParserUtils, ResourceDependency, ProjectionBase, PerspectiveProjection, OrthographicProjection, OrthographicOffCenterProjection, ByteArray, Rectangle, Matrix} from "@awayjs/core";
 
-import {Image2DParser, Graphics, ElementsUtils, Style, IMaterial, BitmapImage2D, BitmapImageCube, BlendMode, Sampler2D, TriangleElements, ElementsBase, DefaultMaterialManager, SingleCubeTexture, Single2DTexture, MappingMode, ElementsType, Shape} from "@awayjs/graphics";
+import {Image2DParser, Graphics, ElementsUtils, Style, IMaterial, BitmapImage2D, BitmapImageCube, BlendMode, Sampler2D, TriangleElements, ElementsBase, DefaultMaterialManager, SingleCubeTexture, Single2DTexture, MappingMode, ElementsType, Shape, LightBase, DirectionalLight, PointLight, LightPickerBase, StaticLightPicker, CubeMapShadowMapper, DirectionalShadowMapper, ShadowMapperBase, IView} from "@awayjs/graphics";
 
 import {AnimationSetBase, AnimatorBase} from "@awayjs/stage";
 
-import {DisplayObjectContainer, MorphSprite, IView, DisplayObject, LightBase, DirectionalLight, PointLight, Camera, Sprite, TextField, Billboard,
-	Skybox, LightPickerBase, StaticLightPicker, CubeMapShadowMapper, DirectionalShadowMapper, ShadowMapperBase, 
+import {DisplayObjectContainer, MorphSprite, DisplayObject, Camera, Sprite, TextField, Billboard,
+	Skybox,
 	PrefabBase, PrimitiveCapsulePrefab, PrimitiveConePrefab, PrimitiveCubePrefab, PrimitiveCylinderPrefab, 
 	PrimitivePlanePrefab, PrimitiveSpherePrefab, PrimitiveTorusPrefab, ISceneGraphFactory, 
 	MovieClip, Timeline, Font, TesselatedFontTable, IFontTable, TextFormat, TextFormatAlign, TextFieldType} from "@awayjs/scene";
