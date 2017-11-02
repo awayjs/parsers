@@ -1,10 +1,10 @@
 import {AttributesBuffer,Short2Attributes, Short3Attributes, Float3Attributes, Float2Attributes, Byte4Attributes, WaveAudio, ColorTransform, Matrix3D, Vector3D, URLLoaderDataFormat, URLRequest, AssetLibrary, IAsset, ParserBase, ParserUtils, ResourceDependency, ProjectionBase, PerspectiveProjection, OrthographicProjection, OrthographicOffCenterProjection, ByteArray, Rectangle, Matrix} from "@awayjs/core";
 
-import {Image2DParser, Graphics, ElementsUtils, Style, IMaterial, BitmapImage2D, BitmapImageCube, BlendMode, Sampler2D, TriangleElements, ElementsBase, DefaultMaterialManager, SingleCubeTexture, Single2DTexture, MappingMode, ElementsType, Shape} from "@awayjs/graphics";
+import {IView, LightBase, DirectionalLight, PointLight, Image2DParser, Graphics, ElementsUtils, Style, IMaterial, BitmapImage2D, BitmapImageCube, BlendMode, Sampler2D, TriangleElements, ElementsBase, DefaultMaterialManager, SingleCubeTexture, Single2DTexture, MappingMode, ElementsType, Shape, LightPickerBase, StaticLightPicker, CubeMapShadowMapper, DirectionalShadowMapper, ShadowMapperBase} from "@awayjs/graphics";
 
 import {AnimationSetBase, AnimatorBase} from "@awayjs/stage";
 
-import {DisplayObjectContainer, IView, DisplayObject, LightBase, DirectionalLight, PointLight, Camera, Sprite, TextField, Billboard, Skybox, LightPickerBase, StaticLightPicker, CubeMapShadowMapper, DirectionalShadowMapper, ShadowMapperBase, PrefabBase, PrimitiveCapsulePrefab, PrimitiveConePrefab, PrimitiveCubePrefab, PrimitiveCylinderPrefab, PrimitivePlanePrefab, PrimitiveSpherePrefab, PrimitiveTorusPrefab, ISceneGraphFactory, MovieClip, Timeline, Font, TesselatedFontTable, IFontTable, TextFormat, TextFieldType} from "@awayjs/scene";
+import {DisplayObjectContainer, DisplayObject, Camera, Sprite, TextField, Billboard, Skybox, PrefabBase, PrimitiveCapsulePrefab, PrimitiveConePrefab, PrimitiveCubePrefab, PrimitiveCylinderPrefab, PrimitivePlanePrefab, PrimitiveSpherePrefab, PrimitiveTorusPrefab, ISceneGraphFactory, MovieClip, Timeline, Font, TesselatedFontTable, IFontTable, TextFormat, TextFieldType} from "@awayjs/scene";
 
 import {VertexAnimationSet, VertexAnimator, SkeletonAnimationSet, SkeletonAnimator, JointPose, Skeleton, SkeletonPose, SkeletonJoint, SkeletonClipNode, VertexClipNode, AnimationClipNodeBase} from "@awayjs/renderer";
 
@@ -1910,6 +1910,7 @@ export class AWDParser extends ParserBase
 	private parseLight(blockID:number):void
 	{
 		var light:LightBase;
+		var lightContainer:DisplayObjectContainer = new DisplayObjectContainer();
 		var newShadowMapper:ShadowMapperBase;
 
 		var parent:DisplayObjectContainer = <DisplayObjectContainer> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
@@ -1922,7 +1923,7 @@ export class AWDParser extends ParserBase
 		var shadowMapperTypes:Array<string> = ["No ShadowMapper", "DirectionalShadowMapper", "NearDirectionalShadowMapper", "CascadeShadowMapper", "CubeMapShadowMapper"];
 
 		if (lightType == 1) {
-			light = new PointLight();
+			light = new PointLight(null, lightContainer.transform);
 
 			(<PointLight> light).radius = props.get(1, 90000);
 			(<PointLight> light).fallOff = props.get(2, 100000);
@@ -1937,7 +1938,8 @@ export class AWDParser extends ParserBase
 		}
 
 		if (lightType == 2) {
-			light = new DirectionalLight(props.get(21, 0), props.get(22, -1), props.get(23, 1));
+			light = new DirectionalLight(null, lightContainer.transform);
+			(<DirectionalLight> light).direction = new Vector3D(props.get(21, 0), props.get(22, -1), props.get(23, 1))
 
 			if (shadowMapperType > 0) {
 				if (shadowMapperType == 1) {
@@ -1962,23 +1964,22 @@ export class AWDParser extends ParserBase
 		if (newShadowMapper) {
 			if (newShadowMapper instanceof CubeMapShadowMapper) {
 				if (props.get(10, 1) != 1)
-					newShadowMapper.depthMapSize = this._depthSizeDic[props.get(10, 1)];
+					newShadowMapper.size = this._depthSizeDic[props.get(10, 1)];
 			} else {
 				if (props.get(10, 2) != 2)
-					newShadowMapper.depthMapSize = this._depthSizeDic[props.get(10, 2)];
+					newShadowMapper.size = this._depthSizeDic[props.get(10, 2)];
 			}
 
 			light.shadowMapper = newShadowMapper;
-			light.castsShadows = true;
 		}
 
 		var parentName:string = "Root (TopLevel)";
 		if (parent) {
-			parent.addChild(light);
+			parent.addChild(lightContainer);
 			parentName = parent.name;
 		} else {
 			//add to the content property
-			(<DisplayObjectContainer> this._pContent).addChild(light);
+			(<DisplayObjectContainer> this._pContent).addChild(lightContainer);
 		}
 
 		this.parseUserAttributes();
