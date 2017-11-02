@@ -1,10 +1,11 @@
 import {Loader} from "@awayjs/core";
 
 import {AWDParser} from "./AWDParser";
+import {FNTParser} from "./FNTParser";
 import {Max3DSParser} from "./Max3DSParser";
 import {MD2Parser} from "./MD2Parser";
 import {OBJParser} from "./OBJParser";
-import {FNTParser} from "./FNTParser";
+import {SWFParser} from "./SWFParser";
 
 /**
  *
@@ -44,7 +45,7 @@ export class Parsers
 	 *
 	 * @see away.library.AssetLibrary.enableParser
 	 */
-	public static ALL_BUNDLED:Array<Object> = Array<Object>(AWDParser, Max3DSParser, MD2Parser, OBJParser, FNTParser);
+	public static ALL_BUNDLED:Array<Object> = Array<Object>(AWDParser, FNTParser, Max3DSParser, MD2Parser, OBJParser, SWFParser);
 
 	/**
 	 * Short-hand function to enable all bundled parsers for auto-detection. In practice,
