@@ -598,7 +598,7 @@ export class SWFParser extends ParserBase
 										// register a new instance for this object
 										var graphicsSprite:Sprite=new Sprite();
 										(<Graphics>awaySymbol).endFill();
-										//graphicsSprite.graphics.copyFrom(<Graphics>awaySymbol);
+										graphicsSprite.graphics.copyFrom(<Graphics>awaySymbol);
 										sessionID = awayMc.timeline.potentialPrototypes.length;
 										awayMc.timeline.registerPotentialChild(graphicsSprite);
 										//if (freePotentialChildCache["graphicsSprite"] && freePotentialChildCache["graphicsSprite"].length > 0) {
