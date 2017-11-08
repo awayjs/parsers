@@ -460,6 +460,7 @@ export class SWFParser extends ParserBase
 		var command_length_stream:number[]=[];
 		var command_index_stream:number[]=[];
 		var add_child_stream:number[]=[];
+		var add_sounds_stream:number[]=[];
 		var remove_child_stream:number[]=[];
 		var update_child_stream:number[]=[];
 		var update_child_props_indices_stream:number[]=[];
@@ -492,6 +493,8 @@ export class SWFParser extends ParserBase
 			var cmds_removed:any[]=[];
 			var cmds_add:any[]=[];
 			var cmds_update:any[]=[];
+			var cmds_startSounds:any[]=[];
+			var cmds_stopSounds:any[]=[];
 			var unparsedTags:any[]=[];
 			var freePotentialChildCache:any={};
 			if(!frames[i].controlTags || frames[i].controlTags.length==0){
@@ -516,11 +519,19 @@ export class SWFParser extends ParserBase
 					//console.log("parsed tag", tag);
 					switch (tag.code) {
 						case SwfTagCode.CODE_START_SOUND:
-							//noTimelineDebug || console.log("startsound", tag.soundId, tag.soundInfo);
+							awaySymbol = this.awaySymbols[tag.soundId];
+							awayMc.timeline.audioPool[tag.soundId]=awaySymbol;
+							// todo: volume / pan / other properties
+							console.log("startsound", tag.soundId, tag.soundInfo, awaySymbol);
+							cmds_startSounds.push(tag);
 							break;
+						case SwfTagCode.CODE_STOP_SOUND:
+							// todo
+							console.log("stopsound", tag.soundId, tag.soundInfo);
+							break;
+
 						case SwfTagCode.CODE_REMOVE_OBJECT:
 						case SwfTagCode.CODE_REMOVE_OBJECT2:
-							//console.log("CODE_REMOVE_OBJECT", tag.depth | 0);
 							cmds_removed[cmds_removed.length]=tag.depth|0;
 							var id=virutalScenegraph[tag.depth].id;
 							var freePotentialChilds:any[]=freePotentialChildCache[id];
@@ -961,6 +972,18 @@ export class SWFParser extends ParserBase
 					}
 
 				}
+				var command_cnt=cmds_startSounds.length;
+				if(command_cnt){
+					command_recipe_flag |= 16;
+					start_index = add_sounds_stream.length;
+					//console.log("startsound", tag.soundId, tag.soundInfo, awaySymbol);
+					for (var cmd = 0; cmd < command_cnt; cmd++){
+						add_sounds_stream.push(cmds_startSounds[cmd].soundId);
+						//console.log("add", cmds_add[cmd].childID , cmds_add[cmd].depth);
+					}
+					command_length_stream.push(command_cnt);
+					command_index_stream.push(start_index);
+				}
 				if(frame_recipe.length==0){
 					command_recipe_flag |= 0x01;
 
@@ -984,6 +1007,7 @@ export class SWFParser extends ParserBase
 		awayTimeline.command_length_stream=new Uint32Array(command_length_stream);
 		awayTimeline.command_index_stream=new Uint32Array(command_index_stream);
 		awayTimeline.add_child_stream=new Uint32Array(add_child_stream);
+		awayTimeline.add_sounds_stream=new Uint32Array(add_sounds_stream);
 		awayTimeline.remove_child_stream=new Uint32Array(remove_child_stream);
 		awayTimeline.update_child_stream=new Uint32Array(update_child_stream);
 		awayTimeline.update_child_props_indices_stream=new Uint32Array(update_child_props_indices_stream);
