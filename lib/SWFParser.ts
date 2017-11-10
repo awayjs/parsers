@@ -422,9 +422,9 @@ export class SWFParser extends ParserBase
 						awayText.multiline=doc.firstChild.childNodes.length>0;
 						awayText.textFormat.size =  (<any>doc.firstChild.firstChild.firstChild.attributes).size.nodeValue;
 						awayText.textFormat.color =  (<any>doc.firstChild.firstChild.firstChild.attributes).color.nodeValue;
-						awayText.textFormat.letterSpacing=5;
-						awayText.width=symbol.fillBounds.xMax/20 - symbol.fillBounds.xMin/20;
-						awayText.height=symbol.fillBounds.yMax/20 - symbol.fillBounds.yMin/20;
+						awayText.textFormat.letterSpacing=0;//5;
+						awayText.width=(symbol.fillBounds.xMax/20 - symbol.fillBounds.xMin/20)-1;
+						awayText.height=(symbol.fillBounds.yMax/20 - symbol.fillBounds.yMin/20)-1;
 						awayText.textFormat.align=this.textFormatAlignMap[symbol.tag.align];
 
 						awayText.text=text;
