@@ -452,7 +452,6 @@ export class SWFParser extends ParserBase
 
 		var awayTimeline:Timeline=new Timeline();
 
-		var awayMc:MovieClip=this._factory.createMovieClip(awayTimeline);
 
 		var keyframe_durations:number[]=[];
 		var frame_command_indices:number[]=[];
@@ -473,14 +472,16 @@ export class SWFParser extends ParserBase
 		var properties_stream_f32_mtx_pos:number[]=[];
 		var properties_stream_f32_mtx_all:number[]=[];
 		var properties_stream_f32_ct:number[]=[];
+		var properties_stream_strings:string[]=[];
 
-		//console.log("parsed a timeline: ", frames);
+		console.log("parsed a timeline: ", frames);
 
 		//noTimelineDebug || console.log("\nconverting frames to awayjs MovieClip\n\n");
 
 		var virutalScenegraph:any={};
 		var registeredGraphicsIDs:any={};
 		var frameCnt=0;
+		var frameNr=0;
 		for (var i = 0; i < frames.length; i++) {
 
 
@@ -497,18 +498,22 @@ export class SWFParser extends ParserBase
 			var cmds_stopSounds:any[]=[];
 			var unparsedTags:any[]=[];
 			var freePotentialChildCache:any={};
-			if(!frames[i].controlTags || frames[i].controlTags.length==0){
+			if((!frames[i].controlTags || frames[i].controlTags.length==0)&&(!frames[i].actionBlocks || frames[i].actionBlocks.length==0)){
 				//noTimelineDebug || console.log("extending last frames duration");
 				if(keyframe_durations.length>0)
 					keyframe_durations[keyframe_durations.length-1]+=1;
 				else
 					keyframe_durations[keyframe_durations.length]=1;
 			}
-			else if(frames[i].controlTags && frames[i].controlTags.length>0){
+			if(frames[i].actionBlocks && frames[i].actionBlocks.length>0){
+				awayTimeline.avm1framescripts[frameNr]=frames[i].actionBlocks;
+			}
+			if(frames[i].controlTags && frames[i].controlTags.length>0){
 
 				//console.log("frame ",i);
 				frame_command_indices.push(command_index_stream.length);
 				keyframe_durations[keyframe_durations.length]=1;
+
 				//noTimelineDebug || console.log("Start parsing frame");
 				frameCnt++;
 				var len:number=frames[i].controlTags.length;
@@ -520,7 +525,7 @@ export class SWFParser extends ParserBase
 					switch (tag.code) {
 						case SwfTagCode.CODE_START_SOUND:
 							awaySymbol = this.awaySymbols[tag.soundId];
-							awayMc.timeline.audioPool[tag.soundId]=awaySymbol;
+							awayTimeline.audioPool[tag.soundId]=awaySymbol;
 							// todo: volume / pan / other properties
 							console.log("startsound", tag.soundId, tag.soundInfo, awaySymbol);
 							cmds_startSounds.push(tag);
@@ -553,7 +558,7 @@ export class SWFParser extends ParserBase
 						case SwfTagCode.CODE_PLACE_OBJECT2:
 						case SwfTagCode.CODE_PLACE_OBJECT3:
 							var placeObjectTag = <PlaceObjectTag>tag;
-							//console.log("CODE_PLACE_OBJECT", tag.depth | 0, placeObjectTag);
+							console.log("CODE_PLACE_OBJECT", tag.depth | 0, placeObjectTag);
 							var child = virutalScenegraph[tag.depth];
 							var hasCharacter = placeObjectTag.symbolId > -1;
 							// Check for invalid flag constellations.
@@ -595,7 +600,7 @@ export class SWFParser extends ParserBase
 								if(awaySymbol.isAsset(Graphics)){
 
 									swapGraphicsID=placeObjectTag.symbolId;
-									awayMc.timeline.graphicsPool[placeObjectTag.symbolId]=awaySymbol;
+									awayTimeline.graphicsPool[placeObjectTag.symbolId]=awaySymbol;
 									//swapGraphicsID=registeredGraphicsIDs[placeObjectTag.symbolId];
 									/*if(!swapGraphicsID){
 										swapGraphicsID=registeredGraphicsIDs[placeObjectTag.symbolId]=awayMc.timeline.potentialPrototypes.length;
@@ -610,8 +615,8 @@ export class SWFParser extends ParserBase
 										var graphicsSprite:Sprite=new Sprite();
 										(<Graphics>awaySymbol).endFill();
 										graphicsSprite.graphics.copyFrom(<Graphics>awaySymbol);
-										sessionID = awayMc.timeline.potentialPrototypes.length;
-										awayMc.timeline.registerPotentialChild(graphicsSprite);
+										sessionID = awayTimeline.potentialPrototypes.length;
+										awayTimeline.registerPotentialChild(graphicsSprite);
 										//if (freePotentialChildCache["graphicsSprite"] && freePotentialChildCache["graphicsSprite"].length > 0) {
 										//	sessionID = freePotentialChildCache["graphicsSprite"].pop();
 										//	isReused = true;
@@ -638,8 +643,8 @@ export class SWFParser extends ParserBase
 
 									//if (sessionID < 0) {
 										// register a new instance for this object
-										sessionID = awayMc.timeline.potentialPrototypes.length;
-										awayMc.timeline.registerPotentialChild(awaySymbol);
+										sessionID = awayTimeline.potentialPrototypes.length;
+										awayTimeline.registerPotentialChild(awaySymbol);
 								//	}
 									//noTimelineDebug || console.log("	add", "session-id", sessionID, "depth", tag.depth, "reused", isReused, tag, awaySymbol);
 									child=virutalScenegraph[tag.depth] = {
@@ -758,6 +763,19 @@ export class SWFParser extends ParserBase
 							property_type_stream.push(202);
 							property_index_stream.push(properties_stream_int.length);
 							properties_stream_int.push(updateCmd.swapGraphicsID);
+						}
+						if (placeObjectTag.name && placeObjectTag.name!=""){
+
+							num_updated_props++;
+							var isButton=false;
+							if(isButton){
+								property_type_stream.push(5);
+							}
+							else{
+								property_type_stream.push(4);
+							}
+							property_index_stream.push(properties_stream_strings.length);
+							properties_stream_strings.push(placeObjectTag.name);
 						}
 						//var matrixClass = this.sec.flash.geom.Matrix.axClass;
 						if (placeObjectTag.flags & PlaceObjectFlags.HasMatrix) {
@@ -993,6 +1011,7 @@ export class SWFParser extends ParserBase
 			}
 			else{
 			}
+			frameNr++;
 
 		}
 
@@ -1020,8 +1039,11 @@ export class SWFParser extends ParserBase
 		awayTimeline.properties_stream_f32_mtx_pos=new Float32Array(properties_stream_f32_mtx_pos);
 		awayTimeline.properties_stream_f32_mtx_all=new Float32Array(properties_stream_f32_mtx_all);
 		awayTimeline.properties_stream_f32_ct=new Float32Array(properties_stream_f32_ct);
+		awayTimeline.properties_stream_strings=properties_stream_strings;
 
 		awayTimeline.init();
+
+		var awayMc:MovieClip=this._factory.createMovieClip(awayTimeline);
 		return awayMc;
 	}
 
