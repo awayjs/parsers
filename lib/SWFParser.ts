@@ -363,6 +363,67 @@ export class SWFParser extends ParserBase
 
 	public awaySymbols:any;
 
+	public readTextPropertiesRecursive(myChild, textProps:any){
+
+		//console.log("textfied content xml node:",myChild);
+		if(myChild.attributes){
+			if((<any>myChild.attributes).size)
+				textProps.size =  (<any>myChild.attributes).size.nodeValue;
+			if((<any>myChild.attributes).color)
+				textProps.color =  this.rgbaToArgb((<any>myChild.attributes).color.nodeValue);
+			if((<any>myChild.attributes).indent)
+				textProps.indent =  (<any>myChild.attributes).indent.nodeValue;
+			if((<any>myChild.attributes).leftMargin)
+				textProps.leftMargin =  (<any>myChild.attributes).leftMargin.nodeValue;
+			if((<any>myChild.attributes).rightMargin)
+				textProps.rightMargin =  (<any>myChild.attributes).rightMargin.nodeValue;
+			if((<any>myChild.attributes).align){
+
+				console.log("align",myChild);
+				textProps.align = this.textFormatAlignMapStringToInt[(<any>myChild.attributes).align.nodeValue];
+			}
+		}
+		if(!myChild.childNodes || myChild.childNodes.length==0){
+			if((<any>myChild).nodeValue)
+				textProps.text+=(<any>myChild).nodeValue+"\\n";
+		}
+		else{
+			for(var k=0; k<myChild.childNodes.length;k++){
+				this.readTextPropertiesRecursive(myChild.childNodes[k], textProps);
+			}
+		}
+	}
+
+	public getAlpha(float32Color:number):number
+	{
+		//var r:number = ( float32Color & 0xff000000 ) >>> 24;
+		//var g:number = ( float32Color & 0xff0000 ) >>> 16;
+		//var b:number = ( float32Color & 0xff00 ) >>> 8;
+		var a:number = float32Color & 0xff;
+		return a;
+	}
+
+	public rgbToArgb(float32Color:number):number
+	{
+		var a:number = ( float32Color & 0xff000000 ) >>> 24;
+		var b:number = ( float32Color & 0xff0000 ) >>> 16;
+		var g:number = ( float32Color & 0xff00 ) >>> 8;
+		var r:number = float32Color & 0xff;
+		return (a << 24) | (r << 16) |	(g << 8) | b;
+	}
+
+
+	public rgbaToArgb(float32Color:number):number
+	{
+		var r:number = ( float32Color & 0xff000000 ) >>> 24;
+		var g:number = ( float32Color & 0xff0000 ) >>> 16;
+		var b:number = ( float32Color & 0xff00 ) >>> 8;
+		var a:number = float32Color & 0xff;
+		return (a << 24) | (r << 16) |
+			(g << 8) | b;
+	}
+
+
 	public mapMatsForBitmaps:any;
 	public parseSymbolsToAwayJS(){
 		var parser = new DOMParser();
@@ -374,65 +435,87 @@ export class SWFParser extends ParserBase
 				//console.log("symbol: ", dictionary[i].id, symbol.type, symbol);
 				switch(symbol.type){
 					case "morphshape":
+						//symbol.shape._smybol=symbol;
 						this._pFinalizeAsset(symbol.shape, symbol.id);
 						//symbol.shape.setRatio(0);
 						this.awaySymbols[dictionary[i].id]=symbol.shape;
 						break;
 					case "shape":
 						//var mySprite:Sprite=new Sprite();
-						symbol.shape.endFill();
+						//symbol.shape._smybol=symbol;
+						//symbol.shape.endFill();
 						//mySprite.graphics.copyFrom(symbol.shape);
 						this._pFinalizeAsset(symbol.shape, symbol.id);
 						this.awaySymbols[dictionary[i].id]=symbol.shape;
 						break;
 					case "font":
+						//symbol.away._smybol=symbol;
 						this._pFinalizeAsset(symbol.away, symbol.id);
 						this.awaySymbols[dictionary[i].id]=symbol.away;
 						break;
 					case "sprite":
 						var awayMc = this.framesToAwayTimeline(symbol.frames);
+						//awayMc._symbol=symbol;
 						this._pFinalizeAsset(awayMc, symbol.id);
 						this.awaySymbols[dictionary[i].id] = awayMc;
 						break;
 					case "text":
 						var awayText = this._factory.createTextField();
+						awayText._symbol=symbol;
 						awayText.textFormat=new TextFormat();
 
 						var font:Font=this.awaySymbols[symbol.tag.fontId];
 						awayText.textFormat.font_table=font.font_styles[0];
 
 						var text="";
+						var textProps:any= {
+							text:"",
+							size:symbol.tag.fontHeight/20,
+							color:this.rgbaToArgb(symbol.tag.color),
+							indent:symbol.tag.indent/20,
+							leftMargin:symbol.tag.leftMargin/20,
+							rightMargin:symbol.tag.rightMargin/20,
+							variableName:symbol.tag.variableName,
+							align:symbol.tag.align,
+							multiline:false
+						}
+						//console.log("textfied data:",symbol);
+						//todo: correctly read this in for multiple formats etc
 						if(symbol.tag.initialText && symbol.tag.initialText!=""){
 							text=symbol.tag.initialText;
 							var doc = parser.parseFromString("<p>"+symbol.tag.initialText+"</p>", "application/xml");
 							if(doc && doc.firstChild){
 								text="";
-								//console.log(doc.firstChild);
-								//todo: multiple formats per textfield
-								for(var k=0; k<doc.firstChild.childNodes.length;k++){
-									if(doc.firstChild.childNodes[k].firstChild){
-										text+=(<any>doc.firstChild.childNodes[k].firstChild).innerHTML+"\\n";
-									}
-									else{
-										text+="\\n";
-									}
-								}
+								textProps.multiline=doc.firstChild.childNodes.length>0;
+								this.readTextPropertiesRecursive(doc, textProps);
 							}
 						}
-						awayText.multiline=doc.firstChild.childNodes.length>0;
-						awayText.textFormat.size =  (<any>doc.firstChild.firstChild.firstChild.attributes).size.nodeValue;
-						awayText.textFormat.color =  (<any>doc.firstChild.firstChild.firstChild.attributes).color.nodeValue;
+						awayText.multiline=textProps.multiline;
+						awayText.textFormat.size =  textProps.size;
+						awayText.textFormat.color =  textProps.color;
+						awayText.textFormat.leftMargin =  textProps.leftMargin;
+						awayText.textFormat.rightMargin =  textProps.rightMargin;
 						awayText.textFormat.letterSpacing=0;//5;
 						awayText.width=(symbol.fillBounds.xMax/20 - symbol.fillBounds.xMin/20)-1;
 						awayText.height=(symbol.fillBounds.yMax/20 - symbol.fillBounds.yMin/20)-1;
-						awayText.textFormat.align=this.textFormatAlignMap[symbol.tag.align];
-
-						awayText.text=text;
+						awayText.textFormat.align=this.textFormatAlignMap[textProps.align];
+						if(textProps.text)
+							awayText.text=textProps.text;
 						this._pFinalizeAsset(awayText, symbol.id);
 						this.awaySymbols[dictionary[i].id] = awayText;
 						break;
 					case "sound":
 						//(<WaveAudio>this.awaySymbols[dictionary[i].id]).play(0,false);
+						break;
+					case "button":
+						var mySprite:Sprite=new Sprite();
+						//var awayMc = this.framesToAwayTimeline(symbol.frames);
+						//mySprite._symbol=symbol;
+						this._pFinalizeAsset(mySprite, symbol.id);
+						this.awaySymbols[dictionary[i].id] = mySprite;
+						break;
+					default:
+						console.log("unknown symbol type:", symbol.type);
 						break;
 
 
@@ -441,11 +524,12 @@ export class SWFParser extends ParserBase
 		}
 		var awayMc:MovieClip=this.framesToAwayTimeline(null);
 		//console.log("root-timeline: ", awayMc);
-		console.log("AwayJS loaded SWF with "+ dictionary.length+" symbols");
+		console.log("AwayJS loaded SWF with "+ dictionary.length+" symbols", this.sceneAndFrameLabelData);
 
 		this._pFinalizeAsset(awayMc, "scene");
 	}
-	public textFormatAlignMap:string[]=[TextFormatAlign.LEFT, TextFormatAlign.RIGHT, TextFormatAlign.CENTER, TextFormatAlign.JUSTIFY]
+	public textFormatAlignMap:string[]=[TextFormatAlign.LEFT, TextFormatAlign.RIGHT, TextFormatAlign.CENTER, TextFormatAlign.JUSTIFY];
+	public textFormatAlignMapStringToInt:any={"center":2, "left":0, "right":1, "justify":3};
 	public framesToAwayTimeline(frames:SWFFrame[]):MovieClip{
 		if(!frames)
 			frames=this.frames;
@@ -480,16 +564,10 @@ export class SWFParser extends ParserBase
 
 		var virutalScenegraph:any={};
 		var registeredGraphicsIDs:any={};
-		var frameCnt=0;
-		var frameNr=0;
-		for (var i = 0; i < frames.length; i++) {
-
-
-
-			//todo: labels
-
-			// todo: framescripts
-			//console.log("parse frame: ", frames[i]);
+		var keyFrameCount=0;
+		var frameCount=0;
+		var framesLen:number=frames.length;
+		for (var i = 0; i < framesLen; i++) {
 
 			var cmds_removed:any[]=[];
 			var cmds_add:any[]=[];
@@ -498,528 +576,417 @@ export class SWFParser extends ParserBase
 			var cmds_stopSounds:any[]=[];
 			var unparsedTags:any[]=[];
 			var freePotentialChildCache:any={};
-			if((!frames[i].controlTags || frames[i].controlTags.length==0)&&(!frames[i].actionBlocks || frames[i].actionBlocks.length==0)){
+			if(	(!frames[i].controlTags || frames[i].controlTags.length==0)&&
+				(!frames[i].labelName || frames[i].labelName=="")&&
+				(!frames[i].actionBlocks || frames[i].actionBlocks.length==0)){
 				//noTimelineDebug || console.log("extending last frames duration");
 				if(keyframe_durations.length>0)
 					keyframe_durations[keyframe_durations.length-1]+=1;
 				else
 					keyframe_durations[keyframe_durations.length]=1;
 			}
-			if(frames[i].actionBlocks && frames[i].actionBlocks.length>0){
-				awayTimeline.avm1framescripts[frameNr]=frames[i].actionBlocks;
-			}
-			if(frames[i].controlTags && frames[i].controlTags.length>0){
+			else{
 
-				//console.log("frame ",i);
+				var command_recipe_flag=0;
 				frame_command_indices.push(command_index_stream.length);
 				keyframe_durations[keyframe_durations.length]=1;
+				keyFrameCount++;
 
-				//noTimelineDebug || console.log("Start parsing frame");
-				frameCnt++;
-				var len:number=frames[i].controlTags.length;
-				for (var ct = 0; ct < len; ct++) {
-					var unparsedTag=frames[i].controlTags[ct];
-					var tag= unparsedTag.tagCode === undefined ? unparsedTag : <any>this.getParsedTag(unparsedTag);
+				if(frames[i].actionBlocks && frames[i].actionBlocks.length>0){
+					awayTimeline.avm1framescripts[frameCount]=frames[i].actionBlocks;
+				}
+				if(frames[i].controlTags && frames[i].controlTags.length>0){
 
-					//console.log("parsed tag", tag);
-					switch (tag.code) {
-						case SwfTagCode.CODE_START_SOUND:
-							awaySymbol = this.awaySymbols[tag.soundId];
-							awayTimeline.audioPool[tag.soundId]=awaySymbol;
-							// todo: volume / pan / other properties
-							console.log("startsound", tag.soundId, tag.soundInfo, awaySymbol);
-							cmds_startSounds.push(tag);
-							break;
-						case SwfTagCode.CODE_STOP_SOUND:
-							// todo
-							console.log("stopsound", tag.soundId, tag.soundInfo);
-							break;
+					//console.log("frame ",i);
 
-						case SwfTagCode.CODE_REMOVE_OBJECT:
-						case SwfTagCode.CODE_REMOVE_OBJECT2:
-							cmds_removed[cmds_removed.length]=tag.depth|0;
-							var id=virutalScenegraph[tag.depth].id;
-							var freePotentialChilds:any[]=freePotentialChildCache[id];
-							if(!freePotentialChilds){
-								freePotentialChilds=[];
-								freePotentialChildCache[id]=freePotentialChilds;
-							}
-							freePotentialChilds.push(virutalScenegraph[tag.depth].sessionID);
-							virutalScenegraph[tag.depth]=null;
-							delete virutalScenegraph[tag.depth];
-							//noTimelineDebug || console.log("	remove", "depth", tag.depth);
+					//noTimelineDebug || console.log("Start parsing frame");
+					var len:number=frames[i].controlTags.length;
+					for (var ct = 0; ct < len; ct++) {
+						var unparsedTag=frames[i].controlTags[ct];
+						var tag= unparsedTag.tagCode === undefined ? unparsedTag : <any>this.getParsedTag(unparsedTag);
 
-							/*var child = this.getTimelineObjectAtDepth(tag.depth | 0);
-							if (child) {
-								this._removeAnimatedChild(child);
-							}*/
-							break;
-						case SwfTagCode.CODE_PLACE_OBJECT:
-						case SwfTagCode.CODE_PLACE_OBJECT2:
-						case SwfTagCode.CODE_PLACE_OBJECT3:
-							var placeObjectTag = <PlaceObjectTag>tag;
-							console.log("CODE_PLACE_OBJECT", tag.depth | 0, placeObjectTag);
-							var child = virutalScenegraph[tag.depth];
-							var hasCharacter = placeObjectTag.symbolId > -1;
-							// Check for invalid flag constellations.
-							if (placeObjectTag.flags & PlaceObjectFlags.Move) {
-								// Invalid case 1: Move flag set but no child found at given depth.
-								if (!child) {
-									//  Ignore the current tag.
-									break;
+						//console.log("parsed tag", tag);
+						switch (tag.code) {
+							case SwfTagCode.CODE_START_SOUND:
+								awaySymbol = this.awaySymbols[tag.soundId];
+								awayTimeline.audioPool[tag.soundId]=awaySymbol;
+								// todo: volume / pan / other properties
+								//console.log("startsound", tag.soundId, tag.soundInfo, awaySymbol);
+								cmds_startSounds.push(tag);
+								break;
+							case SwfTagCode.CODE_STOP_SOUND:
+								// todo
+								//console.log("stopsound", tag.soundId, tag.soundInfo);
+								break;
+
+							case SwfTagCode.CODE_REMOVE_OBJECT:
+							case SwfTagCode.CODE_REMOVE_OBJECT2:
+								cmds_removed[cmds_removed.length]=tag.depth|0;
+								var id=virutalScenegraph[tag.depth].id;
+								var freePotentialChilds:any[]=freePotentialChildCache[id];
+								if(!freePotentialChilds){
+									freePotentialChilds=[];
+									freePotentialChildCache[id]=freePotentialChilds;
 								}
-							} /*else if (!hasCharacter || (child && !(backwards && hasCharacter))) {
+								freePotentialChilds.push(virutalScenegraph[tag.depth].sessionID);
+								virutalScenegraph[tag.depth]=null;
+								delete virutalScenegraph[tag.depth];
+								//noTimelineDebug || console.log("	remove", "depth", tag.depth);
+
+								/*var child = this.getTimelineObjectAtDepth(tag.depth | 0);
+								if (child) {
+									this._removeAnimatedChild(child);
+								}*/
+								break;
+							case SwfTagCode.CODE_PLACE_OBJECT:
+							case SwfTagCode.CODE_PLACE_OBJECT2:
+							case SwfTagCode.CODE_PLACE_OBJECT3:
+								var placeObjectTag = <PlaceObjectTag>tag;
+								//console.log("CODE_PLACE_OBJECT", tag.depth | 0, placeObjectTag);
+								var child = virutalScenegraph[tag.depth];
+								var hasCharacter = placeObjectTag.symbolId > -1;
+								// Check for invalid flag constellations.
+								if (placeObjectTag.flags & PlaceObjectFlags.Move) {
+									// Invalid case 1: Move flag set but no child found at given depth.
+									if (!child) {
+										//  Ignore the current tag.
+										break;
+									}
+								} /*else if (!hasCharacter || (child && !(backwards && hasCharacter))) {
 									// Invalid case 2: Neither Move nor HasCharacter flag set.
 									// Invalid case 3: HasCharacter flag set but given depth is already occupied by a
 									// another object (only if seeking forward).
 									Shumway.Debug.warning("Warning: Failed to place object at depth " + depth + ".");
 									break;
 								}*/
-							var awaySymbol: IAsset = null;
-							var sessionID: number = -1;
-							var swapGraphicsID: number = -1;
-							var ratio: number = -1;
+								var awaySymbol: IAsset = null;
+								var sessionID: number = -1;
+								var swapGraphicsID: number = -1;
+								var ratio: number = -1;
 
-							// possible options:
+								// possible options:
 
-							// hasCharacter && !child
-							//		we need to put a child into the display list. might need to create sprite for graphics !
+								// hasCharacter && !child
+								//		we need to put a child into the display list. might need to create sprite for graphics !
 
-							// hasCharacter && child
-							//		need to update a child with a new graphic
+								// hasCharacter && child
+								//		need to update a child with a new graphic
 
-							// !hasCharacter && child
-							//		need to update a child
+								// !hasCharacter && child
+								//		need to update a child
 
-							// !hasCharacter && !child
-							//		something is wrong ?
+								// !hasCharacter && !child
+								//		something is wrong ?
 
-							if(hasCharacter) {
-								//console.log("placeTag symbol id",placeObjectTag.symbolId )
-								awaySymbol = this.awaySymbols[placeObjectTag.symbolId];
-								if(awaySymbol.isAsset(Graphics)){
+								if(hasCharacter) {
+									//console.log("placeTag symbol id",placeObjectTag.symbolId )
+									awaySymbol = this.awaySymbols[placeObjectTag.symbolId];
+									if(awaySymbol.isAsset(Graphics)){
 
-									swapGraphicsID=placeObjectTag.symbolId;
-									awayTimeline.graphicsPool[placeObjectTag.symbolId]=awaySymbol;
-									//swapGraphicsID=registeredGraphicsIDs[placeObjectTag.symbolId];
-									/*if(!swapGraphicsID){
-										swapGraphicsID=registeredGraphicsIDs[placeObjectTag.symbolId]=awayMc.timeline.potentialPrototypes.length;
-										awayMc.timeline.registerPotentialChild(awaySymbol);
-									}*/
-									if(child){
-										sessionID=child.sessionID;
-										// a child (sprite) already exists and the swapGraphicsId will be handled in the update command
+										swapGraphicsID=placeObjectTag.symbolId;
+										awayTimeline.graphicsPool[placeObjectTag.symbolId]=awaySymbol;
+										//swapGraphicsID=registeredGraphicsIDs[placeObjectTag.symbolId];
+										/*if(!swapGraphicsID){
+											swapGraphicsID=registeredGraphicsIDs[placeObjectTag.symbolId]=awayMc.timeline.potentialPrototypes.length;
+											awayMc.timeline.registerPotentialChild(awaySymbol);
+										}*/
+										if(child){
+											sessionID=child.sessionID;
+											// a child (sprite) already exists and the swapGraphicsId will be handled in the update command
+										}
+										else{
+											// register a new instance for this object
+											var graphicsSprite:Sprite=new Sprite();
+											(<Graphics>awaySymbol).endFill();
+											graphicsSprite.graphics.copyFrom(<Graphics>awaySymbol);
+											sessionID = awayTimeline.potentialPrototypes.length;
+											if((<any>placeObjectTag).variableName || (placeObjectTag.events && placeObjectTag.events.length>0)){
+												awayTimeline.potentialPrototypesInitEventsMap[sessionID]=placeObjectTag;
+											}
+											awayTimeline.registerPotentialChild(graphicsSprite);
+											//if (freePotentialChildCache["graphicsSprite"] && freePotentialChildCache["graphicsSprite"].length > 0) {
+											//	sessionID = freePotentialChildCache["graphicsSprite"].pop();
+											//	isReused = true;
+											//}
+											//if (sessionID < 0) {
+											//}
+											//noTimelineDebug || console.log("	add shape", "session-id", sessionID, "depth", tag.depth, "reused", isReused, tag, awaySymbol);
+											child=virutalScenegraph[tag.depth] = {
+												sessionID: sessionID,
+												id: placeObjectTag.symbolId,
+												masks: []
+											}
+											cmds_add[cmds_add.length] = {sessionID: sessionID, depth: tag.depth};
+
+										}
 									}
 									else{
-										// register a new instance for this object
-										var graphicsSprite:Sprite=new Sprite();
-										(<Graphics>awaySymbol).endFill();
-										graphicsSprite.graphics.copyFrom(<Graphics>awaySymbol);
-										sessionID = awayTimeline.potentialPrototypes.length;
-										awayTimeline.registerPotentialChild(graphicsSprite);
-										//if (freePotentialChildCache["graphicsSprite"] && freePotentialChildCache["graphicsSprite"].length > 0) {
-										//	sessionID = freePotentialChildCache["graphicsSprite"].pop();
+										var isReused = false;
+										// a free instance for this object might already be available
+										//if (freePotentialChildCache[placeObjectTag.symbolId] && freePotentialChildCache[placeObjectTag.symbolId].length > 0) {
+										//	sessionID = freePotentialChildCache[placeObjectTag.symbolId].pop();
 										//	isReused = true;
 										//}
+
+
+
 										//if (sessionID < 0) {
-										//}
-										//noTimelineDebug || console.log("	add shape", "session-id", sessionID, "depth", tag.depth, "reused", isReused, tag, awaySymbol);
+										// register a new instance for this object
+										sessionID = awayTimeline.potentialPrototypes.length;
+										if((<any>placeObjectTag).variableName || (placeObjectTag.events && placeObjectTag.events.length>0)){
+											awayTimeline.potentialPrototypesInitEventsMap[sessionID]=placeObjectTag;
+										}
+										awayTimeline.registerPotentialChild(awaySymbol);
+										//	}
+										//noTimelineDebug || console.log("	add", "session-id", sessionID, "depth", tag.depth, "reused", isReused, tag, awaySymbol);
 										child=virutalScenegraph[tag.depth] = {
 											sessionID: sessionID,
 											id: placeObjectTag.symbolId,
 											masks: []
 										}
 										cmds_add[cmds_add.length] = {sessionID: sessionID, depth: tag.depth};
-
 									}
+								}
+
+								if (placeObjectTag.flags & PlaceObjectFlags.HasRatio) {
+									if(!awaySymbol)
+										awaySymbol = this.awaySymbols[child.id];
+									if(awaySymbol.isAsset(MorphSprite))
+										ratio=placeObjectTag.ratio;
+								}
+
+								if (child) {
+									cmds_update[cmds_update.length]={child:child, placeObjectTag:placeObjectTag, swapGraphicsID:swapGraphicsID, ratio:ratio};
+									//noTimelineDebug || console.log("	update", "session-id", child.sessionID, "hasCharacter", hasCharacter, "depth", tag.depth, "reused", isReused, "swapGraphicsID", swapGraphicsID, tag,  awaySymbol);
+
 								}
 								else{
-									var isReused = false;
-									// a free instance for this object might already be available
-									//if (freePotentialChildCache[placeObjectTag.symbolId] && freePotentialChildCache[placeObjectTag.symbolId].length > 0) {
-									//	sessionID = freePotentialChildCache[placeObjectTag.symbolId].pop();
-									//	isReused = true;
-									//}
-
-									//if (sessionID < 0) {
-										// register a new instance for this object
-										sessionID = awayTimeline.potentialPrototypes.length;
-										awayTimeline.registerPotentialChild(awaySymbol);
-								//	}
-									//noTimelineDebug || console.log("	add", "session-id", sessionID, "depth", tag.depth, "reused", isReused, tag, awaySymbol);
-									child=virutalScenegraph[tag.depth] = {
-										sessionID: sessionID,
-										id: placeObjectTag.symbolId,
-										masks: []
-									}
-									cmds_add[cmds_add.length] = {sessionID: sessionID, depth: tag.depth};
+									throw("error in add command");
 								}
-							}
-
-							if (placeObjectTag.flags & PlaceObjectFlags.HasRatio) {
-								if(!awaySymbol)
-									awaySymbol = this.awaySymbols[child.id];
-								if(awaySymbol.isAsset(MorphSprite))
-									ratio=placeObjectTag.ratio;
-							}
-
-							if (child) {
-								cmds_update[cmds_update.length]={child:child, placeObjectTag:placeObjectTag, swapGraphicsID:swapGraphicsID, ratio:ratio};
-								//noTimelineDebug || console.log("	update", "session-id", child.sessionID, "hasCharacter", hasCharacter, "depth", tag.depth, "reused", isReused, "swapGraphicsID", swapGraphicsID, tag,  awaySymbol);
-
-							}
-							else{
-								throw("error in add command");
-							}
 
 
-							break;
-					}
-
-					//console.log("parsed a tag: ", tag);
-				}
-
-
-
-				// create remove commands:
-				var command_recipe_flag=0;
-				var start_index = remove_child_stream.length;
-				var command_cnt=cmds_removed.length;
-				if(command_cnt){
-					command_recipe_flag |= 0x02;
-					start_index = remove_child_stream.length;
-					for (var cmd = 0; cmd < command_cnt; cmd++){
-						remove_child_stream.push(cmds_removed[cmd]);
-					}
-					command_length_stream.push(command_cnt);
-					command_index_stream.push(start_index);
-					//noTimelineDebug || console.log("removeCommand", cmds_removed);
-				}
-
-				// create add commands:
-				var command_cnt=cmds_add.length;
-				if(command_cnt){
-					command_recipe_flag |= 0x04;
-					start_index = add_child_stream.length;
-					for (var cmd = 0; cmd < command_cnt; cmd++){
-						add_child_stream.push(cmds_add[cmd].sessionID);
-						add_child_stream.push(cmds_add[cmd].depth);
-						//console.log("add", cmds_add[cmd].childID , cmds_add[cmd].depth);
-					}
-					command_length_stream.push(command_cnt);
-					command_index_stream.push(start_index/2);
-					//noTimelineDebug || console.log("cmds_add", cmds_add);
-				}
-
-				// create update commands:
-				var command_cnt=cmds_update.length;
-				if(command_cnt){
-					// collect masks per objects
-					for(var key in virutalScenegraph){
-						virutalScenegraph[key].masks=[];
-					}
-
-					//prepare mask info:
-
-					for (var cmd = 0; cmd < command_cnt; cmd++) {
-						placeObjectTag = cmds_update[cmd].placeObjectTag;
-						var child=cmds_update[cmd].child;
-						if (placeObjectTag.flags & PlaceObjectFlags.HasClipDepth) {
-							var depth:number=placeObjectTag.clipDepth-1;
-							while(depth>placeObjectTag.depth){
-								virutalScenegraph[depth].masks.push(child.sessionID);
-								depth--;
-							}
-						}
-					}
-
-					// process updated props:
-
-					start_index = update_child_stream.length;
-					var updateCnt=0;
-					var updateCmd;
-					for (var cmd = 0; cmd < command_cnt; cmd++) {
-						updateCmd=cmds_update[cmd];
-						placeObjectTag = updateCmd.placeObjectTag;
-						var child = updateCmd.child;
-						//if (symbol && !symbol.dynamic) {
-						// If the current object is of a simple type (for now Shapes, MorphShapes and
-						// StaticText) only its static content is updated instead of replacing it with a
-						// new instance. TODO: Handle
-						// http://wahlers.com.br/claus/blog/hacking-swf-2-placeobject-and-ratio/.
-						//	child._setStaticContentFromSymbol(symbol);
-						//}
-						// We animate the object only if a user script didn't touch any of the properties
-						// this would affect.
-						//if (child._hasFlags(DisplayObjectFlags.AnimatedByTimeline)) {
-
-						var childStartIdx:number=property_type_stream.length;
-						var num_updated_props=0;
-						var reset = false;//!(placeObjectTag.flags & PlaceObjectFlags.Move) && placeObjectTag.flags & PlaceObjectFlags.HasCharacter;
-
-						if(updateCmd.swapGraphicsID>=0){
-
-							num_updated_props++;
-							property_type_stream.push(202);
-							property_index_stream.push(properties_stream_int.length);
-							properties_stream_int.push(updateCmd.swapGraphicsID);
-						}
-						if (placeObjectTag.name && placeObjectTag.name!=""){
-
-							num_updated_props++;
-							var isButton=false;
-							if(isButton){
-								property_type_stream.push(5);
-							}
-							else{
-								property_type_stream.push(4);
-							}
-							property_index_stream.push(properties_stream_strings.length);
-							properties_stream_strings.push(placeObjectTag.name);
-						}
-						//var matrixClass = this.sec.flash.geom.Matrix.axClass;
-						if (placeObjectTag.flags & PlaceObjectFlags.HasMatrix) {
-
-							//console.log("PlaceObjectFlags.HasMatrix", placeObjectTag.matrix);
-							num_updated_props++;
-
-							property_type_stream.push(1);//matrix type: 1=all, 11=no position, 12=no scale
-							property_index_stream.push(properties_stream_f32_mtx_all.length / 6);
-
-							// todo: we can save memory by checking if only scale or position was changed,
-							// but it means we would need to check against the matrix of the current child, not against identy matrix
-
-							properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.a;
-							properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.b;
-							properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.c;
-							properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.d;
-							properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.tx/20;
-							properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.ty/20;
-
-						}
-
-						//var colorTransformClass = this.sec.flash.geom.ColorTransform.axClass;
-						if (placeObjectTag.flags & PlaceObjectFlags.HasColorTransform) {
-							//console.log("PlaceObjectFlags.HasColorTransform", placeObjectTag.cxform);
-							property_type_stream.push(2);
-							property_index_stream.push(properties_stream_f32_ct.length / 8);
-							num_updated_props++;
-							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.redMultiplier/255;
-							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.greenMultiplier/255;
-							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.blueMultiplier/255;
-							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.alphaMultiplier/255;
-							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.redOffset;
-							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.greenOffset;
-							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.blueOffset;
-							properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.alphaOffset;
-						}
-
-						if (updateCmd.ratio>=0) {
-							num_updated_props++;
-							property_type_stream.push(203);
-							property_index_stream.push(properties_stream_int.length);
-							properties_stream_int.push(updateCmd.ratio | 0);
-							//console.log("PlaceObjectFlags.HasRatio", placeObjectTag, child);
-						}
-
-						if (child.masks.length>0) {
-
-							num_updated_props++;
-							property_type_stream.push(3);
-							property_index_stream.push(properties_stream_int.length);
-							properties_stream_int.push(child.masks.length);
-							for(let val of child.masks)
-								properties_stream_int.push(val);
-						}
-						if (placeObjectTag.flags & PlaceObjectFlags.HasClipDepth) {
-
-							//console.log("cmds_update[cmd]",cmds_update[cmd]);
-
-
-							//console.log("placeObjectTag.clipDepth", placeObjectTag.clipDepth);
-
-							num_updated_props++;
-							property_type_stream.push(200);
-							property_index_stream.push(0);
-							//var clipDepth = placeObjectTag.clipDepth === undefined ? -1 : placeObjectTag.clipDepth;
-							//if (clipDepth !== this._clipDepth) {
-							//	this._clipDepth = clipDepth;
-							//	this._setDirtyFlags(DisplayObjectDirtyFlags.DirtyClipDepth);
-							//}
-						}
-
-						if (placeObjectTag.flags & PlaceObjectFlags.HasFilterList) {
-							/*var filtersPackage = this.sec.flash.filters;
-							var filters: filters.BitmapFilter[] = [];
-							var swfFilters = placeObjectTag.filters;
-							for (var i = 0; i < swfFilters.length; i++) {
-								var obj = swfFilters[i];
-								var filter: filters.BitmapFilter;
-								switch (obj.type) {
-									case 0:
-										filter = filtersPackage.DropShadowFilter.axClass.FromUntyped(obj);
-										break;
-									case 1:
-										filter = filtersPackage.BlurFilter.axClass.FromUntyped(obj);
-										break;
-									case 2:
-										filter = filtersPackage.GlowFilter.axClass.FromUntyped(obj);
-										break;
-									case 3:
-										filter = filtersPackage.BevelFilter.axClass.FromUntyped(obj);
-										break;
-									case 4:
-										filter = filtersPackage.GradientGlowFilter.axClass.FromUntyped(obj);
-										break;
-									case 5:
-										filter = filtersPackage.ConvolutionFilter.axClass.FromUntyped(obj);
-										break;
-									case 6:
-										filter = filtersPackage.ColorMatrixFilter.axClass.FromUntyped(obj);
-										break;
-									case 7:
-										filter = filtersPackage.GradientBevelFilter.axClass.FromUntyped(obj);
-										break;
-									default:
-										release || assert(filter, "Unknown filter type.");
-								}
-								filters.push(filter);
-							}
-							this._filters = filters;
-							this._setDirtyFlags(DisplayObjectDirtyFlags.DirtyMiscellaneousProperties);
-
-							//} else if (reset && this._filters) {
-							//this._filters = null;
-							//this._setDirtyFlags(DisplayObjectDirtyFlags.DirtyMiscellaneousProperties);
-
-						}
-
-						if (placeObjectTag.flags & PlaceObjectFlags.HasBlendMode || reset) {
-							var blendMode = flash.display.BlendMode.fromNumber(placeObjectTag.blendMode === undefined ?
-								1 : placeObjectTag.blendMode);
-							if (blendMode !== this._blendMode) {
-								this._blendMode = blendMode;
-								this._setDirtyFlags(DisplayObjectDirtyFlags.DirtyMiscellaneousProperties);
-							}
-
-						}
-
-						if (placeObjectTag.flags & PlaceObjectFlags.HasCacheAsBitmap || reset) {
-							var cacheAsBitmap = placeObjectTag.bmpCache > 0;
-
-							if (cacheAsBitmap !== this._hasFlags(DisplayObjectFlags.CacheAsBitmap)) {
-								this._toggleFlags(DisplayObjectFlags.CacheAsBitmap, cacheAsBitmap);
-								this._setDirtyFlags(DisplayObjectDirtyFlags.DirtyMiscellaneousProperties);
-							}
-
-						}
-
-						if (placeObjectTag.flags & PlaceObjectFlags.HasVisible || reset) {
-							var visible = placeObjectTag.visibility === undefined || placeObjectTag.visibility;
-
-							if (visible !== this._hasFlags(DisplayObjectFlags.Visible)) {
-								this._toggleFlags(DisplayObjectFlags.Visible, visible);
-								this._setDirtyFlags(DisplayObjectDirtyFlags.DirtyMiscellaneousProperties);
-							}
-						}
-
-						var depth = placeObjectTag.depth;
-						var child = this.getTimelineObjectAtDepth(depth);
-
-						// Check for invalid flag constellations.
-						if (placeObjectTag.flags & PlaceObjectFlags.Move) {
-							// Invalid case 1: Move flag set but no child found at given depth.
-							if (!child) {
-								//  Ignore the current tag.
 								break;
-							}
-						} else if (!hasCharacter || (child && !(backwards && hasCharacter))) {
-							// Invalid case 2: Neither Move nor HasCharacter flag set.
-							// Invalid case 3: HasCharacter flag set but given depth is already occupied by a
-							// another object (only if seeking forward).
-							Shumway.Debug.warning("Warning: Failed to place object at depth " + depth + ".");
-							break;
 						}
 
-						var symbol: Shumway.Timeline.DisplaySymbol = null;
-						if (hasCharacter) {
-							symbol = <Shumway.Timeline.DisplaySymbol>loaderInfo.getSymbolById(placeObjectTag.symbolId);
-							// The Flash Player ignores references to undefined symbols here. So should we.
-							if (!symbol) {
-								break;
-							}
-						}
-
-						if (child) {
-							if (symbol && !symbol.dynamic) {
-								// If the current object is of a simple type (for now Shapes, MorphShapes and
-								// StaticText) only its static content is updated instead of replacing it with a
-								// new instance. TODO: Handle
-								// http://wahlers.com.br/claus/blog/hacking-swf-2-placeobject-and-ratio/.
-								child._setStaticContentFromSymbol(symbol);
-							}
-							// We animate the object only if a user script didn't touch any of the properties
-							// this would affect.
-							if (child._hasFlags(DisplayObjectFlags.AnimatedByTimeline)) {
-								child._animate(tag);
-							}
-						} else {
-							// Place a new instance of the symbol.
-							child = this.createAnimatedDisplayObject(symbol, placeObjectTag, false);
-							this.addTimelineObjectAtDepth(child, depth);
-							if (symbol.isAVM1Object) {
-								child._placeObjectTag = placeObjectTag;
-								child._setFlags(DisplayObjectFlags.HasPlaceObjectInitPending);
-							}
-						}
-*/
-						}
-
-						if(num_updated_props>0){
-							updateCnt++;
-							update_child_stream.push(child.sessionID);
-							update_child_props_indices_stream.push(childStartIdx);
-							update_child_props_length_stream.push(num_updated_props);
-						}
+						//console.log("parsed a tag: ", tag);
 					}
-					if(updateCnt>0){
-						command_recipe_flag |= 0x08;
+
+					// create remove commands:
+					var start_index = remove_child_stream.length;
+					var command_cnt=cmds_removed.length;
+					if(command_cnt){
+						command_recipe_flag |= 0x02;
+						start_index = remove_child_stream.length;
+						for (var cmd = 0; cmd < command_cnt; cmd++){
+							remove_child_stream.push(cmds_removed[cmd]);
+						}
 						command_length_stream.push(command_cnt);
 						command_index_stream.push(start_index);
-						//noTimelineDebug || console.log("cmds_update", cmds_update);
+						//noTimelineDebug || console.log("removeCommand", cmds_removed);
+					}
+
+					// create add commands:
+					var command_cnt=cmds_add.length;
+					if(command_cnt){
+						command_recipe_flag |= 0x04;
+						start_index = add_child_stream.length;
+						for (var cmd = 0; cmd < command_cnt; cmd++){
+							add_child_stream.push(cmds_add[cmd].sessionID);
+							add_child_stream.push(cmds_add[cmd].depth);
+							//console.log("add", cmds_add[cmd].childID , cmds_add[cmd].depth);
+						}
+						command_length_stream.push(command_cnt);
+						command_index_stream.push(start_index/2);
+						//noTimelineDebug || console.log("cmds_add", cmds_add);
+					}
+
+					// create update commands:
+					var command_cnt=cmds_update.length;
+					if(command_cnt){
+						// collect masks per objects
+						for(var key in virutalScenegraph){
+							virutalScenegraph[key].masks=[];
+						}
+
+						//prepare mask info:
+
+						for (var cmd = 0; cmd < command_cnt; cmd++) {
+							placeObjectTag = cmds_update[cmd].placeObjectTag;
+							var child=cmds_update[cmd].child;
+							if (placeObjectTag.flags & PlaceObjectFlags.HasClipDepth) {
+								var depth:number=placeObjectTag.clipDepth-1;
+								while(depth>placeObjectTag.depth){
+									virutalScenegraph[depth].masks.push(child.sessionID);
+									depth--;
+								}
+							}
+						}
+
+						// process updated props:
+
+						start_index = update_child_stream.length;
+						var updateCnt=0;
+						var updateCmd;
+						for (var cmd = 0; cmd < command_cnt; cmd++) {
+							updateCmd=cmds_update[cmd];
+							placeObjectTag = updateCmd.placeObjectTag;
+							var child = updateCmd.child;
+							//if (symbol && !symbol.dynamic) {
+							// If the current object is of a simple type (for now Shapes, MorphShapes and
+							// StaticText) only its static content is updated instead of replacing it with a
+							// new instance. TODO: Handle
+							// http://wahlers.com.br/claus/blog/hacking-swf-2-placeobject-and-ratio/.
+							//	child._setStaticContentFromSymbol(symbol);
+							//}
+							// We animate the object only if a user script didn't touch any of the properties
+							// this would affect.
+							//if (child._hasFlags(DisplayObjectFlags.AnimatedByTimeline)) {
+
+							var childStartIdx:number=property_type_stream.length;
+							var num_updated_props=0;
+							var reset = false;//!(placeObjectTag.flags & PlaceObjectFlags.Move) && placeObjectTag.flags & PlaceObjectFlags.HasCharacter;
+
+							if(updateCmd.swapGraphicsID>=0){
+
+								num_updated_props++;
+								property_type_stream.push(202);
+								property_index_stream.push(properties_stream_int.length);
+								properties_stream_int.push(updateCmd.swapGraphicsID);
+							}
+							if (placeObjectTag.name && placeObjectTag.name!=""){
+
+								num_updated_props++;
+								var isButton=false;
+								if(isButton){
+									property_type_stream.push(5);
+								}
+								else{
+									property_type_stream.push(4);
+								}
+								property_index_stream.push(properties_stream_strings.length);
+								properties_stream_strings.push(placeObjectTag.name);
+							}
+							//var matrixClass = this.sec.flash.geom.Matrix.axClass;
+							if (placeObjectTag.flags & PlaceObjectFlags.HasMatrix) {
+
+								//console.log("PlaceObjectFlags.HasMatrix", placeObjectTag.matrix);
+								num_updated_props++;
+
+								property_type_stream.push(1);//matrix type: 1=all, 11=no position, 12=no scale
+								property_index_stream.push(properties_stream_f32_mtx_all.length / 6);
+
+								// todo: we can save memory by checking if only scale or position was changed,
+								// but it means we would need to check against the matrix of the current child, not against identy matrix
+
+								properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.a;
+								properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.b;
+								properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.c;
+								properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.d;
+								properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.tx/20;
+								properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.ty/20;
+
+							}
+
+							//var colorTransformClass = this.sec.flash.geom.ColorTransform.axClass;
+							if (placeObjectTag.flags & PlaceObjectFlags.HasColorTransform) {
+								//console.log("PlaceObjectFlags.HasColorTransform", placeObjectTag.cxform);
+								property_type_stream.push(2);
+								property_index_stream.push(properties_stream_f32_ct.length / 8);
+								num_updated_props++;
+								properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.redMultiplier/255;
+								properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.greenMultiplier/255;
+								properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.blueMultiplier/255;
+								properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.alphaMultiplier/255;
+								properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.redOffset;
+								properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.greenOffset;
+								properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.blueOffset;
+								properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.alphaOffset;
+							}
+
+							if (updateCmd.ratio>=0) {
+								num_updated_props++;
+								property_type_stream.push(203);
+								property_index_stream.push(properties_stream_int.length);
+								properties_stream_int.push(updateCmd.ratio | 0);
+								//console.log("PlaceObjectFlags.HasRatio", placeObjectTag, child);
+							}
+
+							if (child.masks.length>0) {
+
+								num_updated_props++;
+								property_type_stream.push(3);
+								property_index_stream.push(properties_stream_int.length);
+								properties_stream_int.push(child.masks.length);
+								for(let val of child.masks)
+									properties_stream_int.push(val);
+							}
+							if (placeObjectTag.flags & PlaceObjectFlags.HasClipDepth) {
+
+								//console.log("cmds_update[cmd]",cmds_update[cmd]);
+
+
+								//console.log("placeObjectTag.clipDepth", placeObjectTag.clipDepth);
+
+								num_updated_props++;
+								property_type_stream.push(200);
+								property_index_stream.push(0);
+								//var clipDepth = placeObjectTag.clipDepth === undefined ? -1 : placeObjectTag.clipDepth;
+								//if (clipDepth !== this._clipDepth) {
+								//	this._clipDepth = clipDepth;
+								//	this._setDirtyFlags(DisplayObjectDirtyFlags.DirtyClipDepth);
+								//}
+							}
+
+							if (placeObjectTag.flags & PlaceObjectFlags.HasFilterList) {}
+
+							if(num_updated_props>0){
+								updateCnt++;
+								update_child_stream.push(child.sessionID);
+								update_child_props_indices_stream.push(childStartIdx);
+								update_child_props_length_stream.push(num_updated_props);
+							}
+						}
+						if(updateCnt>0){
+							command_recipe_flag |= 0x08;
+							command_length_stream.push(command_cnt);
+							command_index_stream.push(start_index);
+							//noTimelineDebug || console.log("cmds_update", cmds_update);
+						}
+
+					}
+					var command_cnt=cmds_startSounds.length;
+					if(command_cnt){
+						command_recipe_flag |= 16;
+						start_index = add_sounds_stream.length;
+						//console.log("startsound", tag.soundId, tag.soundInfo, awaySymbol);
+						for (var cmd = 0; cmd < command_cnt; cmd++){
+							add_sounds_stream.push(cmds_startSounds[cmd].soundId);
+							//console.log("add", cmds_add[cmd].childID , cmds_add[cmd].depth);
+						}
+						command_length_stream.push(command_cnt);
+						command_index_stream.push(start_index);
 					}
 
 				}
-				var command_cnt=cmds_startSounds.length;
-				if(command_cnt){
-					command_recipe_flag |= 16;
-					start_index = add_sounds_stream.length;
-					//console.log("startsound", tag.soundId, tag.soundInfo, awaySymbol);
-					for (var cmd = 0; cmd < command_cnt; cmd++){
-						add_sounds_stream.push(cmds_startSounds[cmd].soundId);
-						//console.log("add", cmds_add[cmd].childID , cmds_add[cmd].depth);
-					}
-					command_length_stream.push(command_cnt);
-					command_index_stream.push(start_index);
+				if(frames[i].labelName && frames[i].labelName!=""){
+
+					awayTimeline._labels[frames[i].labelName]=frameCount;
 				}
 				if(frame_recipe.length==0){
 					command_recipe_flag |= 0x01;
 
 				}
 				frame_recipe.push(command_recipe_flag);
-
 			}
-			else{
-			}
-			frameNr++;
+			frameCount++;
 
 		}
 
 
 		awayTimeline.keyframe_durations=new Uint32Array(keyframe_durations);
-		awayTimeline.numKeyFrames=frameCnt;
+		awayTimeline.numKeyFrames=keyFrameCount;
 
-		//noTimelineDebug || console.log("frameCnt", frameCnt, "keyframe_durations", keyframe_durations);
+		//noTimelineDebug || console.log("keyFrameCount", keyFrameCount, "keyframe_durations", keyframe_durations);
 
 		awayTimeline.frame_command_indices=new Uint32Array(frame_command_indices);
 		awayTimeline.frame_recipe=new Uint32Array(frame_recipe);
@@ -1381,11 +1348,13 @@ export class SWFParser extends ParserBase
 			return;
 		}
 
+		//console.log("tagCode", tagCode);
 		switch (tagCode) {
 			case SwfTagCode.CODE_FILE_ATTRIBUTES:
 				this.setFileAttributes(tagLength);
 				break;
 			case SwfTagCode.CODE_DEFINE_SCENE_AND_FRAME_LABEL_DATA:
+				console.log('CODE_DEFINE_SCENE_AND_FRAME_LABEL_DATA ');
 				this.setSceneAndFrameLabelData(tagLength);
 				break;
 			case SwfTagCode.CODE_SET_BACKGROUND_COLOR:
@@ -1696,8 +1665,7 @@ export class SWFParser extends ParserBase
 			this.jumpToNextTag(tagLength);
 			return;
 		}
-		this.sceneAndFrameLabelData = parseDefineSceneTag(
-			this._dataStream, SwfTagCode.CODE_DEFINE_SCENE_AND_FRAME_LABEL_DATA);
+		this.sceneAndFrameLabelData = parseDefineSceneTag(this._dataStream, SwfTagCode.CODE_DEFINE_SCENE_AND_FRAME_LABEL_DATA);
 	}
 
 	private addControlTag(tagCode: number, byteOffset: number, tagLength: number) {
