@@ -5,7 +5,7 @@ import {Image2DParser, Graphics, ElementsUtils, Style, IMaterial, BitmapImage2D,
 import {AnimationSetBase, AnimatorBase} from "@awayjs/stage";
 
 import {DisplayObjectContainer, MorphSprite, DisplayObject, Camera, Sprite, TextField, Billboard,
-	Skybox,
+	Skybox, SimpleButton,
 	PrefabBase, PrimitiveCapsulePrefab, PrimitiveConePrefab, PrimitiveCubePrefab, PrimitiveCylinderPrefab, 
 	PrimitivePlanePrefab, PrimitiveSpherePrefab, PrimitiveTorusPrefab, ISceneGraphFactory, 
 	MovieClip, Timeline, Font, TesselatedFontTable, IFontTable, TextFormat, TextFormatAlign, TextFieldType} from "@awayjs/scene";
@@ -508,14 +508,15 @@ export class SWFParser extends ParserBase
 						//(<WaveAudio>this.awaySymbols[dictionary[i].id]).play(0,false);
 						break;
 					case "button":
-						var mySprite:Sprite=new Sprite();
+						var mySprite:SimpleButton=new SimpleButton();
+						console.log("Button:", symbol);
 						//var awayMc = this.framesToAwayTimeline(symbol.frames);
 						//mySprite._symbol=symbol;
 						this._pFinalizeAsset(mySprite, symbol.id);
 						this.awaySymbols[dictionary[i].id] = mySprite;
 						break;
 					default:
-						console.log("unknown symbol type:", symbol.type);
+						console.log("unknown symbol type:", symbol.type, symbol);
 						break;
 
 

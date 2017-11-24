@@ -118,6 +118,7 @@ export function defineFont(tag: FontTag):any {
 	var tessFontTableAJS:TesselatedFontTable=new TesselatedFontTable();
 	fontAJS.font_styles.push(tessFontTableAJS);
 
+	console.log("FontTag = ", tag);
 
 	var glyphs = tag.glyphs;
 	var glyphCount = glyphs ? glyphs.length : 0;
@@ -335,6 +336,7 @@ export function defineFont(tag: FontTag):any {
 		rawData[code] = segments;
 	}
 
+	var whiteSpaceWidth=0;
 	i = 0;
 	while ((code = codes[i++]) !== undefined) {
 		var glyphPath:GraphicsPath=new GraphicsPath();
@@ -344,8 +346,6 @@ export function defineFont(tag: FontTag):any {
 		var endPoint = 0;
 		var endPtsOfContours = '';
 		var flags = '';
-		var xCoordinates = '';
-		var yCoordinates = '';
 		var x = 0;
 		var y = 0;
 		var xMin = 0;
@@ -370,8 +370,6 @@ export function defineFont(tag: FontTag):any {
 		y = 0;
 		var nx = 0;
 		var ny = 0;
-		var myXCoordinates = '';
-		var myYCoordinates = '';
 		var dataIndex = 0;
 		var endPoint = 0;
 		var numberOfContours = 1;
@@ -388,8 +386,6 @@ export function defineFont(tag: FontTag):any {
 				var dx = nx - x;
 				var dy = ny - y;
 				myFlags += '\x01';
-				myXCoordinates += toString16(dx);
-				myYCoordinates += toString16(dy);
 				glyphPath.moveTo(nx, ascent-ny );
 				x = nx;
 				y = ny;
@@ -399,8 +395,6 @@ export function defineFont(tag: FontTag):any {
 				var dx = nx - x;
 				var dy = ny - y;
 				myFlags += '\x01';
-				myXCoordinates += toString16(dx);
-				myYCoordinates += toString16(dy);
 				x = nx;
 				y = ny;
 				glyphPath.lineTo(nx,ascent-ny );
@@ -410,8 +404,6 @@ export function defineFont(tag: FontTag):any {
 				var cx = nx - x;
 				var cy = ny - y;
 				myFlags += '\x00';
-				myXCoordinates += toString16(cx);
-				myYCoordinates += toString16(cy);
 				x = nx;
 				y = ny;
 				endPoint++;
@@ -423,8 +415,6 @@ export function defineFont(tag: FontTag):any {
 				var dx = nx - x;
 				var dy = ny - y;
 				myFlags += '\x01';
-				myXCoordinates += toString16(dx);
-				myYCoordinates += toString16(dy);
 				x = nx;
 				y = ny;
 				glyphPath.curveTo(cx, ascent-cy,  nx,ascent-ny);
@@ -446,17 +436,13 @@ export function defineFont(tag: FontTag):any {
 				yMax = y;
 			}
 		}
-		myEndpts += toString16((endPoint || 1) - 1);
-
-		endPtsOfContours = myEndpts;
-		xCoordinates = myXCoordinates;
-		yCoordinates = myYCoordinates;
 		flags = myFlags;
 
 		if (!j) {
 			xMin = xMax = yMin = yMax = 0;
 			flags += '\x31';
 		}
+		/*
 		var entry =
 			toString16(numberOfContours) +
 			toString16(xMin) +
@@ -472,9 +458,10 @@ export function defineFont(tag: FontTag):any {
 		if (entry.length & 1) {
 			entry += '\x00';
 		}
-		glyf += entry;
-		loca += toString16(offset / 2);
-		offset += entry.length;
+		*/
+		//glyf += entry;
+		//loca += toString16(offset / 2);
+		//offset += entry.length;
 		xMins.push(xMin);
 		xMaxs.push(xMax);
 		yMins.push(yMin);
@@ -485,8 +472,18 @@ export function defineFont(tag: FontTag):any {
 		if (endPoint > maxPoints) {
 			maxPoints = endPoint;
 		}
+		var glyphAdvance:number=0;
 		if (generateAdvancement) {
 			tag.advance.push((xMax - xMin) * resolution * 1.3);
+			glyphAdvance=(xMax - xMin);
+		}
+		else{
+			glyphAdvance=tag.advance[i-1]/resolution;
+		}
+		if(code==32){
+			console.log("32 = ", code, (xMax - xMin));
+			console.log("32 = ", tag.advance[i-1]);
+			whiteSpaceWidth=tag.advance[i-1]/resolution;
 		}
 		
 		
@@ -495,15 +492,16 @@ export function defineFont(tag: FontTag):any {
 		var vertexBuffer=GraphicsFactoryFills.pathToAttributesBuffer(glyphPath, true);
 		if(vertexBuffer){
 			//console.log("created glyph for ", String.fromCharCode(code))
-			tessFontTableAJS.setChar(code.toString(), xMax-xMin, vertexBuffer, null, false );
+			tessFontTableAJS.setChar(code.toString(), glyphAdvance, vertexBuffer, null, false );
 		}
 		else{
 			//console.log("failed to create glyph for ", String.fromCharCode(code))
 		}
 
 	}
-	loca += toString16(offset / 2);
-	tables['glyf'] = glyf;
+	console.log("FontTag.advanced = ", tag.advance.toString());
+	//loca += toString16(offset / 2);
+	//tables['glyf'] = glyf;
 
 	if (!isFont3) {
 		var minYmin = Math.min.apply(null, yMins);
@@ -512,6 +510,7 @@ export function defineFont(tag: FontTag):any {
 		}
 	}
 
+	/*
 	tables['OS/2'] =
 		'\x00\x01' + // version
 		'\x00\x00' + // xAvgCharWidth
@@ -593,6 +592,7 @@ export function defineFont(tag: FontTag):any {
 		hmtx += toString16(advance ? (advance[i] / resolution) : 1024) + '\x00\x00';
 	}
 	tables['hmtx'] = hmtx;
+	*/
 
 	if (tag.kerning && tag.kerning.length) {
 		var kerning = tag.kerning;
@@ -618,126 +618,128 @@ export function defineFont(tag: FontTag):any {
 				toString16(record.adjustment) // value
 			;
 		}
-		tables['kern'] = kern;
+		//tables['kern'] = kern;
 	}
 
-	tables['loca'] = loca;
+	/*
+		tables['loca'] = loca;
 
-	tables['maxp'] =
-		'\x00\x01\x00\x00' + // version
-		toString16(glyphCount + 1) + // numGlyphs
-		toString16(maxPoints) +
-		toString16(maxContours) +
-		'\x00\x00' + // maxCompositePoints
-		'\x00\x00' + // maxCompositeContours
-		'\x00\x01' + // maxZones
-		'\x00\x00' + // maxTwilightPoints
-		'\x00\x00' + // maxStorage
-		'\x00\x00' + // maxFunctionDefs
-		'\x00\x00' + // maxInstructionDefs
-		'\x00\x00' + // maxStackElements
-		'\x00\x00' + // maxSizeOfInstructions
-		'\x00\x00' + // maxComponentElements
-		'\x00\x00' // maxComponentDepth
-	;
-
-	var psName = fontName.replace(/ /g, '');
-	var strings = [
-		tag.copyright || 'Original licence', // 0. Copyright
-		fontName, // 1. Font family
-		'Unknown', // 2. Font subfamily
-		uniqueName, // 3. Unique ID
-		fontName, // 4. Full font name
-		'1.0', // 5. Version
-		psName, // 6. Postscript name
-		'Unknown', // 7. Trademark
-		'Unknown', // 8. Manufacturer
-		'Unknown' // 9. Designer
-	];
-	var count = strings.length;
-	var name =
-		'\x00\x00' + // format
-		toString16(count) + // count
-		toString16((count * 12) + 6); // stringOffset
-	var offset = 0;
-	var i = 0;
-	var str;
-	while ((str = strings[i++])) {
-		name +=
-			'\x00\x01' + // platformID
-			'\x00\x00' + // encodingID
-			'\x00\x00' + // languageID
-			toString16(i - 1) + // nameID
-			toString16(str.length) +
-			toString16(offset);
-		offset += str.length;
-	}
-	tables['name'] = name + strings.join('');
-
-	tables['post'] =
-		'\x00\x03\x00\x00' + // version
-		'\x00\x00\x00\x00' + // italicAngle
-		'\x00\x00' + // underlinePosition
-		'\x00\x00' + // underlineThickness
-		'\x00\x00\x00\x00' + // isFixedPitch
-		'\x00\x00\x00\x00' + // minMemType42
-		'\x00\x00\x00\x00' + // maxMemType42
-		'\x00\x00\x00\x00' + // minMemType1
-		'\x00\x00\x00\x00' // maxMemType1
-	;
-
-	var names = Object.keys(tables);
-	var numTables = names.length;
-	var header =
-		'\x00\x01\x00\x00' + // version
-		toString16(numTables) +
-		'\x00\x80' + // searchRange
-		'\x00\x03' + // entrySelector
-		'\x00\x20' // rangeShift
-	;
-	var dataString = '';
-	var offset = (numTables * 16) + header.length;
-	var i = 0;
-	while ((name = names[i++])) {
-		var table = tables[name];
-		var length = table.length;
-		header +=
-			name +
-			'\x00\x00\x00\x00' + // checkSum
-			toString32(offset) +
-			toString32(length)
+		tables['maxp'] =
+			'\x00\x01\x00\x00' + // version
+			toString16(glyphCount + 1) + // numGlyphs
+			toString16(maxPoints) +
+			toString16(maxContours) +
+			'\x00\x00' + // maxCompositePoints
+			'\x00\x00' + // maxCompositeContours
+			'\x00\x01' + // maxZones
+			'\x00\x00' + // maxTwilightPoints
+			'\x00\x00' + // maxStorage
+			'\x00\x00' + // maxFunctionDefs
+			'\x00\x00' + // maxInstructionDefs
+			'\x00\x00' + // maxStackElements
+			'\x00\x00' + // maxSizeOfInstructions
+			'\x00\x00' + // maxComponentElements
+			'\x00\x00' // maxComponentDepth
 		;
-		while (length & 3) {
-			table += '\x00';
-			++length;
+
+		var psName = fontName.replace(/ /g, '');
+		var strings = [
+			tag.copyright || 'Original licence', // 0. Copyright
+			fontName, // 1. Font family
+			'Unknown', // 2. Font subfamily
+			uniqueName, // 3. Unique ID
+			fontName, // 4. Full font name
+			'1.0', // 5. Version
+			psName, // 6. Postscript name
+			'Unknown', // 7. Trademark
+			'Unknown', // 8. Manufacturer
+			'Unknown' // 9. Designer
+		];
+		var count = strings.length;
+		var name =
+			'\x00\x00' + // format
+			toString16(count) + // count
+			toString16((count * 12) + 6); // stringOffset
+		var offset = 0;
+		var i = 0;
+		var str;
+		while ((str = strings[i++])) {
+			name +=
+				'\x00\x01' + // platformID
+				'\x00\x00' + // encodingID
+				'\x00\x00' + // languageID
+				toString16(i - 1) + // nameID
+				toString16(str.length) +
+				toString16(offset);
+			offset += str.length;
 		}
-		dataString += table;
-		while (offset & 3) {
-			++offset;
+		tables['name'] = name + strings.join('');
+
+		tables['post'] =
+			'\x00\x03\x00\x00' + // version
+			'\x00\x00\x00\x00' + // italicAngle
+			'\x00\x00' + // underlinePosition
+			'\x00\x00' + // underlineThickness
+			'\x00\x00\x00\x00' + // isFixedPitch
+			'\x00\x00\x00\x00' + // minMemType42
+			'\x00\x00\x00\x00' + // maxMemType42
+			'\x00\x00\x00\x00' + // minMemType1
+			'\x00\x00\x00\x00' // maxMemType1
+		;
+		var names = Object.keys(tables);
+		var numTables = names.length;
+		var header =
+			'\x00\x01\x00\x00' + // version
+			toString16(numTables) +
+			'\x00\x80' + // searchRange
+			'\x00\x03' + // entrySelector
+			'\x00\x20' // rangeShift
+		;
+		var dataString = '';
+		var offset = (numTables * 16) + header.length;
+		var i = 0;
+		while ((name = names[i++])) {
+			var table = tables[name];
+			var length = table.length;
+			header +=
+				name +
+				'\x00\x00\x00\x00' + // checkSum
+				toString32(offset) +
+				toString32(length)
+			;
+			while (length & 3) {
+				table += '\x00';
+				++length;
+			}
+			dataString += table;
+			while (offset & 3) {
+				++offset;
+			}
+			offset += length;
 		}
-		offset += length;
-	}
-	var otf = header + dataString;
+		*/
+	/*var otf = header + dataString;
 	var unitPerEm = 1024;
 	var metrics = {
 		ascent: ascent / unitPerEm,
 		descent: -descent / unitPerEm,
 		leading: leading / unitPerEm
-	};
+	};*/
 
 	// TODO: use a buffer to generate font data
-	var dataBuffer = new Uint8Array(otf.length);
+	/*var dataBuffer = new Uint8Array(otf.length);
 	for (var i = 0; i < otf.length; i++) {
 		dataBuffer[i] = otf.charCodeAt(i) & 0xff;
-	}
+	}*/
 
-	font.codes = originalCode;
-	font.metrics = metrics;
-	font.data = dataBuffer;
+	//font.codes = originalCode;
+	//font.metrics = metrics;
+	//font.data = dataBuffer;
 	tessFontTableAJS.set_font_em_size(1024);
-	tessFontTableAJS.set_whitespace_width(1024);
+	tessFontTableAJS.set_whitespace_width(whiteSpaceWidth);
 	tessFontTableAJS.ascent=ascent;
 	tessFontTableAJS.descent=descent;
+	//tessFontTableAJS.lea=descent;
 	return font;
 }
 
