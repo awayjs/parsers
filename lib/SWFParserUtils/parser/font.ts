@@ -341,6 +341,7 @@ export function defineFont(tag: FontTag):any {
 	while ((code = codes[i++]) !== undefined) {
 		var glyphPath:GraphicsPath=new GraphicsPath();
 		var records = glyphs[glyphIndex[code]];
+		var idx=glyphIndex[code];
 		segments = rawData[code];
 		var numberOfContours = 1;
 		var endPoint = 0;
@@ -492,7 +493,7 @@ export function defineFont(tag: FontTag):any {
 		var vertexBuffer=GraphicsFactoryFills.pathToAttributesBuffer(glyphPath, true);
 		if(vertexBuffer){
 			//console.log("created glyph for ", String.fromCharCode(code))
-			tessFontTableAJS.setChar(code.toString(), glyphAdvance, vertexBuffer, null, false );
+			tessFontTableAJS.setChar(code.toString(), glyphAdvance, vertexBuffer, null, false , idx);
 		}
 		else{
 			//console.log("failed to create glyph for ", String.fromCharCode(code))
