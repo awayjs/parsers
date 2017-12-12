@@ -1,6 +1,8 @@
-import {MaterialBase, Image2D, DefaultGraphicsFactory} from "@awayjs/graphics";
+import {Image2D, DefaultGraphicsFactory} from "@awayjs/stage";
 
 import {Timeline, Billboard, TextField, MovieClip, Sprite, DisplayObjectContainer, ISceneGraphFactory, PrefabBase} from "@awayjs/scene";
+
+import {IMaterial} from "@awayjs/renderer";
 
 import {MethodMaterial} from "@awayjs/materials";
 
@@ -30,7 +32,7 @@ export class DefaultSceneGraphFactory extends DefaultGraphicsFactory implements 
 		return new TextField();
 	}
 
-	createBillboard(material:MaterialBase):Billboard
+	createBillboard(material:IMaterial):Billboard
 	{
 		return new Billboard(material);
 	}

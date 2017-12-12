@@ -1,14 +1,14 @@
-import {AttributesBuffer,Short2Attributes, Short3Attributes, Float3Attributes, Float2Attributes, Byte4Attributes, WaveAudio, ColorTransform, Matrix3D, Vector3D, URLLoaderDataFormat, URLRequest, AssetLibrary, IAsset, ParserBase, ParserUtils, ResourceDependency, ProjectionBase, PerspectiveProjection, OrthographicProjection, OrthographicOffCenterProjection, ByteArray, Rectangle, Matrix} from "@awayjs/core";
+import {WaveAudio, ColorTransform, Matrix3D, Vector3D, URLLoaderDataFormat, URLRequest, AssetLibrary, IAsset, ParserBase, ParserUtils, ResourceDependency, ProjectionBase, PerspectiveProjection, OrthographicProjection, OrthographicOffCenterProjection, ByteArray, Rectangle, Matrix} from "@awayjs/core";
 
-import {IView, LightBase, DirectionalLight, PointLight, Image2DParser, Graphics, ElementsUtils, Style, IMaterial, BitmapImage2D, BitmapImageCube, BlendMode, Sampler2D, TriangleElements, ElementsBase, DefaultMaterialManager, SingleCubeTexture, Single2DTexture, MappingMode, ElementsType, Shape, LightPickerBase, StaticLightPicker, CubeMapShadowMapper, DirectionalShadowMapper, ShadowMapperBase} from "@awayjs/graphics";
+import {TriangleElementsUtils, Graphics, TriangleElements, ElementsBase, ElementsType, Shape, VertexAnimationSet, VertexAnimator, SkeletonAnimationSet, SkeletonAnimator, JointPose, Skeleton, SkeletonPose, SkeletonJoint, SkeletonClipNode, VertexClipNode, AnimationClipNodeBase, AnimationSetBase, AnimatorBase} from "@awayjs/graphics";
 
-import {AnimationSetBase, AnimatorBase} from "@awayjs/stage";
+import {ImageUtils, BlendMode, BitmapImage2D, BitmapImageCube, Image2DParser, ImageSampler, AttributesBuffer, Short2Attributes, Short3Attributes, Float3Attributes, Float2Attributes, Byte4Attributes} from "@awayjs/stage";
 
 import {DisplayObjectContainer, DisplayObject, Camera, Sprite, TextField, Billboard, Skybox, PrefabBase, PrimitiveCapsulePrefab, PrimitiveConePrefab, PrimitiveCubePrefab, PrimitiveCylinderPrefab, PrimitivePlanePrefab, PrimitiveSpherePrefab, PrimitiveTorusPrefab, ISceneGraphFactory, MovieClip, Timeline, Font, TesselatedFontTable, IFontTable, TextFormat, TextFieldType} from "@awayjs/scene";
 
-import {VertexAnimationSet, VertexAnimator, SkeletonAnimationSet, SkeletonAnimator, JointPose, Skeleton, SkeletonPose, SkeletonJoint, SkeletonClipNode, VertexClipNode, AnimationClipNodeBase} from "@awayjs/renderer";
+import {MappingMode, ElementsUtils, MaterialUtils, IView, IMaterial, Style} from "@awayjs/renderer";
 
-import {MethodMaterialMode, MethodMaterial, DiffuseCelMethod, DiffuseGradientMethod, DiffuseLightMapMethod, DiffuseWrapMethod, EffectAlphaMaskMethod, EffectColorMatrixMethod, EffectColorTransformMethod, EffectEnvMapMethod, EffectFogMethod, EffectFresnelEnvMapMethod, EffectLightMapMethod, EffectRimLightMethod, NormalSimpleWaterMethod, ShadingMethodBase, ShadowDitheredMethod, ShadowMethodBase, SpecularFresnelMethod, ShadowCompositeMethod, ShadowHardMethod, SpecularAnisotropicMethod, SpecularCelMethod, SpecularPhongMethod, ShadowNearMethod, ShadowSoftMethod} from "@awayjs/materials";
+import {LightBase, DirectionalLight, PointLight, ImageTextureCube, ImageTexture2D, MethodMaterialMode, MethodMaterial, DiffuseCelMethod, DiffuseGradientMethod, DiffuseLightMapMethod, DiffuseWrapMethod, EffectAlphaMaskMethod, EffectColorMatrixMethod, EffectColorTransformMethod, EffectEnvMapMethod, EffectFogMethod, EffectFresnelEnvMapMethod, EffectLightMapMethod, EffectRimLightMethod, NormalSimpleWaterMethod, ShadingMethodBase, ShadowDitheredMethod, ShadowMethodBase, SpecularFresnelMethod, ShadowHardMethod, SpecularAnisotropicMethod, SpecularCelMethod, SpecularPhongMethod, ShadowSoftMethod, LightPickerBase, StaticLightPicker, PointShadowMapper, DirectionalShadowMapper, NearDirectionalShadowMapper, ShadowMapperBase} from "@awayjs/materials";
 
 import {DefaultSceneGraphFactory} from "./factories/DefaultSceneGraphFactory";
 import {AWDBlock} from "./AWD3ParserUtils/AWDBlock";
@@ -928,7 +928,7 @@ export class AWDParser extends ParserBase
 		var materialNames:Array<string> = new Array<string>();
 		var mat:MethodMaterial;
 		for (var materials_parsed:number = 0; materials_parsed < num_materials; materials_parsed++) {
-			mat = <MethodMaterial> (this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager.getDefaultMaterial());
+			mat = <MethodMaterial> (this._blocks[this._newBlockBytes.readUnsignedInt()].data || MaterialUtils.getDefaultColorMaterial());
 			//mat.preserveAlpha = true;
 			//mat.alphaBlending = true;
 			mat.useColorTransform = true;
@@ -956,7 +956,7 @@ export class AWDParser extends ParserBase
 			}
 		}
 
-		var sampler:Sampler2D;
+		var sampler:ImageSampler;
 		var shape:Shape;
 		var material:IMaterial;
 		var count:number = this._newBlockBytes.readUnsignedShort();
@@ -966,7 +966,7 @@ export class AWDParser extends ParserBase
 		for (var i:number = 0; i < count; i++) {
 			var type:number = this._newBlockBytes.readUnsignedByte();
 
-			sampler = new Sampler2D();
+			sampler = new ImageSampler();
 			shape = sprite.graphics.getShapeAt(i);
 			material = shape.material || sprite.material;
 			if(!material){
@@ -1510,7 +1510,7 @@ export class AWDParser extends ParserBase
 
 					curve_elements.setPositions(new Float2Attributes(vertexBuffer));
 
-					ElementsUtils.updateTriangleGraphicsSlice9(curve_elements, curve_elements.originalSlice9Size, 1, 1, true);
+                    TriangleElementsUtils.updateTriangleGraphicsSlice9(curve_elements, curve_elements.originalSlice9Size, 1, 1, true);
 
 
 				}
@@ -1822,7 +1822,7 @@ export class AWDParser extends ParserBase
 		var materialNames:Array<string> = new Array<string>();
 		var mat:MethodMaterial;
 		for (var materials_parsed:number = 0; materials_parsed < num_materials; materials_parsed++) {
-			mat = <MethodMaterial> (this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager.getDefaultMaterial());
+			mat = <MethodMaterial> (this._blocks[this._newBlockBytes.readUnsignedInt()].data || MaterialUtils.getDefaultColorMaterial());
 			materials[materials_parsed] = mat;
 			materialNames[materials_parsed] = mat.name;
 		}
@@ -1882,7 +1882,7 @@ export class AWDParser extends ParserBase
 	{
 		var name:string = this.parseVarStr();
 		var asset:Skybox = new Skybox();
-		var tex:SingleCubeTexture = new SingleCubeTexture(<BitmapImageCube> this._blocks[this._newBlockBytes.readUnsignedInt()].data || DefaultMaterialManager.getDefaultImageCube());
+		var tex:ImageTextureCube = new ImageTextureCube(<BitmapImageCube> this._blocks[this._newBlockBytes.readUnsignedInt()].data || ImageUtils.getDefaultImageCube());
 		asset.texture = tex;
 
 		this.parseProperties(null);
@@ -1934,7 +1934,7 @@ export class AWDParser extends ParserBase
 
 			if (shadowMapperType > 0) {
 				if (shadowMapperType == 4) {
-					newShadowMapper = new CubeMapShadowMapper();
+					newShadowMapper = new PointShadowMapper();
 				}
 			}
 
@@ -1966,7 +1966,7 @@ export class AWDParser extends ParserBase
 
 		// if a shadowMapper has been created, adjust the depthMapSize if needed, assign to light and set castShadows to true
 		if (newShadowMapper) {
-			if (newShadowMapper instanceof CubeMapShadowMapper) {
+			if (newShadowMapper instanceof PointShadowMapper) {
 				if (props.get(10, 1) != 1)
 					newShadowMapper.size = this._depthSizeDic[props.get(10, 1)];
 			} else {
@@ -2145,7 +2145,7 @@ export class AWDParser extends ParserBase
 				mat.mode = MethodMaterialMode.MULTI_PASS;
 			}
 		} else if (type === 2) {
-			var texture:Single2DTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(2, 0)].data);
+			var texture:ImageTexture2D = new ImageTexture2D(<BitmapImage2D> this._blocks[props.get(2, 0)].data);
 
 			mat = <MethodMaterial> this._factory.createMaterial();
 			mat.ambientMethod.texture = texture;
@@ -2162,7 +2162,7 @@ export class AWDParser extends ParserBase
 
 		mat.extra = this.parseUserAttributes();
 		mat.alphaThreshold = props.get(12, 0.0);
-		mat.style.sampler = new Sampler2D(props.get(13, false));
+		mat.style.sampler = new ImageSampler(props.get(13, false));
 
 		this._pFinalizeAsset(<IAsset> mat, name);
 
@@ -2274,23 +2274,23 @@ export class AWDParser extends ParserBase
 				normalImage = <BitmapImage2D> this._blocks[props.get(3, 0)].data;
 				specImage = <BitmapImage2D> this._blocks[props.get(21, 0)].data;
 				mat.lightPicker = <LightPickerBase> this._blocks[props.get(22, 0)].data;
-				mat.style.sampler = new Sampler2D(props.get(13, false), props.get(5, true), props.get(6, true));
+				mat.style.sampler = new ImageSampler(props.get(13, false), props.get(5, true), props.get(6, true));
 				mat.bothSides = props.get(7, false);
 				mat.alphaPremultiplied = props.get(8, false);
 				mat.blendMode = this.blendModeDic[props.get(9, 0)];
 
 				if (diffuseImage) {
-					mat.diffuseMethod.texture = new Single2DTexture(diffuseImage);
+					mat.diffuseMethod.texture = new ImageTexture2D(diffuseImage);
 					debugString += " | DiffuseTexture-Name = " + diffuseImage.name;
 				}
 
 				if (normalImage) {
-					mat.normalMethod.texture = new Single2DTexture(normalImage);
+					mat.normalMethod.texture = new ImageTexture2D(normalImage);
 					debugString += " | NormalTexture-Name = " + normalImage.name;
 				}
 
 				if (specImage) {
-					mat.specularMethod.texture = new Single2DTexture(specImage);
+					mat.specularMethod.texture = new ImageTexture2D(specImage);
 					debugString += " | SpecularTexture-Name = " + specImage.name;
 				}
 
@@ -2323,7 +2323,7 @@ export class AWDParser extends ParserBase
 							break;
 
 						case 1: //EnvMapAmbientMethod
-							var cubeTexture:SingleCubeTexture = new SingleCubeTexture(<BitmapImageCube> this._blocks[props.get(1, 0)].data);
+							var cubeTexture:ImageTextureCube = new ImageTextureCube(<BitmapImageCube> this._blocks[props.get(1, 0)].data);
 							//mat.ambientMethod.mappingMode = 
 							mat.ambientMethod.texture = cubeTexture;
 							debugString += " | AmbientEnvMapMethod | EnvMap-Name =" + cubeTexture.name;
@@ -2335,7 +2335,7 @@ export class AWDParser extends ParserBase
 						// 	debugString += " | AmbientDepthMethod";
 						// 	break;
 						case 52: //GradientDiffuseMethod
-							var texture:Single2DTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(1, 0)].data);
+							var texture:ImageTexture2D = new ImageTexture2D(<BitmapImage2D> this._blocks[props.get(1, 0)].data);
 							mat.diffuseMethod = new DiffuseGradientMethod(texture);
 							debugString += " | DiffuseGradientMethod | GradientDiffuseTexture-Name =" + texture.name;
 							break;
@@ -2344,7 +2344,7 @@ export class AWDParser extends ParserBase
 							debugString += " | DiffuseWrapMethod";
 							break;
 						case 54: //LightMapDiffuseMethod
-							var texture:Single2DTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(1, 0)].data);
+							var texture:ImageTexture2D = new ImageTexture2D(<BitmapImage2D> this._blocks[props.get(1, 0)].data);
 							mat.diffuseMethod = new DiffuseLightMapMethod(texture, this.blendModeDic[props.get(401, 10)], false, mat.diffuseMethod);
 							debugString += " | DiffuseLightMapMethod | LightMapTexture-Name =" + texture.name;
 							break;
@@ -2379,8 +2379,8 @@ export class AWDParser extends ParserBase
 						case 151://HeightMapNormalMethod - thios is not implemented for now, but might appear later
 							break;
 						case 152: //SimpleWaterNormalMethod
-							var texture:Single2DTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(1, 0)].data);
-							mat.normalMethod = new NormalSimpleWaterMethod(<Single2DTexture> mat.normalMethod.texture || texture, texture);
+							var texture:ImageTexture2D = new ImageTexture2D(<BitmapImage2D> this._blocks[props.get(1, 0)].data);
+							mat.normalMethod = new NormalSimpleWaterMethod(<ImageTexture2D> mat.normalMethod.texture || texture, texture);
 							debugString += " | NormalSimpleWaterMethod | Second-NormalTexture-Name = " + texture.name;
 							break;
 					}
@@ -2393,7 +2393,7 @@ export class AWDParser extends ParserBase
 			// if this is a basic material, we create it, finalize it, assign it to block-cache and return.
 			var color:number = props.get(1, 0xcccccc);
 			debugString+=color;
-			var diffuseTexture:Single2DTexture = new Single2DTexture(<BitmapImage2D> this._blocks[props.get(2, 0)].data);
+			var diffuseTexture:ImageTexture2D = new ImageTexture2D(<BitmapImage2D> this._blocks[props.get(2, 0)].data);
 			if(type==5){
 				diffuseTexture.mappingMode = MappingMode.LINEAR;
 			}
@@ -2525,7 +2525,7 @@ export class AWDParser extends ParserBase
 	{
 		this._blocks[blockID].name = this.parseVarStr();
 		var light:LightBase = <LightBase> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
-		var asset:ShadowMethodBase | ShadowCompositeMethod = this.parseShadowMethodList(light, blockID);
+		var asset:ShadowMethodBase = this.parseShadowMethodList(light, blockID);
 
 		if (!asset)
 			return;
@@ -2638,11 +2638,11 @@ export class AWDParser extends ParserBase
 		801:AWDParser.MTX4x4}
 	
 	// this functions reads and creates a ShadowMethodMethod
-	private parseShadowMethodList(light:LightBase, blockID:number):ShadowMethodBase | ShadowCompositeMethod
+	private parseShadowMethodList(light:LightBase, blockID:number):ShadowMethodBase
 	{
 
 		var methodType:number = this._newBlockBytes.readUnsignedShort();
-		var shadowMethod:ShadowMethodBase | ShadowCompositeMethod;
+		var shadowMethod:ShadowMethodBase;
 		var props:AWDProperties = this.parseProperties(this.shadowMethodListProperties);
 
 		var targetID:number;
@@ -2657,9 +2657,9 @@ export class AWDParser extends ParserBase
 			//					}
 			//					shadowMethod = new CascadeShadowMapMethod(returnedArray[1]);
 			//					break;
-			case 1002: //ShadowNearMethod
-				shadowMethod = new ShadowNearMethod(<ShadowMethodBase> this._blocks[props.get(1, 0)].data);
-				break;
+			// case 1002: //ShadowNearMethod
+			// 	shadowMethod = new ShadowNearMethod(<ShadowMethodBase> this._blocks[props.get(1, 0)].data);
+			// 	break;
 			// case 1101: //ShadowFilteredMethod
 			// 	shadowMethod = new ShadowFilteredMethod(<DirectionalLight> light);
 			// 	(<ShadowFilteredMethod> shadowMethod).alpha = props.get(101, 1);
@@ -2668,22 +2668,22 @@ export class AWDParser extends ParserBase
 
 			case 1102: //ShadowDitheredMethod
 				shadowMethod = new ShadowDitheredMethod(<DirectionalLight> light, <number> props.get(201, 5));
-				(<ShadowDitheredMethod> shadowMethod).alpha = props.get(101, 1);
-				(<ShadowDitheredMethod> shadowMethod).epsilon = props.get(102, 0.002);
+				(<ShadowMapperBase> (<ShadowDitheredMethod> shadowMethod).baseMethod).alpha = props.get(101, 1);
+                (<ShadowMapperBase> (<ShadowDitheredMethod> shadowMethod).baseMethod).epsilon = props.get(102, 0.002);
 				(<ShadowDitheredMethod> shadowMethod).range = props.get(103, 1);
 
 				break;
 			case 1103: //ShadowSoftMethod
 				shadowMethod = new ShadowSoftMethod(<DirectionalLight> light, <number> props.get(201, 5));
-				(<ShadowSoftMethod> shadowMethod).alpha = props.get(101, 1);
-				(<ShadowSoftMethod> shadowMethod).epsilon = props.get(102, 0.002);
+                (<ShadowMapperBase> (<ShadowSoftMethod> shadowMethod).baseMethod).alpha = props.get(101, 1);
+                (<ShadowMapperBase> (<ShadowSoftMethod> shadowMethod).baseMethod).epsilon = props.get(102, 0.002);
 				(<ShadowSoftMethod> shadowMethod).range = props.get(103, 1);
 
 				break;
 			case 1104: //ShadowHardMethod
 				shadowMethod = new ShadowHardMethod(light);
-				(<ShadowHardMethod> shadowMethod).alpha = props.get(101, 1);
-				(<ShadowHardMethod> shadowMethod).epsilon = props.get(102, 0.002);
+                (<ShadowMapperBase> (<ShadowHardMethod> shadowMethod).baseMethod).alpha = props.get(101, 1);
+                (<ShadowMapperBase> (<ShadowHardMethod> shadowMethod).baseMethod).epsilon = props.get(102, 0.002);
 				break;
 
 		}
@@ -3009,7 +3009,7 @@ export class AWDParser extends ParserBase
 				(<EffectColorTransformMethod> effectMethodReturn).colorTransform = new ColorTransform(props.get(102, 1), props.get(103, 1), props.get(104, 1), props.get(101, 1), ((offCol >> 16) & 0xFF), ((offCol >> 8) & 0xFF), (offCol & 0xFF), ((offCol >> 24) & 0xFF));
 				break;
 			case 403: //EnvMap
-				effectMethodReturn = new EffectEnvMapMethod(new SingleCubeTexture(<BitmapImageCube> this._blocks[props.get(1, 0)].data), <number> props.get(101, 1));
+				effectMethodReturn = new EffectEnvMapMethod(new ImageTextureCube(<BitmapImageCube> this._blocks[props.get(1, 0)].data), <number> props.get(101, 1));
 				var targetID:number = props.get(2, 0);
 				if (targetID > 0) {
 					// Todo: test mask with EnvMapMethod

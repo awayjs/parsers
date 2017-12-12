@@ -1,6 +1,8 @@
 import {IAsset, URLLoaderDataFormat, URLRequest, ParserBase, ParserUtils, ResourceDependency, XmlUtils} from "@awayjs/core";
 
-import {Image2D, Single2DTexture, Sampler2D} from "@awayjs/graphics";
+import {Image2D, ImageSampler} from "@awayjs/stage";
+
+import {ImageTexture2D} from "@awayjs/materials";
 
 import {BitmapFontTable, Font} from "@awayjs/scene";
 
@@ -76,7 +78,7 @@ export class FNTParser extends ParserBase
 			mat.bothSides = true;
 			mat.alphaBlending = true;
 			mat.useColorTransform = true;
-			mat.style.sampler = new Sampler2D(false, true, true);
+			mat.style.sampler = new ImageSampler(false, true, true);
 			this._bitmapFontTable.addMaterial(mat);
 			this._pFinalizeAsset(resourceDependency.assets[0]);
 			this._pFinalizeAsset(mat);

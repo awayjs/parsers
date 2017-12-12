@@ -1,6 +1,12 @@
-import {AttributesBuffer, IAsset, URLLoaderDataFormat, URLRequest, ParserBase, ParserUtils, ResourceDependency} from "@awayjs/core";
+import {IAsset, URLLoaderDataFormat, URLRequest, ParserBase, ParserUtils, ResourceDependency} from "@awayjs/core";
 
-import {Sampler2D, Shape, Graphics, BitmapImage2D, TriangleElements, DefaultMaterialManager, MaterialBase, Single2DTexture} from "@awayjs/graphics";
+import {ImageUtils, ImageSampler, BitmapImage2D, AttributesBuffer} from "@awayjs/stage";
+
+import {IMaterial} from "@awayjs/renderer";
+
+import {Shape, Graphics, TriangleElements} from "@awayjs/graphics";
+
+import {ImageTexture2D} from "@awayjs/materials";
 
 import {DisplayObjectContainer, Sprite} from "@awayjs/scene";
 
@@ -108,7 +114,7 @@ export class OBJParser extends ParserBase
 
 				var lm:LoadedMaterial = new LoadedMaterial();
 				lm.materialID = resourceDependency.id;
-				lm.texture = new Single2DTexture(<BitmapImage2D> asset);
+				lm.texture = new ImageTexture2D(<BitmapImage2D> asset);
 
 				this._materialLoaded.push(lm);
 
@@ -302,7 +308,7 @@ export class OBJParser extends ParserBase
 			var bmMaterial:MethodMaterial;
 
 			for (var g:number = 0; g < numGroups; ++g) {
-				bmMaterial = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
+				bmMaterial = new MethodMaterial(ImageUtils.getDefaultImage2D());
 
 				//check for multipass
 				if (this.materialMode >= 2)
@@ -843,7 +849,7 @@ export class OBJParser extends ParserBase
 					tm.ambientMethod.texture = lm.texture;
 					tm.style.color = lm.color;
 					tm.alpha = lm.alpha;
-					tm.style.sampler = new Sampler2D(true);
+					tm.style.sampler = new ImageSampler(true);
 
 					if (this.materialMode < 2) // if materialMode is 0 or 1, we create a SinglePass
 						tm.alpha = lm.alpha;
@@ -925,8 +931,8 @@ export class SpecularData
 export class LoadedMaterial
 {
 	public materialID:string;
-	public texture:Single2DTexture;
-	public cm:MaterialBase;
+	public texture:ImageTexture2D;
+	public cm:IMaterial;
 	public specularMethod:SpecularBasicMethod;
 	public color:number = 0xFFFFFF;
 	public alpha:number = 1;

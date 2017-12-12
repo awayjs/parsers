@@ -1,10 +1,14 @@
-import {AttributesBuffer, Matrix3D, Vector3D, IAsset, URLLoaderDataFormat, URLRequest, ParserBase, ParserUtils, ResourceDependency, ByteArray} from "@awayjs/core";
+import {Matrix3D, Vector3D, IAsset, URLLoaderDataFormat, URLRequest, ParserBase, ParserUtils, ResourceDependency, ByteArray} from "@awayjs/core";
 
-import {Graphics, Shape, BitmapImage2D, TriangleElements, DefaultMaterialManager, MaterialBase, Single2DTexture} from "@awayjs/graphics";
+import {BitmapImage2D, AttributesBuffer} from "@awayjs/stage";
+
+import {MaterialUtils, IMaterial} from "@awayjs/renderer";
+
+import {Graphics, Shape, TriangleElements} from "@awayjs/graphics";
 
 import {DisplayObjectContainer, Sprite} from "@awayjs/scene";
 
-import {MethodMaterial, MethodMaterialMode} from "@awayjs/materials";
+import {MethodMaterial, MethodMaterialMode, ImageTexture2D} from "@awayjs/materials";
 
 /**
  * Max3DSParser provides a parser for the 3ds data type.
@@ -84,7 +88,7 @@ export class Max3DSParser extends ParserBase
 				var tex:TextureVO;
 
 				tex = this._textures[resourceDependency.id];
-				tex.texture = new Single2DTexture(<BitmapImage2D> asset);
+				tex.texture = new ImageTexture2D(<BitmapImage2D> asset);
 			}
 		}
 	}
@@ -494,7 +498,7 @@ export class Max3DSParser extends ParserBase
 			var i:number /*uint*/;
 			var sub:TriangleElements;
 			var graphics:Graphics;
-			var mat:MaterialBase;
+			var mat:IMaterial;
 			var sprite:Sprite;
 			var mtx:Matrix3D;
 			var vertices:Array<VertexVO>;
@@ -703,8 +707,10 @@ export class Max3DSParser extends ParserBase
 							clones.splice(l, 1);
 						}
 						if (j == 0)
-							face.a = index; else if (j == 1)
-							face.b = index; else
+							face.a = index;
+						else if (j == 1)
+							face.b = index;
+						else
 							face.c = index;
 						l = len;
 					}
@@ -720,7 +726,7 @@ export class Max3DSParser extends ParserBase
 		mat = new MethodMaterial(this._cur_mat.ambientColor);
 
 		if (this._cur_mat.colorMap)
-			mat.ambientMethod.texture = this._cur_mat.colorMap.texture || DefaultMaterialManager.getDefaultTexture();
+			mat.ambientMethod.texture = this._cur_mat.colorMap.texture || new ImageTexture2D();
 
 		mat.diffuseMethod.color = this._cur_mat.diffuseColor;
 		mat.specularMethod.color = this._cur_mat.specularColor;
@@ -832,7 +838,7 @@ export class MaterialVO
 	public twoSided:boolean;
 	public colorMap:TextureVO;
 	public specularMap:TextureVO;
-	public material:MaterialBase;
+	public material:IMaterial;
 }
 
 /**
@@ -860,7 +866,7 @@ export class ObjectVO
 export class TextureVO
 {
 	public url:string;
-	public texture:Single2DTexture;
+	public texture:ImageTexture2D;
 }
 
 /**

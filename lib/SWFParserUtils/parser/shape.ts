@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-import {Graphics, CapsStyle, JointStyle, BitmapFillStyle, MappingMode,Single2DTexture, GraphicsPath, GraphicsFillStyle, GradientFillStyle, GraphicsStrokeStyle, GradientType as GradientTypeAway} from "@awayjs/graphics"
+import {Graphics, CapsStyle, JointStyle, BitmapFillStyle, GraphicsPath, GraphicsFillStyle, GradientFillStyle, GraphicsStrokeStyle, GradientType as GradientTypeAway} from "@awayjs/graphics"
+import {MappingMode} from "@awayjs/renderer";
+
 import {ColorUtils, Matrix as AwayMatrix} from "@awayjs/core"
 
 import {MorphSprite} from "@awayjs/scene"
-import {MethodMaterial} from "@awayjs/materials"
+import {ImageTexture2D, MethodMaterial} from "@awayjs/materials"
 import {PathCommand, GradientType, GradientSpreadMethod,
 	GradientInterpolationMethod, ShapeData,	ShapeMatrix} from "./ShapeData";
 import {assert,	Bounds,	clamp} from "../utilities";
@@ -1214,7 +1216,7 @@ class SegmentedPath {
 					var material:MethodMaterial = this.parser.mapMatsForBitmaps[style.bitmapIndex];
 					if(!material){
 						material=new MethodMaterial();
-						material.ambientMethod.texture=new Single2DTexture(this.parser.awaySymbols[style.bitmapIndex]);
+						material.ambientMethod.texture=new ImageTexture2D(this.parser.awaySymbols[style.bitmapIndex]);
 						this.parser.mapMatsForBitmaps[style.bitmapIndex]=material;
 					}
 

@@ -1,10 +1,12 @@
-import {AttributesBuffer, URLLoaderDataFormat, URLRequest, ParserBase, ParserUtils, ResourceDependency, ByteArray} from "@awayjs/core";
+import {URLLoaderDataFormat, URLRequest, ParserBase, ParserUtils, ResourceDependency, ByteArray} from "@awayjs/core";
 
-import {Graphics, Shape, TriangleElements, BitmapImage2D, DefaultMaterialManager} from "@awayjs/graphics";
+import {AttributesBuffer, BitmapImage2D, ImageUtils} from "@awayjs/stage";
+
+import {MaterialUtils} from "@awayjs/renderer";
+
+import {Graphics, Shape, TriangleElements, VertexClipNode, VertexAnimationSet} from "@awayjs/graphics";
 
 import {DisplayObjectContainer, Sprite} from "@awayjs/scene";
-
-import {VertexClipNode, VertexAnimationSet} from "@awayjs/renderer";
 
 import {MethodMaterial, MethodMaterialMode} from "@awayjs/materials";
 
@@ -125,9 +127,9 @@ export class MD2Parser extends ParserBase
 	{
 		// apply system default
 		if (this.materialMode < 2) {
-			this._sprite.material = DefaultMaterialManager.getDefaultMaterial();
+			this._sprite.material = MaterialUtils.getDefaultTextureMaterial();
 		} else {
-			this._sprite.material = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
+			this._sprite.material = new MethodMaterial(ImageUtils.getDefaultImage2D());
 			(<MethodMaterial> this._sprite.material).mode = MethodMaterialMode.MULTI_PASS;
 		}
 
@@ -166,9 +168,9 @@ export class MD2Parser extends ParserBase
 				this._sprite = new Sprite();
 				this._graphics = this._sprite.graphics;
 				if (this.materialMode < 2) {
-					this._sprite.material = DefaultMaterialManager.getDefaultMaterial();
+					this._sprite.material = MaterialUtils.getDefaultTextureMaterial();
 				} else {
-					this._sprite.material = new MethodMaterial(DefaultMaterialManager.getDefaultImage2D());
+					this._sprite.material = new MethodMaterial(ImageUtils.getDefaultImage2D());
 					(<MethodMaterial> this._sprite.material).mode = MethodMaterialMode.MULTI_PASS;
 				}
 

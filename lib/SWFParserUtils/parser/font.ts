@@ -17,7 +17,7 @@
 import {ShapeRecordFlags, FontTag, FontFlags, SwfTagCode} from "../SWFTags"
 import {Font, TesselatedFontTable} from "@awayjs/scene"
 import {GraphicsPath, GraphicsFactoryFills} from "@awayjs/graphics"
-import {AttributesBuffer} from "@awayjs/core"
+import {AttributesBuffer} from "@awayjs/stage"
 
 var pow = Math.pow;
 var min = Math.min;

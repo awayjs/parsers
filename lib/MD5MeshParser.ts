@@ -1,10 +1,10 @@
-import {AttributesBuffer, Matrix3D, Quaternion, Vector3D, URLLoaderDataFormat, ParserBase} from "@awayjs/core";
+import {Matrix3D, Quaternion, Vector3D, URLLoaderDataFormat, ParserBase} from "@awayjs/core";
 
-import {Graphics, Shape, TriangleElements} from "@awayjs/graphics";
+import {AttributesBuffer} from "@awayjs/stage";
+
+import {Graphics, Shape, TriangleElements, SkeletonAnimationSet, Skeleton, SkeletonJoint} from "@awayjs/graphics";
 
 import {DisplayObjectContainer, Sprite} from "@awayjs/scene";
-
-import {SkeletonAnimationSet, Skeleton, SkeletonJoint} from "@awayjs/renderer";
 
 // todo: create animation system, parse skeleton
 

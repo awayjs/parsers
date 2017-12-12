@@ -1,8 +1,10 @@
-import {AttributesBuffer,Short2Attributes, Short3Attributes, Float3Attributes, Float2Attributes, WaveAudioParser, Byte4Attributes, WaveAudio, ColorTransform, Matrix3D, Vector3D, URLLoaderDataFormat, URLRequest, AssetLibrary, IAsset, ParserBase, ParserUtils, ResourceDependency, ProjectionBase, PerspectiveProjection, OrthographicProjection, OrthographicOffCenterProjection, ByteArray, Rectangle, Matrix} from "@awayjs/core";
+import {WaveAudioParser, WaveAudio, ColorTransform, Matrix3D, Vector3D, URLLoaderDataFormat, URLRequest, AssetLibrary, IAsset, ParserBase, ParserUtils, ResourceDependency, ProjectionBase, PerspectiveProjection, OrthographicProjection, OrthographicOffCenterProjection, ByteArray, Rectangle, Matrix} from "@awayjs/core";
 
-import {Image2DParser, Graphics, ElementsUtils, Style, IMaterial, BitmapImage2D, BitmapImageCube, BlendMode, Sampler2D, TriangleElements, ElementsBase, DefaultMaterialManager, SingleCubeTexture, Single2DTexture, MappingMode, ElementsType, Shape, LightBase, DirectionalLight, PointLight, LightPickerBase, StaticLightPicker, CubeMapShadowMapper, DirectionalShadowMapper, ShadowMapperBase, IView} from "@awayjs/graphics";
+import {AttributesBuffer,Short2Attributes, Short3Attributes, Float3Attributes, Float2Attributes, Byte4Attributes, Image2DParser, BitmapImage2D, BitmapImageCube, BlendMode, ImageSampler} from "@awayjs/stage";
 
-import {AnimationSetBase, AnimatorBase} from "@awayjs/stage";
+import {ElementsUtils, Style, IMaterial, MaterialUtils, MappingMode, IView} from "@awayjs/renderer";
+
+import {ImageTextureCube, ImageTexture2D} from "@awayjs/materials";
 
 import {DisplayObjectContainer, MorphSprite, DisplayObject, Camera, Sprite, TextField, Billboard,
 	Skybox, SimpleButton,
@@ -10,9 +12,9 @@ import {DisplayObjectContainer, MorphSprite, DisplayObject, Camera, Sprite, Text
 	PrimitivePlanePrefab, PrimitiveSpherePrefab, PrimitiveTorusPrefab, ISceneGraphFactory, 
 	MovieClip, Timeline, Font, TesselatedFontTable, IFontTable, TextFormat, TextFormatAlign, TextFieldType} from "@awayjs/scene";
 
-import {VertexAnimationSet, VertexAnimator, SkeletonAnimationSet, SkeletonAnimator, JointPose, Skeleton, SkeletonPose, SkeletonJoint, SkeletonClipNode, VertexClipNode, AnimationClipNodeBase} from "@awayjs/renderer";
+import {ElementsType, Shape, Graphics, TriangleElements, ElementsBase, AnimationSetBase, AnimatorBase, VertexAnimationSet, VertexAnimator, SkeletonAnimationSet, SkeletonAnimator, JointPose, Skeleton, SkeletonPose, SkeletonJoint, SkeletonClipNode, VertexClipNode, AnimationClipNodeBase} from "@awayjs/graphics";
 
-import {MethodMaterialMode, MethodMaterial, DiffuseCelMethod, DiffuseGradientMethod, DiffuseLightMapMethod, DiffuseWrapMethod, EffectAlphaMaskMethod, EffectColorMatrixMethod, EffectColorTransformMethod, EffectEnvMapMethod, EffectFogMethod, EffectFresnelEnvMapMethod, EffectLightMapMethod, EffectRimLightMethod, NormalSimpleWaterMethod, ShadingMethodBase, ShadowDitheredMethod, ShadowMethodBase, SpecularFresnelMethod, ShadowCompositeMethod, ShadowHardMethod, SpecularAnisotropicMethod, SpecularCelMethod, SpecularPhongMethod, ShadowNearMethod, ShadowSoftMethod} from "@awayjs/materials";
+import {PointShadowMapper, DirectionalShadowMapper, ShadowMapperBase, LightBase, DirectionalLight, PointLight, LightPickerBase, StaticLightPicker, MethodMaterialMode, MethodMaterial, DiffuseCelMethod, DiffuseGradientMethod, DiffuseLightMapMethod, DiffuseWrapMethod, EffectAlphaMaskMethod, EffectColorMatrixMethod, EffectColorTransformMethod, EffectEnvMapMethod, EffectFogMethod, EffectFresnelEnvMapMethod, EffectLightMapMethod, EffectRimLightMethod, NormalSimpleWaterMethod, ShadingMethodBase, ShadowDitheredMethod, ShadowMethodBase, SpecularFresnelMethod, ShadowHardMethod, SpecularAnisotropicMethod, SpecularCelMethod, SpecularPhongMethod, ShadowSoftMethod} from "@awayjs/materials";
 
 import {DefaultSceneGraphFactory} from "./factories/DefaultSceneGraphFactory";
 import {LineScaleMode} from "@awayjs/graphics";
