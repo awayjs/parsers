@@ -1248,9 +1248,9 @@ class SegmentedPath {
 					style.alpha=this.getAlpha(style.color)/255;
 					style.color=this.rgbaToArgb(style.color);
 					var scaleModeAWJ="NORMAL";
-					if(style.noVscale==null && style.noHscale==null){
+					/*if(style.noVscale==null && style.noHscale==null){
 						scaleModeAWJ="HAIRLINE";
-					}
+					}*/
 					if(thickness==0.05){
 						scaleModeAWJ="HAIRLINE";
 					}
