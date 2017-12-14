@@ -64,7 +64,7 @@ import {
 import {__extends} from "tslib";
 
 var noTimelineDebug=true;
-var noSceneGraphDebug=false;
+var noSceneGraphDebug=true;
 export const enum CompressionMethod {
 	None,
 	Deflate,
@@ -495,6 +495,7 @@ export class SWFParser extends ParserBase
 								this.readTextPropertiesRecursive(doc, textProps);
 							}
 						}
+						awayText.selectable=false;
 						awayText.multiline=textProps.multiline;
 						awayText.textFormat.size =  textProps.size;
 						awayText.textFormat.color =  textProps.color;
