@@ -8,7 +8,7 @@ import {DisplayObjectContainer, DisplayObject, Camera, Sprite, TextField, Billbo
 
 import {MappingMode, ElementsUtils, MaterialUtils, IView, IMaterial, Style} from "@awayjs/renderer";
 
-import {LightBase, DirectionalLight, PointLight, ImageTextureCube, ImageTexture2D, MethodMaterialMode, MethodMaterial, DiffuseCelMethod, DiffuseGradientMethod, DiffuseLightMapMethod, DiffuseWrapMethod, EffectAlphaMaskMethod, EffectColorMatrixMethod, EffectColorTransformMethod, EffectEnvMapMethod, EffectFogMethod, EffectFresnelEnvMapMethod, EffectLightMapMethod, EffectRimLightMethod, NormalSimpleWaterMethod, ShadingMethodBase, ShadowDitheredMethod, ShadowMethodBase, SpecularFresnelMethod, ShadowHardMethod, SpecularAnisotropicMethod, SpecularCelMethod, SpecularPhongMethod, ShadowSoftMethod, LightPickerBase, StaticLightPicker, PointShadowMapper, DirectionalShadowMapper, NearDirectionalShadowMapper, ShadowMapperBase} from "@awayjs/materials";
+import {LightBase, DirectionalLight, PointLight, ImageTextureCube, ImageTexture2D, MethodMaterialMode, MethodMaterial, DiffuseCelMethod, DiffuseGradientMethod, DiffuseLightMapMethod, DiffuseWrapMethod, EffectAlphaMaskMethod, EffectColorMatrixMethod, EffectColorTransformMethod, EffectEnvMapMethod, EffectFogMethod, EffectFresnelEnvMapMethod, EffectLightMapMethod, EffectRimLightMethod, NormalSimpleWaterMethod, MethodBase, ShadowDitheredMethod, ShadowMethodBase, SpecularFresnelMethod, ShadowHardMethod, SpecularAnisotropicMethod, SpecularCelMethod, SpecularPhongMethod, ShadowSoftMethod, LightPickerBase, StaticLightPicker, PointShadowMapper, DirectionalShadowMapper, NearDirectionalShadowMapper, ShadowMapperBase} from "@awayjs/materials";
 
 import {DefaultSceneGraphFactory} from "./factories/DefaultSceneGraphFactory";
 import {AWDBlock} from "./AWD3ParserUtils/AWDBlock";
@@ -2309,7 +2309,7 @@ export class AWDParser extends ParserBase
 
 					switch (method_type) {
 						case 999: //wrapper-Methods that will load a previous parsed EffektMethod returned
-							var effectMethod:ShadingMethodBase = <ShadingMethodBase> this._blocks[props.get(1, 0)].data;
+							var effectMethod:MethodBase = <MethodBase> this._blocks[props.get(1, 0)].data;
 							mat.addEffectMethod(effectMethod);
 							debugString += " | EffectMethod-Name = " + effectMethod.name;
 
@@ -2507,7 +2507,7 @@ export class AWDParser extends ParserBase
 	//Block ID = 91
 	private parseSharedMethodBlock(blockID:number):void
 	{
-		var asset:ShadingMethodBase;
+		var asset:MethodBase;
 
 		this._blocks[blockID].name = this.parseVarStr();
 		asset = this.parseSharedMethodList(blockID);
@@ -2991,10 +2991,10 @@ export class AWDParser extends ParserBase
 		702:AWDParser.BOOL};
 
 	// this functions reads and creates a EffectMethod
-	private parseSharedMethodList(blockID:number):ShadingMethodBase
+	private parseSharedMethodList(blockID:number):MethodBase
 	{
 		var methodType:number = this._newBlockBytes.readUnsignedShort();
-		var effectMethodReturn:ShadingMethodBase;
+		var effectMethodReturn:MethodBase;
 
 		var props:AWDProperties = this.parseProperties(this.sharedMethodListProperties);
 
