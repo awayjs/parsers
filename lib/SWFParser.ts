@@ -501,7 +501,8 @@ export class SWFParser extends ParserBase
 						awayText.textFormat.color =  textProps.color;
 						awayText.textFormat.leftMargin =  textProps.leftMargin;
 						awayText.textFormat.rightMargin =  textProps.rightMargin;
-						awayText.textFormat.letterSpacing=0;//5;
+						awayText.textFormat.letterSpacing=0;//symbol.tag.leading/20;//5;
+						awayText.textFormat.leading=symbol.tag.leading/20;//5;
 						awayText.textOffsetX=symbol.fillBounds.xMin/20;
 						awayText.textOffsetY=symbol.fillBounds.yMin/20;
 						awayText.width=(symbol.fillBounds.xMax/20 - symbol.fillBounds.xMin/20)-1;
