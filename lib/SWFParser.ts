@@ -60,6 +60,7 @@ import {
 	ControlTags,
 	PlaceObjectTag,
 	PlaceObjectFlags,
+	TextFlags,
 	getSwfTagCodeName} from "./SWFParserUtils/SWFTags";
 import {__extends} from "tslib";
 
@@ -388,7 +389,7 @@ export class SWFParser extends ParserBase
 		}
 		if(!myChild.childNodes || myChild.childNodes.length==0){
 			if((<any>myChild).nodeValue)
-				textProps.text+=(<any>myChild).nodeValue+"\\n";
+				textProps.text+=(<any>myChild).nodeValue;//+"\\n";
 		}
 		else{
 			for(var k=0; k<myChild.childNodes.length;k++){
@@ -508,6 +509,9 @@ export class SWFParser extends ParserBase
 						awayText.width=(symbol.fillBounds.xMax/20 - symbol.fillBounds.xMin/20)-1;
 						awayText.height=(symbol.fillBounds.yMax/20 - symbol.fillBounds.yMin/20)-1;
 						awayText.textFormat.align=this.textFormatAlignMap[textProps.align];
+						awayText.isInput=!(symbol.tag.flag & TextFlags.ReadOnly);
+						awayText.selectable=!(symbol.tag.flag & TextFlags.NoSelect);
+
 						if(textProps.text)
 							awayText.text=textProps.text;
 						this._pFinalizeAsset(awayText, symbol.id);
@@ -652,6 +656,31 @@ export class SWFParser extends ParserBase
 				keyFrameCount++;
 
 				if(frames[i].actionBlocks && frames[i].actionBlocks.length>0){
+					/*
+					var scriptIdx:number=0;
+
+					for(scriptIdx=0; scriptIdx<frames[i].actionBlocks.length; scriptIdx++){
+
+						var actionString:string="";
+						var actionsData:Uint8Array=frames[i].actionBlocks[scriptIdx].actionsData;
+						var byteCnt:number=0;
+						for(byteCnt=0; byteCnt<actionsData.length; byteCnt++){
+							var byteCode:number=actionsData[byteCnt];
+							//console.log("byteCode '"+byteCode+ "'");
+							if(byteCode!=150 && byteCode != 20 && byteCode != 0 && byteCode!=29){
+								var byteString:string=String.fromCharCode(byteCode);
+								//console.log("byteString '"+byteString+ "'");
+								actionString+=byteString;
+
+							}
+						}
+						//console.log("actionString",actionString);
+						var idString=actionString.replace("scriptID", "");
+						var fullID=idString.split(":");
+						console.log("fullID",fullID);
+
+					}
+*/
 					awayTimeline.avm1framescripts[frameCount]=frames[i].actionBlocks;
 				}
 				if(frames[i].controlTags && frames[i].controlTags.length>0){
@@ -793,6 +822,31 @@ export class SWFParser extends ParserBase
 										// register a new instance for this object
 										sessionID = awayTimeline.potentialPrototypes.length;
 										if((<any>placeObjectTag).variableName || (placeObjectTag.events && placeObjectTag.events.length>0)){
+											/*console.log("init events", placeObjectTag.events);
+
+											for (var j = 0; j < placeObjectTag.events.length; j++) {
+												var swfEvent = placeObjectTag.events[j];
+												if (swfEvent.actionsBlock) {
+													var actionsData:Uint8Array=swfEvent.actionsBlock;
+													var byteCnt:number=0;
+													var actionString:string="";
+													for(byteCnt=0; byteCnt<actionsData.length; byteCnt++){
+														var byteCode:number=actionsData[byteCnt];
+														if(byteCode!=150 && byteCode != 20 && byteCode != 0 && byteCode!=29){
+															var byteString:string=String.fromCharCode(byteCode);
+															console.log("byteCode '"+byteCode+ "' '"+byteString+" '");
+															//console.log("byteString '"+byteString+ "'");
+															actionString+=byteString;
+
+														}
+														else{
+															console.log("byteCode '"+byteCode);
+														}
+													}
+													console.log("actionString",actionString);
+												}
+											}
+											*/
 											awayTimeline.potentialPrototypesInitEventsMap[sessionID]=placeObjectTag;
 										}
 										awayTimeline.registerPotentialChild(awaySymbol);
