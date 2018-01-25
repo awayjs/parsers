@@ -496,7 +496,6 @@ export class SWFParser extends ParserBase
 								this.readTextPropertiesRecursive(doc, textProps);
 							}
 						}
-						awayText.selectable=false;
 						awayText.multiline=textProps.multiline;
 						awayText.textFormat.size =  textProps.size;
 						awayText.textFormat.color =  textProps.color;
@@ -509,8 +508,14 @@ export class SWFParser extends ParserBase
 						awayText.width=(symbol.fillBounds.xMax/20 - symbol.fillBounds.xMin/20)-1;
 						awayText.height=(symbol.fillBounds.yMax/20 - symbol.fillBounds.yMin/20)-1;
 						awayText.textFormat.align=this.textFormatAlignMap[textProps.align];
-						awayText.isInput=!(symbol.tag.flag & TextFlags.ReadOnly);
-						awayText.selectable=!(symbol.tag.flag & TextFlags.NoSelect);
+						awayText.border=!!(symbol.tag.flags & TextFlags.Border);
+						if(symbol.tag.flags & TextFlags.ReadOnly){
+							awayText.type="dynamic";
+						}
+						else{
+							awayText.type="input";
+						}
+						awayText.selectable=!(symbol.tag.flags & TextFlags.NoSelect);
 
 						if(textProps.text)
 							awayText.text=textProps.text;
@@ -554,6 +559,7 @@ export class SWFParser extends ParserBase
 						awayText.height=(symbol.fillBounds.yMax/20 - symbol.fillBounds.yMin/20)-1;
 						awayText.setLabelData(symbol);
 						this.awaySymbols[dictionary[i].id] = awayText;
+						awayText.selectable=!(symbol.tag.flags & TextFlags.NoSelect);
 						break;
 					default:
 						console.log("unknown symbol type:", symbol.type, symbol);
@@ -565,7 +571,7 @@ export class SWFParser extends ParserBase
 		}
 		var awayMc:MovieClip=this.framesToAwayTimeline(null);
 		//console.log("root-timeline: ", awayMc);
-		console.log("AwayJS loaded SWF with "+ dictionary.length+" symbols", this.sceneAndFrameLabelData);
+		//console.log("AwayJS loaded SWF with "+ dictionary.length+" symbols", this.sceneAndFrameLabelData);
 
 		this._pFinalizeAsset(awayMc, "scene");
 	}
@@ -967,11 +973,13 @@ export class SWFParser extends ParserBase
 								property_index_stream.push(properties_stream_int.length);
 								properties_stream_int.push(updateCmd.swapGraphicsID);
 							}
+
+							if(!placeObjectTag.name || placeObjectTag.name=="")
+								name="button"+placeObjectTag.symbolId;
+
 							if ((placeObjectTag.name && placeObjectTag.name!="") ||(this._buttonIds[placeObjectTag.symbolId])) {
 
 								var name=placeObjectTag.name;
-								if(!placeObjectTag.name || placeObjectTag.name=="")
-									name="button"+placeObjectTag.symbolId;
 								num_updated_props++;
 								var isButton=this._buttonIds[placeObjectTag.symbolId];
 								if(isButton){
@@ -1155,7 +1163,7 @@ export class SWFParser extends ParserBase
 		var properties_stream_strings:string[]=[];
 
 
-		noTimelineDebug || console.log("\nconverting frames to awayjs MovieClip\n\n");
+		noTimelineDebug || console.log("\nconverting frames to awayjs MovieClip as button\n\n");
 
 		var virutalScenegraph:any={};
 		var registeredGraphicsIDs:any={};
@@ -1204,9 +1212,10 @@ export class SWFParser extends ParserBase
 				var len:number=states[i].length;
 				for (var ct = 0; ct < len; ct++) {
 					var unparsedTag=states[i][ct];
+					noTimelineDebug || console.log("unparsedTag tag", unparsedTag);
 					var tag= unparsedTag.tagCode === undefined ? unparsedTag : <any>this.getParsedTag(unparsedTag);
 
-					//console.log("parsed tag", tag);
+					noTimelineDebug || console.log("parsed tag", tag);
 					switch (tag.code) {
 						case SwfTagCode.CODE_START_SOUND:
 							awaySymbol = this.awaySymbols[tag.soundId];

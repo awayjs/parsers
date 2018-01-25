@@ -118,7 +118,7 @@ export function defineFont(tag: FontTag):any {
 	var tessFontTableAJS:TesselatedFontTable=new TesselatedFontTable();
 	fontAJS.font_styles.push(tessFontTableAJS);
 
-	console.log("FontTag = ", tag);
+	//console.log("FontTag = ", tag);
 
 	var glyphs = tag.glyphs;
 	var glyphCount = glyphs ? glyphs.length : 0;
@@ -482,8 +482,8 @@ export function defineFont(tag: FontTag):any {
 			glyphAdvance=tag.advance[i-1]/resolution;
 		}
 		if(code==32){
-			console.log("32 = ", code, (xMax - xMin));
-			console.log("32 = ", tag.advance[i-1]);
+			//console.log("32 = ", code, (xMax - xMin));
+			//console.log("32 = ", tag.advance[i-1]);
 			whiteSpaceWidth=tag.advance[i-1]/resolution;
 		}
 		
@@ -500,7 +500,7 @@ export function defineFont(tag: FontTag):any {
 		}
 
 	}
-	console.log("FontTag.advanced = ", tag.advance.toString());
+	//console.log("FontTag.advanced = ", tag.advance.toString());
 	//loca += toString16(offset / 2);
 	//tables['glyf'] = glyf;
 
