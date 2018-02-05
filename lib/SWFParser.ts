@@ -65,6 +65,7 @@ import {
 import {__extends} from "tslib";
 
 var noTimelineDebug=true;
+var noButtonDebug=false;
 var noSceneGraphDebug=true;
 export const enum CompressionMethod {
 	None,
@@ -515,7 +516,7 @@ export class SWFParser extends ParserBase
 						else{
 							awayText.type="input";
 						}
-						awayText.selectable=!(symbol.tag.flags & TextFlags.NoSelect);
+						awayText.selectable=symbol.tag.flags?!(symbol.tag.flags & TextFlags.NoSelect):false;
 
 						if(textProps.text)
 							awayText.text=textProps.text;
@@ -554,12 +555,12 @@ export class SWFParser extends ParserBase
 							}
 						}
 						awayText.textOffsetX=symbol.fillBounds.xMin/20;
-						awayText.textOffsetY=symbol.fillBounds.yMin/20;
+						//awayText.textOffsetY=symbol.fillBounds.yMin/20;
 						awayText.width=(symbol.fillBounds.xMax/20 - symbol.fillBounds.xMin/20)-1;
 						awayText.height=(symbol.fillBounds.yMax/20 - symbol.fillBounds.yMin/20)-1;
 						awayText.setLabelData(symbol);
 						this.awaySymbols[dictionary[i].id] = awayText;
-						awayText.selectable=!(symbol.tag.flags & TextFlags.NoSelect);
+						awayText.selectable=symbol.tag.flags?!(symbol.tag.flags & TextFlags.NoSelect):false;
 						break;
 					default:
 						console.log("unknown symbol type:", symbol.type, symbol);
@@ -579,6 +580,7 @@ export class SWFParser extends ParserBase
 	private _buttonIds:any={}
 	public textFormatAlignMap:string[]=[TextFormatAlign.LEFT, TextFormatAlign.RIGHT, TextFormatAlign.CENTER, TextFormatAlign.JUSTIFY];
 	public textFormatAlignMapStringToInt:any={"center":2, "left":0, "right":1, "justify":3};
+
 	public framesToAwayTimeline(frames:SWFFrame[]):MovieClip{
 		if(!frames)
 			frames=this.frames;
@@ -1162,8 +1164,9 @@ export class SWFParser extends ParserBase
 		var properties_stream_f32_ct:number[]=[];
 		var properties_stream_strings:string[]=[];
 
+		var hitAreaContainer:DisplayObjectContainer=new DisplayObjectContainer();
 
-		noTimelineDebug || console.log("\nconverting frames to awayjs MovieClip as button\n\n");
+		noButtonDebug || console.log("\nconverting frames to awayjs MovieClip as button\n\n");
 
 		var virutalScenegraph:any={};
 		var registeredGraphicsIDs:any={};
@@ -1172,14 +1175,14 @@ export class SWFParser extends ParserBase
 		var framesLen:number=frames.length;
 		if(actions){
 			awayTimeline.avm1ButtonActions=actions;
-
 		}
+
 		for (var i in states) {
 			/*if(i=="hitTest"){
 				continue;
 			}*/
 
-			noTimelineDebug || console.log("frame: ", i);
+			noButtonDebug || console.log("frame: ", i);
 			var cmds_removed:any[]=[];
 			var cmds_add:any[]=[];
 			var cmds_update:any[]=[];
@@ -1187,8 +1190,8 @@ export class SWFParser extends ParserBase
 			var cmds_stopSounds:any[]=[];
 			var unparsedTags:any[]=[];
 			var freePotentialChildCache:any={};
-			if(!states[i] || states[i].length==0){
-				noTimelineDebug || console.log("no commands for ", i);
+			if(i!="hitTest3" && (!states[i] || states[i].length==0)){
+				noButtonDebug || console.log("no commands for ", i);
 				if(keyframe_durations.length>0)
 					keyframe_durations[keyframe_durations.length-1]+=1;
 				else
@@ -1197,9 +1200,11 @@ export class SWFParser extends ParserBase
 			else{
 
 				var command_recipe_flag=0;
-				frame_command_indices.push(command_index_stream.length);
-				keyframe_durations[keyframe_durations.length]=1;
-				keyFrameCount++;
+				if( i!="hitTest3") {
+					frame_command_indices.push(command_index_stream.length);
+					keyframe_durations[keyframe_durations.length] = 1;
+					keyFrameCount++;
+				}
 
 				//if(frames[i].actionBlocks && frames[i].actionBlocks.length>0){
 				//	awayTimeline.avm1framescripts[frameCount]=frames[i].actionBlocks;
@@ -1207,15 +1212,15 @@ export class SWFParser extends ParserBase
 
 				//console.log("frame ",i);
 
-				noTimelineDebug || console.log("Start parsing frame");
-				noTimelineDebug || console.log("num tags: ", states[i].length);
+				noButtonDebug || console.log("Start parsing frame");
+				noButtonDebug || console.log("num tags: ", states[i].length);
 				var len:number=states[i].length;
 				for (var ct = 0; ct < len; ct++) {
 					var unparsedTag=states[i][ct];
-					noTimelineDebug || console.log("unparsedTag tag", unparsedTag);
+					noButtonDebug || console.log("unparsedTag tag", unparsedTag);
 					var tag= unparsedTag.tagCode === undefined ? unparsedTag : <any>this.getParsedTag(unparsedTag);
 
-					noTimelineDebug || console.log("parsed tag", tag);
+					noButtonDebug || console.log("parsed tag", tag);
 					switch (tag.code) {
 						case SwfTagCode.CODE_START_SOUND:
 							awaySymbol = this.awaySymbols[tag.soundId];
@@ -1241,7 +1246,7 @@ export class SWFParser extends ParserBase
 							freePotentialChilds.push(virutalScenegraph[tag.depth].sessionID);
 							virutalScenegraph[tag.depth]=null;
 							delete virutalScenegraph[tag.depth];
-							noTimelineDebug || console.log("	remove", "depth", tag.depth);
+							noButtonDebug || console.log("	remove", "depth", tag.depth);
 
 							/*var child = this.getTimelineObjectAtDepth(tag.depth | 0);
 							if (child) {
@@ -1320,13 +1325,13 @@ export class SWFParser extends ParserBase
 										//}
 										//if (sessionID < 0) {
 										//}
-										noTimelineDebug || console.log("	add shape", "session-id", sessionID, "depth", tag.depth, "reused", isReused, tag, awaySymbol);
+										noButtonDebug || console.log("	add shape", "session-id", sessionID, "depth", tag.depth, "reused", isReused, tag, awaySymbol);
 										child=virutalScenegraph[tag.depth] = {
 											sessionID: sessionID,
 											id: placeObjectTag.symbolId,
 											masks: []
 										}
-										cmds_add[cmds_add.length] = {sessionID: sessionID, depth: tag.depth};
+										cmds_add[cmds_add.length] = {sessionID: sessionID, depth: tag.depth, awayObj:graphicsSprite};
 
 									}
 								}
@@ -1348,13 +1353,13 @@ export class SWFParser extends ParserBase
 									}
 									awayTimeline.registerPotentialChild(awaySymbol);
 									//	}
-									noTimelineDebug || console.log("	add", "session-id", sessionID, "depth", tag.depth, "reused", isReused, tag, awaySymbol);
+									noButtonDebug || console.log("	add", "session-id", sessionID, "depth", tag.depth, "reused", isReused, tag, awaySymbol);
 									child=virutalScenegraph[tag.depth] = {
 										sessionID: sessionID,
 										id: placeObjectTag.symbolId,
 										masks: []
 									}
-									cmds_add[cmds_add.length] = {sessionID: sessionID, depth: tag.depth};
+									cmds_add[cmds_add.length] = {sessionID: sessionID, depth: tag.depth, awayObj:awaySymbol};
 								}
 							}
 
@@ -1367,7 +1372,7 @@ export class SWFParser extends ParserBase
 
 							if (child) {
 								cmds_update[cmds_update.length]={child:child, placeObjectTag:placeObjectTag, swapGraphicsID:swapGraphicsID, ratio:ratio};
-								noTimelineDebug || console.log("	update", "session-id", child.sessionID, "hasCharacter", hasCharacter, "depth", tag.depth, "reused", isReused, "swapGraphicsID", swapGraphicsID, tag,  awaySymbol);
+								noButtonDebug || console.log("	update", "session-id", child.sessionID, "hasCharacter", hasCharacter, "depth", tag.depth, "reused", isReused, "swapGraphicsID", swapGraphicsID, tag,  awaySymbol);
 
 							}
 							else{
@@ -1381,226 +1386,293 @@ export class SWFParser extends ParserBase
 					//console.log("parsed a tag: ", tag);
 				}
 
-				// create remove commands:
-				var start_index = remove_child_stream.length;
-				var command_cnt=cmds_removed.length;
-				if(command_cnt){
-					command_recipe_flag |= 0x02;
-					start_index = remove_child_stream.length;
-					for (var cmd = 0; cmd < command_cnt; cmd++){
-						remove_child_stream.push(cmds_removed[cmd]);
-					}
-					command_length_stream.push(command_cnt);
-					command_index_stream.push(start_index);
-					//noTimelineDebug || console.log("removeCommand", cmds_removed);
-				}
 
-				// create add commands:
-				var command_cnt=cmds_add.length;
-				if(command_cnt){
-					command_recipe_flag |= 0x04;
-					start_index = add_child_stream.length;
-					for (var cmd = 0; cmd < command_cnt; cmd++){
-						add_child_stream.push(cmds_add[cmd].sessionID);
-						add_child_stream.push(cmds_add[cmd].depth);
-						//console.log("add", cmds_add[cmd].childID , cmds_add[cmd].depth);
-					}
-					command_length_stream.push(command_cnt);
-					command_index_stream.push(start_index/2);
-					//noTimelineDebug || console.log("cmds_add", cmds_add);
-				}
-
-				// create update commands:
-				var command_cnt=cmds_update.length;
-				if(command_cnt){
-					// collect masks per objects
-					for(var key in virutalScenegraph){
-						virutalScenegraph[key].masks=[];
-					}
-
-					//prepare mask info:
-
-					for (var cmd = 0; cmd < command_cnt; cmd++) {
-						placeObjectTag = cmds_update[cmd].placeObjectTag;
-						var child=cmds_update[cmd].child;
-						if (placeObjectTag.flags & PlaceObjectFlags.HasClipDepth) {
-							var depth:number=placeObjectTag.clipDepth-1;
-							while(depth>placeObjectTag.depth){
-								if(virutalScenegraph[depth])
-									virutalScenegraph[depth].masks.push(child.sessionID);
-								depth--;
-							}
+				if( i!="hitTest3") {
+					// create remove commands:
+					var start_index = remove_child_stream.length;
+					var command_cnt = cmds_removed.length;
+					if (command_cnt) {
+						command_recipe_flag |= 0x02;
+						start_index = remove_child_stream.length;
+						for (var cmd = 0; cmd < command_cnt; cmd++) {
+							remove_child_stream.push(cmds_removed[cmd]);
 						}
-					}
-
-					// process updated props:
-
-					start_index = update_child_stream.length;
-					var updateCnt=0;
-					var updateCmd;
-					for (var cmd = 0; cmd < command_cnt; cmd++) {
-						updateCmd=cmds_update[cmd];
-						placeObjectTag = updateCmd.placeObjectTag;
-						var child = updateCmd.child;
-						//if (symbol && !symbol.dynamic) {
-						// If the current object is of a simple type (for now Shapes, MorphShapes and
-						// StaticText) only its static content is updated instead of replacing it with a
-						// new instance. TODO: Handle
-						// http://wahlers.com.br/claus/blog/hacking-swf-2-placeobject-and-ratio/.
-						//	child._setStaticContentFromSymbol(symbol);
-						//}
-						// We animate the object only if a user script didn't touch any of the properties
-						// this would affect.
-						//if (child._hasFlags(DisplayObjectFlags.AnimatedByTimeline)) {
-
-						var childStartIdx:number=property_type_stream.length;
-						var num_updated_props=0;
-						var reset = false;//!(placeObjectTag.flags & PlaceObjectFlags.Move) && placeObjectTag.flags & PlaceObjectFlags.HasCharacter;
-
-						if(updateCmd.swapGraphicsID>=0){
-
-							num_updated_props++;
-							property_type_stream.push(202);
-							property_index_stream.push(properties_stream_int.length);
-							properties_stream_int.push(updateCmd.swapGraphicsID);
-						}
-						if (placeObjectTag.name && placeObjectTag.name!=""){
-
-							num_updated_props++;
-							var isButton=this._buttonIds[placeObjectTag.symbolId];
-							if(isButton){
-								property_type_stream.push(5);
-							}
-							else{
-								property_type_stream.push(4);
-							}
-							property_index_stream.push(properties_stream_strings.length);
-							properties_stream_strings.push(placeObjectTag.name);
-						}
-						//var matrixClass = this.sec.flash.geom.Matrix.axClass;
-						if (placeObjectTag.flags & PlaceObjectFlags.HasMatrix) {
-
-							//console.log("PlaceObjectFlags.HasMatrix", placeObjectTag.matrix);
-							num_updated_props++;
-
-							property_type_stream.push(1);//matrix type: 1=all, 11=no position, 12=no scale
-							property_index_stream.push(properties_stream_f32_mtx_all.length / 6);
-
-							// todo: we can save memory by checking if only scale or position was changed,
-							// but it means we would need to check against the matrix of the current child, not against identy matrix
-
-							properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.a;
-							properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.b;
-							properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.c;
-							properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.d;
-							properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.tx/20;
-							properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.ty/20;
-
-						}
-
-						//var colorTransformClass = this.sec.flash.geom.ColorTransform.axClass;
-						if ((placeObjectTag.flags & PlaceObjectFlags.HasColorTransform)||(i=="hitTest")) {
-							//console.log("PlaceObjectFlags.HasColorTransform", placeObjectTag.cxform);
-							property_type_stream.push(2);
-							property_index_stream.push(properties_stream_f32_ct.length / 8);
-							num_updated_props++;
-							if(i!="hitTest"){
-								properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.redMultiplier/255;
-								properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.greenMultiplier/255;
-								properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.blueMultiplier/255;
-								properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.alphaMultiplier/255;
-								properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.redOffset;
-								properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.greenOffset;
-								properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.blueOffset;
-								properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.alphaOffset;
-							}
-							else{
-								properties_stream_f32_ct[properties_stream_f32_ct.length] = 0;
-								properties_stream_f32_ct[properties_stream_f32_ct.length] = 0;
-								properties_stream_f32_ct[properties_stream_f32_ct.length] = 0;
-								properties_stream_f32_ct[properties_stream_f32_ct.length] = 0;
-								properties_stream_f32_ct[properties_stream_f32_ct.length] = 0;
-								properties_stream_f32_ct[properties_stream_f32_ct.length] = 0;
-								properties_stream_f32_ct[properties_stream_f32_ct.length] = 0;
-								properties_stream_f32_ct[properties_stream_f32_ct.length] = 0;
-
-							}
-						}
-
-						if (updateCmd.ratio>=0) {
-							num_updated_props++;
-							property_type_stream.push(203);
-							property_index_stream.push(properties_stream_int.length);
-							properties_stream_int.push(updateCmd.ratio | 0);
-							//console.log("PlaceObjectFlags.HasRatio", placeObjectTag, child);
-						}
-
-						if (child.masks.length>0) {
-
-							num_updated_props++;
-							property_type_stream.push(3);
-							property_index_stream.push(properties_stream_int.length);
-							properties_stream_int.push(child.masks.length);
-							for(let val of child.masks)
-								properties_stream_int.push(val);
-						}
-						if (placeObjectTag.flags & PlaceObjectFlags.HasClipDepth) {
-
-							//console.log("cmds_update[cmd]",cmds_update[cmd]);
-
-
-							//console.log("placeObjectTag.clipDepth", placeObjectTag.clipDepth);
-
-							num_updated_props++;
-							property_type_stream.push(200);
-							property_index_stream.push(0);
-							//var clipDepth = placeObjectTag.clipDepth === undefined ? -1 : placeObjectTag.clipDepth;
-							//if (clipDepth !== this._clipDepth) {
-							//	this._clipDepth = clipDepth;
-							//	this._setDirtyFlags(DisplayObjectDirtyFlags.DirtyClipDepth);
-							//}
-						}
-
-						if (placeObjectTag.flags & PlaceObjectFlags.HasFilterList) {}
-
-						if(num_updated_props>0){
-							updateCnt++;
-							update_child_stream.push(child.sessionID);
-							update_child_props_indices_stream.push(childStartIdx);
-							update_child_props_length_stream.push(num_updated_props);
-						}
-					}
-					if(updateCnt>0){
-						command_recipe_flag |= 0x08;
 						command_length_stream.push(command_cnt);
 						command_index_stream.push(start_index);
-						//noTimelineDebug || console.log("cmds_update", cmds_update);
+						//noButtonDebug || console.log("removeCommand", cmds_removed);
 					}
 
-				}
-				var command_cnt=cmds_startSounds.length;
-				if(command_cnt){
-					command_recipe_flag |= 16;
-					start_index = add_sounds_stream.length;
-					//console.log("startsound", tag.soundId, tag.soundInfo, awaySymbol);
-					for (var cmd = 0; cmd < command_cnt; cmd++){
-						add_sounds_stream.push(cmds_startSounds[cmd].soundId);
-						//console.log("add", cmds_add[cmd].childID , cmds_add[cmd].depth);
+					// create add commands:
+					var command_cnt = cmds_add.length;
+					if (command_cnt) {
+						command_recipe_flag |= 0x04;
+						start_index = add_child_stream.length;
+						for (var cmd = 0; cmd < command_cnt; cmd++) {
+							add_child_stream.push(cmds_add[cmd].sessionID);
+							add_child_stream.push(cmds_add[cmd].depth);
+							//console.log("add", cmds_add[cmd].childID , cmds_add[cmd].depth);
+						}
+						command_length_stream.push(command_cnt);
+						command_index_stream.push(start_index / 2);
+						//noButtonDebug || console.log("cmds_add", cmds_add);
 					}
-					command_length_stream.push(command_cnt);
-					command_index_stream.push(start_index);
+
+					// create update commands:
+					var command_cnt = cmds_update.length;
+					if (command_cnt) {
+						// collect masks per objects
+						for (var key in virutalScenegraph) {
+							virutalScenegraph[key].masks = [];
+						}
+
+						//prepare mask info:
+
+						for (var cmd = 0; cmd < command_cnt; cmd++) {
+							placeObjectTag = cmds_update[cmd].placeObjectTag;
+							var child = cmds_update[cmd].child;
+							if (placeObjectTag.flags & PlaceObjectFlags.HasClipDepth) {
+								var depth: number = placeObjectTag.clipDepth - 1;
+								while (depth > placeObjectTag.depth) {
+									if (virutalScenegraph[depth])
+										virutalScenegraph[depth].masks.push(child.sessionID);
+									depth--;
+								}
+							}
+						}
+
+						// process updated props:
+
+						start_index = update_child_stream.length;
+						var updateCnt = 0;
+						var updateCmd;
+						for (var cmd = 0; cmd < command_cnt; cmd++) {
+							updateCmd = cmds_update[cmd];
+							placeObjectTag = updateCmd.placeObjectTag;
+							var child = updateCmd.child;
+							//if (symbol && !symbol.dynamic) {
+							// If the current object is of a simple type (for now Shapes, MorphShapes and
+							// StaticText) only its static content is updated instead of replacing it with a
+							// new instance. TODO: Handle
+							// http://wahlers.com.br/claus/blog/hacking-swf-2-placeobject-and-ratio/.
+							//	child._setStaticContentFromSymbol(symbol);
+							//}
+							// We animate the object only if a user script didn't touch any of the properties
+							// this would affect.
+							//if (child._hasFlags(DisplayObjectFlags.AnimatedByTimeline)) {
+
+							var childStartIdx: number = property_type_stream.length;
+							var num_updated_props = 0;
+							var reset = false;//!(placeObjectTag.flags & PlaceObjectFlags.Move) && placeObjectTag.flags & PlaceObjectFlags.HasCharacter;
+
+							if (updateCmd.swapGraphicsID >= 0) {
+
+								num_updated_props++;
+								property_type_stream.push(202);
+								property_index_stream.push(properties_stream_int.length);
+								properties_stream_int.push(updateCmd.swapGraphicsID);
+							}
+							if (placeObjectTag.name && placeObjectTag.name != "") {
+
+								num_updated_props++;
+								var isButton = this._buttonIds[placeObjectTag.symbolId];
+								if (isButton) {
+									property_type_stream.push(5);
+								}
+								else {
+									property_type_stream.push(4);
+								}
+								property_index_stream.push(properties_stream_strings.length);
+								properties_stream_strings.push(placeObjectTag.name);
+							}
+							//var matrixClass = this.sec.flash.geom.Matrix.axClass;
+							if (placeObjectTag.flags & PlaceObjectFlags.HasMatrix) {
+
+								//console.log("PlaceObjectFlags.HasMatrix", placeObjectTag.matrix);
+								num_updated_props++;
+
+								property_type_stream.push(1);//matrix type: 1=all, 11=no position, 12=no scale
+								property_index_stream.push(properties_stream_f32_mtx_all.length / 6);
+
+								// todo: we can save memory by checking if only scale or position was changed,
+								// but it means we would need to check against the matrix of the current child, not against identy matrix
+
+								properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.a;
+								properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.b;
+								properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.c;
+								properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.d;
+								properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.tx / 20;
+								properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.ty / 20;
+
+							}
+
+							//var colorTransformClass = this.sec.flash.geom.ColorTransform.axClass;
+							if ((placeObjectTag.flags & PlaceObjectFlags.HasColorTransform) || (i == "hitTest")) {
+								//console.log("PlaceObjectFlags.HasColorTransform", placeObjectTag.cxform);
+								property_type_stream.push(2);
+								property_index_stream.push(properties_stream_f32_ct.length / 8);
+								num_updated_props++;
+								if (i != "hitTest") {
+									properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.redMultiplier / 255;
+									properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.greenMultiplier / 255;
+									properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.blueMultiplier / 255;
+									properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.alphaMultiplier / 255;
+									properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.redOffset;
+									properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.greenOffset;
+									properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.blueOffset;
+									properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.alphaOffset;
+								}
+								else {
+									properties_stream_f32_ct[properties_stream_f32_ct.length] = 0;
+									properties_stream_f32_ct[properties_stream_f32_ct.length] = 0;
+									properties_stream_f32_ct[properties_stream_f32_ct.length] = 0;
+									properties_stream_f32_ct[properties_stream_f32_ct.length] = 0;
+									properties_stream_f32_ct[properties_stream_f32_ct.length] = 0;
+									properties_stream_f32_ct[properties_stream_f32_ct.length] = 0;
+									properties_stream_f32_ct[properties_stream_f32_ct.length] = 0;
+									properties_stream_f32_ct[properties_stream_f32_ct.length] = 0;
+
+								}
+							}
+
+							if (updateCmd.ratio >= 0) {
+								num_updated_props++;
+								property_type_stream.push(203);
+								property_index_stream.push(properties_stream_int.length);
+								properties_stream_int.push(updateCmd.ratio | 0);
+								//console.log("PlaceObjectFlags.HasRatio", placeObjectTag, child);
+							}
+
+							if (child.masks.length > 0) {
+
+								num_updated_props++;
+								property_type_stream.push(3);
+								property_index_stream.push(properties_stream_int.length);
+								properties_stream_int.push(child.masks.length);
+								for (let val of child.masks)
+									properties_stream_int.push(val);
+							}
+							if (placeObjectTag.flags & PlaceObjectFlags.HasClipDepth) {
+
+								//console.log("cmds_update[cmd]",cmds_update[cmd]);
+
+
+								//console.log("placeObjectTag.clipDepth", placeObjectTag.clipDepth);
+
+								num_updated_props++;
+								property_type_stream.push(200);
+								property_index_stream.push(0);
+								//var clipDepth = placeObjectTag.clipDepth === undefined ? -1 : placeObjectTag.clipDepth;
+								//if (clipDepth !== this._clipDepth) {
+								//	this._clipDepth = clipDepth;
+								//	this._setDirtyFlags(DisplayObjectDirtyFlags.DirtyClipDepth);
+								//}
+							}
+
+							if (placeObjectTag.flags & PlaceObjectFlags.HasFilterList) {
+							}
+
+							if (num_updated_props > 0) {
+								updateCnt++;
+								update_child_stream.push(child.sessionID);
+								update_child_props_indices_stream.push(childStartIdx);
+								update_child_props_length_stream.push(num_updated_props);
+							}
+						}
+						if (updateCnt > 0) {
+							command_recipe_flag |= 0x08;
+							command_length_stream.push(command_cnt);
+							command_index_stream.push(start_index);
+							//noButtonDebug || console.log("cmds_update", cmds_update);
+						}
+
+					}
+					var command_cnt = cmds_startSounds.length;
+					if (command_cnt) {
+						command_recipe_flag |= 16;
+						start_index = add_sounds_stream.length;
+						//console.log("startsound", tag.soundId, tag.soundInfo, awaySymbol);
+						for (var cmd = 0; cmd < command_cnt; cmd++) {
+							add_sounds_stream.push(cmds_startSounds[cmd].soundId);
+							//console.log("add", cmds_add[cmd].childID , cmds_add[cmd].depth);
+						}
+						command_length_stream.push(command_cnt);
+						command_index_stream.push(start_index);
+					}
+
+
+					//	if(frames[i].labelName && frames[i].labelName!=""){
+
+					//		awayTimeline._labels[frames[i].labelName]=frameCount;
+					//	}
+					if (frame_recipe.length == 0) {
+						command_recipe_flag |= 0x01;
+
+					}
+					frame_recipe.push(command_recipe_flag);
 				}
+				/*
+				else{
+					// this is the hitArea
+					// we only need to extract childs and their matrix into the Container
+					var command_cnt = cmds_add.length;
+					var sessionIdToAwayObj:any={};
+					if (command_cnt) {
+						for (var cmd = 0; cmd < command_cnt; cmd++) {
+							var awayObj:DisplayObject=cmds_add[cmd].awayObj.clone();
+							hitAreaContainer.addChild(awayObj);
+							sessionIdToAwayObj[cmds_add[cmd].sessionID]=awayObj;
+							//console.log("add", cmds_add[cmd].childID , cmds_add[cmd].depth);
+						};
+					}
+					var command_cnt = cmds_update.length;
+					if (command_cnt) {
+						var updateCnt = 0;
+						var updateCmd;
+						for (var cmd = 0; cmd < command_cnt; cmd++) {
+							updateCmd = cmds_update[cmd];
+							placeObjectTag = updateCmd.placeObjectTag;
+							var child = updateCmd.child;
+							//if (symbol && !symbol.dynamic) {
+							// If the current object is of a simple type (for now Shapes, MorphShapes and
+							// StaticText) only its static content is updated instead of replacing it with a
+							// new instance. TODO: Handle
+							// http://wahlers.com.br/claus/blog/hacking-swf-2-placeobject-and-ratio/.
+							//	child._setStaticContentFromSymbol(symbol);
+							//}
+							// We animate the object only if a user script didn't touch any of the properties
+							// this would affect.
+							//if (child._hasFlags(DisplayObjectFlags.AnimatedByTimeline)) {
 
+							var childStartIdx: number = property_type_stream.length;
+							var num_updated_props = 0;
+							var reset = false;//!(placeObjectTag.flags & PlaceObjectFlags.Move) && placeObjectTag.flags & PlaceObjectFlags.HasCharacter;
 
-			//	if(frames[i].labelName && frames[i].labelName!=""){
+							//var matrixClass = this.sec.flash.geom.Matrix.axClass;
+							if (placeObjectTag.flags & PlaceObjectFlags.HasMatrix) {
 
-			//		awayTimeline._labels[frames[i].labelName]=frameCount;
-			//	}
-				if(frame_recipe.length==0){
-					command_recipe_flag |= 0x01;
+								var awayObj:DisplayObject=sessionIdToAwayObj[child.sessionID];
+								if(awayObj){
 
+									var new_matrix:Matrix3D = awayObj.transform.matrix3D;
+									new_matrix._rawData[0] = placeObjectTag.matrix.a;
+									new_matrix._rawData[1] = placeObjectTag.matrix.b;
+									new_matrix._rawData[4] =  placeObjectTag.matrix.c;
+									new_matrix._rawData[5] =  placeObjectTag.matrix.d;
+									new_matrix._rawData[12] = placeObjectTag.matrix.tx / 20;
+									new_matrix._rawData[13] = placeObjectTag.matrix.ty / 20;
+
+									awayObj.transform.invalidateComponents();
+								}
+								else{
+									console.log("error in button parsing. hitarea");
+								}
+
+							}
+						}
+					}
 				}
-				frame_recipe.push(command_recipe_flag);
+					*/
+
 			}
 			frameCount++;
 
@@ -1635,6 +1707,8 @@ export class SWFParser extends ParserBase
 		awayTimeline.init();
 
 		var awayMc:MovieClip=this._factory.createMovieClip(awayTimeline);
+		hitAreaContainer=awayTimeline.extractHitArea(awayMc);
+		awayMc.hitArea=hitAreaContainer;
 		return awayMc;
 	}
 	public _pStartParsing(frameLimit:number):void
