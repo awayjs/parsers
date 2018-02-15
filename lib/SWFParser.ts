@@ -65,8 +65,10 @@ import {
 import {__extends} from "tslib";
 
 var noTimelineDebug=true;
-var noButtonDebug=false;
+var noExportsDebug=false;
+var noButtonDebug=true;
 var noSceneGraphDebug=true;
+
 export const enum CompressionMethod {
 	None,
 	Deflate,
@@ -236,7 +238,7 @@ export class SWFParser extends ParserBase
 						//console.log("finished font parsing", resourceDependency);
 						break;
 					case "sound":
-						//console.log("finished sound parsing", resourceDependency);
+						console.log("finished sound parsing", resourceDependency);
 						var waveAudio:WaveAudio=(<WaveAudio>resourceDependency.assets[0]);
 						//myBitmap.width=awaitedObject.definition.width;
 						//myBitmap.height=awaitedObject.definition.height;
@@ -334,7 +336,7 @@ export class SWFParser extends ParserBase
 								this.externalDependenciesCount++;
 								break;
 							case "sound":
-								//console.log("init sound parsing", eagerlySymbol);
+								console.log("init sound parsing", eagerlySymbol);
 								this._pAddDependency(eagerlySymbol.id.toString(), null, new WaveAudioParser(), new Blob([eagerlySymbol.definition.packaged.data],{type: eagerlySymbol.definition.packaged.mimeType}), false, true);
 								this.externalDependenciesCount++;
 								break;
@@ -459,7 +461,9 @@ export class SWFParser extends ParserBase
 						this.awaySymbols[dictionary[i].id]=symbol.away;
 						break;
 					case "sprite":
+						noTimelineDebug || console.log("start parsing timeline: ", symbol);
 						var awayMc = this.framesToAwayTimeline(symbol.frames);
+						this._mcIds[symbol.id]=true;
 						//awayMc._symbol=symbol;
 						this._pFinalizeAsset(awayMc, symbol.id);
 						this.awaySymbols[dictionary[i].id] = awayMc;
@@ -524,6 +528,11 @@ export class SWFParser extends ParserBase
 						this.awaySymbols[dictionary[i].id] = awayText;
 						break;
 					case "sound":
+						//console.log("sound:", symbol);
+						var awaySound:WaveAudio=(<WaveAudio>this.awaySymbols[dictionary[i].id]);
+						if(awaySound){
+							this._pFinalizeAsset(awaySound, symbol.id);
+						}
 						//(<WaveAudio>this.awaySymbols[dictionary[i].id]).play(0,false);
 						break;
 					case "button":
@@ -555,7 +564,7 @@ export class SWFParser extends ParserBase
 							}
 						}
 						awayText.textOffsetX=symbol.fillBounds.xMin/20;
-						//awayText.textOffsetY=symbol.fillBounds.yMin/20;
+						awayText.textOffsetY=symbol.fillBounds.yMin/20;
 						awayText.width=(symbol.fillBounds.xMax/20 - symbol.fillBounds.xMin/20)-1;
 						awayText.height=(symbol.fillBounds.yMax/20 - symbol.fillBounds.yMin/20)-1;
 						awayText.setLabelData(symbol);
@@ -578,6 +587,7 @@ export class SWFParser extends ParserBase
 	}
 	// helper for handling buttons
 	private _buttonIds:any={}
+	private _mcIds:any={}
 	public textFormatAlignMap:string[]=[TextFormatAlign.LEFT, TextFormatAlign.RIGHT, TextFormatAlign.CENTER, TextFormatAlign.JUSTIFY];
 	public textFormatAlignMapStringToInt:any={"center":2, "left":0, "right":1, "justify":3};
 
@@ -640,13 +650,14 @@ export class SWFParser extends ParserBase
 						console.log("\n\nerror: no away-asset for export\n\n", frames[i].exports[key]);
 
 					}
+					noExportsDebug || console.log("added export", frames[i].exports[key], asset.className, asset.symbolId, awayAsset);
 					(<any>this._factory).avm1Context.addAsset(asset.className, asset.symbolId, awayAsset);
 
 				}
 			}
-			if(	(!frames[i].controlTags || frames[i].controlTags.length==0)&&
+			if(	((keyFrameCount!=0) && (!frames[i].controlTags || frames[i].controlTags.length==0)&&
 				(!frames[i].labelName || frames[i].labelName=="")&&
-				(!frames[i].actionBlocks || frames[i].actionBlocks.length==0)){
+				(!frames[i].actionBlocks || frames[i].actionBlocks.length==0))){
 				noTimelineDebug || console.log("extending last frames duration");
 				if(keyframe_durations.length>0)
 					keyframe_durations[keyframe_durations.length-1]+=1;
@@ -704,6 +715,7 @@ export class SWFParser extends ParserBase
 						//console.log("parsed tag", tag);
 						switch (tag.code) {
 							case SwfTagCode.CODE_START_SOUND:
+								console.log("CODE_START_SOUND", tag)
 								awaySymbol = this.awaySymbols[tag.soundId];
 								awayTimeline.audioPool[tag.soundId]=awaySymbol;
 								// todo: volume / pan / other properties
@@ -711,6 +723,7 @@ export class SWFParser extends ParserBase
 								cmds_startSounds.push(tag);
 								break;
 							case SwfTagCode.CODE_STOP_SOUND:
+								console.log("CODE_STOP_SOUND", tag)
 								// todo
 								//console.log("stopsound", tag.soundId, tag.soundInfo);
 								break;
@@ -887,6 +900,8 @@ export class SWFParser extends ParserBase
 
 
 								break;
+							default:
+								console.log("unknown timeline command tag", tag)
 						}
 
 						//console.log("parsed a tag: ", tag);
@@ -976,12 +991,13 @@ export class SWFParser extends ParserBase
 								properties_stream_int.push(updateCmd.swapGraphicsID);
 							}
 
-							if(!placeObjectTag.name || placeObjectTag.name=="")
-								name="button"+placeObjectTag.symbolId;
 
-							if ((placeObjectTag.name && placeObjectTag.name!="") ||(this._buttonIds[placeObjectTag.symbolId])) {
+							if ((placeObjectTag.name && placeObjectTag.name!="") ||(this._buttonIds[placeObjectTag.symbolId])||(this._mcIds[placeObjectTag.symbolId])) {
 
 								var name=placeObjectTag.name;
+
+								if(!placeObjectTag.name || placeObjectTag.name=="")
+									name="unnamedObj"+placeObjectTag.symbolId;
 								num_updated_props++;
 								var isButton=this._buttonIds[placeObjectTag.symbolId];
 								if(isButton){
@@ -2295,7 +2311,14 @@ export class SWFParser extends ParserBase
 					stream.pos = spriteTagEnd;
 					tagLength = 0;
 					break;
+				case SwfTagCode.CODE_SOUND_STREAM_HEAD:
+					//stream.pos = spriteTagEnd;
+					//tagLength = 0;
+					break;
+				case SwfTagCode.CODE_SOUND_STREAM_BLOCK:
+					break;
 				default:
+					console.log("ignored timeline tag", tagCode);
 				// Ignore other tags.
 			}
 			stream.pos += tagLength;
