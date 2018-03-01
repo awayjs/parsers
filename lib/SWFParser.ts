@@ -65,7 +65,7 @@ import {
 import {__extends} from "tslib";
 
 var noTimelineDebug=true;
-var noExportsDebug=false;
+var noExportsDebug=true;
 var noButtonDebug=true;
 var noSceneGraphDebug=true;
 
@@ -238,7 +238,7 @@ export class SWFParser extends ParserBase
 						//console.log("finished font parsing", resourceDependency);
 						break;
 					case "sound":
-						console.log("finished sound parsing", resourceDependency);
+						//console.log("finished sound parsing", resourceDependency);
 						var waveAudio:WaveAudio=(<WaveAudio>resourceDependency.assets[0]);
 						//myBitmap.width=awaitedObject.definition.width;
 						//myBitmap.height=awaitedObject.definition.height;
@@ -336,7 +336,7 @@ export class SWFParser extends ParserBase
 								this.externalDependenciesCount++;
 								break;
 							case "sound":
-								console.log("init sound parsing", eagerlySymbol);
+								//console.log("init sound parsing", eagerlySymbol);
 								this._pAddDependency(eagerlySymbol.id.toString(), null, new WaveAudioParser(), new Blob([eagerlySymbol.definition.packaged.data],{type: eagerlySymbol.definition.packaged.mimeType}), false, true);
 								this.externalDependenciesCount++;
 								break;
@@ -386,7 +386,7 @@ export class SWFParser extends ParserBase
 				textProps.rightMargin =  (<any>myChild.attributes).rightMargin.nodeValue;
 			if((<any>myChild.attributes).align){
 
-				console.log("align",myChild);
+				//console.log("align",myChild);
 				textProps.align = this.textFormatAlignMapStringToInt[(<any>myChild.attributes).align.nodeValue];
 			}
 		}
@@ -458,7 +458,7 @@ export class SWFParser extends ParserBase
 					case "font":
 						//symbol.away._smybol=symbol;
 						this._pFinalizeAsset(symbol.away, symbol.id);
-						this.awaySymbols[dictionary[i].id]=symbol.away;
+						this.awaySymbols[dictionary[i].id]=symbol;
 						break;
 					case "sprite":
 						noTimelineDebug || console.log("start parsing timeline: ", symbol);
@@ -473,9 +473,10 @@ export class SWFParser extends ParserBase
 						awayText._symbol=symbol;
 						awayText.textFormat=new TextFormat();
 
-						var font:Font=this.awaySymbols[symbol.tag.fontId];
-						if(font){
-							awayText.textFormat.font_table=font.font_styles[0];
+						var flashFont=this.awaySymbols[symbol.tag.fontId];
+						if(flashFont){
+							awayText.textFormat.font=flashFont.away;
+							awayText.textFormat.font_table=<TesselatedFontTable>flashFont.away.get_font_table(flashFont.fontStyleName, TesselatedFontTable.assetType);
 						}
 
 						var text="";
@@ -552,14 +553,18 @@ export class SWFParser extends ParserBase
 						break;
 					case "label":
 						var awayText = this._factory.createTextField();
-						var font:Font=null;
+						var font=null;
 						for(var r=0; r<symbol.records.length;r++){
 
 							var record:any=symbol.records[r];
 							if(record.fontId){
 								font=this.awaySymbols[record.fontId];
 								if(font){
-									record.font_table=font.font_styles[0];
+
+									//awayText.textFormat.font=font.away;
+									record.font_table=<TesselatedFontTable>font.away.get_font_table(font.fontStyleName, TesselatedFontTable.assetType);
+
+									//record.font_table=font.away.font_styles[0];
 								}
 							}
 						}
@@ -647,7 +652,7 @@ export class SWFParser extends ParserBase
 					let asset = frames[i].exports[key];
 					let awayAsset=this.awaySymbols[asset.symbolId];
 					if(!awayAsset){
-						console.log("\n\nerror: no away-asset for export\n\n", frames[i].exports[key]);
+						//console.log("\n\nerror: no away-asset for export\n\n", frames[i].exports[key]);
 
 					}
 					noExportsDebug || console.log("added export", frames[i].exports[key], asset.className, asset.symbolId, awayAsset);
@@ -715,7 +720,7 @@ export class SWFParser extends ParserBase
 						//console.log("parsed tag", tag);
 						switch (tag.code) {
 							case SwfTagCode.CODE_START_SOUND:
-								console.log("CODE_START_SOUND", tag)
+								//console.log("CODE_START_SOUND", tag)
 								awaySymbol = this.awaySymbols[tag.soundId];
 								awayTimeline.audioPool[tag.soundId]=awaySymbol;
 								// todo: volume / pan / other properties
@@ -723,7 +728,7 @@ export class SWFParser extends ParserBase
 								cmds_startSounds.push(tag);
 								break;
 							case SwfTagCode.CODE_STOP_SOUND:
-								console.log("CODE_STOP_SOUND", tag)
+								//console.log("CODE_STOP_SOUND", tag)
 								// todo
 								//console.log("stopsound", tag.soundId, tag.soundInfo);
 								break;
@@ -2318,7 +2323,7 @@ export class SWFParser extends ParserBase
 				case SwfTagCode.CODE_SOUND_STREAM_BLOCK:
 					break;
 				default:
-					console.log("ignored timeline tag", tagCode);
+					break;//console.log("ignored timeline tag", tagCode);
 				// Ignore other tags.
 			}
 			stream.pos += tagLength;
