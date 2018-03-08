@@ -457,6 +457,7 @@ export class SWFParser extends ParserBase
 						break;
 					case "font":
 						//symbol.away._smybol=symbol;
+						//console.log("parsed font:", symbol.name, symbol.id)
 						this._pFinalizeAsset(symbol.away, symbol.id);
 						this.awaySymbols[dictionary[i].id]=symbol;
 						break;
@@ -502,7 +503,18 @@ export class SWFParser extends ParserBase
 								this.readTextPropertiesRecursive(doc, textProps);
 							}
 						}
-						awayText.multiline=textProps.multiline;
+						if(symbol.tag.flags & TextFlags.Multiline){
+							awayText.multiline=true;
+						}
+						else{
+							awayText.multiline=false;
+						}
+						if(symbol.tag.flags & TextFlags.WordWrap){
+							awayText.wordWrap=true;
+						}
+						else{
+							awayText.wordWrap=false;
+						}
 						awayText.textFormat.size =  textProps.size;
 						awayText.textFormat.color =  textProps.color;
 						awayText.textFormat.leftMargin =  textProps.leftMargin;

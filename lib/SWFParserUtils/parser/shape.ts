@@ -388,8 +388,10 @@ function processStyle(style, isLineStyle: boolean, isMorph: boolean,
 			var ratios = shapeStyle.ratios = [];
 			for (var i = 0; i < records.length; i++) {
 				var record = records[i];
-				colors.push(record.color);
-				ratios.push(record.ratio);
+				if(ratios.length==0 || ratios[ratios.length-1]!=record.ratio){
+					colors.push(record.color);
+					ratios.push(record.ratio);
+				}
 			}
 			scale = 819.2;
 			break;

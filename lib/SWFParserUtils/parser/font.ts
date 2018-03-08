@@ -101,6 +101,7 @@ export function defineFont(tag: FontTag):any {
 	var uniqueName = 'swf-font-' + tag.id;
 	var fontName = tag.name || uniqueName;
 
+	if(fontName=="Helvetica")fontName="arial";
 	var fontAJS:Font=DefaultFontManager.getFont(fontName);
 	var font = {
 		type: 'font',
