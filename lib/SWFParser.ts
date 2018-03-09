@@ -734,7 +734,7 @@ export class SWFParser extends ParserBase
 							case SwfTagCode.CODE_START_SOUND:
 								//console.log("CODE_START_SOUND", tag)
 								awaySymbol = this.awaySymbols[tag.soundId];
-								awayTimeline.audioPool[tag.soundId]=awaySymbol;
+								awayTimeline.audioPool[tag.soundId]={sound:this.awaySymbols[tag.soundId], props:tag.soundInfo};
 								// todo: volume / pan / other properties
 								//console.log("startsound", tag.soundId, tag.soundInfo, awaySymbol);
 								cmds_startSounds.push(tag);
