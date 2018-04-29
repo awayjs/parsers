@@ -1218,11 +1218,11 @@ class SegmentedPath {
 					var material:MethodMaterial = this.parser.mapMatsForBitmaps[style.bitmapIndex];
 					if(!material){
 						material=new MethodMaterial();
-						material.ambientMethod.texture=new ImageTexture2D(this.parser.awaySymbols[style.bitmapIndex]);
+						material.ambientMethod.texture=new ImageTexture2D(this.parser.awayBitmaps[style.bitmapIndex]);
 						this.parser.mapMatsForBitmaps[style.bitmapIndex]=material;
 					}
 
-					console.log("bitmapIndex", style.bitmapIndex, "transform", style.transform,  "repeat", style.repeat,  "smooth", style.smooth);
+					//console.log("bitmapIndex", style.bitmapIndex, "transform", style.transform,  "repeat", style.repeat,  "smooth", style.smooth);
 					var awayMatrix:AwayMatrix=new AwayMatrix(style.transform.a, style.transform.b, style.transform.c, style.transform.d, style.transform.tx, style.transform.ty);
 
 					shape.style=new BitmapFillStyle(material, awayMatrix, style.repeat, style.smooth);
