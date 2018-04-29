@@ -318,6 +318,8 @@ export class SWFParser extends ParserBase
 			// now we have a list of symbols that we want to convert to awayjs-symbols
 
 			this.awaySymbols={};
+			this.awayBitmaps={};
+			this.awayBitmapCount=0;
 			this.mapMatsForBitmaps={};
 
 			// this.eagerlyParsedSymbolsList can contain image/font data,
@@ -369,6 +371,8 @@ export class SWFParser extends ParserBase
 	}
 
 	public awaySymbols:any;
+	public awayBitmaps:any;
+	public awayBitmapCount:any;
 
 	public readTextPropertiesRecursive(myChild, textProps:any){
 
@@ -466,6 +470,7 @@ export class SWFParser extends ParserBase
 						var awayMc = this.framesToAwayTimeline(symbol.frames);
 						this._mcIds[symbol.id]=true;
 						//awayMc._symbol=symbol;
+						awayMc["fileurl"]=this._iFileName;
 						this._pFinalizeAsset(awayMc, symbol.id);
 						this.awaySymbols[dictionary[i].id] = awayMc;
 						break;
@@ -516,7 +521,7 @@ export class SWFParser extends ParserBase
 							awayText.wordWrap=false;
 						}
 						awayText.textFormat.size =  textProps.size;
-						awayText.textFormat.color =  textProps.color;
+						awayText.textFormat.color =  (symbol.tag.flags & TextFlags.HasColor)?textProps.color:0xffffff;
 						awayText.textFormat.leftMargin =  textProps.leftMargin;
 						awayText.textFormat.rightMargin =  textProps.rightMargin;
 						awayText.textFormat.letterSpacing=0;//symbol.tag.leading/20;//5;
@@ -527,10 +532,14 @@ export class SWFParser extends ParserBase
 						awayText.height=(symbol.fillBounds.yMax/20 - symbol.fillBounds.yMin/20)-1;
 						awayText.textFormat.align=this.textFormatAlignMap[textProps.align];
 						awayText.border=!!(symbol.tag.flags & TextFlags.Border);
+						awayText.background=awayText.border;
 						if(symbol.tag.flags & TextFlags.ReadOnly){
 							awayText.type="dynamic";
 						}
 						else{
+							if(symbol.tag.maxLength && symbol.tag.maxLength>0){
+								awayText.maxChars=symbol.tag.maxLength;
+							}
 							awayText.type="input";
 						}
 						awayText.selectable=symbol.tag.flags?!(symbol.tag.flags & TextFlags.NoSelect):false;
@@ -551,6 +560,7 @@ export class SWFParser extends ParserBase
 					case "button":
 						var awayMc = this.buttonToAwayTimeline(symbol.states, symbol.buttonActions);
 						//awayMc._symbol=symbol;
+						awayMc["fileurl"]=this._iFileName;
 						this._pFinalizeAsset(awayMc, symbol.id);
 						this.awaySymbols[dictionary[i].id] = awayMc;
 						this._buttonIds[symbol.id]=true;
@@ -580,6 +590,7 @@ export class SWFParser extends ParserBase
 								}
 							}
 						}
+						awayText.staticMatrix=symbol.matrix;
 						awayText.textOffsetX=symbol.fillBounds.xMin/20;
 						awayText.textOffsetY=symbol.fillBounds.yMin/20;
 						awayText.width=(symbol.fillBounds.xMax/20 - symbol.fillBounds.xMin/20)-1;
@@ -587,6 +598,14 @@ export class SWFParser extends ParserBase
 						awayText.setLabelData(symbol);
 						this.awaySymbols[dictionary[i].id] = awayText;
 						awayText.selectable=symbol.tag.flags?!(symbol.tag.flags & TextFlags.NoSelect):false;
+						break;
+					case "image":
+						var awayBitmap:BitmapImage2D=(<BitmapImage2D>this.awaySymbols[dictionary[i].id]);
+						if(awayBitmap){
+							this.awayBitmapCount++;
+							this.awayBitmaps[this.awayBitmapCount]=awayBitmap;
+							this._pFinalizeAsset(awayBitmap, symbol.id);
+						}
 						break;
 					default:
 						console.log("unknown symbol type:", symbol.type, symbol);
@@ -597,6 +616,7 @@ export class SWFParser extends ParserBase
 			}
 		}
 		var awayMc:MovieClip=this.framesToAwayTimeline(null);
+		awayMc["fileurl"]=this._iFileName;
 		//console.log("root-timeline: ", awayMc);
 		//console.log("AwayJS loaded SWF with "+ dictionary.length+" symbols", this.sceneAndFrameLabelData);
 
@@ -639,6 +659,7 @@ export class SWFParser extends ParserBase
 
 		noTimelineDebug || console.log("\nconverting frames to awayjs MovieClip\n\n");
 
+		var transformsAtDepth:any={};
 		var virutalScenegraph:any={};
 		var registeredGraphicsIDs:any={};
 		var keyFrameCount=0;
@@ -756,6 +777,7 @@ export class SWFParser extends ParserBase
 								}
 								freePotentialChilds.push(virutalScenegraph[tag.depth].sessionID);
 								virutalScenegraph[tag.depth]=null;
+								transformsAtDepth[tag.depth.toString()]=null;
 								delete virutalScenegraph[tag.depth];
 								noTimelineDebug || console.log("	remove", "depth", tag.depth);
 
@@ -907,7 +929,7 @@ export class SWFParser extends ParserBase
 								}
 
 								if (child) {
-									cmds_update[cmds_update.length]={child:child, placeObjectTag:placeObjectTag, swapGraphicsID:swapGraphicsID, ratio:ratio};
+									cmds_update[cmds_update.length]={child:child, placeObjectTag:placeObjectTag, swapGraphicsID:swapGraphicsID, ratio:ratio, depth:tag.depth};
 									noTimelineDebug || console.log("	update", "session-id", child.sessionID, "hasCharacter", hasCharacter, "depth", tag.depth, "reused", isReused, "swapGraphicsID", swapGraphicsID, tag,  awaySymbol);
 
 								}
@@ -1044,7 +1066,27 @@ export class SWFParser extends ParserBase
 								properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.d;
 								properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.tx/20;
 								properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = placeObjectTag.matrix.ty/20;
+								transformsAtDepth[updateCmd.depth.toString()]=placeObjectTag.matrix;
 
+							}
+							else{
+								var exTransform=transformsAtDepth[updateCmd.depth.toString()];
+								if(exTransform){
+									num_updated_props++;
+
+									property_type_stream.push(1);//matrix type: 1=all, 11=no position, 12=no scale
+									property_index_stream.push(properties_stream_f32_mtx_all.length / 6);
+
+									// todo: we can save memory by checking if only scale or position was changed,
+									// but it means we would need to check against the matrix of the current child, not against identy matrix
+
+									properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = exTransform.a;
+									properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = exTransform.b;
+									properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = exTransform.c;
+									properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = exTransform.d;
+									properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = exTransform.tx/20;
+									properties_stream_f32_mtx_all[properties_stream_f32_mtx_all.length] = exTransform.ty/20;
+								}
 							}
 
 							//var colorTransformClass = this.sec.flash.geom.ColorTransform.axClass;
