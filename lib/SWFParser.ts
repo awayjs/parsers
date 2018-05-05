@@ -1924,6 +1924,9 @@ export class SWFParser extends ParserBase
 			this.compression = CompressionMethod.LZMA;
 		}
 		this.swfVersion = initialBytes[3];
+		if(this.swfVersion != 6){
+			console.log("WARNING: SWF VERSION IS NOT 6", this.swfVersion)
+		}
 		this._loadStarted = Date.now();
 		this._uncompressedLength = readSWFLength(initialBytes);
 		this.bytesLoaded = initialBytes.length;
