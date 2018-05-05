@@ -520,6 +520,12 @@ export class SWFParser extends ParserBase
 						else{
 							awayText.wordWrap=false;
 						}
+						if (symbol.tag.flags & TextFlags.Html) {
+							awayText.html = true;
+						}
+						else {
+							awayText.html = false;
+						}
 						awayText.textFormat.size =  textProps.size;
 						awayText.textFormat.color =  (symbol.tag.flags & TextFlags.HasColor)?textProps.color:0xffffff;
 						awayText.textFormat.leftMargin =  textProps.leftMargin;
