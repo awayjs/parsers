@@ -565,7 +565,7 @@ export function defineFont(tag: FontTag):any {
 		}*/
 
 	}
-	console.log("min-max x:", minx, maxx, "min-max y:", miny, maxy);
+	//console.log("min-max x:", minx, maxx, "min-max y:", miny, maxy);
 	//console.log("FontTag.advanced = ", tag.advance.toString());
 	//loca += toString16(offset / 2);
 	//tables['glyf'] = glyf;
