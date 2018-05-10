@@ -868,7 +868,10 @@ export class SWFParser extends ParserBase
 											child=virutalScenegraph[tag.depth] = {
 												sessionID: sessionID,
 												id: placeObjectTag.symbolId,
-												masks: []
+												masks: [],
+												isMask:false,
+												clipDepth:0,
+												depth:0
 											}
 											cmds_add[cmds_add.length] = {sessionID: sessionID, depth: tag.depth};
 
@@ -921,7 +924,10 @@ export class SWFParser extends ParserBase
 										child=virutalScenegraph[tag.depth] = {
 											sessionID: sessionID,
 											id: placeObjectTag.symbolId,
-											masks: []
+											masks: [],
+											isMask:false,
+											clipDepth:0,
+											depth:0
 										}
 										cmds_add[cmds_add.length] = {sessionID: sessionID, depth: tag.depth};
 									}
@@ -982,27 +988,81 @@ export class SWFParser extends ParserBase
 					}
 
 					// create update commands:
-					var command_cnt=cmds_update.length;
-					if(command_cnt){
-						// collect masks per objects
-						for(var key in virutalScenegraph){
-							virutalScenegraph[key].masks=[];
-						}
-
-						//prepare mask info:
-
-						for (var cmd = 0; cmd < command_cnt; cmd++) {
+					var command_cnt:number=cmds_update.length;
+					// virutalScenegraph is already updated.
+					// we now reset the childs and reapply them
+					
+					for (var key in virutalScenegraph) {
+						virutalScenegraph[key].oldMasks =  virutalScenegraph[key].masks;
+						virutalScenegraph[key].masks = [];
+					}
+					// for newly added objects, we translate the clipDepth to isMask
+					if (command_cnt) {
+						for (var cmd:number = 0; cmd < command_cnt; cmd++) {
 							placeObjectTag = cmds_update[cmd].placeObjectTag;
-							var child=cmds_update[cmd].child;
-							if (placeObjectTag.flags & PlaceObjectFlags.HasClipDepth) {
-								var depth:number=placeObjectTag.clipDepth-1;
-								while(depth>placeObjectTag.depth){
-									if(virutalScenegraph[depth])
-										virutalScenegraph[depth].masks.push(child.sessionID);
-									depth--;
+							var child = cmds_update[cmd].child;
+							if (placeObjectTag.flags & 64 /* HasClipDepth */) {
+								virutalScenegraph[placeObjectTag.depth].isMask=true;
+								virutalScenegraph[placeObjectTag.depth].clipDepth=placeObjectTag.clipDepth - 1;
+								virutalScenegraph[placeObjectTag.depth].depth=placeObjectTag.depth;
+							}
+						}
+					}
+					// now we are sure all scenegraphobjects know if they are a mask.
+					// we loop over all of them and apply the masking to the maskee
+					for (var key in virutalScenegraph) {
+						if(virutalScenegraph[key].isMask){
+							var depth = virutalScenegraph[key].clipDepth;
+							while (depth > virutalScenegraph[key].depth) {
+								if (virutalScenegraph[depth])
+									virutalScenegraph[depth].masks.push(virutalScenegraph[key].sessionID);
+								depth--;
+							}
+						};
+					}
+
+					var m=0;
+					var mLen=0;
+					var childsWithMaskChanges=[];
+					// check for what objects the masking has been changed in this frame
+					for (var key in virutalScenegraph) {
+						var myChild=virutalScenegraph[key];
+						myChild.masks.sort();
+						myChild.oldMasks.sort();
+						if(myChild.masks.length!=myChild.oldMasks.length){
+							childsWithMaskChanges.push(myChild);
+						}
+						else{
+							m=0;
+							mLen=myChild.masks.length;
+							for(m=0;m<mLen;m++){
+								if(myChild.masks[m]!=myChild.oldMasks[m]){
+									childsWithMaskChanges.push(myChild);
+									m=mLen;
 								}
 							}
 						}
+					}
+
+					mLen=childsWithMaskChanges.length;
+					for(m=0;m<mLen;m++){
+
+						var hasCmd=false;
+						if (command_cnt) {
+							for (var cmd = 0; cmd < command_cnt; cmd++) {
+								if(cmds_update[cmd].child==childsWithMaskChanges[m]){
+									hasCmd=true;
+								}
+							}
+						}
+						if(!hasCmd){
+							cmds_update[cmds_update.length] = { child: childsWithMaskChanges[m], placeObjectTag: null, swapGraphicsID: null, ratio: null, depth: null };
+									
+						}
+					}
+
+					command_cnt = cmds_update.length;
+					if(command_cnt){
 
 						// process updated props:
 
@@ -1028,7 +1088,7 @@ export class SWFParser extends ParserBase
 							var num_updated_props=0;
 							var reset = false;//!(placeObjectTag.flags & PlaceObjectFlags.Move) && placeObjectTag.flags & PlaceObjectFlags.HasCharacter;
 
-							if(updateCmd.swapGraphicsID>=0){
+							if((updateCmd.swapGraphicsID!=null && updateCmd.swapGraphicsID>=0)){
 
 								num_updated_props++;
 								property_type_stream.push(202);
@@ -1037,7 +1097,7 @@ export class SWFParser extends ParserBase
 							}
 
 
-							if ((placeObjectTag.name && placeObjectTag.name!="") ||(this._buttonIds[placeObjectTag.symbolId])||(this._mcIds[placeObjectTag.symbolId])) {
+							if (placeObjectTag!=null && ((placeObjectTag.name && placeObjectTag.name!="") ||(this._buttonIds[placeObjectTag.symbolId])||(this._mcIds[placeObjectTag.symbolId]))) {
 
 								var name=placeObjectTag.name;
 
@@ -1055,7 +1115,7 @@ export class SWFParser extends ParserBase
 								properties_stream_strings.push(name);
 							}
 							//var matrixClass = this.sec.flash.geom.Matrix.axClass;
-							if (placeObjectTag.flags & PlaceObjectFlags.HasMatrix) {
+							if (placeObjectTag!=null && placeObjectTag.flags & PlaceObjectFlags.HasMatrix) {
 
 								//console.log("PlaceObjectFlags.HasMatrix", placeObjectTag.matrix);
 								num_updated_props++;
@@ -1075,7 +1135,7 @@ export class SWFParser extends ParserBase
 								transformsAtDepth[updateCmd.depth.toString()]=placeObjectTag.matrix;
 
 							}
-							else{
+							else if(updateCmd.depth!=null) {
 								var exTransform=transformsAtDepth[updateCmd.depth.toString()];
 								if(exTransform){
 									num_updated_props++;
@@ -1096,7 +1156,7 @@ export class SWFParser extends ParserBase
 							}
 
 							//var colorTransformClass = this.sec.flash.geom.ColorTransform.axClass;
-							if (placeObjectTag.flags & PlaceObjectFlags.HasColorTransform) {
+							if (placeObjectTag!=null && placeObjectTag.flags & PlaceObjectFlags.HasColorTransform) {
 								//console.log("PlaceObjectFlags.HasColorTransform", placeObjectTag.cxform);
 								property_type_stream.push(2);
 								property_index_stream.push(properties_stream_f32_ct.length / 8);
@@ -1111,7 +1171,7 @@ export class SWFParser extends ParserBase
 								properties_stream_f32_ct[properties_stream_f32_ct.length] = placeObjectTag.cxform.alphaOffset;
 							}
 
-							if (updateCmd.ratio>=0) {
+							if (updateCmd.ratio!=null && updateCmd.ratio>=0) {
 								num_updated_props++;
 								property_type_stream.push(203);
 								property_index_stream.push(properties_stream_int.length);
@@ -1128,7 +1188,7 @@ export class SWFParser extends ParserBase
 								for(let val of child.masks)
 									properties_stream_int.push(val);
 							}
-							if (placeObjectTag.flags & PlaceObjectFlags.HasClipDepth) {
+							if (placeObjectTag!=null && placeObjectTag.flags & PlaceObjectFlags.HasClipDepth) {
 
 								//console.log("cmds_update[cmd]",cmds_update[cmd]);
 
@@ -1145,7 +1205,7 @@ export class SWFParser extends ParserBase
 								//}
 							}
 
-							if (placeObjectTag.flags & PlaceObjectFlags.HasFilterList) {}
+							if (placeObjectTag!=null && placeObjectTag.flags & PlaceObjectFlags.HasFilterList) {}
 
 							if(num_updated_props>0){
 								updateCnt++;
