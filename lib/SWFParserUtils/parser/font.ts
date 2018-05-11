@@ -15,7 +15,7 @@
  */
 
 import {ShapeRecordFlags, FontTag, FontFlags, SwfTagCode} from "../SWFTags"
-import {Font, TesselatedFontTable, DefaultFontManager} from "@awayjs/scene"
+import {Font, TesselatedFontTable, DefaultFontManager, FontStyleName} from "@awayjs/scene"
 import {GraphicsPath, GraphicsFactoryFills} from "@awayjs/graphics"
 import {AttributesBuffer} from "@awayjs/stage"
 
@@ -114,18 +114,18 @@ export function defineFont(tag: FontTag):any {
 		data: tag.data,
 		originalSize: false,
 		away:fontAJS,
-		fontStyleName:'regular'
+		fontStyleName:FontStyleName.STANDART
 	};
 	fontAJS.name=fontName;
-	var fontStyleName:string="default";
+	var fontStyleName:string=FontStyleName.STANDART;
 	if(font.bold && !font.italic){
-		fontStyleName="bold";
+		fontStyleName=FontStyleName.BOLD;
 	}
 	else if(!font.bold && font.italic){
-		fontStyleName="italic";
+		fontStyleName=FontStyleName.ITALIC;
 	}
 	else if(font.bold && font.italic){
-		fontStyleName="boldItalic";
+		fontStyleName=FontStyleName.BOLDITALIC;
 	}
 	font.fontStyleName=fontStyleName;
 	var tessFontTableAJS:TesselatedFontTable = <TesselatedFontTable>fontAJS.get_font_table(fontStyleName, TesselatedFontTable.assetType)
