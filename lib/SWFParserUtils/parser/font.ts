@@ -132,7 +132,7 @@ export function defineFont(tag: FontTag):any {
 	//var tessFontTableAJS:TesselatedFontTable=new TesselatedFontTable();
 	//fontAJS.font_styles.push(tessFontTableAJS);
 
-	//console.log("FontTag = ", tag);
+	console.log("parsed font = ", fontName, fontStyleName);
 
 	var glyphs = tag.glyphs;
 	var glyphCount = glyphs ? glyphs.length : 0;
@@ -161,6 +161,7 @@ export function defineFont(tag: FontTag):any {
 	if (tag.codes) {
 		for (var i = 0; i < tag.codes.length; i++) {
 			var code = tag.codes[i];
+			//console.log(code);
 			if (code < 32 || code in glyphIndex) {
 				maxCode++;
 				if (maxCode == 8232) {
@@ -196,6 +197,7 @@ export function defineFont(tag: FontTag):any {
 		var UAC_OFFSET = 0xe000;
 		for (var i = 0; i < glyphCount; i++) {
 			code = UAC_OFFSET + i;
+			//console.log(code);
 			codes.push(code);
 			glyphIndex[code] = i;
 			indices.push(i);

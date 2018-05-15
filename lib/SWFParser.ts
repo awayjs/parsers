@@ -462,7 +462,7 @@ export class SWFParser extends ParserBase
 					case "font":
 						//symbol.away._smybol=symbol;
 						//console.log("parsed font:", symbol.name, symbol.id)
-						this._pFinalizeAsset(symbol.away, symbol.id);
+						this._pFinalizeAsset(symbol.away);
 						this.awaySymbols[dictionary[i].id]=symbol;
 						break;
 					case "sprite":
@@ -501,7 +501,8 @@ export class SWFParser extends ParserBase
 						//todo: correctly read this in for multiple formats etc
 						if(symbol.tag.initialText && symbol.tag.initialText!=""){
 							text=symbol.tag.initialText;
-							var doc = parser.parseFromString("<p>"+symbol.tag.initialText+"</p>", "application/xml");
+							text=text.replace(new RegExp("&nbsp;", 'g'), " ");
+							var doc = parser.parseFromString("<p>"+text+"</p>", "application/xml");
 							if(doc && doc.firstChild){
 								text="";
 								textProps.multiline=doc.firstChild.childNodes.length>0;
