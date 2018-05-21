@@ -1259,6 +1259,9 @@ class SegmentedPath {
 					if(style.startCapsStyle!=style.endCapsStyle){
 						throw("different end vs start capstyöe");
 					}
+					style.startCapsStyle=0;
+					style.jointStyle=0;
+					//console.log("style.startCapsStyle", style.startCapsStyle, style.endCapsStyle, style );
 					shape.style=new GraphicsStrokeStyle(style.color, style.alpha, thickness, style.jointStyle, capStyle_map_to_away[style.startCapsStyle], style.miterLimit, scaleModeAWJ);
 
 					//console.log("scaleMode", scaleModeAWJ, style.noHscale, style.noVscale, scaleMode, thickness, style.jointStyle, style.startCapsStyle, style.endCapsStyle, style.miterLimit);
@@ -1267,7 +1270,7 @@ class SegmentedPath {
 						morph.alpha=this.getAlpha(morph.color)/255;
 						morph.color=this.rgbaToArgb(morph.color);
 						morphShape.style=new GraphicsStrokeStyle(morph.color, morph.alpha, thickness, style.jointStyle, capStyle_map_to_away[style.startCapsStyle], style.miterLimit, scaleModeAWJ);
-//console.log("writeMorphLineStyle not handled yet");
+						//console.log("writeMorphLineStyle not handled yet");
 						//writeMorphLineStyle(morph, shape);
 					}
 					break;
@@ -1278,6 +1281,7 @@ class SegmentedPath {
 						(style.noVscale ? 0 : 2) :
 						style.noVscale ? 3 : 1;
 					// TODO: Figure out how to handle startCapsStyle
+					//console.log("style.startCapsStyle", style.startCapsStyle, style.endCapsStyle, style );
 					var thickness = (clamp(style.width, 0, 0xff * 20)|0)/20;
 					style.alpha=this.getAlpha(style.color)/255;
 					style.color=this.rgbaToArgb(style.color)
@@ -1292,7 +1296,7 @@ class SegmentedPath {
 					for(var i:number=0; i<style.colors.length; i++) alphas[i]=1;
 					shape.style=new GradientFillStyle(gradients_map_swf_to_away[gradientType], style.colors, alphas, style.ratios,  style.transform, style.spreadMethod,style.interpolationMode, style.focalPoint / 2 | 0);
 
-					console.log("scaleMode", style.noHscale, style.noVscale, scaleMode, thickness, style.jointStyle, style.endCapsStyle, style.miterLimit);
+					//console.log("scaleMode", style.noHscale, style.noVscale, scaleMode, thickness, style.jointStyle, style.endCapsStyle, style.miterLimit);
 					if (morph) {
 						//console.log("writeMorphLineStyle not handled yet");
 						//console.log("writeMorphGradient not handled yet");
@@ -1308,9 +1312,10 @@ class SegmentedPath {
 						(style.noVscale ? 0 : 2) :
 						style.noVscale ? 3 : 1;
 					// TODO: Figure out how to handle startCapsStyle
+					//console.log("style.startCapsStyle", style.startCapsStyle, style.endCapsStyle, style );
 					var thickness = clamp(style.width, 0, 0xff * 20)|0;
 					shape.style=new GraphicsStrokeStyle(style.color, 1, thickness, style.jointStyle, style.endCapsStyle, style.miterLimit);
-					console.log("scaleMode", scaleMode, thickness, style.jointStyle, style.endCapsStyle, style.miterLimit);
+					//console.log("scaleMode", scaleMode, thickness, style.jointStyle, style.endCapsStyle, style.miterLimit);
 
 
 
