@@ -65,7 +65,7 @@ import {
 import {__extends} from "tslib";
 
 var noTimelineDebug=true;
-var noExportsDebug=true;
+var noExportsDebug=false;
 var noButtonDebug=true;
 var noSceneGraphDebug=true;
 
@@ -164,6 +164,7 @@ export class SWFParser extends ParserBase
 	private _num_materials:number=0;
 	private _num_sprites:number=0;
 
+	public soundExports:any={};
 
 	/**
 	 * Creates a new AWD3Parserutils object.
@@ -557,11 +558,11 @@ export class SWFParser extends ParserBase
 						this.awaySymbols[dictionary[i].id] = awayText;
 						break;
 					case "sound":
-						//console.log("sound:", symbol);
 						var awaySound:WaveAudio=(<WaveAudio>this.awaySymbols[dictionary[i].id]);
 						if(awaySound){
 							this._pFinalizeAsset(awaySound, symbol.id);
 						}
+						console.log("sound:", symbol);
 						//(<WaveAudio>this.awaySymbols[dictionary[i].id]).play(0,false);
 						break;
 					case "button":
@@ -692,8 +693,13 @@ export class SWFParser extends ParserBase
 					let asset = frames[i].exports[key];
 					let awayAsset=this.awaySymbols[asset.symbolId];
 					if(!awayAsset){
-						//console.log("\n\nerror: no away-asset for export\n\n", frames[i].exports[key]);
+						console.log("\n\nerror: no away-asset for export\n\n", frames[i].exports[key]);
 
+					}
+					else{
+						if(awayAsset.isAsset && awayAsset.isAsset(WaveAudio)){
+							this.soundExports[asset.className]=awayAsset;
+						}
 					}
 					noExportsDebug || console.log("added export", frames[i].exports[key], asset.className, asset.symbolId, awayAsset);
 					(<any>this._factory).avm1Context.addAsset(asset.className, asset.symbolId, awayAsset);
