@@ -65,7 +65,7 @@ import {
 import {__extends} from "tslib";
 
 var noTimelineDebug=true;
-var noExportsDebug=false;
+var noExportsDebug=true;
 var noButtonDebug=true;
 var noSceneGraphDebug=true;
 
@@ -562,7 +562,7 @@ export class SWFParser extends ParserBase
 						if(awaySound){
 							this._pFinalizeAsset(awaySound, symbol.id);
 						}
-						console.log("sound:", symbol);
+						//console.log("sound:", symbol);
 						//(<WaveAudio>this.awaySymbols[dictionary[i].id]).play(0,false);
 						break;
 					case "button":
