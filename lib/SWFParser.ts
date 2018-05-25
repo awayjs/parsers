@@ -479,6 +479,7 @@ export class SWFParser extends ParserBase
 						var awayText = this._factory.createTextField();
 						awayText._symbol=symbol;
 						awayText.textFormat=new TextFormat();
+						awayText["fileurl"]=this._iFileName;
 
 						var flashFont=this.awaySymbols[symbol.tag.fontId];
 						if(flashFont){
@@ -584,6 +585,7 @@ export class SWFParser extends ParserBase
 					case "label":
 						var awayText = this._factory.createTextField();
 						var font=null;
+						awayText["fileurl"]=this._iFileName;
 						for(var r=0; r<symbol.records.length;r++){
 
 							var record:any=symbol.records[r];
@@ -1972,6 +1974,7 @@ export class SWFParser extends ParserBase
 		//  release || Debug.assert(handler, 'handler shall exists here');
 		var tagEnd = Math.min(unparsed.byteOffset + unparsed.byteLength, this._dataStream.end);
 		var tag = handler(this._dataStream, this.swfVersion, unparsed.tagCode, tagEnd, this._jpegTables);
+		tag.fileURL=this._iFileName;
 		var finalPos = this._dataStream.pos;
 		if (finalPos !== tagEnd) {
 			this.emitTagSlopWarning(unparsed, tagEnd);

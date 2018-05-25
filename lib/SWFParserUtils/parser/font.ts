@@ -132,7 +132,7 @@ export function defineFont(tag: FontTag):any {
 	//var tessFontTableAJS:TesselatedFontTable=new TesselatedFontTable();
 	//fontAJS.font_styles.push(tessFontTableAJS);
 
-	console.log("parsed font = ", fontName, fontStyleName);
+	//console.log("parsed font = ", fontName, fontStyleName);
 
 	var glyphs = tag.glyphs;
 	var glyphCount = glyphs ? glyphs.length : 0;
@@ -556,7 +556,7 @@ export function defineFont(tag: FontTag):any {
 
 
 
-		tessFontTableAJS.setChar(code.toString(), glyphAdvance, null, null, false , idx, glyphPath);
+		tessFontTableAJS.setChar(code.toString(), glyphAdvance, null, null, false , idx, glyphPath, tag.fileURL);
 		
 	/*	var vertexBuffer=GraphicsFactoryFills.pathToAttributesBuffer(glyphPath, true);
 		if(vertexBuffer){

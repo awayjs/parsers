@@ -380,6 +380,7 @@ export interface FontTag extends DefinitionTag {
   bbox?: Bbox[];
   kerning?: Kerning[];
   data?: Uint8Array;
+  fileURL?:string;
 }
 
 export const enum FontFlags {
