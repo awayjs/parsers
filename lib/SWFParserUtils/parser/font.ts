@@ -805,7 +805,8 @@ export function defineFont(tag: FontTag):any {
 	//font.metrics = metrics;
 	//font.data = dataBuffer;
 	tessFontTableAJS.set_font_em_size(1024);
-	tessFontTableAJS.set_whitespace_width(whiteSpaceWidth);
+	if(tessFontTableAJS.get_whitespace_width()==0)
+		tessFontTableAJS.set_whitespace_width(whiteSpaceWidth);
 	//if(newTable){
 	//	tessFontTableAJS.ascent=1024;
 	//	tessFontTableAJS.descent=0;
