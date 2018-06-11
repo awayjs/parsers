@@ -1,6 +1,6 @@
 {
   "name": "@awayjs/parsers",
-  "version": "0.6.39",
+  "version": "0.6.40",
   "description": "Parsers for AwayJS",
   "main": "bundle/awayjs-parsers.umd.js",
   "module": "dist/index.js",
@@ -24,7 +24,6 @@
     "version": "npm run build",
     "postversion": "npm run copyVersionToIndex && git push && git push --tags",
     "copyVersionToIndex": "node ./copyVersionToIndex && git add . && git commit -m 'addVersionToIndex'"
-  
   },
   "keywords": [
     "AwayJS",
