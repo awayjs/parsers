@@ -64,7 +64,7 @@ import {
 	getSwfTagCodeName} from "./SWFParserUtils/SWFTags";
 import {__extends} from "tslib";
 
-var noTimelineDebug=false;
+var noTimelineDebug=true;
 var noExportsDebug=true;
 var noSceneGraphDebug=true;
 
@@ -1377,12 +1377,11 @@ export class SWFParser extends ParserBase
 		var awayMc:MovieClip=this._factory.createMovieClip(awayTimeline);
 		if(isButton){
 			// this is a button - set ButtonActions and also get the hitArea from the last frame
-			awayTimeline.isButton=true;
+			awayMc.buttonMode=true;
 			if(buttonActions){
 				awayTimeline.avm1ButtonActions=buttonActions;
 			}
-			var hitAreaContainer:DisplayObjectContainer=awayTimeline.extractHitArea(awayMc);
-			awayMc.hitArea=hitAreaContainer;
+			awayTimeline.extractHitArea(awayMc);
 		}
 		return awayMc;
 
