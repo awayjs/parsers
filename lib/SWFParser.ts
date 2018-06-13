@@ -1379,6 +1379,7 @@ export class SWFParser extends ParserBase
 		if(isButton){
 			// this is a button - set ButtonActions and also get the hitArea from the last frame
 			awayMc.buttonMode=true;
+			awayTimeline.isButton=true;
 			if(buttonActions){
 				awayTimeline.avm1ButtonActions=buttonActions;
 			}
