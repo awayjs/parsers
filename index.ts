@@ -1,4 +1,4 @@
-console.log("AwayJS - Parsers - 0.6.42");
+console.log("AwayJS - Parsers - 0.6.43");
 
 export {DefaultSceneGraphFactory} from "./lib/factories/DefaultSceneGraphFactory";
 export {AWDParser} from "./lib/AWDParser";
