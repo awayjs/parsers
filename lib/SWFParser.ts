@@ -848,7 +848,8 @@ export class SWFParser extends ParserBase
 					frame_command_indices.push(command_index_stream.length);
 					keyframe_durations[keyframe_durations.length]=1;
 					frame_recipe.push(command_recipe_flag);
-					virtualScenegraph={}
+					virtualScenegraph={};
+					keyFrameCount++;
 					//transformsAtDepth[tag.depth.toString()]=null;
 					noTimelineDebug || console.log("			remove all to  create empty button frame");
 				}	
