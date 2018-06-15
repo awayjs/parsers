@@ -866,10 +866,10 @@ export class SWFParser extends ParserBase
 				if(!isEmpty && (swfFrames[i].labelName && swfFrames[i].labelName!="")){
 					awayTimeline._labels[swfFrames[i].labelName]=keyFrameCount;
 				}
-				keyFrameCount++;
 				if(!isEmpty && swfFrames[i].actionBlocks && swfFrames[i].actionBlocks.length>0){
-					awayTimeline.avm1framescripts[i]=swfFrames[i].actionBlocks;
+					awayTimeline._framescripts[keyFrameCount]=swfFrames[i].actionBlocks;
 				}
+				keyFrameCount++;
 				if(!isEmpty && swfFrames[i].controlTags && swfFrames[i].controlTags.length>0){
 					noTimelineDebug || console.log("			Start parsing controltags", swfFrames[i].controlTags.length);
 					var len:number=swfFrames[i].controlTags.length;
