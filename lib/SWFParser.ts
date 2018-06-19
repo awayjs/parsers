@@ -486,74 +486,45 @@ export class SWFParser extends ParserBase
 							awayText.textFormat.font_table=<TesselatedFontTable>flashFont.away.get_font_table(flashFont.fontStyleName, TesselatedFontTable.assetType);
 						}
 
-						var text="";
-						var textProps:any= {
-							text:"",
-							size:symbol.tag.fontHeight/20,
-							color:this.rgbaToArgb(symbol.tag.color),
-							indent:symbol.tag.indent/20,
-							leftMargin:symbol.tag.leftMargin/20,
-							rightMargin:symbol.tag.rightMargin/20,
-							variableName:symbol.tag.variableName,
-							align:symbol.tag.align,
-							multiline:true
+						awayText.textFormat.size = symbol.tag.fontHeight/20;
+						awayText.textFormat.color = (symbol.tag.flags & TextFlags.HasColor)?this.rgbaToArgb(symbol.tag.color):0xffffff;
+						awayText.textFormat.leftMargin = symbol.tag.leftMargin/20;
+						awayText.textFormat.rightMargin = symbol.tag.rightMargin/20;
+						awayText.textFormat.letterSpacing = symbol.tag.letterSpacing/20;
+						awayText.textFormat.leading = symbol.tag.leading/20;
+						awayText.textFormat.align = this.textFormatAlignMap[symbol.tag.align];
+
+						awayText.textOffsetX = symbol.fillBounds.xMin/20;
+						awayText.textOffsetY = symbol.fillBounds.yMin/20;
+						awayText.width = (symbol.fillBounds.xMax/20 - symbol.fillBounds.xMin/20)-1;
+						awayText.height = (symbol.fillBounds.yMax/20 - symbol.fillBounds.yMin/20)-1;
+						awayText.border = !!(symbol.tag.flags & TextFlags.Border);
+						awayText.background = awayText.border;
+
+						awayText.multiline=(symbol.tag.flags & TextFlags.Multiline)?true:false;
+						awayText.wordWrap=(symbol.tag.flags & TextFlags.WordWrap)?true:false;
+						awayText.selectable=symbol.tag.flags?!(symbol.tag.flags & TextFlags.NoSelect):false;
+
+						if(symbol.tag.maxLength && symbol.tag.maxLength>0){
+							awayText.maxChars=symbol.tag.maxLength;
 						}
-						//console.log("textfied data:",symbol);
-						//todo: correctly read this in for multiple formats etc
-						if(symbol.tag.initialText && symbol.tag.initialText!=""){
-							text=symbol.tag.initialText;
-							text=text.replace(new RegExp("&nbsp;", 'g'), " ");
-							var doc = parser.parseFromString("<p>"+text+"</p>", "application/xml");
-							if(doc && doc.firstChild){
-								text="";
-								textProps.multiline=doc.firstChild.childNodes.length>0;
-								this.readTextPropertiesRecursive(doc, textProps);
-							}
-						}
-						if(symbol.tag.flags & TextFlags.Multiline){
-							awayText.multiline=true;
-						}
-						else{
-							awayText.multiline=false;
-						}
-						if(symbol.tag.flags & TextFlags.WordWrap){
-							awayText.wordWrap=true;
-						}
-						else{
-							awayText.wordWrap=false;
-						}
-						if (symbol.tag.flags & TextFlags.Html) {
-							awayText.html = true;
-						}
-						else {
-							awayText.html = false;
-						}
-						awayText.textFormat.size =  textProps.size;
-						awayText.textFormat.color =  (symbol.tag.flags & TextFlags.HasColor)?textProps.color:0xffffff;
-						awayText.textFormat.leftMargin =  textProps.leftMargin;
-						awayText.textFormat.rightMargin =  textProps.rightMargin;
-						awayText.textFormat.letterSpacing=0;//symbol.tag.leading/20;//5;
-						awayText.textFormat.leading=symbol.tag.leading/20;//5;
-						awayText.textOffsetX=symbol.fillBounds.xMin/20;
-						awayText.textOffsetY=symbol.fillBounds.yMin/20;
-						awayText.width=(symbol.fillBounds.xMax/20 - symbol.fillBounds.xMin/20)-1;
-						awayText.height=(symbol.fillBounds.yMax/20 - symbol.fillBounds.yMin/20)-1;
-						awayText.textFormat.align=this.textFormatAlignMap[textProps.align];
-						awayText.border=!!(symbol.tag.flags & TextFlags.Border);
-						awayText.background=awayText.border;
 						if(symbol.tag.flags & TextFlags.ReadOnly){
 							awayText.type="dynamic";
 						}
 						else{
-							if(symbol.tag.maxLength && symbol.tag.maxLength>0){
-								awayText.maxChars=symbol.tag.maxLength;
-							}
 							awayText.type="input";
 						}
-						awayText.selectable=symbol.tag.flags?!(symbol.tag.flags & TextFlags.NoSelect):false;
 
-						if(textProps.text)
-							awayText.text=textProps.text;
+						if (symbol.tag.flags & TextFlags.Html) {
+							awayText.html = true;
+							if(symbol.tag.initialText && symbol.tag.initialText!="")
+								awayText.htmlText=symbol.tag.initialText;								
+						}
+						else {
+							awayText.html = false;
+							if(symbol.tag.initialText && symbol.tag.initialText!="")
+								awayText.text=symbol.tag.initialText;
+						}
 						this._pFinalizeAsset(awayText, symbol.id);
 						this.awaySymbols[dictionary[i].id] = awayText;
 						break;
