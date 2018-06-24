@@ -122,7 +122,7 @@ export class SWFParser extends ParserBase
 	private _loadStarted: number;
 	private _lastScanPosition: number;
 
-	private _currentFrameLabel: string;
+	private _currentFrameLabels: string[];
 	private _currentSoundStreamHead: SoundStream;
 	private _currentSoundStreamBlock: Uint8Array;
 	private _currentControlTags: UnparsedTag[];
@@ -807,7 +807,7 @@ export class SWFParser extends ParserBase
 			}
 			// check if this is a empty frame
 			var isEmpty:boolean=((!swfFrames[i].controlTags || swfFrames[i].controlTags.length==0) &&
-								(!swfFrames[i].labelName || swfFrames[i].labelName=="") &&
+								(!swfFrames[i].labelNames) &&
 								(!swfFrames[i].actionBlocks || swfFrames[i].actionBlocks.length==0));
 			
 			if((keyframe_durations.length!=0) && isEmpty){
@@ -834,8 +834,11 @@ export class SWFParser extends ParserBase
 				command_recipe_flag=0;
 				frame_command_indices.push(command_index_stream.length);
 				keyframe_durations[keyframe_durations.length]=1;
-				if(!isEmpty && (swfFrames[i].labelName && swfFrames[i].labelName!="")){
-					awayTimeline._labels[swfFrames[i].labelName]=keyFrameCount;
+				if(!isEmpty && (swfFrames[i].labelNames && swfFrames[i].labelNames.length>0)){
+					var fl_len:number=swfFrames[i].labelNames.length;
+					for(var fl:number=0;fl<fl_len; fl++){
+						awayTimeline._labels[swfFrames[i].labelNames[fl]]=keyFrameCount;
+					}
 				}
 				if(!isEmpty && swfFrames[i].actionBlocks && swfFrames[i].actionBlocks.length>0){
 					awayTimeline._framescripts[keyFrameCount]=swfFrames[i].actionBlocks;
@@ -859,13 +862,14 @@ export class SWFParser extends ParserBase
 								awaySymbol = this.awaySymbols[tag.soundId];
 								awayTimeline.audioPool[tag.soundId]={sound:this.awaySymbols[tag.soundId], props:tag.soundInfo};
 								// todo: volume / pan / other properties
-								//console.log("startsound", tag.soundId, tag.soundInfo, awaySymbol);
+								noTimelineDebug || console.log("startsound", tag.soundId, tag.soundInfo, awaySymbol, i+1);
 								cmds_startSounds.push(tag);
 								break;
 							case SwfTagCode.CODE_STOP_SOUND:
 								//console.log("CODE_STOP_SOUND", tag)
 								// todo
 								//console.log("stopsound", tag.soundId, tag.soundInfo);
+								noTimelineDebug || console.log("stopsound", tag.soundId, tag.soundInfo, i+1);
 								break;
 
 							case SwfTagCode.CODE_REMOVE_OBJECT:
@@ -1300,6 +1304,7 @@ export class SWFParser extends ParserBase
 						}
 						command_length_stream.push(command_cnt);
 						command_index_stream.push(start_index);
+						noTimelineDebug || console.log("				cmds_startSounds", cmds_startSounds.length, cmds_startSounds);
 					}
 
 				}
@@ -1422,7 +1427,7 @@ export class SWFParser extends ParserBase
 		this.eagerlyParsedSymbolsList = [];
 		this._jpegTables = null;
 
-		this._currentFrameLabel = null;
+		this._currentFrameLabels=[];
 		this._currentSoundStreamHead = null;
 		this._currentSoundStreamBlock = null;
 		this._currentControlTags = null;
@@ -1783,7 +1788,7 @@ export class SWFParser extends ParserBase
 				break;
 			case SwfTagCode.CODE_FRAME_LABEL:
 				var tagEnd = stream.pos + tagLength;
-				this._currentFrameLabel = stream.readString(-1);
+				this._currentFrameLabels[this._currentFrameLabels.length] = stream.readString(-1);
 				// TODO: support SWF6+ anchors.
 				stream.pos = tagEnd;
 				break;
@@ -1878,7 +1883,7 @@ export class SWFParser extends ParserBase
 		};
 		var spriteTagEnd = spriteTag.byteOffset + spriteTag.byteLength;
 		var frames = timeline.frames;
-		var label: string = null;
+		var labels: string[] = [];
 		var controlTags: UnparsedTag[] = [];
 		var soundStreamHead: SoundStream = null;
 		var soundStreamBlock: Uint8Array = null;
@@ -1928,15 +1933,15 @@ export class SWFParser extends ParserBase
 					break;
 				case SwfTagCode.CODE_FRAME_LABEL:
 					var tagEnd = stream.pos + tagLength;
-					label = stream.readString(-1);
+					labels[labels.length] = stream.readString(-1);
 					// TODO: support SWF6+ anchors.
 					stream.pos = tagEnd;
 					tagLength = 0;
 					break;
 				case SwfTagCode.CODE_SHOW_FRAME:
-					frames.push(new SWFFrame(controlTags, label, soundStreamHead, soundStreamBlock,
+					frames.push(new SWFFrame(controlTags, labels.concat(), soundStreamHead, soundStreamBlock,
 						actionBlocks, initActionBlocks, null));
-					label = null;
+					labels.length=0;
 					controlTags = [];
 					soundStreamHead = null;
 					soundStreamBlock = null;
@@ -1981,13 +1986,13 @@ export class SWFParser extends ParserBase
 			this.framesLoaded++;
 		}
 		this.frames.push(new SWFFrame(this._currentControlTags,
-			this._currentFrameLabel,
+			this._currentFrameLabels.concat(),
 			this._currentSoundStreamHead,
 			this._currentSoundStreamBlock,
 			this._currentActionBlocks,
 			this._currentInitActionBlocks,
 			this._currentExports));
-		this._currentFrameLabel = null;
+		this._currentFrameLabels.length=0;
 		this._currentControlTags = null;
 		this._currentSoundStreamHead = null;
 		this._currentSoundStreamBlock = null;
@@ -2116,14 +2121,14 @@ function flagsToFontStyle(bold: boolean, italic: boolean) {
 
 export class SWFFrame {
 	controlTags: UnparsedTag[];
-	labelName: string;
+	labelNames: string[];
 	soundStreamHead: SoundStream;
 	soundStreamBlock: Uint8Array;
 	actionBlocks: ActionBlock[];
 	initActionBlocks: InitActionBlock[];
 	exports: SymbolExport[];
 	buttonStateName: string;
-	constructor(controlTags?: UnparsedTag[], labelName?: string,
+	constructor(controlTags?: UnparsedTag[], labelNames?: string[],
 				soundStreamHead?: SoundStream,
 				soundStreamBlock?: Uint8Array,
 				actionBlocks?: ActionBlock[],
@@ -2131,7 +2136,7 @@ export class SWFFrame {
 				exports?: SymbolExport[]) {
 		controlTags && Object.freeze(controlTags);
 		this.controlTags = controlTags;
-		this.labelName = labelName;
+		this.labelNames = labelNames;
 		actionBlocks && Object.freeze(actionBlocks);
 		this.soundStreamHead = soundStreamHead;
 		this.soundStreamBlock = soundStreamBlock;
