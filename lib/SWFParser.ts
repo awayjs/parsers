@@ -630,7 +630,7 @@ export class SWFParser extends ParserBase
 					}
 					else{
 						if(awayAsset.isAsset && awayAsset.isAsset(WaveAudio)){
-							this.soundExports[asset.className]=awayAsset;
+							this.soundExports[asset.className.toLowerCase()]=awayAsset;
 						}
 					}
 					noExportsDebug || console.log("			added export", swfFrames[i].exports[key], asset.className, asset.symbolId, awayAsset);
