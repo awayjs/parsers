@@ -1,4 +1,4 @@
-import {WaveAudioParser, WaveAudio, ColorTransform, Matrix3D, Vector3D, URLLoaderDataFormat, URLRequest, AssetLibrary, IAsset, ParserBase, ParserUtils, ResourceDependency, ProjectionBase, PerspectiveProjection, OrthographicProjection, OrthographicOffCenterProjection, ByteArray, Rectangle, Matrix} from "@awayjs/core";
+import {WaveAudioParser, WaveAudio, ColorTransform, Matrix3D, Vector3D, URLLoaderDataFormat, URLRequest, AssetLibrary, IAsset, ParserBase, ParserUtils, ResourceDependency, ProjectionBase, PerspectiveProjection, OrthographicProjection, OrthographicOffCenterProjection, ByteArray, Rectangle, Matrix, ColorUtils} from "@awayjs/core";
 
 import {AttributesBuffer,Short2Attributes, Short3Attributes, Float3Attributes, Float2Attributes, Byte4Attributes, Image2DParser, BitmapImage2D, BitmapImageCube, BlendMode, ImageSampler} from "@awayjs/stage";
 
@@ -28,6 +28,7 @@ import {
 	InitActionBlock,
 	SymbolExport,
 	UnparsedTag,
+	utf8encode,
 	DictionaryEntry,
 	EagerlyParsedDictionaryEntry,
 	memCopy} from "./SWFParserUtils/utilities";
@@ -374,65 +375,7 @@ export class SWFParser extends ParserBase
 	public awayBitmaps:any;
 	public awayBitmapCount:any;
 
-	public readTextPropertiesRecursive(myChild, textProps:any){
 
-		//console.log("textfied content xml node:",myChild);
-		if(myChild.attributes){
-			if((<any>myChild.attributes).size)
-				textProps.size =  (<any>myChild.attributes).size.nodeValue;
-			if((<any>myChild.attributes).color)
-				textProps.color =  this.rgbaToArgb((<any>myChild.attributes).color.nodeValue);
-			if((<any>myChild.attributes).indent)
-				textProps.indent =  (<any>myChild.attributes).indent.nodeValue;
-			if((<any>myChild.attributes).leftMargin)
-				textProps.leftMargin =  (<any>myChild.attributes).leftMargin.nodeValue;
-			if((<any>myChild.attributes).rightMargin)
-				textProps.rightMargin =  (<any>myChild.attributes).rightMargin.nodeValue;
-			if((<any>myChild.attributes).align){
-
-				//console.log("align",myChild);
-				textProps.align = this.textFormatAlignMapStringToInt[(<any>myChild.attributes).align.nodeValue];
-			}
-		}
-		if(!myChild.childNodes || myChild.childNodes.length==0){
-			if((<any>myChild).nodeValue)
-				textProps.text+=(<any>myChild).nodeValue;//+"\\n";
-		}
-		else{
-			for(var k=0; k<myChild.childNodes.length;k++){
-				this.readTextPropertiesRecursive(myChild.childNodes[k], textProps);
-			}
-		}
-	}
-
-	public getAlpha(float32Color:number):number
-	{
-		//var r:number = ( float32Color & 0xff000000 ) >>> 24;
-		//var g:number = ( float32Color & 0xff0000 ) >>> 16;
-		//var b:number = ( float32Color & 0xff00 ) >>> 8;
-		var a:number = float32Color & 0xff;
-		return a;
-	}
-
-	public rgbToArgb(float32Color:number):number
-	{
-		var a:number = ( float32Color & 0xff000000 ) >>> 24;
-		var b:number = ( float32Color & 0xff0000 ) >>> 16;
-		var g:number = ( float32Color & 0xff00 ) >>> 8;
-		var r:number = float32Color & 0xff;
-		return (a << 24) | (r << 16) |	(g << 8) | b;
-	}
-
-
-	public rgbaToArgb(float32Color:number):number
-	{
-		var r:number = ( float32Color & 0xff000000 ) >>> 24;
-		var g:number = ( float32Color & 0xff0000 ) >>> 16;
-		var b:number = ( float32Color & 0xff00 ) >>> 8;
-		var a:number = float32Color & 0xff;
-		return (a << 24) | (r << 16) |
-			(g << 8) | b;
-	}
 
 	private myTestSprite:Sprite;
 	public mapMatsForBitmaps:any;
@@ -487,7 +430,7 @@ export class SWFParser extends ParserBase
 						}
 
 						awayText.textFormat.size = symbol.tag.fontHeight/20;
-						awayText.textFormat.color = (symbol.tag.flags & TextFlags.HasColor)?this.rgbaToArgb(symbol.tag.color):0xffffff;
+						awayText.textFormat.color = (symbol.tag.flags & TextFlags.HasColor)?ColorUtils.f32_RGBA_To_f32_ARGB(symbol.tag.color):0xffffff;
 						awayText.textFormat.leftMargin = symbol.tag.leftMargin/20;
 						awayText.textFormat.rightMargin = symbol.tag.rightMargin/20;
 						awayText.textFormat.letterSpacing = symbol.tag.letterSpacing/20;
@@ -496,8 +439,8 @@ export class SWFParser extends ParserBase
 
 						awayText.textOffsetX = symbol.fillBounds.xMin/20;
 						awayText.textOffsetY = symbol.fillBounds.yMin/20;
-						awayText.width = (symbol.fillBounds.xMax/20 - symbol.fillBounds.xMin/20)-1;
-						awayText.height = (symbol.fillBounds.yMax/20 - symbol.fillBounds.yMin/20)-1;
+						awayText.width = ((symbol.fillBounds.xMax - symbol.fillBounds.xMin)/20);
+						awayText.height = (symbol.fillBounds.yMax - symbol.fillBounds.yMin)/20;
 						awayText.border = !!(symbol.tag.flags & TextFlags.Border);
 						awayText.background = awayText.border;
 
@@ -607,117 +550,7 @@ export class SWFParser extends ParserBase
 	private _mcIds:any={};
 
 	public textFormatAlignMap:string[]=[TextFormatAlign.LEFT, TextFormatAlign.RIGHT, TextFormatAlign.CENTER, TextFormatAlign.JUSTIFY];
-	public textFormatAlignMapStringToInt:any={"center":2, "left":0, "right":1, "justify":3};
 
-	public convertStaticTextfieldToAwayJS(symbol, parser ):TextField{
-		var awayText = this._factory.createTextField();
-		var font=null;
-		for(var r=0; r<symbol.records.length;r++){
-
-			var record:any=symbol.records[r];
-			if(record.fontId){
-				font=this.awaySymbols[record.fontId];
-				if(font){
-
-					//awayText.textFormat.font=font.away;
-					record.font_table=<TesselatedFontTable>font.get_font_table(font.fontStyleName, TesselatedFontTable.assetType);
-
-					//record.font_table=font.away.font_styles[0];
-				}
-			}
-		}
-		awayText.staticMatrix=symbol.matrix;
-		awayText.textOffsetX=symbol.fillBounds.xMin/20;
-		awayText.textOffsetY=symbol.fillBounds.yMin/20;
-		awayText.width=(symbol.fillBounds.xMax/20 - symbol.fillBounds.xMin/20)-1;
-		awayText.height=(symbol.fillBounds.yMax/20 - symbol.fillBounds.yMin/20)-1;
-		awayText.setLabelData(symbol);
-		awayText.selectable=symbol.tag.flags?!(symbol.tag.flags & TextFlags.NoSelect):false;
-		return awayText;				
-	}
-	public convertDynamicTextfieldToAwayJS(symbol, parser ):TextField{
-		
-		var awayText = this._factory.createTextField();
-		awayText._symbol=symbol;
-		awayText.textFormat=new TextFormat();
-
-		var font=this.awaySymbols[symbol.tag.fontId];
-		if(font){
-			awayText.textFormat.font=font;
-			awayText.textFormat.font_table=<TesselatedFontTable>font.get_font_table(font.fontStyleName, TesselatedFontTable.assetType);
-		}
-
-		var text="";
-		var textProps:any= {
-			text:"",
-			size:symbol.tag.fontHeight/20,
-			color:this.rgbaToArgb(symbol.tag.color),
-			indent:symbol.tag.indent/20,
-			leftMargin:symbol.tag.leftMargin/20,
-			rightMargin:symbol.tag.rightMargin/20,
-			variableName:symbol.tag.variableName,
-			align:symbol.tag.align,
-			multiline:true
-		}
-		//console.log("textfied data:",symbol);
-		//todo: correctly read this in for multiple formats etc
-		if(symbol.tag.initialText && symbol.tag.initialText!=""){
-			text=symbol.tag.initialText;
-			text=text.replace(new RegExp("&nbsp;", 'g'), " ");
-			var doc = parser.parseFromString("<p>"+text+"</p>", "application/xml");
-			if(doc && doc.firstChild){
-				text="";
-				textProps.multiline=doc.firstChild.childNodes.length>0;
-				this.readTextPropertiesRecursive(doc, textProps);
-			}
-		}
-		if(symbol.tag.flags & TextFlags.Multiline){
-			awayText.multiline=true;
-		}
-		else{
-			awayText.multiline=false;
-		}
-		if(symbol.tag.flags & TextFlags.WordWrap){
-			awayText.wordWrap=true;
-		}
-		else{
-			awayText.wordWrap=false;
-		}
-		if (symbol.tag.flags & TextFlags.Html) {
-			awayText.html = true;
-		}
-		else {
-			awayText.html = false;
-		}
-		awayText.textFormat.size =  textProps.size;
-		awayText.textFormat.color =  (symbol.tag.flags & TextFlags.HasColor)?textProps.color:0xffffff;
-		awayText.textFormat.leftMargin =  textProps.leftMargin;
-		awayText.textFormat.rightMargin =  textProps.rightMargin;
-		awayText.textFormat.letterSpacing=0;//symbol.tag.leading/20;//5;
-		awayText.textFormat.leading=symbol.tag.leading/20;//5;
-		awayText.textOffsetX=symbol.fillBounds.xMin/20;
-		awayText.textOffsetY=symbol.fillBounds.yMin/20;
-		awayText.width=(symbol.fillBounds.xMax/20 - symbol.fillBounds.xMin/20)-1;
-		awayText.height=(symbol.fillBounds.yMax/20 - symbol.fillBounds.yMin/20)-1;
-		awayText.textFormat.align=this.textFormatAlignMap[textProps.align];
-		awayText.border=!!(symbol.tag.flags & TextFlags.Border);
-		awayText.background=awayText.border;
-		if(symbol.tag.flags & TextFlags.ReadOnly){
-			awayText.type="dynamic";
-		}
-		else{
-			if(symbol.tag.maxLength && symbol.tag.maxLength>0){
-				awayText.maxChars=symbol.tag.maxLength;
-			}
-			awayText.type="input";
-		}
-		awayText.selectable=symbol.tag.flags?!(symbol.tag.flags & TextFlags.NoSelect):false;
-
-		if(textProps.text)
-			awayText.text=textProps.text;
-		
-		return awayText;
-	}
 	public framesToTimeline(swfFrames:SWFFrame[], states:any, buttonActions:any):MovieClip{
 		if(!states && !swfFrames)
 			throw("error when creating timeline - neither movieclip frames nor button-states present");
@@ -977,10 +810,6 @@ export class SWFParser extends ParserBase
 										}
 									}
 									else{
-										if (placeObjectTag!=null && ((placeObjectTag.name && placeObjectTag.name!="") ||(this._buttonIds[placeObjectTag.symbolId])||(this._mcIds[placeObjectTag.symbolId]))) {
-											if(!placeObjectTag.name || placeObjectTag.name=="")
-												placeObjectTag.name="unnamedObj"+placeObjectTag.symbolId;
-										}
 										if (placeObjectTag!=null && ((placeObjectTag.name && placeObjectTag.name!="") ||(this._buttonIds[placeObjectTag.symbolId])||(this._mcIds[placeObjectTag.symbolId]))) {
 
 											if(!placeObjectTag.name || placeObjectTag.name=="")
@@ -1551,6 +1380,8 @@ export class SWFParser extends ParserBase
 		this.bounds = obj.bounds;
 		this.frameRate = obj.frameRate;
 		this.frameCount = obj.frameCount;
+		//var str = String.fromCharCode.apply(null, data);
+		console.log(obj);
 		//console.log("parseHeaderContents this.bounds", this.bounds);
 		//console.log("parseHeaderContents this.frameRate", this.frameRate);
 		//console.log("parseHeaderContents this.frameCount", this.frameCount);
@@ -1566,6 +1397,7 @@ export class SWFParser extends ParserBase
 		// Make sure we don't cause an exception here when trying to set out-of-bound data by clamping the number of bytes
 		// to write to the remaining space in our buffer. If this is the case, we probably got a wrong file length from
 		// the SWF header. The Flash Player ignores data that goes over that given length, so should we.
+		
 		var length = Math.min(data.length, this._uncompressedLength - this._uncompressedLoadedLength);
 		memCopy(this.swfData, data, this._uncompressedLoadedLength, 0, length);
 		this._uncompressedLoadedLength += length;
@@ -1822,6 +1654,10 @@ export class SWFParser extends ParserBase
 				console.log('Unsupported tag encountered ' + tagCode + ': ' + getSwfTagCodeName(tagCode));
 				this.jumpToNextTag(tagLength);
 				break;
+			case SwfTagCode.CODE_METADATA:
+				console.log('tag encountered ' + tagCode + ': ' + getSwfTagCodeName(tagCode));
+				this.parseMetaData(tagLength);
+				break;
 			// These tags should be supported at some point, but for now, we ignore them.
 			case SwfTagCode.CODE_CSM_TEXT_SETTINGS:
 			case SwfTagCode.CODE_DEFINE_FONT_ALIGN_ZONES:
@@ -1834,13 +1670,13 @@ export class SWFParser extends ParserBase
 			case SwfTagCode.CODE_DEFINE_FONT_NAME:
 			case SwfTagCode.CODE_NAME_CHARACTER:
 			case SwfTagCode.CODE_PRODUCT_INFO:
-			case SwfTagCode.CODE_METADATA:
 			case SwfTagCode.CODE_PROTECT:
 			case SwfTagCode.CODE_PATHS_ARE_POSTSCRIPT:
 			case SwfTagCode.CODE_TELEMETRY:
 			// These are obsolete Generator-related tags.
 			case SwfTagCode.CODE_GEN_TAG_OBJECTS:
 			case SwfTagCode.CODE_GEN_COMMAND:
+				console.log('tag encountered ' + tagCode + ': ' + getSwfTagCodeName(tagCode));
 				this.jumpToNextTag(tagLength);
 				break;
 			// These tags aren't used in the player.
@@ -1959,6 +1795,7 @@ export class SWFParser extends ParserBase
 				case SwfTagCode.CODE_SOUND_STREAM_BLOCK:
 					break;
 				default:
+					console.log("ignored timeline tag", tagCode);
 					break;//console.log("ignored timeline tag", tagCode);
 				// Ignore other tags.
 			}
@@ -1971,6 +1808,10 @@ export class SWFParser extends ParserBase
 		return timeline;
 	}
 
+	private parseMetaData(currentTagLength: number) {
+		//var string=this._dataStream.readString(currentTagLength);
+		this._dataStream.pos += currentTagLength;
+	}
 	private jumpToNextTag(currentTagLength: number) {
 		this._dataStream.pos += currentTagLength;
 	}
@@ -2207,6 +2048,7 @@ function defineSymbol(swfTag, symbols, parser) {
 		case SwfTagCode.CODE_DEFINE_TEXT2:
 			return defineLabel(swfTag);
 		default:
+			//console.log("define default symbol", swfTag, symbols, parser);
 			return swfTag;
 	}
 }
