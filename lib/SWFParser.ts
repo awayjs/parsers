@@ -670,7 +670,7 @@ export class SWFParser extends ParserBase
 				if(!isEmpty && (swfFrames[i].labelNames && swfFrames[i].labelNames.length>0)){
 					var fl_len:number=swfFrames[i].labelNames.length;
 					for(var fl:number=0;fl<fl_len; fl++){
-						awayTimeline._labels[swfFrames[i].labelNames[fl]]=keyFrameCount;
+						awayTimeline._labels[swfFrames[i].labelNames[fl].toLowerCase()]=keyFrameCount;
 					}
 				}
 				if(!isEmpty && swfFrames[i].actionBlocks && swfFrames[i].actionBlocks.length>0){
@@ -1651,11 +1651,11 @@ export class SWFParser extends ParserBase
 			case SwfTagCode.CODE_DEFINE_SCALING_GRID:
 			case SwfTagCode.CODE_IMPORT_ASSETS:
 			case SwfTagCode.CODE_IMPORT_ASSETS2:
-				console.log('Unsupported tag encountered ' + tagCode + ': ' + getSwfTagCodeName(tagCode));
+				//console.log('Unsupported tag encountered ' + tagCode + ': ' + getSwfTagCodeName(tagCode));
 				this.jumpToNextTag(tagLength);
 				break;
 			case SwfTagCode.CODE_METADATA:
-				console.log('tag encountered ' + tagCode + ': ' + getSwfTagCodeName(tagCode));
+				//console.log('tag encountered ' + tagCode + ': ' + getSwfTagCodeName(tagCode));
 				this.parseMetaData(tagLength);
 				break;
 			// These tags should be supported at some point, but for now, we ignore them.
@@ -1676,7 +1676,7 @@ export class SWFParser extends ParserBase
 			// These are obsolete Generator-related tags.
 			case SwfTagCode.CODE_GEN_TAG_OBJECTS:
 			case SwfTagCode.CODE_GEN_COMMAND:
-				console.log('tag encountered ' + tagCode + ': ' + getSwfTagCodeName(tagCode));
+				//console.log('tag encountered ' + tagCode + ': ' + getSwfTagCodeName(tagCode));
 				this.jumpToNextTag(tagLength);
 				break;
 			// These tags aren't used in the player.
@@ -1692,7 +1692,7 @@ export class SWFParser extends ParserBase
 			case SwfTagCode.CODE_GENERATE_FRAME:
 			case SwfTagCode.CODE_STOP_SOUND:
 			case SwfTagCode.CODE_SYNC_FRAME:
-				console.info("Ignored tag (these shouldn't occur) " + tagCode + ': ' + getSwfTagCodeName(tagCode));
+				//console.info("Ignored tag (these shouldn't occur) " + tagCode + ': ' + getSwfTagCodeName(tagCode));
 				this.jumpToNextTag(tagLength);
 				break;
 			default:
