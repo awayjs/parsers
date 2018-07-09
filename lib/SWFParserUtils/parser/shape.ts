@@ -655,89 +655,6 @@ class PathSegment {
 		this.isReversed = !this.isReversed;
 	}
 
-	serialize(shape: ShapeData, lastPosition: {x: number; y: number}) {
-		if (this.isReversed) {
-			this._serializeReversed(shape, lastPosition);
-			return;
-		}
-		var commands = this.commands.bytes;
-		// Note: this *must* use `this.data.length`, because buffers will have padding.
-		var dataLength = this.data.length >> 2;
-		var morphData = this.morphData ? this.morphData.ints : null;
-		var data = this.data.ints;
-		assert(commands[0] === PathCommand.MoveTo);
-		// If the segment's first moveTo goes to the current coordinates, we have to skip it.
-		var offset = 0;
-		if (data[0] === lastPosition.x && data[1] === lastPosition.y) {
-			offset++;
-		}
-		var commandsCount = this.commands.length;
-		var dataPosition = offset * 2;
-		for (var i = offset; i < commandsCount; i++) {
-			dataPosition = this._writeCommand(commands[i], dataPosition, data, morphData, shape);
-		}
-		assert(dataPosition === dataLength);
-		lastPosition.x = data[dataLength - 2];
-		lastPosition.y = data[dataLength - 1];
-	}
-	private _serializeReversed(shape: ShapeData, lastPosition: {x: number; y: number}) {
-		// For reversing the fill0 segments, we rely on the fact that each segment
-		// starts with a moveTo. We first write a new moveTo with the final drawing command's
-		// target coordinates (if we don't skip it, see below). For each of the following
-		// commands, we take the coordinates of the command originally *preceding*
-		// it as the new target coordinates. The final coordinates we target will be
-		// the ones from the original first moveTo.
-		// Note: these *must* use `this.{data,commands}.length`, because buffers will have padding.
-		var commandsCount = this.commands.length;
-		var dataPosition = (this.data.length >> 2) - 2;
-		var commands = this.commands.bytes;
-		assert(commands[0] === PathCommand.MoveTo);
-		var data = this.data.ints;
-		var morphData = this.morphData ? this.morphData.ints : null;
-
-		// Only write the first moveTo if it doesn't go to the current coordinates.
-		if (data[dataPosition] !== lastPosition.x || data[dataPosition + 1] !== lastPosition.y) {
-			this._writeCommand(PathCommand.MoveTo, dataPosition, data, morphData, shape);
-		}
-		if (commandsCount === 1) {
-			lastPosition.x = data[0];
-			lastPosition.y = data[1];
-			return;
-		}
-		for (var i = commandsCount; i-- > 1;) {
-			dataPosition -= 2;
-			var command: PathCommand = commands[i];
-			shape.writeCommandAndCoordinates(command, data[dataPosition], data[dataPosition + 1]);
-			if (morphData) {
-				shape.writeMorphCoordinates(morphData[dataPosition], morphData[dataPosition + 1]);
-			}
-			if (command === PathCommand.CurveTo) {
-				dataPosition -= 2;
-				shape.writeCoordinates(data[dataPosition], data[dataPosition + 1]);
-				if (morphData) {
-					shape.writeMorphCoordinates(morphData[dataPosition], morphData[dataPosition + 1]);
-				}
-			} else {
-			}
-		}
-		assert(dataPosition === 0);
-		lastPosition.x = data[0];
-		lastPosition.y = data[1];
-	}
-	private _writeCommand(command: PathCommand, position: number, data: Uint32Array, morphData: Uint32Array, shape: ShapeData): number
-	{
-		shape.writeCommandAndCoordinates(command, data[position++], data[position++]);
-		if (morphData) {
-			shape.writeMorphCoordinates(morphData[position-2], morphData[position-1]);
-		}
-		if (command === PathCommand.CurveTo) {
-			shape.writeCoordinates(data[position++], data[position++]);
-			if (morphData) {
-				shape.writeMorphCoordinates(morphData[position-2], morphData[position-1]);
-			}
-		}
-		return position;
-	}
 	serializeAJS(shape: GraphicsPath, morphShape: GraphicsPath, lastPosition: {x: number; y: number}) {
 		//console.log("serializeAJS segment");
 		if (this.isReversed) {
@@ -896,164 +813,6 @@ class SegmentedPath {
 		return this._head;
 	}
 
-	serialize(shape: ShapeData) {
-		var segment = this.head();
-		if (!segment) {
-			// Path is empty.
-			return;
-		}
-
-		while (segment) {
-			segment.storeStartAndEnd();
-			segment = segment.prev;
-		}
-
-		var start = this.head();
-		var end = start;
-
-		var finalRoot: PathSegment = null;
-		var finalHead: PathSegment = null;
-
-		// Path segments for one style can appear in arbitrary order in the tag's list
-		// of edge records.
-		// Before we linearize them, we have to identify all pairs of segments where
-		// one ends at a coordinate the other starts at.
-		// The following loop does that, by creating ever-growing runs of matching
-		// segments. If no more segments are found that match the current run (either
-		// at the beginning, or at the end), the current run is complete, and a new
-		// one is started. Rinse, repeat, until no solitary segments remain.
-		var current = start.prev;
-		while (start) {
-			while (current) {
-
-				if (current.startConnectsTo(start)) {
-					current.flipDirection();
-				}
-
-				if (current.connectsTo(start)) {
-					if (current.next !== start) {
-						this.removeSegment(current);
-						this.insertSegment(current, start);
-					}
-					start = current;
-					current = start.prev;
-					continue;
-				}
-
-				if(current.startConnectsTo(end)) {
-					current.flipDirection();
-				}
-
-				if (end.connectsTo(current)) {
-					this.removeSegment(current);
-					end.next = current;
-					current = current.prev;
-					end.next.prev = end;
-					end.next.next = null;
-					end = end.next;
-					continue;
-				}
-				current = current.prev;
-			}
-			// This run of segments is finished. Store and forget it (for this loop).
-			current = start.prev;
-			if (!finalRoot) {
-				finalRoot = start;
-				finalHead = end;
-			} else {
-				finalHead.next = start;
-				start.prev = finalHead;
-				finalHead = end;
-				finalHead.next = null;
-			}
-			if (!current) {
-				break;
-			}
-			start = end = current;
-			current = start.prev;
-		}
-
-		if (this.fillStyle) {
-			var style = this.fillStyle;
-			var morph = style.morph;
-			switch (style.type) {
-				case FillType.Solid:
-					shape.beginFill(style.color);
-					if (morph) {
-						shape.writeMorphFill(morph.color);
-					}
-					break;
-				case FillType.LinearGradient:
-				case FillType.RadialGradient:
-				case FillType.FocalRadialGradient:
-					writeGradient(PathCommand.BeginGradientFill, style, shape);
-					if (morph) {
-						writeMorphGradient(morph, shape);
-					}
-					break;
-				case FillType.ClippedBitmap:
-				case FillType.RepeatingBitmap:
-				case FillType.NonsmoothedClippedBitmap:
-				case FillType.NonsmoothedRepeatingBitmap:
-					writeBitmap(PathCommand.BeginBitmapFill, style, shape);
-					if (morph) {
-						writeMorphBitmap(morph, shape);
-					}
-					break;
-				default:
-					console.log('Invalid fill style type: ' + style.type);
-			}
-		} else {
-			var style = this.lineStyle;
-			var morph = style.morph;
-			assert(style);
-			switch (style.type) {
-				case FillType.Solid:
-					writeLineStyle(style, shape);
-					if (morph) {
-						writeMorphLineStyle(morph, shape);
-					}
-					break;
-				case FillType.LinearGradient:
-				case FillType.RadialGradient:
-				case FillType.FocalRadialGradient:
-					writeLineStyle(style, shape);
-					writeGradient(PathCommand.LineStyleGradient, style, shape);
-					if (morph) {
-						writeMorphLineStyle(morph, shape);
-						writeMorphGradient(morph, shape);
-					}
-					break;
-				case FillType.ClippedBitmap:
-				case FillType.RepeatingBitmap:
-				case FillType.NonsmoothedClippedBitmap:
-				case FillType.NonsmoothedRepeatingBitmap:
-					writeLineStyle(style, shape);
-					writeBitmap(PathCommand.LineStyleBitmap, style, shape);
-					if (morph) {
-						writeMorphLineStyle(morph, shape);
-						writeMorphBitmap(morph, shape);
-					}
-					break;
-				default:
-				//console.error('Line style type not yet supported: ' + style.type);
-			}
-		}
-
-		var lastPosition = {x: 0, y: 0};
-		current = finalRoot;
-		while (current) {
-			current.serialize(shape, lastPosition);
-			current = current.next;
-		}
-		if (this.fillStyle) {
-			shape.endFill();
-		} else {
-			shape.endLine();
-		}
-		return shape;
-	}
-
 
 	rgbaToArgb(float32Color:number):number
 	{
@@ -1115,10 +874,12 @@ class SegmentedPath {
 		while (start) {
 			while (current) {
 
+				// if this segment has the same startpoint as the start-startpoint it needs to be reversed.
 				if (current.startConnectsTo(start)) {
 					current.flipDirection();
 				}
 
+				// if this segment connects to another, we remove it and add it at the end.
 				if (current.connectsTo(start)) {
 					if (current.next !== start) {
 						this.removeSegment(current);

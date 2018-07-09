@@ -163,6 +163,7 @@ export class SWFParser extends ParserBase
 	private _num_textures:number=0;
 	private _num_materials:number=0;
 	private _num_sprites:number=0;
+	
 
 	public soundExports:any={};
 
@@ -411,7 +412,12 @@ export class SWFParser extends ParserBase
 					case "sprite":
 						noTimelineDebug || console.log("start parsing timeline: ", symbol);
 						var awayMc = this.framesToTimeline(symbol.frames, null, null);
-						this._mcIds[symbol.id]=true;
+						if(awayMc.buttonMode){							
+							this._buttonIds[symbol.id]=true;
+						}
+						else{
+							this._mcIds[symbol.id]=true;
+						}
 						//awayMc._symbol=symbol;
 						awayMc["fileurl"]=this._iFileName;
 						this._pFinalizeAsset(awayMc, symbol.id);
@@ -603,6 +609,8 @@ export class SWFParser extends ParserBase
 		var unparsedTags:any[]=[];
 		var transformsAtDepth:any={};
 		
+		var instanceCNT:number=0;
+
 		var i:number;
 		var framesLen:number=swfFrames.length;
 		var command_recipe_flag:number=0;
@@ -773,7 +781,7 @@ export class SWFParser extends ParserBase
 											if (placeObjectTag!=null && ((placeObjectTag.name && placeObjectTag.name!="") ||(this._buttonIds[placeObjectTag.symbolId])||(this._mcIds[placeObjectTag.symbolId]))) {
 
 												if(!placeObjectTag.name || placeObjectTag.name=="")
-													placeObjectTag.name="unnamedObj"+placeObjectTag.symbolId;
+													placeObjectTag.name="instance"+placeObjectTag.symbolId+"_"+instanceCNT++;
 											}
 											if(child){												
 												cmds_removed[cmds_removed.length]={depth:tag.depth|0};
@@ -813,7 +821,7 @@ export class SWFParser extends ParserBase
 										if (placeObjectTag!=null && ((placeObjectTag.name && placeObjectTag.name!="") ||(this._buttonIds[placeObjectTag.symbolId])||(this._mcIds[placeObjectTag.symbolId]))) {
 
 											if(!placeObjectTag.name || placeObjectTag.name=="")
-												placeObjectTag.name="unnamedObj"+placeObjectTag.symbolId;
+												placeObjectTag.name="instance"+placeObjectTag.symbolId+"_"+instanceCNT++;
 										}
 										var forceNewSessionID:boolean=false;
 										if((<any>placeObjectTag).variableName || (placeObjectTag.events && placeObjectTag.events.length>0)){
@@ -1154,6 +1162,19 @@ export class SWFParser extends ParserBase
 		}
 
 		
+		var buttonFrameNames:string[]=["_up", "_over", "_down", "_hit"];
+		if(framesLen==4){
+			var isButtonFrames:number=0;
+			for (i = 0; i < framesLen; i++) {
+			
+				if(swfFrames[i].labelNames && swfFrames[i].labelNames.length>0 && swfFrames[i].labelNames[0]==buttonFrameNames[i]){
+					isButtonFrames++;
+				}
+			}
+			if(isButtonFrames==4){
+				isButton=true;
+			}
+		}
 
 
 		awayTimeline.numKeyFrames=keyFrameCount;
@@ -1795,7 +1816,7 @@ export class SWFParser extends ParserBase
 				case SwfTagCode.CODE_SOUND_STREAM_BLOCK:
 					break;
 				default:
-					console.log("ignored timeline tag", tagCode);
+					//console.log("ignored timeline tag", tagCode);
 					break;//console.log("ignored timeline tag", tagCode);
 				// Ignore other tags.
 			}
