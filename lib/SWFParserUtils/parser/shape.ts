@@ -51,7 +51,7 @@ capStyle_map_to_away[0]=CapsStyle.ROUND;
 capStyle_map_to_away[1]=CapsStyle.NONE;
 capStyle_map_to_away[2]=CapsStyle.SQUARE;
 /*
- * Applies the current segment to the paths of all styles specified in the last
+ * Applies the current segment1 to the paths of all styles specified in the last
  * style-change record.
  *
  * For fill0, we have to apply commands and their data in reverse order, to turn
@@ -61,29 +61,38 @@ capStyle_map_to_away[2]=CapsStyle.SQUARE;
  * and have to duplicate them for the other styles. The order is: fill1, line,
  * fill0. (That means we only ever recorded into fill0 if that's the only style.)
  */
-function applySegmentToStyles(segment: PathSegment, styles,
+/*
+
+// 80pro: 	i simplified the code so that it doesnt use this function anymore.
+//			now we directly create needed amount of segments and apply them to the pathes
+function applySegmentToStyles(segment1: PathSegment, styles,
 							  linePaths: SegmentedPath[], fillPaths: SegmentedPath[])
 {
-	if (!segment) {
+	if (!segment1) {
 		return;
 	}
-	var path: SegmentedPath;
+	if(styles.fill0 && styles.fill1 && styles.fill0==styles.fill1){
+		console.log("		same fill on both sides");
+		return;//80pro: ignore segments with same fill on both sides
+	}
+	var path1: SegmentedPath;
 	if (styles.fill0) {
-		path = fillPaths[styles.fill0 - 1];
-		// If fill0 is the only style, we have pushed the segment to its stack. In
+		path1 = fillPaths[styles.fill0 - 1];
+		// If fill0 is the only style, we have pushed the segment1 to its stack. In
 		// that case, just mark it as reversed and move on.
 		if (!(styles.fill1 || styles.line)) {
-			segment.isReversed = true;
+			segment1.isReversed = true;
 			return;
 		} else {
-			path.addSegment(segment.toReversed());
+			path1.addSegment(segment1.toReversed());
 		}
 	}
 	if (styles.line && styles.fill1) {
-		path = linePaths[styles.line - 1];
-		path.addSegment(segment.clone());
+		path1 = linePaths[styles.line - 1];
+		path1.addSegment(segment1.clone());
 	}
 }
+*/
 
 /*
  * Converts records from the space-optimized format they're stored in to a
@@ -98,7 +107,9 @@ function convertRecordsToShapeData(records: ShapeRecord[], fillPaths: SegmentedP
 {
 	var isMorph = recordsMorph !== null;
 	var styles = {fill0: 0, fill1: 0, line: 0};
-	var segment: PathSegment = null;
+	var segment1: PathSegment = null;
+	var segment2: PathSegment = null;
+	var segmentL: PathSegment = null;
 
 	// Fill- and line styles can be added by style change records in the middle of
 	// a shape records list. This also causes the previous paths to be treated as
@@ -106,7 +117,7 @@ function convertRecordsToShapeData(records: ShapeRecord[], fillPaths: SegmentedP
 	// To support this, we just append all current fill and line paths to a list
 	// when new styles are introduced.
 	var allPaths: SegmentedPath[];
-	// If no style is set for a segment of a path, a 1px transparent line is used.
+	// If no style is set for a segment1 of a path1, a 1px transparent line is used.
 	var defaultPath: SegmentedPath;
 
 	var numRecords = records.length;
@@ -114,19 +125,19 @@ function convertRecordsToShapeData(records: ShapeRecord[], fillPaths: SegmentedP
 	var y: number = 0;
 	var morphX: number = 0;
 	var morphY: number = 0;
-	var path: SegmentedPath;
+	var path1: SegmentedPath;
+	var path2: SegmentedPath;
+	var pathL: SegmentedPath;
+	//console.log("numRecords", numRecords);
 	for (var i = 0, j = 0; i < numRecords; i++) {
 		var record = records[i];
+		//console.log("record", i, record.type);
 		var morphRecord: ShapeRecord;
 		if (isMorph) {
 			morphRecord = recordsMorph[j++];
 		}
 		// type 0 is a StyleChange record
 		if (record.type === 0) {
-			//TODO: make the `has*` fields bitflags
-			if (segment) {
-				applySegmentToStyles(segment, styles, linePaths, fillPaths);
-			}
 
 			if (record.flags & ShapeRecordFlags.HasNewStyles) {
 				if (!allPaths) {
@@ -152,33 +163,49 @@ function convertRecordsToShapeData(records: ShapeRecord[], fillPaths: SegmentedP
 			if (record.flags & ShapeRecordFlags.HasLineStyle) {
 				styles.line = record.lineStyle;
 			}
-			if (styles.fill1) {
-				path = fillPaths[styles.fill1 - 1];
-			} else if (styles.line) {
-				path = linePaths[styles.line - 1];
-			} else if (styles.fill0) {
-				path = fillPaths[styles.fill0 - 1];
+			// reset all segments and pathes to null, and than reset them based on new styles
+			path1=path2=pathL=null;
+			segment1=segment2=segmentL=null;
+			if (styles.fill0) {
+				path1 = fillPaths[styles.fill0 - 1];
 			}
+			if (styles.fill1) {
+				path2 = fillPaths[styles.fill1 - 1];
+			}
+			if (styles.line) {
+				pathL = linePaths[styles.line - 1];
+			}
+			
+			
 
 			if (record.flags & ShapeRecordFlags.Move) {
 				x = record.moveX | 0;
-				y = record.moveY | 0;
+				y = record.moveY | 0;				
 				// When morphed, StyleChangeRecords/MoveTo might not have a
 				// corresponding record in the start or end shape --
 				// processing morphRecord below before converting type 1 records.
 			}
 
-			// Very first record can be just fill/line-style definition record.
-			if (path) {
-				segment = PathSegment.FromDefaults(isMorph);
-				path.addSegment(segment);
-
-				// Move or not, we want this path segment to start where the last one
+			// if a segment1 has same fill on both sides, we want to ignore this segment1 for fills
+			if(styles.fill1 && styles.fill0 && styles.fill0==styles.fill1){
+				//console.log("IGNORED SEGMENT", styles);
+				segment1=null;//80pro: ignore segments with same fill on both sides
+				segment2=null;//80pro: ignore segments with same fill on both sides
+				path1=null;//80pro: ignore segments with same fill on both sides
+				path2=null;//80pro: ignore segments with same fill on both sides
+			}
+			
+			if (path1) {
+				segment1 = PathSegment.FromDefaults(isMorph);
+				path1.addSegment(segment1);
+			
+				//console.log("new segment1");
+				// Move or not, we want this path1 segment1 to start where the last one
 				// left off. Even if the last one belonged to a different style.
 				// "Huh," you say? Yup.
 				if (!isMorph) {
-					segment.moveTo(x, y);
-					//console.log("segment.moveTo" ,x/20, y/20);
+					segment1.moveTo(x, y);
+					//console.log("segment1.moveTo" ,x/20, y/20);
 				} else {
 					if (morphRecord.type === 0) {
 						morphX = morphRecord.moveX | 0;
@@ -190,26 +217,83 @@ function convertRecordsToShapeData(records: ShapeRecord[], fillPaths: SegmentedP
 						// In that case, decrease morph data index.
 						j--;
 					}
-					segment.morphMoveTo(x, y, morphX, morphY);
+					segment1.morphMoveTo(x, y, morphX, morphY);
+				}
+				
+			}
+			if (path2) {
+
+				segment2 = PathSegment.FromDefaults(isMorph);
+				path2.addSegment(segment2);
+			
+				if (!isMorph) {
+					segment2.moveTo(x, y);
+					//console.log("segment1.moveTo" ,x/20, y/20);
+				} else {
+					if (morphRecord.type === 0) {
+						morphX = morphRecord.moveX | 0;
+						morphY = morphRecord.moveY | 0;
+					} else {
+						morphX = x;
+						morphY = y;
+						// Not all moveTos are reflected in morph data.
+						// In that case, decrease morph data index.
+						j--;
+					}
+					segment2.morphMoveTo(x, y, morphX, morphY);
 				}
 			}
+			if (pathL) {
+
+				segmentL = PathSegment.FromDefaults(isMorph);
+				pathL.addSegment(segmentL);
+			
+				if (!isMorph) {
+					segmentL.moveTo(x, y);
+					//console.log("segment1.moveTo" ,x/20, y/20);
+				} else {
+					if (morphRecord.type === 0) {
+						morphX = morphRecord.moveX | 0;
+						morphY = morphRecord.moveY | 0;
+					} else {
+						morphX = x;
+						morphY = y;
+						// Not all moveTos are reflected in morph data.
+						// In that case, decrease morph data index.
+						j--;
+					}
+					segmentL.morphMoveTo(x, y, morphX, morphY);
+				}
+			}
+			//segment1.isReversed=true;
+			//segment2.isReversed=true;
+			//if(styles.fill1 && styles.fill0 && styles.fill1 !== styles.fill0){
+				//console.log("IGNORED SEGMENT");
+			//}
+
+
 		}
 		// type 1 is a StraightEdge or CurvedEdge record
 		else {
+			//console.log("record.type !== 0");
 			assert(record.type === 1);
-			if (!segment) {
-				if (!defaultPath) {
+			if (!segment1) {
+				//console.log("no segment1")
+				/*if (!defaultPath) {
 					var style = {color: {red: 0, green: 0, blue: 0, alpha: 0}, width: 20};
 					defaultPath = new SegmentedPath(null, processStyle(style, true, isMorph, dependencies), parser);
 				}
-				segment = PathSegment.FromDefaults(isMorph);
-				defaultPath.addSegment(segment);
+				segment1 = PathSegment.FromDefaults(isMorph);
+				defaultPath.addSegment(segment1);
 				if (!isMorph) {
-					segment.moveTo(x, y);
-					//console.log("segment.moveTo" ,x/20, y/20);
+					segment1.moveTo(x, y);
+					//console.log("segment1.moveTo" ,x/20, y/20);
 				} else {
-					segment.morphMoveTo(x, y, morphX, morphY);
-				}
+					segment1.morphMoveTo(x, y, morphX, morphY);
+				}*/
+			}
+			if (!segment2) {
+				//console.log("no segment2")
 			}
 			if (isMorph) {
 				// An invalid SWF might contain a move in the EndEdges list where the
@@ -229,13 +313,29 @@ function convertRecordsToShapeData(records: ShapeRecord[], fillPaths: SegmentedP
 				(!isMorph || (morphRecord.flags & ShapeRecordFlags.IsStraight))) {
 				x += record.deltaX | 0;
 				y += record.deltaY | 0;
-				if (!isMorph) {
-					segment.lineTo(x, y);
-					//console.log("segment.lineTo" ,x/20, y/20);
-				} else {
+				if (segment1 && !isMorph) {
+					segment1.lineTo(x, y);
+					//console.log("segment1.lineTo" ,x/20, y/20);
+				} else if (segment1){
 					morphX += morphRecord.deltaX | 0;
 					morphY += morphRecord.deltaY | 0;
-					segment.morphLineTo(x, y, morphX, morphY);
+					segment1.morphLineTo(x, y, morphX, morphY);
+				}
+				if (segment2 && !isMorph) {
+					segment2.lineTo(x, y);
+					//console.log("segment1.lineTo" ,x/20, y/20);
+				} else if (segment2){
+					morphX += morphRecord.deltaX | 0;
+					morphY += morphRecord.deltaY | 0;
+					segment2.morphLineTo(x, y, morphX, morphY);
+				}
+				if (segmentL && !isMorph) {
+					segmentL.lineTo(x, y);
+					//console.log("segment1.lineTo" ,x/20, y/20);
+				} else if (segmentL){
+					morphX += morphRecord.deltaX | 0;
+					morphY += morphRecord.deltaY | 0;
+					segmentL.morphLineTo(x, y, morphX, morphY);
 				}
 			} else {
 				var cx, cy;
@@ -253,10 +353,10 @@ function convertRecordsToShapeData(records: ShapeRecord[], fillPaths: SegmentedP
 					x += deltaX;
 					y += deltaY;
 				}
-				if (!isMorph) {
-					segment.curveTo(cx, cy, x, y);
-					//console.log("segment.curveTo",cx/20, cy/20, x/20, y/20);
-				} else {
+				if (segment1 && !isMorph) {
+					segment1.curveTo(cx, cy, x, y);
+					//console.log("segment1.curveTo",cx/20, cy/20, x/20, y/20);
+				} else if(segment1) {
 					if (!(morphRecord.flags & ShapeRecordFlags.IsStraight)) {
 						var morphCX = morphX + morphRecord.controlDeltaX | 0;
 						var morphCY = morphY + morphRecord.controlDeltaY | 0;
@@ -270,12 +370,50 @@ function convertRecordsToShapeData(records: ShapeRecord[], fillPaths: SegmentedP
 						morphX += deltaX;
 						morphY += deltaY;
 					}
-					segment.morphCurveTo(cx, cy, x, y, morphCX, morphCY, morphX, morphY);
+					segment1.morphCurveTo(cx, cy, x, y, morphCX, morphCY, morphX, morphY);
+				}
+				if (segment2 && !isMorph) {
+					segment2.curveTo(cx, cy, x, y);
+					//console.log("segment1.curveTo",cx/20, cy/20, x/20, y/20);
+				} else if(segment2) {
+					if (!(morphRecord.flags & ShapeRecordFlags.IsStraight)) {
+						var morphCX = morphX + morphRecord.controlDeltaX | 0;
+						var morphCY = morphY + morphRecord.controlDeltaY | 0;
+						morphX = morphCX + morphRecord.anchorDeltaX | 0;
+						morphY = morphCY + morphRecord.anchorDeltaY | 0;
+					} else {
+						deltaX = morphRecord.deltaX | 0;
+						deltaY = morphRecord.deltaY | 0;
+						var morphCX = morphX + (deltaX >> 1);
+						var morphCY = morphY + (deltaY >> 1);
+						morphX += deltaX;
+						morphY += deltaY;
+					}
+					segment2.morphCurveTo(cx, cy, x, y, morphCX, morphCY, morphX, morphY);
+				}
+				if (segmentL && !isMorph) {
+					segmentL.curveTo(cx, cy, x, y);
+					//console.log("segment1.curveTo",cx/20, cy/20, x/20, y/20);
+				} else if(segmentL) {
+					if (!(morphRecord.flags & ShapeRecordFlags.IsStraight)) {
+						var morphCX = morphX + morphRecord.controlDeltaX | 0;
+						var morphCY = morphY + morphRecord.controlDeltaY | 0;
+						morphX = morphCX + morphRecord.anchorDeltaX | 0;
+						morphY = morphCY + morphRecord.anchorDeltaY | 0;
+					} else {
+						deltaX = morphRecord.deltaX | 0;
+						deltaY = morphRecord.deltaY | 0;
+						var morphCX = morphX + (deltaX >> 1);
+						var morphCY = morphY + (deltaY >> 1);
+						morphX += deltaX;
+						morphY += deltaY;
+					}
+					segmentL.morphCurveTo(cx, cy, x, y, morphCX, morphCY, morphX, morphY);
 				}
 			}
 		}
 	}
-	applySegmentToStyles(segment, styles, linePaths, fillPaths);
+//	applySegmentToStyles(segment1, styles, linePaths, fillPaths);
 
 	// All current paths get appended to the allPaths list at the end. First fill,
 	// then line paths.
@@ -288,7 +426,6 @@ function convertRecordsToShapeData(records: ShapeRecord[], fillPaths: SegmentedP
 	if (defaultPath) {
 		allPaths.push(defaultPath);
 	}
-
 	var shapeAJS: GraphicsPath;
 	if (isMorph) {
 		var morphShapeAJS: GraphicsPath;
@@ -314,6 +451,7 @@ function convertRecordsToShapeData(records: ShapeRecord[], fillPaths: SegmentedP
 		//allPaths[i].serialize(shape);
 		shapeAJS = new GraphicsPath();
 		allPaths[i].serializeAJS(shapeAJS, null);
+		//console.log("shapeAJS", shapeAJS);
 		graphics.add_queued_path(shapeAJS);
 	}
 
@@ -555,6 +693,7 @@ class PathSegment {
 	public id;
 	private startPoint: string;
 	private endPoint: string;
+	public isValidFill: boolean=true;
 
 	constructor(public commands: DataBuffer, public data: DataBuffer, public morphData: DataBuffer,
 				public prev: PathSegment, public next: PathSegment, public isReversed: boolean)
@@ -607,9 +746,9 @@ class PathSegment {
 	}
 
 	/**
-	 * Returns a shallow copy of the segment with the "isReversed" flag set.
+	 * Returns a shallow copy of the segment1 with the "isReversed" flag set.
 	 * Reversed segments play themselves back in reverse when they're merged into the final
-	 * non-segmented path.
+	 * non-segmented path1.
 	 * Note: Don't modify the original, or the reversed copy, after this operation!
 	 */
 	toReversed(): PathSegment {
@@ -636,14 +775,18 @@ class PathSegment {
 	}
 
 	connectsTo(other: PathSegment): boolean {
-		assert(other !== this);
+		//assert(other !== this);
+		if(other===this)
+			return false;
 		assert(this.endPoint);
 		assert(other.startPoint);
 		return this.endPoint === other.startPoint;
 	}
 
 	startConnectsTo(other: PathSegment): boolean {
-		assert(other !== this);
+		if(other===this)
+			return false;
+	//	assert(other !== this);
 		return this.startPoint === other.startPoint;
 	}
 
@@ -656,7 +799,7 @@ class PathSegment {
 	}
 
 	serializeAJS(shape: GraphicsPath, morphShape: GraphicsPath, lastPosition: {x: number; y: number}) {
-		//console.log("serializeAJS segment");
+		//console.log("serializeAJS segment1");
 		if (this.isReversed) {
 			this._serializeReversedAJS(shape, morphShape, lastPosition);
 			return;
@@ -667,7 +810,7 @@ class PathSegment {
 		var morphData = this.morphData ? this.morphData.ints : null;
 		var data = this.data.ints;
 		assert(commands[0] === PathCommand.MoveTo);
-		// If the segment's first moveTo goes to the current coordinates, we have to skip it.
+		// If the segment1's first moveTo goes to the current coordinates, we have to skip it.
 		var offset = 0;
 		if (data[0] === lastPosition.x && data[1] === lastPosition.y) {
 			offset++;
@@ -708,8 +851,8 @@ class PathSegment {
 		lastPosition.y = data[dataLength - 1];
 	}
 	private _serializeReversedAJS(shape: GraphicsPath, morphShape: GraphicsPath, lastPosition: {x: number; y: number}) {
-		//console.log("_serializeReversedAJS segment");
-		// For reversing the fill0 segments, we rely on the fact that each segment
+		//console.log("_serializeReversedAJS segment1");
+		// For reversing the fill0 segments, we rely on the fact that each segment1
 		// starts with a moveTo. We first write a new moveTo with the final drawing command's
 		// target coordinates (if we don't skip it, see below). For each of the following
 		// commands, we take the coordinates of the command originally *preceding*
@@ -776,37 +919,37 @@ class SegmentedPath {
 		this._head = null;
 	}
 
-	addSegment(segment: PathSegment) {
-		assert(segment);
-		assert(segment.next === null);
-		assert(segment.prev === null);
+	addSegment(segment1: PathSegment) {
+		assert(segment1);
+		assert(segment1.next === null);
+		assert(segment1.prev === null);
 		var currentHead = this._head;
 		if (currentHead) {
-			assert(segment !== currentHead);
-			currentHead.next = segment;
-			segment.prev = currentHead;
+			assert(segment1 !== currentHead);
+			currentHead.next = segment1;
+			segment1.prev = currentHead;
 		}
-		this._head = segment;
+		this._head = segment1;
 	}
 
-	// Does *not* reset the segment's prev and next pointers!
-	removeSegment(segment: PathSegment) {
-		if (segment.prev) {
-			segment.prev.next = segment.next;
+	// Does *not* reset the segment1's prev and next pointers!
+	removeSegment(segment1: PathSegment) {
+		if (segment1.prev) {
+			segment1.prev.next = segment1.next;
 		}
-		if (segment.next) {
-			segment.next.prev = segment.prev;
+		if (segment1.next) {
+			segment1.next.prev = segment1.prev;
 		}
 	}
 
-	insertSegment(segment: PathSegment, next: PathSegment) {
+	insertSegment(segment1: PathSegment, next: PathSegment) {
 		var prev = next.prev;
-		segment.prev = prev;
-		segment.next = next;
+		segment1.prev = prev;
+		segment1.next = next;
 		if (prev) {
-			prev.next = segment;
+			prev.next = segment1;
 		}
-		next.prev = segment;
+		next.prev = segment1;
 	}
 
 	head(): PathSegment {
@@ -845,15 +988,15 @@ class SegmentedPath {
 
 	serializeAJS(shape: GraphicsPath, morphShape: GraphicsPath) {
 		//console.log("serializeAJS");
-		var segment = this.head();
-		if (!segment) {
+		var segment1 = this.head();
+		if (!segment1) {
 			// Path is empty.
 			return;
 		}
 
-		while (segment) {
-			segment.storeStartAndEnd();
-			segment = segment.prev;
+		while (segment1) {
+			segment1.storeStartAndEnd();
+			segment1 = segment1.prev;
 		}
 
 		var start = this.head();
@@ -874,12 +1017,12 @@ class SegmentedPath {
 		while (start) {
 			while (current) {
 
-				// if this segment has the same startpoint as the start-startpoint it needs to be reversed.
+				// if this segment1 has the same startpoint as the start-startpoint it needs to be reversed.
 				if (current.startConnectsTo(start)) {
 					current.flipDirection();
 				}
 
-				// if this segment connects to another, we remove it and add it at the end.
+				// if this segment1 connects to another, we remove it and add it at the end.
 				if (current.connectsTo(start)) {
 					if (current.next !== start) {
 						this.removeSegment(current);
@@ -890,10 +1033,10 @@ class SegmentedPath {
 					continue;
 				}
 
+
 				if(current.startConnectsTo(end)) {
 					current.flipDirection();
 				}
-
 				if (end.connectsTo(current)) {
 					this.removeSegment(current);
 					end.next = current;
@@ -921,7 +1064,7 @@ class SegmentedPath {
 			}
 			start = end = current;
 			current = start.prev;
-		}
+		} 
 
 		if (this.fillStyle) {
 			var style = this.fillStyle;
@@ -930,8 +1073,14 @@ class SegmentedPath {
 				case FillType.Solid:
 					style.alpha=this.getAlpha(style.color)/255;
 					style.color=this.rgbaToArgb(style.color);
-
 					shape.style=new GraphicsFillStyle(style.color, style.alpha);
+
+					var r=Math.random()*255;
+					var g=Math.random()*255;
+					var b=Math.random()*255;
+				//	style.color=ColorUtils.ARGBtoFloat32(255, r, g, b);
+				//	shape.style=new GraphicsStrokeStyle(style.color, 5, 1);
+
 					if (morph) {
 						morph.alpha=this.getAlpha(morph.color)/255;
 						morph.color=this.rgbaToArgb(morph.color);
@@ -1011,9 +1160,9 @@ class SegmentedPath {
 					style.alpha=this.getAlpha(style.color)/255;
 					style.color=this.rgbaToArgb(style.color);
 					var scaleModeAWJ="NORMAL";
-					/*if(style.noVscale==null && style.noHscale==null){
-						scaleModeAWJ="HAIRLINE";
-					}*/
+					//if(style.noVscale==null && style.noHscale==null){
+					//	scaleModeAWJ="HAIRLINE";
+					//}
 					if(thickness==0.05){
 						scaleModeAWJ="HAIRLINE";
 					}
@@ -1092,12 +1241,15 @@ class SegmentedPath {
 				default:
 				//console.error('Line style type not yet supported: ' + style.type);
 			}
+		
 		}
 
 		var lastPosition = {x: 0, y: 0};
 		current = finalRoot;
 		while (current) {
-			current.serializeAJS(shape, morphShape, lastPosition);
+			if(current.isValidFill){
+				current.serializeAJS(shape, morphShape, lastPosition);
+			}
 			current = current.next;
 		}
 		/*
