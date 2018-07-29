@@ -1,4 +1,4 @@
-console.log("AwayJS - Parsers - 0.6.53");
+console.log("AwayJS - Parsers - 0.6.54");
 
 
 export {AWDParser} from "./lib/AWDParser";
