@@ -4,13 +4,12 @@ import {TriangleElementsUtils, Graphics, TriangleElements, ElementsBase, Element
 
 import {ImageUtils, BlendMode, BitmapImage2D, BitmapImageCube, Image2DParser, ImageSampler, AttributesBuffer, Short2Attributes, Short3Attributes, Float3Attributes, Float2Attributes, Byte4Attributes} from "@awayjs/stage";
 
-import {DisplayObjectContainer, DisplayObject, Camera, Sprite, TextField, Billboard, Skybox, PrefabBase, PrimitiveCapsulePrefab, PrimitiveConePrefab, PrimitiveCubePrefab, PrimitiveCylinderPrefab, PrimitivePlanePrefab, PrimitiveSpherePrefab, PrimitiveTorusPrefab, ISceneGraphFactory, MovieClip, Timeline, Font, TesselatedFontTable, IFontTable, TextFormat, TextFieldType} from "@awayjs/scene";
+import {DisplayObjectContainer, DisplayObject, Camera, Sprite, TextField, Billboard, Skybox, PrefabBase, PrimitiveCapsulePrefab, PrimitiveConePrefab, PrimitiveCubePrefab, PrimitiveCylinderPrefab, PrimitivePlanePrefab, PrimitiveSpherePrefab, PrimitiveTorusPrefab, ISceneGraphFactory, MovieClip, Timeline, Font, TesselatedFontTable, IFontTable, TextFormat, TextFieldType, DefaultSceneGraphFactory} from "@awayjs/scene";
 
 import {MappingMode, ElementsUtils, MaterialUtils, IView, IMaterial, Style} from "@awayjs/renderer";
 
 import {LightBase, DirectionalLight, PointLight, ImageTextureCube, ImageTexture2D, MethodMaterialMode, MethodMaterial, DiffuseCelMethod, DiffuseGradientMethod, DiffuseLightMapMethod, DiffuseWrapMethod, EffectAlphaMaskMethod, EffectColorMatrixMethod, EffectColorTransformMethod, EffectEnvMapMethod, EffectFogMethod, EffectFresnelEnvMapMethod, EffectLightMapMethod, EffectRimLightMethod, NormalSimpleWaterMethod, MethodBase, ShadowDitheredMethod, ShadowMethodBase, SpecularFresnelMethod, ShadowHardMethod, SpecularAnisotropicMethod, SpecularCelMethod, SpecularPhongMethod, ShadowSoftMethod, LightPickerBase, StaticLightPicker, PointShadowMapper, DirectionalShadowMapper, NearDirectionalShadowMapper, ShadowMapperBase} from "@awayjs/materials";
 
-import {DefaultSceneGraphFactory} from "./factories/DefaultSceneGraphFactory";
 import {AWDBlock} from "./AWD3ParserUtils/AWDBlock";
 import {LineScaleMode} from "@awayjs/graphics";
 
