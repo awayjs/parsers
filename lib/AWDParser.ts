@@ -1,4 +1,4 @@
-import {WaveAudio, ColorTransform, Matrix3D, Vector3D, URLLoaderDataFormat, URLRequest, AssetLibrary, IAsset, ParserBase, ParserUtils, ResourceDependency, ProjectionBase, PerspectiveProjection, OrthographicProjection, OrthographicOffCenterProjection, ByteArray, Rectangle, Matrix} from "@awayjs/core";
+import {WaveAudio, ColorTransform, Matrix3D, Vector3D, URLLoaderDataFormat, URLRequest, AssetLibrary, IAsset, ParserBase, ParserUtils, ResourceDependency, ProjectionBase, PerspectiveProjection, OrthographicProjection, ByteArray, Rectangle, Matrix, Point} from "@awayjs/core";
 
 import {TriangleElementsUtils, Graphics, TriangleElements, ElementsBase, ElementsType, Shape, VertexAnimationSet, VertexAnimator, SkeletonAnimationSet, SkeletonAnimator, JointPose, Skeleton, SkeletonPose, SkeletonJoint, SkeletonClipNode, VertexClipNode, AnimationClipNodeBase, AnimationSetBase, AnimatorBase} from "@awayjs/graphics";
 
@@ -764,15 +764,15 @@ export class AWDParser extends ParserBase
 		this._blocks[blockID].name = name;
 
 		var font:Font = <Font> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
-		var font_style_name:string = this.parseVarStr();
+		var font_name:string = this.parseVarStr();
 
 		var newTextFormat:TextFormat = new TextFormat();
 		newTextFormat.font_name = font.name;
 
 		// todo:  atm in awd this will always default to get a TesselatedFontTable. need to find a way to request the correct type here
-		var font_table:IFontTable = font.get_font_table(font_style_name);
+		var font_table:IFontTable = font.get_font_table(font_name);
 		if (font_table!=null) {
-			newTextFormat.font_style = font_style_name;
+			newTextFormat.font_name = font_name;
 			newTextFormat.font_table = font_table;
 		}
 
@@ -2025,10 +2025,15 @@ export class AWDParser extends ParserBase
 				projection = new PerspectiveProjection(props.get(101, 60));
 				break;
 			case 5002:
-				projection = new OrthographicProjection(props.get(101, 500));
+				projection = new OrthographicProjection();
 				break;
 			case 5003:
-				projection = new OrthographicOffCenterProjection(props.get(101, -400), props.get(102, 400), props.get(103, -300), props.get(104, 300));
+				var width:number = props.get(102, 400) - props.get(101, -400);
+				var height:number = props.get(104, 300) - props.get(103, -300);
+				projection = new OrthographicProjection();
+				projection.ratio = width/height;
+				projection.originX = (props.get(102, 400) + props.get(101, -400))/width;
+				projection.originY = (props.get(104, 400) + props.get(103, -400))/height;
 				break;
 			default:
 				console.log("unsupportedLenstype");
