@@ -12,6 +12,7 @@ import {LightBase, DirectionalLight, PointLight, ImageTextureCube, ImageTexture2
 
 import {AWDBlock} from "./AWD3ParserUtils/AWDBlock";
 import {LineScaleMode} from "@awayjs/graphics";
+import { IShape } from '../../graphics/dist/lib/renderables/IShape';
 
 /**
  * AWDParser provides a parser for the AWD data type.
@@ -949,14 +950,12 @@ export class AWDParser extends ParserBase
 			// Assign each sub-sprite in the sprite a material from the list. If more sub-sprites
 			// than materials, repeat the last material for all remaining sub-sprites.
 			for (var i:number = 0; i < sprite.graphics.count; i++){
-				if(!sprite.graphics.getShapeAt(i).isStroke){
-					sprite.graphics.getShapeAt(i).material = materials[Math.min(materials.length - 1, i)];
-				}
+				sprite.graphics.getShapeAt(i).material = materials[Math.min(materials.length - 1, i)];
 			}
 		}
 
 		var sampler:ImageSampler;
-		var shape:Shape;
+		var shape:IShape;
 		var material:IMaterial;
 		var count:number = this._newBlockBytes.readUnsignedShort();
 		//if(count != sprite.graphics.count)
@@ -1479,7 +1478,6 @@ export class AWDParser extends ParserBase
 						}
 					}
 					graphics.endFill();
-					graphics.scaleStrokes=LineScaleMode.NORMAL;
 
 				}
 				else{
@@ -1621,7 +1619,7 @@ export class AWDParser extends ParserBase
 			}
 			else if(element_type==ElementType.SHARED_INDEXBUFFER) {
 
-				var shape:Shape = graphics.addShape(new Shape(target_element));
+				var shape:IShape = graphics.addShape(new Shape(target_element));
 				shape.offset = target_start_idx/3; //todo: move this calc to exporter
 				shape.count = target_vert_cnt/3; //todo: move this calc to exporter
 
@@ -1629,7 +1627,7 @@ export class AWDParser extends ParserBase
 			}
 			else if(element_type==ElementType.SHARED_BUFFER){
 
-				var shape:Shape = graphics.addShape(new Shape(target_element));
+				var shape:IShape = graphics.addShape(new Shape(target_element));
 				shape.offset = target_start_idx;
 				shape.count = target_vert_cnt;
 				if (this._debug)
