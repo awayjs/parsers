@@ -1,8 +1,9 @@
 import {IAsset, AssetLibrary, URLLoaderDataFormat, ParserBase, ParserUtils, ResourceDependency} from "@awayjs/core";
 
-import {Font, TesselatedFontTable} from "@awayjs/scene";
+import {Font, TesselatedFontTable, FontStyleName} from "@awayjs/scene";
 
-var opentype;
+import * as opentype from "opentype.js"
+
 /**
  * FontParser should parse Fonts into TesselatedFontTable for usage with webGL, or just load the Font as css class for usage with canvas and no webGL
  */
@@ -91,14 +92,13 @@ export class FontParser extends ParserBase
 	{
 		//console.log("proceed parsing = "+this._iFileName);
 
-		opentype=window["opentype"];
+		//opentype=window["opentype"];
 		if(opentype){
 			//console.log("parsing font = "+this._iFileName+" / bytelength = "+this._pGetByteData().getBytesAvailable());
 			var font_name:string="";
 			var font_style_name:string="";
 			var font = opentype.parse(this.data);
-			var tablename, table, property, value, fontname;
-			var head = font.tables.head;
+			var tablename, table, property;
 			/*
 			*/
 			for (tablename in font.tables) {
@@ -128,6 +128,13 @@ export class FontParser extends ParserBase
 			if(font_style_name==""){
 				console.log("FontParser.ts '"+this._iFileName+"': Could not read font_style_name !!!")
 			}
+			if(font_style_name=="Regular"){
+				font_style_name=FontStyleName.STANDART;
+			}
+			if(font_style_name=="Normal"){
+				font_style_name=FontStyleName.STANDART;
+			}
+
 
 			var new_font:Font=<Font>AssetLibrary.getAsset(font_name);
 			var newfont:Boolean = false;
@@ -141,7 +148,7 @@ export class FontParser extends ParserBase
 			for(var i=0; i<font.numGlyphs; i++){
 				console.log("glyph: "+i);
 				var glyph = font.glyphs.get(i);
-				console.log("       glyph: "+glyph);
+				console.log("       glyph: ",glyph);
 				console.log("       glyph.name: "+glyph.name);
 				console.log("       glyph.unicode: "+glyph.unicode);
 				console.log("       glyph.unicodes: "+glyph.unicodes.length);
@@ -151,8 +158,8 @@ export class FontParser extends ParserBase
 				var contours  = glyph.getContours ();
 				console.log("       contours: "+contours.length);
 
-			}
-			*/
+			}*/
+			
 		}
 		if(document){
 			var s = document.createElement('style');
