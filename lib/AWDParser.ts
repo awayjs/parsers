@@ -6,7 +6,7 @@ import {ImageUtils, BlendMode, BitmapImage2D, BitmapImageCube, Image2DParser, Im
 
 import {DisplayObjectContainer, DisplayObject, Camera, Sprite, TextField, Billboard, Skybox, PrefabBase, PrimitiveCapsulePrefab, PrimitiveConePrefab, PrimitiveCubePrefab, PrimitiveCylinderPrefab, PrimitivePlanePrefab, PrimitiveSpherePrefab, PrimitiveTorusPrefab, ISceneGraphFactory, MovieClip, Timeline, Font, TesselatedFontTable, IFontTable, TextFormat, TextFieldType, DefaultSceneGraphFactory} from "@awayjs/scene";
 
-import {MappingMode, ElementsUtils, MaterialUtils, IView, IMaterial, Style} from "@awayjs/renderer";
+import {MappingMode, ElementsUtils, MaterialUtils, IMaterial, Style} from "@awayjs/renderer";
 
 import {LightBase, DirectionalLight, PointLight, ImageTextureCube, ImageTexture2D, MethodMaterialMode, MethodMaterial, DiffuseCelMethod, DiffuseGradientMethod, DiffuseLightMapMethod, DiffuseWrapMethod, EffectAlphaMaskMethod, EffectColorMatrixMethod, EffectColorTransformMethod, EffectEnvMapMethod, EffectFogMethod, EffectFresnelEnvMapMethod, EffectLightMapMethod, EffectRimLightMethod, NormalSimpleWaterMethod, MethodBase, ShadowDitheredMethod, ShadowMethodBase, SpecularFresnelMethod, ShadowHardMethod, SpecularAnisotropicMethod, SpecularCelMethod, SpecularPhongMethod, ShadowSoftMethod, LightPickerBase, StaticLightPicker, PointShadowMapper, DirectionalShadowMapper, NearDirectionalShadowMapper, ShadowMapperBase} from "@awayjs/materials";
 
