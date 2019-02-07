@@ -387,7 +387,6 @@ export class MD2Parser extends ParserBase
 	{
 		var sx:number, sy:number, sz:number;
 		var tx:number, ty:number, tz:number;
-		var graphics:Graphics;
 		var elements:TriangleElements;
 		var vertLen:number /*uint*/ = this._vertIndices.length;
 		var fvertices:Array<number>;
@@ -440,9 +439,6 @@ export class MD2Parser extends ParserBase
 
 			if (this._firstElements == null)
 				this._firstElements = elements;
-
-			graphics = new Graphics();
-			graphics.addShape(new Shape(elements));
 			
 			var clip:VertexClipNode = this._clipNodes[name];
 
@@ -463,7 +459,7 @@ export class MD2Parser extends ParserBase
 
 				prevClip = clip;
 			}
-			clip.addFrame(graphics, 1000/MD2Parser.FPS);
+			clip.addFrame(elements, 1000/MD2Parser.FPS);
 		}
 
 		// Finalize the last state

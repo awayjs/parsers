@@ -11,8 +11,6 @@ import {MappingMode, ElementsUtils, MaterialUtils, IMaterial, Style} from "@away
 import {LightBase, DirectionalLight, PointLight, ImageTextureCube, ImageTexture2D, MethodMaterialMode, MethodMaterial, DiffuseCelMethod, DiffuseGradientMethod, DiffuseLightMapMethod, DiffuseWrapMethod, EffectAlphaMaskMethod, EffectColorMatrixMethod, EffectColorTransformMethod, EffectEnvMapMethod, EffectFogMethod, EffectFresnelEnvMapMethod, EffectLightMapMethod, EffectRimLightMethod, NormalSimpleWaterMethod, MethodBase, ShadowDitheredMethod, ShadowMethodBase, SpecularFresnelMethod, ShadowHardMethod, SpecularAnisotropicMethod, SpecularCelMethod, SpecularPhongMethod, ShadowSoftMethod, LightPickerBase, StaticLightPicker, PointShadowMapper, DirectionalShadowMapper, NearDirectionalShadowMapper, ShadowMapperBase} from "@awayjs/materials";
 
 import {AWDBlock} from "./AWD3ParserUtils/AWDBlock";
-import {LineScaleMode} from "@awayjs/graphics";
-import { IShape } from '../../graphics/dist/lib/renderables/IShape';
 
 /**
  * AWDParser provides a parser for the AWD data type.
@@ -955,7 +953,7 @@ export class AWDParser extends ParserBase
 		}
 
 		var sampler:ImageSampler;
-		var shape:IShape;
+		var shape:Shape;
 		var material:IMaterial;
 		var count:number = this._newBlockBytes.readUnsignedShort();
 		//if(count != sprite.graphics.count)
@@ -1619,7 +1617,7 @@ export class AWDParser extends ParserBase
 			}
 			else if(element_type==ElementType.SHARED_INDEXBUFFER) {
 
-				var shape:IShape = graphics.addShape(new Shape(target_element));
+				var shape:Shape = graphics.addShape(new Shape(target_element));
 				shape.offset = target_start_idx/3; //todo: move this calc to exporter
 				shape.count = target_vert_cnt/3; //todo: move this calc to exporter
 
@@ -1627,7 +1625,7 @@ export class AWDParser extends ParserBase
 			}
 			else if(element_type==ElementType.SHARED_BUFFER){
 
-				var shape:IShape = graphics.addShape(new Shape(target_element));
+				var shape:Shape = graphics.addShape(new Shape(target_element));
 				shape.offset = target_start_idx;
 				shape.count = target_vert_cnt;
 				if (this._debug)
@@ -2832,7 +2830,6 @@ export class AWDParser extends ParserBase
 		var frame_dur:number;
 		for (var frames_parsed:number = 0; frames_parsed < num_frames; frames_parsed++) {
 			frame_dur = this._newBlockBytes.readUnsignedShort();
-			graphics = new Graphics();
 			subSpriteParsed = 0;
 			while (subSpriteParsed < num_subsprites) {
 				streamsParsed = 0;
@@ -2860,13 +2857,12 @@ export class AWDParser extends ParserBase
 						elements.autoDeriveNormals = false;
 						elements.autoDeriveTangents = false;
 						subSpriteParsed++;
-						graphics.addShape(new Shape(elements));
+						clip.addFrame(elements, frame_dur);
 					} else
 						this._newBlockBytes.position = str_end;
 					streamsParsed++;
 				}
 			}
-			clip.addFrame(graphics, frame_dur);
 		}
 		this.parseUserAttributes();
 		this._pFinalizeAsset(clip, name);
