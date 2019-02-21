@@ -4,7 +4,7 @@ import {TriangleElementsUtils, Graphics, TriangleElements, ElementsBase, Element
 
 import {ImageUtils, BlendMode, BitmapImage2D, BitmapImageCube, Image2DParser, ImageSampler, AttributesBuffer, Short2Attributes, Short3Attributes, Float3Attributes, Float2Attributes, Byte4Attributes} from "@awayjs/stage";
 
-import {DisplayObjectContainer, DisplayObject, Camera, Sprite, TextField, Billboard, Skybox, PrefabBase, PrimitiveCapsulePrefab, PrimitiveConePrefab, PrimitiveCubePrefab, PrimitiveCylinderPrefab, PrimitivePlanePrefab, PrimitiveSpherePrefab, PrimitiveTorusPrefab, ISceneGraphFactory, MovieClip, Timeline, Font, TesselatedFontTable, IFontTable, TextFormat, TextFieldType, DefaultSceneGraphFactory} from "@awayjs/scene";
+import {DefaultFontManager, DisplayObjectContainer, DisplayObject, Camera, Sprite, TextField, Billboard, Skybox, PrefabBase, PrimitiveCapsulePrefab, PrimitiveConePrefab, PrimitiveCubePrefab, PrimitiveCylinderPrefab, PrimitivePlanePrefab, PrimitiveSpherePrefab, PrimitiveTorusPrefab, ISceneGraphFactory, MovieClip, Timeline, Font, TesselatedFontTable, IFontTable, TextFormat, TextFieldType, DefaultSceneGraphFactory} from "@awayjs/scene";
 
 import {MappingMode, ElementsUtils, MaterialUtils, IMaterial, Style} from "@awayjs/renderer";
 
@@ -649,7 +649,8 @@ export class AWDParser extends ParserBase
 	{
 		var name:string = this.parseVarStr();
 		this._blocks[blockID].name = name;
-		var new_font:Font=<Font>AssetLibrary.getAsset(this._blocks[blockID].name);
+		var new_font:Font=DefaultFontManager.getFont(name, this._iFileName);
+		//var new_font:Font=<Font>AssetLibrary.getAsset(this._blocks[blockID].name);
 		var newfont:Boolean = false;
 		if(new_font==undefined){
 			new_font = new Font();
