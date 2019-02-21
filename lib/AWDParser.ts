@@ -680,6 +680,7 @@ export class AWDParser extends ParserBase
 			new_font_style.set_whitespace_width(this._newBlockBytes.readUnsignedInt());
 			new_font_style.ascent=this._newBlockBytes.readFloat();
 			new_font_style.descent=this._newBlockBytes.readFloat();
+			new_font_style.vertical_glyph_offset=new_font_style.descent;
 			//console.log(new_font_style.get_whitespace_width());
 			font_style_char_cnt = this._newBlockBytes.readUnsignedInt();
 			for (var j:number = 0; j < font_style_char_cnt; ++j) {
@@ -767,13 +768,13 @@ export class AWDParser extends ParserBase
 		var font_name:string = this.parseVarStr();
 
 		var newTextFormat:TextFormat = new TextFormat();
-		newTextFormat.font_name = font.name;
+		newTextFormat.font = font;
 
 		// todo:  atm in awd this will always default to get a TesselatedFontTable. need to find a way to request the correct type here
 		var font_table:IFontTable = font.get_font_table(font_name);
 		if (font_table!=null) {
-			newTextFormat.font_name = font_name;
-			newTextFormat.font_table = font_table;
+			//newTextFormat.font_name = font_name;
+			//newTextFormat.font_table = font_table;
 		}
 
 		var mat:MethodMaterial = <MethodMaterial> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
