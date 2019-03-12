@@ -43,7 +43,7 @@
     "@awayjs/materials": "^0.4.0",
     "@awayjs/renderer": "^0.9.0",
     "@awayjs/scene": "^0.11.0",
-    "@awayjs/stage": "^0.10.0",
+    "@awayjs/stage": "^0.9.0",
     "opentype.js": "^0.11.0",
     "tslib": "^1.9.0"
   },
