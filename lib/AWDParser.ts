@@ -4,13 +4,14 @@ import {TriangleElementsUtils, Graphics, TriangleElements, ElementsBase, Element
 
 import {ImageUtils, BlendMode, BitmapImage2D, BitmapImageCube, Image2DParser, ImageSampler, AttributesBuffer, Short2Attributes, Short3Attributes, Float3Attributes, Float2Attributes, Byte4Attributes} from "@awayjs/stage";
 
-import {DefaultFontManager, DisplayObjectContainer, DisplayObject, Camera, Sprite, TextField, Billboard, Skybox, PrefabBase, PrimitiveCapsulePrefab, PrimitiveConePrefab, PrimitiveCubePrefab, PrimitiveCylinderPrefab, PrimitivePlanePrefab, PrimitiveSpherePrefab, PrimitiveTorusPrefab, ISceneGraphFactory, MovieClip, Timeline, Font, TesselatedFontTable, IFontTable, TextFormat, TextFieldType, DefaultSceneGraphFactory} from "@awayjs/scene";
+import {DisplayObjectContainer, DisplayObject, Camera, Sprite, TextField, Billboard, Skybox, PrefabBase, PrimitiveCapsulePrefab, PrimitiveConePrefab, PrimitiveCubePrefab, PrimitiveCylinderPrefab, PrimitivePlanePrefab, PrimitiveSpherePrefab, PrimitiveTorusPrefab, ISceneGraphFactory, MovieClip, Timeline, Font, TesselatedFontTable, IFontTable, TextFormat, TextFieldType, DefaultSceneGraphFactory} from "@awayjs/scene";
 
-import {MappingMode, ElementsUtils, MaterialUtils, IMaterial, Style} from "@awayjs/renderer";
+import {MappingMode, ElementsUtils, MaterialUtils, IView, IMaterial, Style} from "@awayjs/renderer";
 
 import {LightBase, DirectionalLight, PointLight, ImageTextureCube, ImageTexture2D, MethodMaterialMode, MethodMaterial, DiffuseCelMethod, DiffuseGradientMethod, DiffuseLightMapMethod, DiffuseWrapMethod, EffectAlphaMaskMethod, EffectColorMatrixMethod, EffectColorTransformMethod, EffectEnvMapMethod, EffectFogMethod, EffectFresnelEnvMapMethod, EffectLightMapMethod, EffectRimLightMethod, NormalSimpleWaterMethod, MethodBase, ShadowDitheredMethod, ShadowMethodBase, SpecularFresnelMethod, ShadowHardMethod, SpecularAnisotropicMethod, SpecularCelMethod, SpecularPhongMethod, ShadowSoftMethod, LightPickerBase, StaticLightPicker, PointShadowMapper, DirectionalShadowMapper, NearDirectionalShadowMapper, ShadowMapperBase} from "@awayjs/materials";
 
 import {AWDBlock} from "./AWD3ParserUtils/AWDBlock";
+import {LineScaleMode} from "@awayjs/graphics";
 
 /**
  * AWDParser provides a parser for the AWD data type.
@@ -649,8 +650,7 @@ export class AWDParser extends ParserBase
 	{
 		var name:string = this.parseVarStr();
 		this._blocks[blockID].name = name;
-		var new_font:Font=DefaultFontManager.getFont(name, this._iFileName);
-		//var new_font:Font=<Font>AssetLibrary.getAsset(this._blocks[blockID].name);
+		var new_font:Font=<Font>AssetLibrary.getAsset(this._blocks[blockID].name);
 		var newfont:Boolean = false;
 		if(new_font==undefined){
 			new_font = new Font();
@@ -680,7 +680,6 @@ export class AWDParser extends ParserBase
 			new_font_style.set_whitespace_width(this._newBlockBytes.readUnsignedInt());
 			new_font_style.ascent=this._newBlockBytes.readFloat();
 			new_font_style.descent=this._newBlockBytes.readFloat();
-			new_font_style.vertical_glyph_offset=new_font_style.descent;
 			//console.log(new_font_style.get_whitespace_width());
 			font_style_char_cnt = this._newBlockBytes.readUnsignedInt();
 			for (var j:number = 0; j < font_style_char_cnt; ++j) {
@@ -768,13 +767,13 @@ export class AWDParser extends ParserBase
 		var font_name:string = this.parseVarStr();
 
 		var newTextFormat:TextFormat = new TextFormat();
-		newTextFormat.font = font;
+		newTextFormat.font_name = font.name;
 
 		// todo:  atm in awd this will always default to get a TesselatedFontTable. need to find a way to request the correct type here
 		var font_table:IFontTable = font.get_font_table(font_name);
 		if (font_table!=null) {
-			//newTextFormat.font_name = font_name;
-			//newTextFormat.font_table = font_table;
+			newTextFormat.font_name = font_name;
+			newTextFormat.font_table = font_table;
 		}
 
 		var mat:MethodMaterial = <MethodMaterial> this._blocks[this._newBlockBytes.readUnsignedInt()].data;
@@ -950,7 +949,9 @@ export class AWDParser extends ParserBase
 			// Assign each sub-sprite in the sprite a material from the list. If more sub-sprites
 			// than materials, repeat the last material for all remaining sub-sprites.
 			for (var i:number = 0; i < sprite.graphics.count; i++){
-				sprite.graphics.getShapeAt(i).material = materials[Math.min(materials.length - 1, i)];
+				if(!sprite.graphics.getShapeAt(i).isStroke){
+					sprite.graphics.getShapeAt(i).material = materials[Math.min(materials.length - 1, i)];
+				}
 			}
 		}
 
@@ -1478,6 +1479,7 @@ export class AWDParser extends ParserBase
 						}
 					}
 					graphics.endFill();
+					graphics.scaleStrokes=LineScaleMode.NORMAL;
 
 				}
 				else{
@@ -2832,6 +2834,7 @@ export class AWDParser extends ParserBase
 		var frame_dur:number;
 		for (var frames_parsed:number = 0; frames_parsed < num_frames; frames_parsed++) {
 			frame_dur = this._newBlockBytes.readUnsignedShort();
+			graphics = new Graphics();
 			subSpriteParsed = 0;
 			while (subSpriteParsed < num_subsprites) {
 				streamsParsed = 0;
@@ -2859,12 +2862,13 @@ export class AWDParser extends ParserBase
 						elements.autoDeriveNormals = false;
 						elements.autoDeriveTangents = false;
 						subSpriteParsed++;
-						clip.addFrame(elements, frame_dur);
+						graphics.addShape(new Shape(elements));
 					} else
 						this._newBlockBytes.position = str_end;
 					streamsParsed++;
 				}
 			}
+			clip.addFrame(graphics, frame_dur);
 		}
 		this.parseUserAttributes();
 		this._pFinalizeAsset(clip, name);
