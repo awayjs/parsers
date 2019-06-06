@@ -551,7 +551,7 @@ export class Max3DSParser extends ParserBase
 			}
 
 			// Build sprite and return it
-			sprite = new Sprite(mat);
+			sprite = new Sprite(null, mat);
 			sprite.transform.matrix3D = new Matrix3D(obj.transform);
 
 			graphics = sprite.graphics;

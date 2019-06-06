@@ -314,7 +314,7 @@ export class OBJParser extends ParserBase
 				if (this.materialMode >= 2)
 					bmMaterial.mode = MethodMaterialMode.MULTI_PASS;
 
-				sprite = new Sprite(bmMaterial);
+				sprite = new Sprite(null, bmMaterial);
 				graphics = sprite.graphics;
 				materialGroups = groups[g].materialGroups;
 				numMaterialGroups = materialGroups.length;
