@@ -195,7 +195,7 @@ export class AWDParser extends ParserBase
 					var cube_image_asset = new BitmapImageCube(this_block.loaded_dependencies[0].width);
 
 					for (var i:number = 0; i < 6; i++)
-						cube_image_asset.draw(i, this_block.loaded_dependencies[i]);
+						cube_image_asset.drawBitmap(i, this_block.loaded_dependencies[i].data, 0, 0, this_block.loaded_dependencies[i].width, this_block.loaded_dependencies[i].height);
 
 					this_block.data = cube_image_asset; // Store finished asset
 					this._pFinalizeAsset(<IAsset> cube_image_asset, this_block.name);
