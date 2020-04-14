@@ -1242,7 +1242,11 @@ export class AWDParser extends ParserBase
 					str_len = this._newBlockBytes.readUnsignedShort();
 					//console.log("start reading labels "+str_len);
 					for (lc = 0; lc < str_len; lc++) {
-						new_timeline._labels[this.parseVarStr()] = this._newBlockBytes.readUnsignedShort();
+						let name=this.parseVarStr();
+						new_timeline._labels[name] = {
+							name:name,
+							keyFrameIndex:this._newBlockBytes.readUnsignedShort()
+						}
 					}
 					break;
 				case 5://name_stream
@@ -2278,7 +2282,7 @@ export class AWDParser extends ParserBase
 				mat.lightPicker = <LightPickerBase> this._blocks[props.get(22, 0)].data;
 				mat.style.sampler = new ImageSampler(props.get(13, false), props.get(5, true), props.get(6, true));
 				mat.bothSides = props.get(7, false);
-				mat.alphaPremultiplied = props.get(8, false);
+				//mat.alphaPremultiplied = props.get(8, false);
 				mat.blendMode = this.blendModeDic[props.get(9, 0)];
 
 				if (diffuseImage) {
